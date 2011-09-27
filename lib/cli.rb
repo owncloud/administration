@@ -35,7 +35,9 @@ class Cli < Thor
 
   desc "install", "Install ownCloud server"
   def install
-    puts "INSTALL"
+    installer = Installer.new @@settings
+    
+    installer.install
   end
 
   private
