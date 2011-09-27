@@ -1,0 +1,8 @@
+#!/usr/bin/ruby
+
+require File.expand_path('../../lib/owncloud-admin',__FILE__)
+
+Cli.settings = Settings.new
+
+Cli.check_unknown_options!
+Cli.start ARGV
