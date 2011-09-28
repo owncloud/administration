@@ -43,7 +43,7 @@ class Installer
   def install_local
     # Requirements for ownCloud to run:
     # * packages installed: apache2, apache2-mod_php5, php5-json, php5-dom,
-    #   php5-sqlite, php5-mbstring
+    #   php5-sqlite, php5-mbstring php5-ctype
     # * apache2 running
     
     puts "Installing owncloud to local web server..."
@@ -72,8 +72,10 @@ class Installer
         break
       end
     end
-    puts "  Installing to dir '#{install_dir}'..."
-    puts "FIXME: actually install"
+    print "  Installing to dir '#{install_dir}'..."
+
+    upload_dir_ftp ftp, @source_dir, "owncloud"
+    puts ""
     
     puts "  Closing..."
     ftp.close
@@ -81,6 +83,38 @@ class Installer
   
   private
 
+  def upload_dir_ftp ftp, source_path, target_path
+    puts ""
+    print "  Uploading dir #{target_path}"
+    assert_ftp_directory ftp, target_path
+    if target_path == "owncloud/data"
+# FIXME: When ownCloud allows it set permissions so that it works
+#      ftp.sendcmd("SITE CHMOD 0772 #{target_path}")
+    end
+    Dir.entries( source_path ).each do |entry|
+      next if entry =~ /^\.\.?$/
+      
+      source_file = source_path + "/" + entry
+      target_file = target_path + "/" + entry
+      if File.directory? source_file
+        upload_dir_ftp ftp, source_file, target_path + "/" + entry
+      else      
+        print "."
+        ftp.putbinaryfile source_file, target_file
+      end
+    end
+  end
+  
+  def assert_ftp_directory ftp, dir
+    begin
+      ftp.mkdir dir
+    rescue Net::FTPPermError => e
+      if e.message !~ /File exists/
+        raise e
+      end
+    end
+  end
+  
   def try_ftp_cd ftp, dir
     begin
       ftp.chdir dir
