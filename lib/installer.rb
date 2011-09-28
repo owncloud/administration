@@ -11,7 +11,7 @@ class Installer
       source = {
         :server => "owncloud.org",
         :path => "/releases/",
-        :file => "owncloud-2b2.tar.bz2"
+        :file => "owncloud-latest.tar.bz2"
       }
 
       local_source = @settings.tmp_dir + source[:file]
