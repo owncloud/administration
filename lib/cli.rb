@@ -31,6 +31,7 @@ class Cli < Thor
   desc "ping", "Ping server"
   def ping
     puts "PING SERVER"
+    # Access <owncloud-server>/status.php (will be in 2beta3)
   end
 
   desc "install", "Install ownCloud server"
