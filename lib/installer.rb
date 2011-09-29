@@ -90,6 +90,7 @@ class Installer
     if target_path == "owncloud/data"
 # FIXME: When ownCloud allows it set permissions so that it works
 #      ftp.sendcmd("SITE CHMOD 0772 #{target_path}")
+      ftp.sendcmd("SITE CHMOD 0770 #{target_path}")
     end
     Dir.entries( source_path ).each do |entry|
       next if entry =~ /^\.\.?$/
