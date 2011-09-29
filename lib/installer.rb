@@ -1,6 +1,6 @@
 class Installer
 
-  attr_accessor :server, :user, :password, :skip_download
+  attr_accessor :server, :user, :password, :skip_download, :root_helper
   
   def initialize settings
     @settings = settings
@@ -49,8 +49,8 @@ class Installer
     puts "Installing owncloud to local web server..."
     http_docs_dir = "/srv/www/htdocs/"
     
-    system "sudo cp -r #{@source_dir} #{http_docs_dir}"
-    system "sudo chown -R wwwrun:www #{http_docs_dir}owncloud"
+    system "#{@root_helper} \"cp -r #{@source_dir} #{http_docs_dir}\""
+    system "#{@root_helper} \"chown -R wwwrun:www #{http_docs_dir}owncloud\""
   end
   
   def install_ftp

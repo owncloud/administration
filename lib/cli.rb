@@ -43,6 +43,9 @@ class Cli < Thor
     :desc => "User name", :required => false
   method_option :password, :type => :string,
     :desc => "Password", :required => false
+  method_option :root_helper, :type => :string,
+    :desc => "Helper to call to run command as root (use 'kdesu -c' for GUI)",
+    :required => false
   method_option :skip_download, :type => :boolean,
     :desc => "Skip download of owncloud sources", :required => false
   def install
@@ -53,6 +56,11 @@ class Cli < Thor
     installer.server = options["server"]
     installer.user = options["user"]
     installer.password = options["password"]
+    if options["root_helper"]
+      installer.root_helper = options["root_helper"]
+    else
+      installer.root_helper = "sudo bash -c"
+    end
     
     server_type = options["server_type"]
 
