@@ -23,7 +23,10 @@
 /**
  * Please copy this file into your webserver root and open it with a browser. The setup wizard checks the dependency, downloads the newest ownCloud version, unpacks it and redirects to the ownCloud first run wizard.
  */
- 
+
+
+// init
+ob_start(); 
  
 /**
  * @brief Setup class with a few helper functions
