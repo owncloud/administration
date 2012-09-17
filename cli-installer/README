@@ -1,0 +1,7 @@
+# owncloud-admin - the ownCloud administration tool
+
+owncloud-admin is a simple command line tool to make administration of ownCloud
+servers easier. It's primary purpose is installing an ownCloud instance.
+
+If you have questions or comments please contact Cornelius Schumacher
+<schumacher@kde.org>.
