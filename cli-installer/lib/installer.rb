@@ -1,11 +1,35 @@
+#
+# owncloud-admin - the owncloud administration tool
+#
+# Copyright (C) 2011 Cornelius Schumacher <schumacher@kde.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
 class Installer
 
-  attr_accessor :server, :user, :password, :skip_download, :root_helper
+  attr_accessor :server, :ftp_user, :ftp_password, :skip_download, :root_helper,
+      :admin_user, :admin_password
   
   def initialize settings
     @settings = settings
   end
 
+  def self.server_types
+    [ "local", "ftp" ]
+  end
+  
   def install server_type
     if !skip_download
       source = {
@@ -29,6 +53,8 @@ class Installer
     end
 
     @source_dir = @settings.tmp_dir + "owncloud"
+
+    write_admin_config
     
     if server_type == "local"
       install_local
@@ -37,6 +63,33 @@ class Installer
     else
       STDERR.puts "Unsupported server type: #{server_type}"
       exit 1
+    end
+  end
+
+  def write_admin_config
+    if !@admin_password
+      STDERR.puts "Initial admin password is required"
+      exit 1
+    end
+    if !@admin_user
+      @admin_user = ENV["USER"]
+    end
+
+    config = <<EOF
+<?php
+$AUTOCONFIG = array(
+  "dbtype" => 'sqlite',
+  "directory" => OC::$SERVERROOT."/data",
+  "adminlogin" => "#{@admin_user}",
+  "adminpass" => "#{@admin_password}"
+);
+?>
+EOF
+
+    config_file = @source_dir + "/config/autoconfig.php"
+
+    File.open config_file, "w" do |file|
+      file.print config
     end
   end
 
@@ -56,12 +109,12 @@ class Installer
   def install_ftp
     puts "Installing owncloud to remote web server via FTP..."
 
-    assert_options [ :server, :user, :password ]
+    assert_options [ :server, :ftp_user, :ftp_password ]
 
     ftp = Net::FTP.new( server )
     ftp.passive = true
     puts "  Logging in..."
-    ftp.login user, password
+    ftp.login ftp_user, ftp_password
 
     puts "  Finding installation directory..."
     install_dir = ""
