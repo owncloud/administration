@@ -126,7 +126,7 @@ class oc_setup {
 			<head>	
 				<title>ownCloud Setup</title>
 				<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-				<link rel="icon" type="image/png" href="http://owncloud.org/favicon.png" />
+				<link rel="icon" type="image/png" href="http://owncloud.org/setupwizard/favicon.png" />
 				<link rel="stylesheet" href="http://owncloud.org/setupwizard/styles.css" type="text/css" media="screen" />
 			</head>
 
