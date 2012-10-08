@@ -69,7 +69,7 @@ class oc_setup {
 			$error='';
 		
 			// downloading latest release
-			$error.=oc_setup::getfile('http://owncloud.org/releases/owncloud-latest.zip','oc.zip');
+			$error.=oc_setup::getfile('https://download.owncloud.com/download/community/owncloud-latest.zip','oc.zip');
 			
 			// unpacking into owncloud folder
 			$zip = new ZipArchive;
