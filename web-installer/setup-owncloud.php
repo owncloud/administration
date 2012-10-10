@@ -27,6 +27,9 @@
 
 // init
 ob_start(); 
+error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
+ini_set('display_errors', 1);
+set_time_limit(0);
  
 /**
  * @brief Setup class with a few helper functions
@@ -50,6 +53,11 @@ class oc_setup {
 		// do we have the zip module?
 		if(!class_exists('ZipArchive')){
 			$error.='PHP module zip not installed. Please ask your server administrator to install the module.';
+		}
+
+		// do we have the curl module?
+		if(!function_exists('curl_exec')){
+			$error.='PHP module curl not installed. Please ask your server administrator to install the module.';
 		}
 		
 		// do we have write permission?
@@ -95,24 +103,25 @@ class oc_setup {
 	* @return string with error messages
 	*/ 
 	static public function getfile($url,$path) {
+
 		$error='';
-
-		$newfname = $path;
-		$file = @fopen ($url, 'rb');
-		if ($file) {
-			$newf = fopen ($newfname, 'wb');
-
-			if ($newf)
-			while(!feof($file)) {
-				fwrite($newf, fread($file, 1024*8 ), 1024*8 );
-			}
-		}else{
-			$error.='download of ownCloud source file failed.<br />';	
+		$fp = fopen ($path, 'w+');
+		$ch = curl_init($url); 
+		curl_setopt($ch, CURLOPT_TIMEOUT, 0);
+		curl_setopt($ch, CURLOPT_FILE, $fp); 
+		curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+		curl_setopt($ch, CURLOPT_CERTINFO, TRUE); 
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, TRUE); 
+		$data=curl_exec($ch);
+		$curlerror=curl_error($ch);
+		curl_close($ch);
+		fclose($fp);
+ 
+		if($data==false){
+			$error.='download of ownCloud source file failed.<br />'.$curlerror;	
 		}
-		if ($file) fclose($file);
-		if (isset($newf) and $newf) fclose($newf);
-		
-		return($error);
+		return($error.$curlerror);
+
 	}
  
   
