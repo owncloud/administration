@@ -182,7 +182,7 @@ class oc_setup {
 		');
 
 		if($nextpage === 2) {
-			echo ('Install in subdirectory: <input type="text" name="directory" value="owncloud"/>');
+			echo ('Install in subdirectory: <input type="text" name="directory" value="owncloud" required="required"/>');
 		}
 		if($nextpage === 3) {
 			echo ('<input type="hidden" value="'.$_GET['directory'].'" name="directory" />');
