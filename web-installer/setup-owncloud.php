@@ -89,7 +89,7 @@ class oc_setup {
 				$error.='unzip of owncloud source file failed.<br />';
 			}
 
-			// deleting tar file
+			// deleting zip file
 			$result=@unlink('oc.zip');
 			if($result==false) $error.='deleting of oc.zip failed.<br />';
 			return($error);
