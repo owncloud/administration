@@ -83,8 +83,15 @@ class oc_setup {
 			$zip = new ZipArchive;
 			$res = $zip->open('oc.zip');
 			if ($res==true) {
-				$zip->extractTo('.');
+				// Extract it to the tmp dir
+				$owncloud_tmp_dir = 'tmp-owncloud'.time();
+				$zip->extractTo($owncloud_tmp_dir);
 				$zip->close();
+
+				// Move it to the folder
+				rename($owncloud_tmp_dir.'/owncloud', "./".$_GET['directory']);
+				// Delete the tmp folder
+				rmdir($owncloud_tmp_dir);
 			} else {
 				$error.='unzip of owncloud source file failed.<br />';
 			}
@@ -173,7 +180,14 @@ class oc_setup {
 			<form method="get">
 					<input type="hidden" name="step" value="'.$nextpage.'" />
 		');
-		
+
+		if($nextpage === 2) {
+			echo ('Install in subdirectory: <input type="text" name="directory" value="owncloud" required="required"/>');
+		}
+		if($nextpage === 3) {
+			echo ('<input type="hidden" value="'.$_GET['directory'].'" name="directory" />');
+		}
+
 		if($nextpage<>'') echo('<input type="submit" id="submit" class="login" style="margin-right:100px;" value="Next" />');
 
 		echo('
@@ -188,7 +202,7 @@ class oc_setup {
 	* @brief Shows the wecome screen of the setup wizard
 	*/ 
 	static public function showwelcome(){
-		$txt='Welcome to the ownCloud Setup Wizard.<br />This wizard will check the ownCloud dependencies, download the newest version of ownCloud and install it in a few simple steps';
+		$txt='Welcome to the ownCloud Setup Wizard.<br />This wizard will check the ownCloud dependencies, download the newest version of ownCloud and install it in a few simple steps.';
 		oc_setup::showcontent('Setup Wizard',$txt,1);
 	}
 
@@ -232,7 +246,7 @@ class oc_setup {
 		@unlink($_SERVER['SCRIPT_FILENAME']);
 		
 		// redirect to ownCloud
-		header("Location: owncloud");	
+		header("Location: ".$_GET['directory']);	
 	}	
 	
 }
