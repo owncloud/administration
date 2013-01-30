@@ -100,8 +100,7 @@ sub doBuild( $ ) {
   print "Building in $builddir\n";
 
   # create a bin package directory
-  mkdir( "packages", 0755 );
-  my $packDir = getcwd() . "/packages";
+  my $packDir = "$dir/packages";
 
   checkout_package($repo, $pack);
   chdir( $repo );
@@ -132,7 +131,8 @@ sub doBuild( $ ) {
     # Do the build.
     print " ** Building for $build\n";
     my $buildPackDir = "$packDir/$build";
-    mkdir( $buildPackDir, 0755);
+    mkdir( $buildPackDir, 0755) unless( -d $buildPackDir );
+
     my @osc = ( "build", "--noservice", "--clean", "-k", $buildPackDir, "-p", $buildPackDir, "$build", "x86_64", "$pack.spec");
     print " ** Starting build with " . join( " ", @osc ) . "\n";
     doOSC( @osc );
@@ -144,6 +144,8 @@ sub doBuild( $ ) {
 
 # remember the base dir.
 $dir = getcwd;
+mkdir("packages") unless( -d "packages" );
+
 $tarball = $dir .'/'. $ARGV[0];
 print "Tarball: $tarball\n";
 
