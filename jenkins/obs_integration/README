@@ -1,0 +1,12 @@
+This is a script to build openSUSE Buildservice hosted packages 
+locally on a computer automatically. It can be hooked in in
+Jenkins.
+
+Call it with the tarballs name:
+./buildpackage.pl ocsync-0.70.0nightly20120124.tar.bz2
+
+Check buildpackage.ini to see the repo the package come from 
+and the builds that should happen. The script creates some
+directories in the current directory.
+
+# Klaas Freitag <freitag@owncloud.com>, Jan. 2013
