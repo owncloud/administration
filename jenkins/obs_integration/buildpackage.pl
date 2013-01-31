@@ -86,9 +86,8 @@ sub patchSpecfile( $$ ) {
 
 }
 
-sub doBuild( $ ) {
-  my ($pack) = @_;
-
+sub doBuild( $$ ) {
+  my ($pack, $packName) = @_;
   my $repo = readIniValue( $pack, "repo" );
   print "Building from repo $repo\n";
 
@@ -102,9 +101,9 @@ sub doBuild( $ ) {
   # create a bin package directory
   my $packDir = "$dir/packages";
 
-  checkout_package($repo, $pack);
+  checkout_package($repo, $packName);
   chdir( $repo );
-  chdir( $pack );
+  chdir( $packName );
 
   # now we are in the package directory.
   # Copy the tarball.
@@ -119,7 +118,7 @@ sub doBuild( $ ) {
   # Patch the spec file.
   my %patchSpec;
   $patchSpec{Version} = $version;
-  patchSpecfile( $pack, \%patchSpec );
+  patchSpecfile( $packName, \%patchSpec );
 
   # Get the build param
   my $arch = readIniValue( $pack, "arch" );
@@ -132,8 +131,7 @@ sub doBuild( $ ) {
     print " ** Building for $build\n";
     my $buildPackDir = "$packDir/$build";
     mkdir( $buildPackDir, 0755) unless( -d $buildPackDir );
-
-    my @osc = ( "build", "--noservice", "--clean", "-k", $buildPackDir, "-p", $buildPackDir, "$build", "x86_64", "$pack.spec");
+    my @osc = ( "build", "--noservice", "--clean", "-k", $buildPackDir, "-p", $buildPackDir, "$build", "x86_64", "$packName.spec");
     print " ** Starting build with " . join( " ", @osc ) . "\n";
     doOSC( @osc );
   }
@@ -150,8 +148,9 @@ $tarball = $dir .'/'. $ARGV[0];
 print "Tarball: $tarball\n";
 
 my $pack = getPackName( $ARGV[0] );
+my $packName = readIniValue( $pack, "packagename" ) or $pack;
 
-doBuild( $pack );
+doBuild( $pack, $packName );
 my $newDir = getcwd;
 print "* Now in $newDir\n";
 
