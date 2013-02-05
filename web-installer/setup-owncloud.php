@@ -36,7 +36,7 @@ set_time_limit(0);
  *
  */ 
 class oc_setup {
-	
+
  
 	/**
 	* @brief Checks if all the ownCloud dependencies are installed
@@ -63,7 +63,7 @@ class oc_setup {
 		// do we have write permission?
 		if(!is_writable('.')) {
 			$error.='Can\'t write to the current directory. Please fix this by giving the webserver user write access to the directory.';
-                }
+		}
 		
 		return($error);
 	}
@@ -85,32 +85,32 @@ class oc_setup {
 	* @return string with error messages
 	*/ 
 	static public function install() {	
-			$error='';
+		$error='';
 		
-			// downloading latest release
-			$error.=oc_setup::getfile('https://download.owncloud.com/download/community/owncloud-latest.zip','oc.zip');
-			
-			// unpacking into owncloud folder
-			$zip = new ZipArchive;
-			$res = $zip->open('oc.zip');
-			if ($res==true) {
-				// Extract it to the tmp dir
-				$owncloud_tmp_dir = 'tmp-owncloud'.time();
-				$zip->extractTo($owncloud_tmp_dir);
-				$zip->close();
+		// downloading latest release
+		$error.=oc_setup::getfile('https://download.owncloud.com/download/community/owncloud-latest.zip','oc.zip');
+		
+		// unpacking into owncloud folder
+		$zip = new ZipArchive;
+		$res = $zip->open('oc.zip');
+		if ($res==true) {
+			// Extract it to the tmp dir
+			$owncloud_tmp_dir = 'tmp-owncloud'.time();
+			$zip->extractTo($owncloud_tmp_dir);
+			$zip->close();
 
-				// Move it to the folder
-				rename($owncloud_tmp_dir.'/owncloud', "./".$_GET['directory']);
-				// Delete the tmp folder
-				rmdir($owncloud_tmp_dir);
-			} else {
-				$error.='unzip of owncloud source file failed.<br />';
-			}
+			// Move it to the folder
+			rename($owncloud_tmp_dir.'/owncloud', "./".$_GET['directory']);
+			// Delete the tmp folder
+			rmdir($owncloud_tmp_dir);
+		} else {
+			$error.='unzip of owncloud source file failed.<br />';
+		}
 
-			// deleting zip file
-			$result=@unlink('oc.zip');
-			if($result==false) $error.='deleting of oc.zip failed.<br />';
-			return($error);
+		// deleting zip file
+		$result=@unlink('oc.zip');
+		if($result==false) $error.='deleting of oc.zip failed.<br />';
+		return($error);
 	}
 
 	 
@@ -121,8 +121,8 @@ class oc_setup {
 	* @return string with error messages
 	*/ 
 	static public function getfile($url,$path) {
-
 		$error='';
+
 		$fp = fopen ($path, 'w+');
 		$ch = curl_init($url); 
 		curl_setopt($ch, CURLOPT_TIMEOUT, 0);
@@ -191,7 +191,7 @@ class oc_setup {
 			<p style="text-align:center; font-size:28px; color:#444; font-weight:bold;">'.$title.'</p><br />
 			<p style="text-align:center; font-size:13px; color:#666; font-weight:bold; ">'.$content.'</p>
 			<form method="get">
-					<input type="hidden" name="step" value="'.$nextpage.'" />
+				<input type="hidden" name="step" value="'.$nextpage.'" />
 		');
 
 		if($nextpage === 2) {
@@ -260,7 +260,7 @@ class oc_setup {
 		
 		// redirect to ownCloud
 		header("Location: ".$_GET['directory']);	
-	}	
+	}
 	
 }
 
