@@ -68,6 +68,17 @@ class oc_setup {
 		return($error);
 	}
 
+
+	/**
+	* @brief Check the cURL version
+	* @return bool status of CURLOPT_CERTINFO implementation
+	*/ 
+	static public function iscertinfoavailable(){
+		$curlDetails =  curl_version();
+		return version_compare($curlDetails['version'], '7.19.1') != -1;
+	}
+
+
  
 	/**
 	* @brief Performs the ownCloud install. 
@@ -117,7 +128,9 @@ class oc_setup {
 		curl_setopt($ch, CURLOPT_TIMEOUT, 0);
 		curl_setopt($ch, CURLOPT_FILE, $fp); 
 		curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
-		curl_setopt($ch, CURLOPT_CERTINFO, TRUE); 
+		if (oc_setup::iscertinfoavailable()){
+			curl_setopt($ch, CURLOPT_CERTINFO, TRUE); 
+		}
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, TRUE); 
 		$data=curl_exec($ch);
 		$curlerror=curl_error($ch);
