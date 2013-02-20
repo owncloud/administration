@@ -67,6 +67,27 @@ sub checkout_package( $$ ) {
   chdir $pack;
 }
 
+sub getFromSpecfile( $$ ) {
+  my ($pack, $tag) = @_;
+  my $re;
+
+  return unless( $tag );
+
+  my $specfile = "$pack.spec";
+
+  open( SPEC, "<$specfile" ) || die("No spec-file: $specfile\n");
+  my @spec = <SPEC>;
+  close SPEC;
+
+  foreach my $s ( @spec ) {
+    if( $s =~ /^$tag:\s*(\S+)\s*$/ ) {
+      $re = $1;
+      last;
+    }
+  }
+  return $re;
+}
+
 sub patchSpecfile( $$ ) {
     my ($pack, $rep) = @_;
     # rep is a hash reference.
@@ -120,14 +141,35 @@ sub doBuild( $$ ) {
   # now we are in the package directory.
   # Copy the tarball.
   copy( $tarball, '.' );
+  die "Source tarball does not exist!\n" unless ( -e $tarball );
+
   my $version = $tarball;
   # remove the whole path and base name.
   $version =~ s/^.+\/$pack-//;
+  my $tarFileName = "$pack-$version";
   # remove the .tar.bz2
   $version =~ s/\.tar\..*$//;
   print "Package Version: $version\n";
 
-  # Patch the spec file.
+  my $oldVersion = getFromSpecfile( $packName, 'Version' );
+
+  if( $oldVersion ne $version ) {
+    print(" >> Adding tarball $tarFileName\n");
+    my @osca = ("add", $tarFileName);
+    doOSC( @osca );
+
+    # Get remove the old tarball.
+    if( $oldVersion ) {
+      my $remFile = "$pack-$oldVersion.tar.bz2";
+      print "  >> Removing old source file $remFile\n";
+      if( -e $remFile ) {
+	my @oscr = ("remove", $remFile);
+	doOSC( @oscr );
+      }
+    }
+  }
+
+  # Patch the spec file with the new version.
   my %patchSpec;
   $patchSpec{Version} = $version;
   patchSpecfile( $packName, \%patchSpec );
