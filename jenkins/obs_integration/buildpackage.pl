@@ -89,7 +89,7 @@ sub patchSpecfile( $$ ) {
 sub doBuild( $$ ) {
   my ($pack, $packName) = @_;
   my $repo = readIniValue( $pack, "repo" );
-  print "Building from repo $repo\n";
+  print "Building $packName from repo $repo\n";
 
   # create a build dir
   my $builddir = "osc_build";
@@ -130,8 +130,11 @@ sub doBuild( $$ ) {
     # Do the build.
     print " ** Building for $build\n";
     my $buildPackDir = "$packDir/$build";
+    my $buildDescExt = 'spec';
+    $buildDescExt = 'dsc' if( $build =~ /ubuntu/i );
+
     mkdir( $buildPackDir, 0755) unless( -d $buildPackDir );
-    my @osc = ( "build", "--noservice", "--clean", "-k", $buildPackDir, "-p", $buildPackDir, "$build", "x86_64", "$packName.spec");
+    my @osc = ( "build", "--noservice", "--clean", "-k", $buildPackDir, "-p", $buildPackDir, "$build", "x86_64", "$packName.$buildDescExt");
     print " ** Starting build with " . join( " ", @osc ) . "\n";
     doOSC( @osc );
   }
