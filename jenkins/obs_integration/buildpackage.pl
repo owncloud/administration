@@ -39,6 +39,18 @@ sub getPackName( $ ) {
 
 sub doOSC {
     system( "/usr/bin/osc", @_ );
+    my $re = 0;
+
+    if ($? == -1) {
+      print "failed to execute: $!\n";
+    } elsif ($? & 127) {
+      printf "child died with signal %d, %s coredump\n",
+      ($? & 127), ($? & 128) ? 'with' : 'without';
+    } else {
+      printf "child exited with value %d\n", $? >> 8;
+      $re = 1 if( ($? >> 8) == 0 );
+    }
+    return $re;
 }
 
 
@@ -126,6 +138,8 @@ sub doBuild( $$ ) {
 
   my @builds = split( /\s*,\s*/, $b );
 
+  my $re = 1;
+
   foreach my $build ( @builds ) {
     # Do the build.
     print " ** Building for $build\n";
@@ -136,9 +150,19 @@ sub doBuild( $$ ) {
     mkdir( $buildPackDir, 0755) unless( -d $buildPackDir );
     my @osc = ( "build", "--noservice", "--clean", "-k", $buildPackDir, "-p", $buildPackDir, "$build", "x86_64", "$packName.$buildDescExt");
     print " ** Starting build with " . join( " ", @osc ) . "\n";
+    unless( doOSC( @osc ) ) {
+      print "Build Job failed for $build => exiting!\n";
+      $re = 0;
+      last;
+    }
+  }
+
+  if( $re ) {
+    my @osc = ( "commit", "-m", "Update by Mr. Jenkins nightly build." );
     doOSC( @osc );
   }
 
+  return $re;
 }
 
 # main here.
@@ -153,9 +177,10 @@ print "Tarball: $tarball\n";
 my $pack = getPackName( $ARGV[0] );
 my $packName = readIniValue( $pack, "packagename" ) or $pack;
 
-doBuild( $pack, $packName );
-my $newDir = getcwd;
-print "* Now in $newDir\n";
+if( ! doBuild( $pack, $packName ) ) {
+  print "Building failed -> EXIT!\n";
+  exit 1;
+}
 
 chdir( $dir );
 
