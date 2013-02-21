@@ -29,7 +29,7 @@
 ob_start(); 
 error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 ini_set('display_errors', 1);
-set_time_limit(0);
+@set_time_limit(0);
  
 /**
  * @brief Setup class with a few helper functions
