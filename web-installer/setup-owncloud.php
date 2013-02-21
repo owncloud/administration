@@ -64,6 +64,11 @@ class oc_setup {
 		if(!is_writable('.')) {
 			$error.='Can\'t write to the current directory. Please fix this by giving the webserver user write access to the directory.';
 		}
+
+		// is safe_mode enabled?
+		if(ini_get('safe_mode')) {
+			$error.='PHP Safe Mode is enabled. ownCloud requires that it is disabled to work properly.';
+		}
 		
 		return($error);
 	}
