@@ -46,8 +46,8 @@ class oc_setup {
 		$error='';
 		
 		// do we have PHP 5.3.2 or newer?
-                if(version_compare(PHP_VERSION, '5.3.4', '<')) {
-			$error.='PHP 5.3.4 is required. Please ask your server administrator to update PHP to version 5.3.4 or higher. PHP 5.2 is no longer supported by ownCloud and the PHP community.';
+                if(version_compare(PHP_VERSION, '5.3.2', '<')) {
+			$error.='PHP 5.3.2 is required. Please ask your server administrator to update PHP to version 5.3.2 or higher. PHP 5.2 is no longer supported by ownCloud and the PHP community.';
 		}
 		
 		// do we have the zip module?
