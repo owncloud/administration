@@ -1,12 +1,26 @@
-This is a script to build openSUSE Buildservice hosted packages 
+This is a script to build openSUSE Buildservice hosted packages
 locally on a computer automatically. It can be hooked in in
 Jenkins.
 
 Call it with the tarballs name:
 ./buildpackage.pl ocsync-0.70.0nightly20120124.tar.bz2
 
-Check buildpackage.ini to see the repo the package come from 
-and the builds that should happen. The script creates some
-directories in the current directory.
+Check buildpackage.ini to see the repo the package come from
+and the builds that should happen.
+
+Keys in buildpackage.ini:
+The ini group names the package for which the following settings apply.
+In the group, the following parameters are valid:
+- repo: The repository from which the package is checked out.
+- builds: The platforms for which builds are running locally. Leave
+          empty if no builds should happen.
+- arch:   The architecture for the local builds.
+- packagename: An alternative package name.
+
+
+The script creates some directories in the current directory:
+osc_build: The place where the OBS packages are checked out to.
+packages:  The locally built bin packages get copied there.
+
 
 # Klaas Freitag <freitag@owncloud.com>, Jan. 2013

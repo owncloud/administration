@@ -12,7 +12,27 @@ use File::Copy;
 use Cwd;
 
 use strict;
-use vars qw($tarball $dir);
+use vars qw($tarball $dir $opt_p $opt_h);
+
+sub help() {
+  print<<ENDHELP
+
+  buildpackage - update nightly builds, build locally and submit to OBS
+
+  Call the script with the name and path to a new tarball. The script extracts
+  the new nightly version, patches the version in the spec file, adds changelogs
+  and builds locally if required.
+
+  Finally it can push the updated package back to OBS.
+
+  Options:
+  -h      this help text.
+  -p      do the push to OBS.
+
+ENDHELP
+;
+  exit 1;
+}
 
 sub readIniValue( $$ ) {
   my ($prjName, $value) = @_;
@@ -25,7 +45,6 @@ sub readIniValue( $$ ) {
   }
   return $key;
 }
-
 
 # ======================================================================================
 sub getPackName( $ ) {
@@ -88,6 +107,65 @@ sub getFromSpecfile( $$ ) {
   return $re;
 }
 
+sub addDebChangelog( $$$ ) {
+  my ($pack, $changelog, $version) = @_;
+
+  my $changesfile = "debian.changelog";
+
+  return 1 unless( -e $changesfile );
+
+  open( CHANGES, "<$changesfile" ) || die("No changes-file: $changesfile\n");
+  my @changes = <CHANGES>;
+  close CHANGES;
+
+  my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = gmtime(time);
+  my @mabbr = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
+  my @wabbr = qw( Sun Mon Tue Wed Thu Fri Sat );
+
+  my $timestr = sprintf("%02d:%02d:%02d +0000", $hour, $min, $sec);
+  my $datestr = sprintf("%s, %02d %s %d", $wabbr[$wday], $mday, $mabbr[$mon], 1900+$year);
+  # print "XXXXXXXXX $datestr $timestr\n";
+
+  unshift( @changes, "\n -- ownCloud Jenkins <jenkins\@owncloud.com>  $datestr $timestr\n\n" );
+
+  unshift( @changes, "\n$changelog\n" );
+  unshift( @changes, sprintf( "%s (%s-1) stable; urgency=low\n", $pack, $version ));
+
+   # write the new spec file.
+  open( CHANGES, ">$changesfile" ) || die("Could not open Changesfile to write!\n");
+  print CHANGES @changes; # join("\n", @newspec );
+  close CHANGES;
+
+  return 1;
+}
+
+
+sub patchChangesFile( $$ ) {
+  my ($pack, $changelog) = @_;
+
+  my $changesfile = "$pack.changes";
+
+  open( CHANGES, "<$changesfile" ) || die("No changes-file: $changesfile\n");
+  my @changes = <CHANGES>;
+  close CHANGES;
+
+  my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = gmtime(time);
+  my @mabbr = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
+  my @wabbr = qw( Sun Mon Tue Wed Thu Fri Sat );
+  my $dateline = "$wabbr[$wday] $mabbr[$mon] $mday $hour:$min:$sec UTC 2013 - jenkins\@owncloud.org";
+
+  unshift( @changes, "\n$changelog\n\n" );
+  unshift( @changes, "\n$dateline\n" );
+  unshift( @changes, "-------------------------------------------------------------------");
+
+   # write the new spec file.
+  open( CHANGES, ">$changesfile" ) || die("Could not open Changesfile to write!\n");
+  print CHANGES @changes; # join("\n", @newspec );
+  close CHANGES;
+
+  return 1;
+}
+
 sub patchSpecfile( $$ ) {
     my ($pack, $rep) = @_;
     # rep is a hash reference.
@@ -117,6 +195,7 @@ sub patchSpecfile( $$ ) {
     print SPEC @newspec; # join("\n", @newspec );
     close SPEC;
 
+    return 1;
 }
 
 sub doBuild( $$ ) {
@@ -182,6 +261,10 @@ sub doBuild( $$ ) {
 
   my $re = 1;
 
+  my $changelog = "  * Update to nightly version $version";
+  addDebChangelog( $packName, $changelog, $version );
+
+  # Do the local builds.
   foreach my $build ( @builds ) {
     # Do the build.
     print " ** Building for $build\n";
@@ -199,8 +282,9 @@ sub doBuild( $$ ) {
     }
   }
 
-  if( $re ) {
+  if( $re && $opt_p) {
     my @osc = ( "commit", "-m", "Update by Mr. Jenkins nightly build." );
+    print("DOING the push to OBS\n");
     doOSC( @osc );
   }
 
@@ -208,6 +292,9 @@ sub doBuild( $$ ) {
 }
 
 # main here.
+getopts('hp');
+
+help() if( $opt_h );
 
 # remember the base dir.
 $dir = getcwd;
