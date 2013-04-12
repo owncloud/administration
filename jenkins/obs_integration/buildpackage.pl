@@ -129,7 +129,7 @@ sub addDebChangelog( $$$ ) {
   unshift( @changes, "\n -- ownCloud Jenkins <jenkins\@owncloud.com>  $datestr $timestr\n\n" );
 
   unshift( @changes, "\n$changelog\n" );
-  unshift( @changes, sprintf( "%s (%s-1) stable; urgency=low\n", $pack, $version ));
+  unshift( @changes, sprintf( "%s (%s) stable; urgency=low\n", $pack, $version ));
 
    # write the new spec file.
   open( CHANGES, ">$changesfile" ) || die("Could not open Changesfile to write!\n");
@@ -166,12 +166,13 @@ sub patchChangesFile( $$ ) {
   return 1;
 }
 
-sub patchSpecfile( $$ ) {
-    my ($pack, $rep) = @_;
+sub patchAFile( $$ ) {
+    my ($filename, $rep) = @_;
     # rep is a hash reference.
-    my $specfile = "$pack.spec";
 
-    open( SPEC, "<$specfile" ) || die("No spec-file: $specfile\n");
+    return 1 unless( -e $filename );
+
+    open( SPEC, "<$filename" ) || die("No spec-file: $filename\n");
     my @spec = <SPEC>;
     close SPEC;
 
@@ -191,8 +192,8 @@ sub patchSpecfile( $$ ) {
     }
 
     # write the new spec file.
-    open( SPEC, ">$specfile" ) || die("Could not open Specfile to write!\n");
-    print SPEC @newspec; # join("\n", @newspec );
+    open( SPEC, ">$filename" ) || die("Could not open $filename to write!\n");
+    print SPEC @newspec;
     close SPEC;
 
     return 1;
@@ -251,7 +252,17 @@ sub doBuild( $$ ) {
   # Patch the spec file with the new version.
   my %patchSpec;
   $patchSpec{Version} = $version;
-  patchSpecfile( $packName, \%patchSpec );
+  my $specFile = $packName .".spec";
+  patchAFile( $specFile, \%patchSpec );
+
+  # Patch the debian files.
+  %patchSpec = ();
+  my $debversion = $version;
+  $debversion =~ s/_/-/;
+
+  $patchSpec{Version} = $debversion;
+  my $dscFile = $packName . ".dsc";
+  patchAFile( $dscFile, \%patchSpec );
 
   # Get the build param
   my $arch = readIniValue( $pack, "arch" );
@@ -261,8 +272,8 @@ sub doBuild( $$ ) {
 
   my $re = 1;
 
-  my $changelog = "  * Update to nightly version $version";
-  addDebChangelog( $packName, $changelog, $version );
+  my $changelog = "  * Update to nightly version $debversion";
+  addDebChangelog( $packName, $changelog, $debversion );
 
   # Do the local builds.
   foreach my $build ( @builds ) {
