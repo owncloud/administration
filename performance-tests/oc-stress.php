@@ -27,25 +27,27 @@ require("RollingCurl.php");
 
 
 // Who am I ?
-echo("\noc-stress v1.0 Frank Karlitschek\n\n");
+echo("\noc-stress v1.1 Frank Karlitschek\n\n");
 
 
 // help
-if($argc<>4) {
+if($argc<>5) {
   echo("A tool to stress an ownCloud server and generate some load on it. It's using the great RollingCurl class from Josh Fraser to handle parallel curl requests.\n");
-  echo("Parameter 1: The url to call.\n");
-  echo("Parameter 2: Number of requests.\n");
-  echo("Parameter 3: Number of parallel requests.\n");
+  echo("Parameter 1: The type of the call. Could be PROPFIND, GET or PUT\n");
+  echo("Parameter 2: The url to call.\n");
+  echo("Parameter 3: Number of requests.\n");
+  echo("Parameter 4: Number of parallel requests.\n");
   echo("Don't use this to call remote servers. You will test the network instead of ownCloud.\n");
   echo("Usage:\n");
-  echo("  ./oc-stress.php <url> <number of requests> <number of parallel requests> \n\n");
+  echo("  ./oc-stress.php <type> <url> <number of requests> <number of parallel requests> \n\n");
   exit();
 }
 
 // configure
-$url = $argv[1];
-$requests_count = $argv[2];
-$window_size = $argv[3];
+$type = $argv[1];
+$url = $argv[2];
+$requests_count = $argv[3];
+$window_size = $argv[4];
 
 
 // init stats
@@ -82,7 +84,7 @@ $rc = new RollingCurl("request_callback");
 $rc->window_size = $window_size;
 
 for($i = 0; $i < $requests_count; ++$i) {
-    $request = new RollingCurlRequest($url);
+    $request = new RollingCurlRequest($url,$type);
     $rc->add($request);
 }
 
