@@ -70,12 +70,6 @@ function request_callback($response, $info, $request) {
         $current_requestcount=$count_processed;
     }
 
-// debug
-//  echo('request: '.$count_processed)."\n";
-//	print_r($response);
-//  print_r($info);
-//  print_r($request);
-
     if($info['http_code']<>200) echo('Error: http_code:'.$info['http_code']."\n");
 }
 
