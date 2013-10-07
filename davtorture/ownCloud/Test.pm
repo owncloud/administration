@@ -48,13 +48,14 @@ our $passwd     = 'XXXXX'; # Mind to be secure.
 our $ld_libpath = "/home/joe/owncloud.com/buildcsync/modules";
 our $csync      = "/home/joe/owncloud.com/buildcsync/client/ocsync";
 our $remoteDir;
-our $localDir   = "turbo";
+our $localDir;
 
 
 @ISA        = qw(Exporter);
-@EXPORT     = qw( initTesting createRemoteDir createLocalDir cleanup csync assertLocalDirs assertLocalAndRemoteDir 
-                  glob_put put_to_dir putToDirLWP localDir remoteDir localCleanup createLocalFile remoteCleanup
-                  server);
+@EXPORT     = qw( initTesting createRemoteDir createLocalDir cleanup csync 
+                  assertLocalDirs assertLocalAndRemoteDir glob_put put_to_dir 
+                  putToDirLWP localDir remoteDir localCleanup createLocalFile 
+                  remoteCleanup server initLocalDir initRemoteDir);
 
 sub server
 {
@@ -73,8 +74,10 @@ sub fromFileName($)
 }
 
 
-sub initTesting()
+sub initTesting(;$)
 {
+  my ($prefix) = @_;
+  
   if( -r "./t1.cfg" ) {
     my %config = do 't1.cfg';
     warn "Could not parse t1.cfg: $!\n" unless %config;
@@ -98,21 +101,42 @@ sub initTesting()
 		  -user=> $user,
 		  -pass=> $passwd );
   # $d->DebugLevel(3);
-
-  $remoteDir = sprintf( "t1-%#.3o/", rand(1000) );
-  $localDir .= "/" unless( $localDir =~ /\/$/ );
+  $prefix = "t1" unless( defined $prefix );
   
-  print "Working in remote dir $remoteDir\n";
-  createLocalDir();
-  createRemoteDir( $remoteDir );
-  $owncloud .= $remoteDir;
-  }
+  my $dirId = sprintf("%#.3o", rand(1000));
+  my $dir = sprintf( "%s-%s/", $prefix, $dirId );
+  
+  $localDir = $dir;
+  $localDir .= "/" unless( $localDir =~ /\/$/ );
+  $remoteDir = $dir;
+   
+  printf( "Test directory name is %s\n", $dir );
+}
 
-sub createRemoteDir($)
+# Call this first to create the unique test dir stored in
+# the global var $remoteDir;
+sub initRemoteDir
+{
+  $d->open( $owncloud );
+  $owncloud .= $remoteDir;
+  
+  my $re = $d->mkcol( $owncloud );
+  if( $re == 0 ) {
+    print "Failed to create test dir $owncloud\n";
+    exit 1;
+  }
+}
+
+sub initLocalDir
+{
+  mkdir ($localDir, 0777 );
+}
+
+sub createRemoteDir(;$)
 {
     my ($dir) = @_;
 
-    my $url = $owncloud . $dir ;
+    my $url = $owncloud . $dir;
 
     $d->open( $owncloud );
     print $d->message . "\n";
@@ -399,7 +423,7 @@ sub putToDirLWP($$)
     close FILE;
     
     my $ua  = LWP::UserAgent->new();
-
+    $ua->agent( "ownCloudTest_$localDir");
     my $req = PUT $puturl, Content_Type => 'application/octet-stream',
 		  Content => $string;
     $req->authorization_basic($user, $passwd);
@@ -418,7 +442,7 @@ sub createLocalFile( $$ )
   $size = 1024 unless( $size );
   
   my $md5 = Digest::MD5->new;
-   
+
   open(FILE, ">", $localDir . $fname) or die "Can't open $fname for writing ($!)";
   
   my $minimum = 32;

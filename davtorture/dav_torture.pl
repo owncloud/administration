@@ -51,6 +51,7 @@ sub tortureCreateRemoteDir($)
 }
 
 initTesting();
+initRemoteDir();
 
 if (scalar @ARGV < 2) {
   print "Usage: $0 input.lay <offsetdir>\n";
