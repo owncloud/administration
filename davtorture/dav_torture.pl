@@ -37,7 +37,7 @@ sub tortureCreateRemoteDir($)
   
   if( scalar @dir_parts == 1 ) {
     # its just a file.
-    return;
+    # return;
   }
   
   foreach my $part ( @dir_parts ) {
