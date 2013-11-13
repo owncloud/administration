@@ -1,0 +1,28 @@
+ocClone.sh is a utility to clone an existing ownCloud instance into a (new) release given by URL.
+
+For instance, you have ownCloud 5.0.13 running and want to try to upgrade to ownCloud 6.
+
+1. you do a backup of your existing instance. Always.
+2. you would adjust .ocClone.conf
+3. from /foo/bar (when your owncloud installation is on /foo/bar/owncloud/) you would run  ./ocClone.sh http://download.owncloud.org/community/testing/owncloud-6.0.0beta4.tar.bz2
+4. the destination with your new ownCloud instance exists. Check the new config.php whether the Database name is correctly adjusted.
+5. You launch your new ownCloud instance in the browser of your choice
+
+Hint: call ocClone.sh without parameter to only reset the config.php and database to before-upgrade state on an existing cloned instance.
+
+========
+#BEWARE#
+========
+
+- I (Blizzz) just tested it with my setup. It works for me™
+- My data folder is outside of my ownCloud installation. It's a bit of a risk, in case some incompatibilities may arise. The chance is rather low and there is the backup. In the end, I don't want to copy over gigabytes of data all the time. The script does not copy the old data folder. If you need it, extend the script with an optional feature. The script however can adjust the new data dir location, check .ocClone.conf. I did not test it, please check as well in step 4.
+- The script accepts ownCloud download links that end in tar.bz2 and zip. Usually all the releases are available as tar.bz2. Zip is untested, but you may try.
+- I run the script as root.
+- Only tested with MySQL. Theoretically you can give another database binary in .ocClone.conf, however the CLI commands would need to be adjusted (maybe not with MariaDB). Feel free to extend the script in this case.
+
+=========================
+# room for improvements #
+=========================
+
+- don't do a DB dump every time
+- clean up unnecessary files and folders at the end (dump file, downloaded tar)
