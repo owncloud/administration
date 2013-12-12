@@ -28,14 +28,26 @@ DATADIR=$BASEDIR/upgrade-testing-$FROM_VERSION-$TO_VERSION-$DATABASE
 
 if [ ! -f $FROM ]; then
   wget http://download.owncloud.org/community/$FROM
+  wget http://download.owncloud.org/community/testing/$FROM
 else
   echo "Reuse existing $FROM"
 fi
 
 if [ ! -f $TO ]; then
   wget http://download.owncloud.org/community/$TO
+  wget http://download.owncloud.org/community/testing/$TO
 else
   echo "Reuse existing $TO"
+fi
+
+if [ ! -f $FROM ]; then
+  echo "Could not download $FROM"
+  exit
+fi
+
+if [ ! -f $TO ]; then
+  echo "Could not download $TO"
+  exit
 fi
 
 # create owncloud configurations
