@@ -1,0 +1,5 @@
+autoconfig*
+*.sql
+*.tar.bz2
+upgrade-testing*
+

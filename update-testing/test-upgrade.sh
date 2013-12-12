@@ -10,15 +10,21 @@ DATABASEUSER=oc_autotest
 ADMINLOGIN=admin
 BASEDIR=$PWD
 
-FROM=owncloud-5.0.10.tar.bz2
-TO=owncloud-5.0.11RC1.tar.bz2
-
-# use tmpfs for datadir - should speedup unit test execution
-if [ -d /dev/shm ]; then
-  DATADIR=/dev/shm/upgrade-testing
-else
-  DATADIR=$BASEDIR/upgrade-testing
+if [ "$#" -ne 3 ]; then
+    echo "Usage: test-upgrade <from-version> <to-version> <database>"
+    echo "Example: test-upgrade 5.0.13 6.0.0 pgsql"
+    echo "Valid databases: sqlit mysql pgsql"
+    exit
 fi
+
+FROM_VERSION=$1
+TO_VERSION=$2
+DATABASE=$3
+
+FROM=owncloud-$FROM_VERSION.tar.bz2
+TO=owncloud-$TO_VERSION.tar.bz2
+
+DATADIR=$BASEDIR/upgrade-testing-$FROM_VERSION-$TO_VERSION-$DATABASE
 
 if [ ! -f $FROM ]; then
   wget http://download.owncloud.org/community/$FROM
@@ -41,7 +47,7 @@ cat > ./autoconfig-sqlite.php <<DELIM
   'dbtableprefix' => 'oc_',
   'adminlogin' => '$ADMINLOGIN',
   'adminpass' => 'admin',
-  'directory' => '$DATADIR/data',
+  'directory' => '$DATADIR/owncloud/data',
 );
 DELIM
 
@@ -53,7 +59,7 @@ cat > ./autoconfig-mysql.php <<DELIM
   'dbtableprefix' => 'oc_',
   'adminlogin' => '$ADMINLOGIN',
   'adminpass' => 'admin',
-  'directory' => '$DATADIR/data',
+  'directory' => '$DATADIR/owncloud/data',
   'dbuser' => '$DATABASEUSER',
   'dbname' => '$DATABASENAME',
   'dbhost' => 'localhost',
@@ -69,7 +75,7 @@ cat > ./autoconfig-pgsql.php <<DELIM
   'dbtableprefix' => 'oc_',
   'adminlogin' => '$ADMINLOGIN',
   'adminpass' => 'admin',
-  'directory' => '$DATADIR/data',
+  'directory' => '$DATADIR/owncloud/data',
   'dbuser' => '$DATABASEUSER',
   'dbname' => '$DATABASENAME',
   'dbhost' => 'localhost',
@@ -78,10 +84,10 @@ cat > ./autoconfig-pgsql.php <<DELIM
 DELIM
 
 # database cleanup
-if [ "$1" == "mysql" ] ; then
+if [ "$DATABASE" == "mysql" ] ; then
 	mysql -u $DATABASEUSER -powncloud -e "DROP DATABASE $DATABASENAME"
 fi
-if [ "$1" == "pgsql" ] ; then
+if [ "$DATABASE" == "pgsql" ] ; then
 	dropdb -U $DATABASEUSER $DATABASENAME
 fi
 
@@ -95,11 +101,6 @@ tar -xjf $BASEDIR/$FROM
 cd owncloud
 mkdir data
 
-DATABASE=sqlite
-if [ ! -z "$1" ]; then
-  DATABASE=$1
-fi
-
 cp $BASEDIR/autoconfig-$DATABASE.php config/autoconfig.php
 
 php -f index.php
@@ -108,14 +109,25 @@ if [ -f occ ]; then
   # install test data
   mkdir -p data/admin/files
   cd data/admin/files
-  git clone git@github.com:owncloud/test-data.git
-  cd $DATADIR
-  ./occ files:scan --all
+  #git clone git@github.com:owncloud/test-data.git
+  cd $DATADIR/owncloud
+  php -f console.php files:scan --all
 else
   echo "[FAILED] ownCloud console not available."
 fi
 
 cd $DATADIR
+
+# cleanup old code
+rm -rf owncloud/3rdparty
+rm -rf owncloud/apps
+rm -rf owncloud/core
+rm -rf owncloud/l10n
+rm -rf owncloud/lib
+rm -rf owncloud/ocs
+rm -rf owncloud/search
+rm -rf owncloud/settings
+rm -rf owncloud/upgrade.php
 
 # install to version
 echo "Installing $TO to $DATADIR"
@@ -123,12 +135,17 @@ echo "Installing $TO to $DATADIR"
 tar -xjf $BASEDIR/$TO
 cd owncloud
 
+# generate db migration script
+php -f console.php db:generate-change-script > $BASEDIR/migration-$FROM_VERSION-$TO_VERSION-$DATABASE.sql
+
 # UPGRADE
 echo "Start upgrading from $FROM to $TO"
 if [ -f upgrade.php ]; then
   php upgrade.php
 else
-  echo "[FAILED] no upgrade script available."
+  php -f console.php upgrade
 fi
+
+echo "done."
 
 
