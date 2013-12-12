@@ -106,7 +106,7 @@ fi
 if [ "$DATABASE" == "pgsql" ] ; then
 	dropdb -U $DATABASEUSER $DATABASENAME
 fi
-if [ "$1" == "oci" ] ; then
+if [ "$DATABASE" == "oci" ] ; then
 	echo "drop the database"
 	sqlplus -s -l / as sysdba <<EOF
 		drop user $DATABASENAME cascade;
@@ -145,11 +145,11 @@ cp $BASEDIR/autoconfig-$DATABASE.php config/autoconfig.php
 
 php -f index.php
 
-if [ -f occ ]; then
+if [ -f console.php ]; then
   # install test data
   mkdir -p data/admin/files
   cd data/admin/files
-  #git clone git@github.com:owncloud/test-data.git
+  git clone git@github.com:owncloud/test-data.git
   cd $DATADIR/owncloud
   php -f console.php files:scan --all
 else
