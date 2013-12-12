@@ -83,12 +83,52 @@ cat > ./autoconfig-pgsql.php <<DELIM
 );
 DELIM
 
+cat > ./autoconfig-oci.php <<DELIM
+<?php
+\$AUTOCONFIG = array (
+  'installed' => false,
+  'dbtype' => 'oci',
+  'dbtableprefix' => 'oc_',
+  'adminlogin' => '$ADMINLOGIN',
+  'adminpass' => 'admin',
+  'directory' => '$DATADIR/owncloud/data',
+  'dbuser' => '$DATABASENAME',
+  'dbname' => 'XE',
+  'dbhost' => 'localhost',
+  'dbpass' => 'owncloud',
+);
+DELIM
+
 # database cleanup
 if [ "$DATABASE" == "mysql" ] ; then
 	mysql -u $DATABASEUSER -powncloud -e "DROP DATABASE $DATABASENAME"
 fi
 if [ "$DATABASE" == "pgsql" ] ; then
 	dropdb -U $DATABASEUSER $DATABASENAME
+fi
+if [ "$1" == "oci" ] ; then
+	echo "drop the database"
+	sqlplus -s -l / as sysdba <<EOF
+		drop user $DATABASENAME cascade;
+EOF
+
+	echo "create the database"
+	sqlplus -s -l / as sysdba <<EOF
+		create user $DATABASENAME identified by owncloud;
+		alter user $DATABASENAME default tablespace users
+		temporary tablespace temp
+		quota unlimited on users;
+		grant create session
+		, create table
+		, create procedure
+		, create sequence
+		, create trigger
+		, create view
+		, create synonym
+		, alter session
+		to $DATABASENAME;
+		exit;
+EOF
 fi
 
 rm -rf $DATADIR
