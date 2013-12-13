@@ -24,7 +24,7 @@ DATABASE=$3
 FROM=owncloud-$FROM_VERSION.tar.bz2
 TO=owncloud-$TO_VERSION.tar.bz2
 
-DATADIR=$BASEDIR/upgrade-testing-$FROM_VERSION-$TO_VERSION-$DATABASE
+DATADIR=$BASEDIR/$FROM_VERSION-$TO_VERSION-$DATABASE
 
 if [ ! -f $FROM ]; then
   wget http://download.owncloud.org/community/$FROM
