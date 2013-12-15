@@ -5,9 +5,10 @@
 # @author Thomas Müller
 # @copyright 2013 Thomas Müller deepdiver@owncloud.com
 #
-DATABASENAME=oc_autotest
-DATABASEUSER=oc_autotest
-ADMINLOGIN=admin
+#$EXECUTOR_NUMBER is set by Jenkins and allows us to run autotest in parallel
+DATABASENAME=oc_autotest$EXECUTOR_NUMBER
+DATABASEUSER=oc_autotest$EXECUTOR_NUMBER
+ADMINLOGIN=admin$EXECUTOR_NUMBER
 BASEDIR=$PWD
 
 if [ "$#" -ne 3 ]; then
