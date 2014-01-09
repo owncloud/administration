@@ -25,6 +25,12 @@ DATABASE=$3
 FROM=owncloud-$FROM_VERSION.tar.bz2
 TO=owncloud-$TO_VERSION.tar.bz2
 
+if [ "$TO_VERSION" == "daily" ]; then
+  TO=owncloud-daily-master.tar.bz2
+  rm -f $TO
+  wget http://download.owncloud.org/community/daily/owncloud-daily-master.tar.bz2
+fi
+
 DATADIR=$BASEDIR/$FROM_VERSION-$TO_VERSION-$DATABASE
 
 if [ ! -f $FROM ]; then
@@ -120,12 +126,12 @@ if [ "$DATABASE" == "pgsql" ] ; then
 	dropdb -U $DATABASEUSER $DATABASENAME
 fi
 if [ "$DATABASE" == "oci" ] ; then
-	echo "drop the database"
+	echo "drop the database: $DATABASENAME"
 	sqlplus -s -l / as sysdba <<EOF
 		drop user $DATABASENAME cascade;
 EOF
 
-	echo "create the database"
+	echo "create the database: $DATABASENAME"
 	sqlplus -s -l / as sysdba <<EOF
 		create user $DATABASENAME identified by owncloud;
 		alter user $DATABASENAME default tablespace users
