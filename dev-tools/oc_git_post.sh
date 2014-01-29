@@ -1,8 +1,11 @@
 #!/bin/bash
 # sudo chmod +x oc_git_post.sh
-# sudo sh ./oc_git_post.sh
+# sudo ./oc_git_post.sh
 
-gittargetdir=/mnt/www/owncloud_git
+# prepares the fresh git-owncloud after install config.php with a forcessl
+# and two apps direcories
+
+gittargetdir=/mnt/www/owncloud-git
 
 # this variable needs to be set because bash will replace a $variable
 # with it's contents. if $variable is not defined, it will be set to empty

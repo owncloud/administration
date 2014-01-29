@@ -1,11 +1,14 @@
 #!/bin/bash
 # sudo chmod +x oc_git_delete.sh
-# sudo sh ./oc_git_delete.sh
+# sudo ./oc_git_delete.sh
 
-gittargetdir=/mnt/www/owncloud_git
+# deletes a owncloud-git installation, but without the database cleanup
+# and without deleting the remaining gittargetdir directory
 
-# syncing github files
-# if gittargetdir folder has no contents do a git clone else a git pull
+gittargetdir=/mnt/www/owncloud-git
+
+# deleting github files
+# check presence of gittdagetdir
 if [ "$(ls -A $gittargetdir)" ]; then
  # folder not empty
  echo "Deleting owncloud git development + .git/.htaccess files"
