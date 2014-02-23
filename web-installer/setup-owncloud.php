@@ -104,8 +104,10 @@ class oc_setup {
 			$zip->extractTo($owncloud_tmp_dir);
 			$zip->close();
 
+			$install_directory = (isset($_POST['directory']) ? $_POST['director'] : NULL)
+
 			// Move it to the folder
-			rename($owncloud_tmp_dir.'/owncloud', "./".$_GET['directory']);
+			rename($owncloud_tmp_dir.'/'.$install_directory, "./".$_GET['directory']);
 			// Delete the tmp folder
 			rmdir($owncloud_tmp_dir);
 		} else {
