@@ -151,8 +151,9 @@ sub doBuild( $$ ) {
 
 # main here.
 getopts('hp');
+my $argc = @ARGV;
 
-help() if( $opt_h );
+help() if( $opt_h || $argc == 0 );
 
 # remember the base dir.
 $dir = getcwd;
