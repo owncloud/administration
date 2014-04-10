@@ -28,7 +28,7 @@ use vars qw( @ISA @EXPORT @EXPORT_OK $d %config);
 
 @ISA        = qw(Exporter);
 @EXPORT     = qw( readIniValue doOSC checkoutPackage getFromSpecfile addDebChangelog
-                  addSpecChangelog );
+                  addSpecChangelog patchAFile);
 
 # Read values from a config file in Windows Ini format.
 # paramters: 
