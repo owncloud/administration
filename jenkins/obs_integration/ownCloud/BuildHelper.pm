@@ -91,8 +91,10 @@ sub getFromSpecfile( $$ ) {
 
   return unless( $tag );
 
+  # append the extension spec if it is not there.
+  $pack .= ".spec" unless( $pack =~ /\.spec$/ );
+
   my $specfile = $pack;
-  $pack .= ".spec" unless( $pack =~ /.spec$/ );
 
   open( SPEC, "<$specfile" ) || die("No spec-file: $specfile\n");
   my @spec = <SPEC>;
