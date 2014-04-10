@@ -1,0 +1,289 @@
+#
+# spec file for package [% shortname %]-client
+#
+# Copyright (c) 2011 SUSE LINUX Products GmbH, Nuernberg, Germany.
+#
+# All modifications and additions to the file contributed by third parties
+# remain the property of their copyright owners, unless otherwise agreed
+# upon. The license for this file, and modifications and additions to the
+# file, is the same license as for the pristine package itself (unless the
+# license for the pristine package is not an Open Source License, in which
+# case the license is the MIT License). An "Open Source License" is a
+# license that conforms to the Open Source Definition (Version 1.9)
+# published by the Open Source Initiative.
+
+# Please submit bugfixes or comments via http://bugs.opensuse.org/
+#
+
+Name:           [% shortname %]-client
+Version:        [% version %]
+Release:        0
+License:        GPL-2.0+
+Summary:        [% summary %]
+Url:            [% projecturl %]
+Group:          Productivity/Networking/Other
+Source0:        [% tarball %]
+%if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
+Source1:        [% shortname %].sh
+Patch1:         autostart_use_wrapper.diff
+%endif
+%if 0%{?suse_version} == 1110
+Patch2:         sle_cmake.diff
+%endif
+
+%if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
+%if 0%{?suse_version} == 1110
+# SLES 11 calls make_install makeinstall
+%define make_install %{makeinstall}
+%endif
+# We need a more recent, prefixed Qt for SLE11
+%define qtprefix opt-
+%define _prefix /opt/qt-4.8
+%define cmake_args -DCMAKE_INCLUDE_PATH=%{_prefix}/include -DCMAKE_LIBRARY_PATH=%{_prefix}/%{_lib} -DNEON_INCLUDE_DIRS=/opt/neon-0.30.0/include/ -DNEON_LIBRARIES=/opt/neon-0.30.0/%{_lib}/libneon.so.27
+%else
+%define qtprefix %{nil}
+%define cmake_args %{nil}
+%endif
+
+# default to have no docs. Cannot be built with old distros.
+%define have_doc 0
+
+BuildRequires:  cmake gcc gcc-c++ %{qtprefix}libqtkeychain-devel
+
+%if 0%{?fedora_version}
+BuildRequires:  qt4 qt4-devel >= 4.7
+BuildRequires:  inetd desktop-file-utils
+BuildRequires:  qtwebkit >= 2.2
+BuildRequires:  qtwebkit-devel >= 2.2
+%endif
+
+%if 0%{?suse_version}
+BuildRequires:  libneon-devel
+BuildRequires:  update-desktop-files
+%endif
+
+%if 0%{?fedora_version}
+BuildRequires:  python-sphinx
+%endif
+
+%if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
+BuildRequires:  oc-neon-devel
+%else
+BuildRequires:  neon-devel
+%define have_doc 1
+%endif
+
+%if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
+BuildRequires:  sqlite-devel
+BuildRequires:  inetd desktop-file-utils
+%else
+BuildRequires:  python-Sphinx
+BuildRequires:  sqlite3-devel
+BuildRequires:  libneon-devel
+BuildRequires:  update-desktop-files
+%endif
+
+%if 0%{?suse_version} || 0%{?rhel_version} || 0%{?centos_version}
+BuildRequires:  %{qtprefix}libqt4-devel >= 4.7
+BuildRequires:  %{qtprefix}libQtWebKit-devel
+BuildRequires:  %{qtprefix}libQtWebKit4
+%else
+BuildRequires:  libqt4-devel >= 4.7
+%endif
+
+%if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
+Requires:       %{qtprefix}libqt4-x11
+Requires:       %{qtprefix}libQtWebKit4
+Requires:       %{qtprefix}libqt4-sql
+Requires:       %{qtprefix}libqt4-sql-sqlite
+Requires:       oc-neon
+%else
+%if  0%{?fedora_version}
+Requires:       qt4-sqlite
+%else
+Requires:       libqt4-sql-sqlite
+%endif
+%endif
+
+Requires: %{name}-l10n
+Requires: lib[% shortname %]sync0 = %{version}
+
+Obsoletes: libocsync0
+Obsoletes: libocsync-devel
+Obsoletes: libocsync-plugin-[% shortname %]
+Obsoletes: libocsync-devel-doc
+Obsoletes: libocsync-doc
+
+BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+
+%description
+[% pkgdescription %]
+
+%package -n %{name}-doc
+Summary:        Documentation for [% displayname %]
+Group:          Development/Libraries/C and C++
+Requires: %{name}%{?_isa} = %{version}-%{release}
+
+%description -n %{name}-doc
+Documentation about the [% displayname %] desktop application.
+
+%package -n %{name}-l10n
+Summary:        Localisation for [% displayname %]
+Group:          Development/Libraries/C and C++
+Requires: %{name}%{?_isa} = %{version}-%{release}
+
+%description -n %{name}-l10n
+Localisation files for the [% displayname %] desktop application.
+
+%package -n lib[% shortname %]sync0
+Requires:       %{qtprefix}libqtkeychain0 >= 0.3
+Summary:        The [% displayname %] sync library
+Group:          Development/Libraries/C and C++
+
+%description -n lib[% shortname %]sync0
+The [% displayname %] sync library.
+
+%package -n lib[% shortname %]sync-devel
+Summary:        Development files for the [% displayname %] sync library
+Group:          Development/Libraries/C and C++
+Requires: lib[% shortname %]sync0 = %{version}
+
+%description -n lib[% shortname %]sync-devel
+Development files for the [% displayname %] sync library.
+
+%prep
+%setup -q -n [% tarball %]
+%if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
+%patch1 -p1
+%endif
+%if 0%{?suse_version} == 1110
+%patch2 -p1
+%endif
+
+%build
+export LD_LIBRARY_PATH=%{_prefix}/lib64
+export PATH=%{_prefix}/bin:$PATH
+
+mkdir build
+pushd build
+cmake .. -DCMAKE_INSTALL_PREFIX=%{_prefix:/usr} -DCMAKE_INSTALL_SYSCONFDIR=/etc/[% shortname %] -DWITH_DOC=TRUE \
+  -DCMAKE_C_FLAGS:STRING="%{optflags}" \
+  -DCMAKE_CXX_FLAGS:STRING="%{optflags}" \
+  -DCMAKE_SKIP_RPATH=ON \
+  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+  -DCMAKE_INSTALL_PREFIX=%{_prefix} \
+  -DCMAKE_DOC_INSTALL_PATH=%{_docdir}/ocsync \
+  -DSYSCONF_INSTALL_DIR=%{_sysconfdir} \
+%if %{_lib} == lib64
+  -DLIB_SUFFIX=64 \
+%endif
+  -DOEM_THEME_DIR=$PWD/../[% shortname %]/mirall
+  %cmake_args
+
+# documentation here?
+if [ -e conf.py ];
+then
+  # for old cmake versions we need to move the conf.py.
+  mv conf.py doc/
+fi
+
+make %{?_smp_mflags}
+
+make doc
+popd
+
+%install
+pushd build
+%make_install
+
+if [ %{have_doc} != 0 ];
+then
+  mkdir -p ${RPM_BUILD_ROOT}%{_docdir}/%{name}
+  mv ${RPM_BUILD_ROOT}/usr/share/doc/mirall/* ${RPM_BUILD_ROOT}%{_docdir}/%{name}
+  rmdir ${RPM_BUILD_ROOT}/usr/share/doc/mirall
+  rm ${RPM_BUILD_ROOT}%{_docdir}/%{name}/html/unthemed/.buildinfo
+  mv ${RPM_BUILD_ROOT}%{_docdir}/%{name}/html/unthemed/* ${RPM_BUILD_ROOT}%{_docdir}/%{name}/html/
+  rmdir ${RPM_BUILD_ROOT}%{_docdir}/%{name}/html/unthemed
+
+  mkdir -p ${RPM_BUILD_ROOT}%{_mandir}/man1
+  mv ${RPM_BUILD_ROOT}/usr/share/man/man/* ${RPM_BUILD_ROOT}%{_mandir}/man1
+fi
+popd
+
+%if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
+
+mkdir -p $RPM_BUILD_ROOT/usr/share/applications/
+cat $RPM_BUILD_ROOT%{_datadir}/applications/[% shortname %].desktop |sed "s,Exec=.*,Exec=/usr/bin/[% shortname %]," > $RPM_BUILD_ROOT/usr/share/applications/[% shortname %].desktop
+# rm $RPM_BUILD_ROOT%{_datadir}/applications/[% shortname %].desktop
+mkdir -p $RPM_BUILD_ROOT/usr/share/icons/hicolor
+mv $RPM_BUILD_ROOT%{_datadir}/icons/hicolor/* $RPM_BUILD_ROOT/usr/share/icons/hicolor
+mkdir -p $RPM_BUILD_ROOT/usr/bin
+install -m 755 %{SOURCE1} $RPM_BUILD_ROOT/usr/bin/[% shortname %]
+%endif
+
+%if %{?suse_version:1}0
+%suse_update_desktop_file -n [% shortname %]
+%endif
+
+%if 0%{?fedora_version}
+%post
+/bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
+
+%postun
+if [ $1 -eq 0 ] ; then
+    /bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null
+    /usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
+fi
+
+%posttrans
+/usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
+%endif
+
+%post -n lib[% shortname %]sync0
+/sbin/ldconfig
+
+%postun -n lib[% shortname %]sync0
+/sbin/ldconfig
+
+%files
+%defattr(-,root,root,-)
+%{_bindir}/[% shortname %]
+%{_bindir}/[% shortname %]cmd
+%{_datadir}/applications/[% shortname %].desktop
+%{_datadir}/icons/hicolor
+%if 0%{have_doc}
+%{_mandir}/man1/[% shortname %]*
+%endif
+
+%if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
+/usr/share/icons/hicolor
+/usr/share/applications/[% shortname %].desktop
+/usr/bin/[% shortname %]
+%endif
+%config /[% sysconfdir %]
+
+%files -n %{name}-doc
+%defattr(-,root,root,-)
+%doc README.md COPYING
+%if 0%{have_doc}
+%doc %{_docdir}/%{name}
+%endif
+
+%files -n %{name}-l10n
+%defattr(-,root,root,-)
+%{_datadir}/[% shortname %]
+
+%files -n lib[% shortname %]sync0
+%defattr(-,root,root,-)
+%{_libdir}/lib[% shortname %]sync.so.*
+%{_libdir}/libocsync.so.*
+
+%files -n lib[% shortname %]sync-devel
+%defattr(-,root,root,-)
+%{_libdir}/lib[% shortname %]sync.so
+%{_libdir}/libhttpbf.a
+%{_libdir}/libocsync.so
+%{_includedir}/[% shortname %]sync/
+%{_includedir}/httpbf.h
+
+%changelog
