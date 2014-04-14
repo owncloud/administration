@@ -1,0 +1,13 @@
+
+genbranding generates package build files such as spec- and deb files from 
+templates which can be maintained in a git repository.
+
+genbranding reads OEM.cmake in the theme dir to get values for 
+- shortname
+- displayname 
+- projecturl
+
+Than package.cfg in the same directory as OEM.cmake is read to set the 
+other values.
+
+

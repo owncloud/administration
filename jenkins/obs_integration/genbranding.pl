@@ -11,6 +11,7 @@ use Config::IniFiles;
 use File::Copy;
 use File::Basename;
 use File::Path;
+use File::Find;
 use ownCloud::BuildHelper;
 use Cwd;
 use Template;
@@ -62,23 +63,16 @@ sub prepareTarBall( ) {
     return $newname;
 }
 
-# Create the final themed tarball 
-sub createTar($$)
-{
-    my ($clientdir, $newname) = @_;
-    print "Combining >$clientdir + $newname<\n";
-    my $tarName = "$clientdir/$newname.tar.bz2";
-    system("/bin/tar", "cjfi", $tarName, $newname);
-    rmtree("$newname");
-    print " success: Created $tarName\n";
-}
-
 # read all files from the template directory and replace the contents
 # of the .in files with values from the substition hash ref.
 sub createClientFromTemplate($) {
     my ($substs) = @_;
 
     print "Create client from template\n";
+    foreach my $log( keys %$substs ) {
+	print "  - $log => $substs->{$log}\n";
+    }
+
     my $clienttemplatedir = "$templatedir/client";
     my $theme = getFileName( $ARGV[1] );
     mkdir("$theme-client");
@@ -103,18 +97,93 @@ sub createClientFromTemplate($) {
      return cwd();
 }
 
+# Create the final themed tarball 
+sub createTar($$)
+{
+    my ($clientdir, $newname) = @_;
+    print "Combining >$clientdir + $newname<\n";
+    my $tarName = "$clientdir/$newname.tar.bz2";
+    system("/bin/tar", "cjfi", $tarName, $newname);
+    rmtree("$newname");
+    print " success: Created $tarName\n";
+}
+
+# open the OEM.cmake 
+sub readOEMcmake( $ ) 
+{
+    my ($file) = @_;
+    my %substs;
+
+    print "Reading OEM cmake file: $file\n";
+    
+    die unless open( OEM, "$file" );
+    my @lines = <OEM>;
+    close OEM;
+    
+    foreach my $l (@lines) {
+	if( $l =~ /^\s*set\(\s*(\S+)\s*"(\S+)"\s*\)/i ) {
+	    my $key = $1;
+	    my $val = $2;
+	    print "  * found $key => $val\n";
+	    $substs{$key} = $val;
+	}
+    }
+
+    print "XXXXXX $substs{APPLICATION_SHORTNAME}\n";
+
+    if( $substs{APPLICATION_SHORTNAME} ) {
+	$substs{shortname} = $substs{APPLICATION_SHORTNAME};
+	$substs{displayname} = $substs{APPLICATION_SHORTNAME};
+    } elsif( $substs{APPLICATION_NAME} ) {
+	$substs{displayname} = $substs{APPLICATION_NAME};
+    } elsif( $substs{APPLICATION_DOMAIN} ) {
+	$substs{projecturl} = $substs{APPLICATION_DOMAIN};
+    }
+    # more tags: APPLICATION_EXECUTABLE, APPLICATION_VENDOR, APPLICATION_REV_DOMAIN, THEME_CLASS, WIN_SETUP_BITMAP_PATH
+    return %substs;
+}
 
 sub getSubsts( $ ) 
 {
     my ($subsDir) = @_;
+    my $cfgFile;
 
-    print "Reading substs from $subsDir\n";
+    find( { wanted => sub {
+	if( $_ =~ /mirall\/package.cfg/ ) {
+	    print "Substs from $File::Find::name\n";
+	    $cfgFile = $File::Find::name;
+          } 
+        },
+	no_chdir => 1 }, "$subsDir");
+
+    print "Reading substs from $cfgFile\n";
     my %substs;
+
+    my $oemFile = $cfgFile;
+    $oemFile =~ s/package\.cfg/OEM.cmake/;
+    %substs = readOEMcmake( $oemFile );
+
     # read the file package.cfg from the tarball and also remove it there evtl.
-    
+    my %s2;
+    if( -r "$cfgFile" ) {
+	%s2 = do $cfgFile;
+    } else {
+	die "ERROR: Could not read package config file $cfgFile!\n";
+    }
+
+    foreach my $k ( keys %s2 ) {
+	$substs{$k} = $s2{$k};
+    }
+
     # calculate some subst values, such as 
     $substs{tarball} = $substs{shortname} . "-oem-" . $substs{version} . ".tar.bz2";
     $substs{pkgdescription_debian} = $substs{pkgdescription};
+    $substs{sysconfdir} = "/etc/". $substs{shortname} unless( $substs{sysconfdir} );
+    $substs{maintainer} = "ownCloud Inc." unless( $substs{maintainer} );
+    $substs{maintainer_person} = "ownCloud packages <packages\@owncloud.com>" unless( $substs{maintainer_person} );
+    $substs{desktopdescription} = $substs{displayname} . " desktop sync client" unless( $substs{desktopdescription} );
+
+    return \%substs;
 }
 
 # main here.
