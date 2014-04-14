@@ -108,6 +108,7 @@ sub getSubsts( $ )
 {
     my ($subsDir) = @_;
 
+    print "Reading substs from $subsDir\n";
     my %substs;
     # read the file package.cfg from the tarball and also remove it there evtl.
     
