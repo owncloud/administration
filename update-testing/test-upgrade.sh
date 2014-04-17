@@ -169,11 +169,20 @@ if [ -f console.php ]; then
   mkdir -p data/admin/files
   cd data/admin/files
   git clone git@github.com:owncloud/test-data.git
+
+  # scan the files
   cd $DATADIR/owncloud
   php -f console.php files:scan --all
 else
   echo "[FAILED] ownCloud console not available."
 fi
+
+# fire up the cron scheduler
+echo "Running the cron scheduler ..."
+cd $DATADIR/owncloud
+php -f cron.php
+php -f cron.php
+echo "Done."
 
 cd $DATADIR
 
