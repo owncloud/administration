@@ -14,7 +14,7 @@ BASEDIR=$PWD
 if [ "$#" -ne 3 ]; then
     echo "Usage: test-upgrade <from-version> <to-version> <database>"
     echo "Example: test-upgrade 5.0.13 6.0.0 pgsql"
-    echo "Valid databases: sqlit mysql pgsql"
+    echo "Valid databases: sqlite mysql pgsql"
     exit
 fi
 
@@ -29,6 +29,23 @@ if [ "$TO_VERSION" == "daily" ]; then
   TO=owncloud-daily-master.tar.bz2
   rm -f $TO
   wget http://download.owncloud.org/community/daily/owncloud-daily-master.tar.bz2
+fi
+
+if [[ $TO_VERSION == git* ]]; then
+  GIT_BRANCH=`echo $TO_VERSION | cut -c 5-`
+  TO=$GIT_BRANCH.tar.bz2
+  rm -f $TO
+  rm -rf g
+  mkdir g
+  cd g
+  git clone -b $GIT_BRANCH --recursive --depth 1 https://github.com/owncloud/core.git owncloud
+  rm -rf owncloud/.git
+  rm -rf owncloud/build
+  rm -rf owncloud/tests
+  tar -cjf $TO owncloud
+  mv $TO ..
+  cd ..
+  rm -rf g
 fi
 
 DATADIR=$BASEDIR/$FROM_VERSION-$TO_VERSION-$DATABASE
