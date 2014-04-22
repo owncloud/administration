@@ -24,7 +24,19 @@ sub help() {
 
   genbranding - Generates a branding from mirall sources and a branding
 
-  Call the script with the tar ball of a branding
+  Both the mirall and the branding tarball have to be passed ot this
+  script. It combines both and creates a new branded source pack. It also
+  creates packaging input files (spec-file and debian packaging files).
+
+  This script reads the following input files
+  - OEM.cmake from the branding tarball
+  - a file mirall/package.cfg from the branding dir.
+  - templates for the packaging files from the local templates directory
+
+  Call example:
+  ./genbranding.pl mirall-1.5.3.tar.bz2 cern.tar.bz2
+
+  Output will be in directory cern-client
 
   Options:
   -h      this help text.
@@ -193,6 +205,9 @@ help() if( $opt_h );
 
 # remember the base dir.
 $dir = getcwd;
+
+help() unless( defined $ARGV[0] && defined $ARGV[1] );
+
 mkdir("packages") unless( -d "packages" );
 
 $miralltar = $dir .'/'. $ARGV[0];
