@@ -17,7 +17,7 @@ use Cwd;
 use Template;
 
 use strict;
-use vars qw($miralltar $themetar $templatedir $dir $opt_h);
+use vars qw($miralltar $themetar $templatedir $dir $opt_h $opt_o $opt_b);
 
 sub help() {
   print<<ENDHELP
@@ -32,6 +32,11 @@ sub help() {
   - OEM.cmake from the branding tarball
   - a file mirall/package.cfg from the branding dir.
   - templates for the packaging files from the local templates directory
+
+  Options:
+  -h:    help, displays help text
+  -b:    build the package
+  -o:    osc mode, build against ownCloud obs
 
   Call example:
   ./genbranding.pl mirall-1.5.3.tar.bz2 cern.tar.bz2
@@ -87,25 +92,31 @@ sub createClientFromTemplate($) {
 
     my $clienttemplatedir = "$templatedir/client";
     my $theme = getFileName( $ARGV[1] );
-    mkdir("$theme-client");
-    chdir("$theme-client");
+    my $targetDir = "$theme-client";
+
+    if( $opt_o ) {
+	$targetDir = "oem/$targetDir";
+    } else {
+	mkdir("$theme-client");
+    }
     opendir(my $dh, $clienttemplatedir);
     my $source;
     # all files, excluding hidden ones, . and ..
     my $tt = Template->new(ABSOLUTE=>1);
- 
+
     foreach my $source (grep ! /^\./,  readdir($dh)) {
         my $target = $source;
         $target =~ s/BRANDNAME/$theme/;
+
         if($source =~ /\.in$/) {
             $target =~ s/\.in$//;
-            $tt->process("$clienttemplatedir/$source", $substs, $target) or die $tt->error();
+            $tt->process("$clienttemplatedir/$source", $substs, "$targetDir/$target") or die $tt->error();
         } else {
-            copy("$clienttemplatedir/$source", $target);
+            copy("$clienttemplatedir/$source", "$targetDir/$target");
         }
      }
      closedir($dh);
-     chdir("..");
+
      return cwd();
 }
 
@@ -113,7 +124,6 @@ sub createClientFromTemplate($) {
 sub createTar($$)
 {
     my ($clientdir, $newname) = @_;
-    print "Combining >$clientdir + $newname<\n";
     my $tarName = "$clientdir/$newname.tar.bz2";
     system("/bin/tar", "cjfi", $tarName, $newname);
     rmtree("$newname");
@@ -140,8 +150,6 @@ sub readOEMcmake( $ )
 	    $substs{$key} = $val;
 	}
     }
-
-    print "XXXXXX $substs{APPLICATION_SHORTNAME}\n";
 
     if( $substs{APPLICATION_SHORTNAME} ) {
 	$substs{shortname} = $substs{APPLICATION_SHORTNAME};
@@ -199,16 +207,16 @@ sub getSubsts( $ )
 }
 
 # main here.
-getopts('h');
+getopts('boh');
 
 help() if( $opt_h );
+help() unless( defined $ARGV[0] && defined $ARGV[1] );
 
 # remember the base dir.
 $dir = getcwd;
 
-help() unless( defined $ARGV[0] && defined $ARGV[1] );
-
-mkdir("packages") unless( -d "packages" );
+# Not used currently
+# mkdir("packages") unless( -d "packages" );
 
 $miralltar = $dir .'/'. $ARGV[0];
 $themetar = $dir .'/'. $ARGV[1];
@@ -216,11 +224,45 @@ $templatedir = $dir .'/'. "templates";
 print "Mirall Tarball: $miralltar\n";
 print "Theme Tarball: $themetar\n";
 
+# if -o (osc mode) check if an oem directory exists
+if( $opt_o ) {
+    unless( -d "./oem" && -d "./oem/.osc" ) {
+	die("OBS checkout not existing. Please checkout project oem from ownCloud OBS");
+    }
+
+    # Update the checkout
+    my @osc = ( '-c', '/home/kf/.ocoscrc', 'up' );
+    chdir( 'oem');
+    doOSC( @osc );
+    chdir( '..' );
+}
+
 my $dirName = prepareTarBall();
 
 # returns hash reference
 my $substs = getSubsts($dirName);
+$substs->{tarball} = $dirName;
 
-my $clientdir = createClientFromTemplate( $substs );
+createClientFromTemplate( $substs );
 
-createTar($clientdir, $dirName);
+my $clientdir = ".";
+my $theme = getFileName( $ARGV[1] );
+
+if( $opt_o ) {
+    $clientdir = "oem/$theme-client";
+
+    chdir( $clientdir );
+    my $change = "automatically generated branding added.";
+    addDebChangelog( "$theme-client", $change, $substs->{version} );
+    addSpecChangelog( "$theme-client", $change );
+    chdir( "../.." );
+}
+createTar($clientdir,$dirName);
+
+if( $opt_b ) {
+    my @osc = ( '-c', '/home/kf/.ocoscrc', 'build', 'openSUSE_13.1', 'x86_64', "$theme-client.spec" );
+
+    chdir( "oem/$theme-client" );
+    doOSC( @osc );
+    chdir( "../.." );
+}
