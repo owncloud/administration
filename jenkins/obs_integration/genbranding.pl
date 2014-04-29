@@ -17,7 +17,7 @@ use Cwd;
 use Template;
 
 use strict;
-use vars qw($miralltar $themetar $templatedir $dir $opt_h $opt_o $opt_b);
+use vars qw($miralltar $themetar $templatedir $dir $opt_h $opt_o $opt_b $opt_c $opt_n);
 
 sub help() {
   print<<ENDHELP
@@ -34,9 +34,11 @@ sub help() {
   - templates for the packaging files from the local templates directory
 
   Options:
-  -h:    help, displays help text
-  -b:    build the package
-  -o:    osc mode, build against ownCloud obs
+  -h:           help, displays help text
+  -b:           build the package locally before uploading
+  -o:           osc mode, build against ownCloud obs
+  -c "params":  additional osc paramters
+  -n:           don't recreate the tarball, use an existing one.
 
   Call example:
   ./genbranding.pl mirall-1.5.3.tar.bz2 cern.tar.bz2
@@ -125,6 +127,11 @@ sub createTar($$)
 {
     my ($clientdir, $newname) = @_;
     my $tarName = "$clientdir/$newname.tar.bz2";
+    if( $opt_n ) {
+	die( "Option -n given, but no tarball $tarName exists\n") unless( -e $tarName );
+	return;
+    }
+
     system("/bin/tar", "cjfi", $tarName, $newname);
     rmtree("$newname");
     print " success: Created $tarName\n";
@@ -146,7 +153,7 @@ sub readOEMcmake( $ )
 	if( $l =~ /^\s*set\(\s*(\S+)\s*"(\S+)"\s*\)/i ) {
 	    my $key = $1;
 	    my $val = $2;
-	    print "  * found $key => $val\n";
+	    print "  * found <$key> => $val\n";
 	    $substs{$key} = $val;
 	}
     }
@@ -154,9 +161,11 @@ sub readOEMcmake( $ )
     if( $substs{APPLICATION_SHORTNAME} ) {
 	$substs{shortname} = $substs{APPLICATION_SHORTNAME};
 	$substs{displayname} = $substs{APPLICATION_SHORTNAME};
-    } elsif( $substs{APPLICATION_NAME} ) {
+    }
+    if( $substs{APPLICATION_NAME} ) {
 	$substs{displayname} = $substs{APPLICATION_NAME};
-    } elsif( $substs{APPLICATION_DOMAIN} ) {
+    }
+    if( $substs{APPLICATION_DOMAIN} ) {
 	$substs{projecturl} = $substs{APPLICATION_DOMAIN};
     }
     # more tags: APPLICATION_EXECUTABLE, APPLICATION_VENDOR, APPLICATION_REV_DOMAIN, THEME_CLASS, WIN_SETUP_BITMAP_PATH
@@ -196,7 +205,7 @@ sub getSubsts( $ )
     }
 
     # calculate some subst values, such as 
-    $substs{tarball} = $substs{shortname} . "-oem-" . $substs{version} . ".tar.bz2";
+    $substs{tarball} = $subsDir unless( $substs{tarball} );
     $substs{pkgdescription_debian} = $substs{pkgdescription};
     $substs{sysconfdir} = "/etc/". $substs{shortname} unless( $substs{sysconfdir} );
     $substs{maintainer} = "ownCloud Inc." unless( $substs{maintainer} );
@@ -207,7 +216,7 @@ sub getSubsts( $ )
 }
 
 # main here.
-getopts('boh');
+getopts('nbohc:');
 
 help() if( $opt_h );
 help() unless( defined $ARGV[0] && defined $ARGV[1] );
@@ -231,7 +240,8 @@ if( $opt_o ) {
     }
 
     # Update the checkout
-    my @osc = ( '-c', '/home/kf/.ocoscrc', 'up' );
+    my @osc = oscParams($opt_c);
+    push @osc, 'up';
     chdir( 'oem');
     doOSC( @osc );
     chdir( '..' );
@@ -241,28 +251,49 @@ my $dirName = prepareTarBall();
 
 # returns hash reference
 my $substs = getSubsts($dirName);
-$substs->{tarball} = $dirName;
 
 createClientFromTemplate( $substs );
 
 my $clientdir = ".";
 my $theme = getFileName( $ARGV[1] );
 
+# Add changelog entries
 if( $opt_o ) {
     $clientdir = "oem/$theme-client";
 
     chdir( $clientdir );
-    my $change = "automatically generated branding added.";
+    my $change = "  automatically generated branding added.";
     addDebChangelog( "$theme-client", $change, $substs->{version} );
     addSpecChangelog( "$theme-client", $change );
     chdir( "../.." );
 }
-createTar($clientdir,$dirName);
+createTar($clientdir, $dirName);
 
+# Build the package
+my $buildOk = 0;
 if( $opt_b ) {
-    my @osc = ( '-c', '/home/kf/.ocoscrc', 'build', 'openSUSE_13.1', 'x86_64', "$theme-client.spec" );
-
+    my @osc = oscParams($opt_c);
+    push @osc, ('build', '--no-service', '--clean', 'openSUSE_13.1', 'x86_64', "$theme-client.spec");
+    print "XXX osc " . join( " ", @osc ) . "\n";
     chdir( "oem/$theme-client" );
+    $buildOk = doOSC( @osc );
+    chdir( "../.." );
+}
+
+# push to obs.
+if( $opt_o ) {
+    if( $opt_b ) {
+	die( "Local build failed, no uplaod!" ) unless ( $buildOk );
+    }
+    chdir( "oem/$theme-client" );
+
+    my @osc = oscParams($opt_c);
+    push @osc, ('diff');
     doOSC( @osc );
+
+    @osc = oscParams($opt_c);
+    push @osc, ('commit', '-m', 'Pushed by genbranding.pl');
+
+    $buildOk = doOSC( @osc );
     chdir( "../.." );
 }

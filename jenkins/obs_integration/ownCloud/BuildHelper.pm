@@ -28,7 +28,7 @@ use vars qw( @ISA @EXPORT @EXPORT_OK $d %config);
 
 @ISA        = qw(Exporter);
 @EXPORT     = qw( readIniValue doOSC checkoutPackage getFromSpecfile addDebChangelog
-                  addSpecChangelog patchAFile);
+                  addSpecChangelog patchAFile oscParams);
 
 # Read values from a config file in Windows Ini format.
 # paramters: 
@@ -45,6 +45,14 @@ sub readIniValue( $$$ ) {
     $key = $cfg->val( $sectionName, $value );
   }
   return $key;
+}
+
+# takes a string for example coming as a command line option
+# and returns an array to pass to the doOSC function.
+sub oscParams($) {
+    my ($p) = @_;
+
+    return split( /\s+/, $p );
 }
 
 # Execute osc
@@ -162,7 +170,8 @@ sub addSpecChangelog( $$ ) {
   my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = gmtime(time);
   my @mabbr = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
   my @wabbr = qw( Sun Mon Tue Wed Thu Fri Sat );
-  my $dateline = "$wabbr[$wday] $mabbr[$mon] $mday $hour:$min:$sec UTC 2013 - jenkins\@owncloud.org";
+  my $dateClg = sprintf( "%02d:%02d:%02d", $hour, $min, $sec );
+  my $dateline = "$wabbr[$wday] $mabbr[$mon] $mday " . $dateClg . " UTC 2013 - jenkins\@owncloud.org";
 
   unshift( @changes, "\n$changelog\n\n" );
   unshift( @changes, "\n$dateline\n" );

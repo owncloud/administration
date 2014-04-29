@@ -22,7 +22,7 @@ License:        GPL-2.0+
 Summary:        [% summary %]
 Url:            [% projecturl %]
 Group:          Productivity/Networking/Other
-Source0:        [% tarball %]
+Source0:        [% tarball %].tar.bz2
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 Source1:        [% shortname %].sh
 Patch1:         autostart_use_wrapper.diff
@@ -62,22 +62,16 @@ BuildRequires:  libneon-devel
 BuildRequires:  update-desktop-files
 %endif
 
-%if 0%{?fedora_version}
-BuildRequires:  python-sphinx
-%endif
-
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 BuildRequires:  oc-neon-devel
 %else
 BuildRequires:  neon-devel
-%define have_doc 1
 %endif
 
 %if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
 BuildRequires:  sqlite-devel
 BuildRequires:  inetd desktop-file-utils
 %else
-BuildRequires:  python-Sphinx
 BuildRequires:  sqlite3-devel
 BuildRequires:  libneon-devel
 BuildRequires:  update-desktop-files
