@@ -17,7 +17,7 @@ use Cwd;
 use Template;
 
 use strict;
-use vars qw($miralltar $themetar $templatedir $dir $opt_h $opt_o $opt_b $opt_c $opt_n);
+use vars qw($miralltar $themetar $templatedir $dir $opt_h $opt_o $opt_b $opt_c $opt_n $opt_f);
 
 sub help() {
   print<<ENDHELP
@@ -39,6 +39,7 @@ sub help() {
   -o:           osc mode, build against ownCloud obs
   -c "params":  additional osc paramters
   -n:           don't recreate the tarball, use an existing one.
+  -f:           force upload, upload even if nothing changed.
 
   Call example:
   ./genbranding.pl mirall-1.5.3.tar.bz2 cern.tar.bz2
@@ -206,7 +207,7 @@ sub getSubsts( $ )
 
     # calculate some subst values, such as 
     $substs{tarball} = $subsDir unless( $substs{tarball} );
-    $substs{pkgdescription_debian} = $substs{pkgdescription};
+    $substs{pkgdescription_debian} = debianDesc( $substs{pkgdescription} );
     $substs{sysconfdir} = "/etc/". $substs{shortname} unless( $substs{sysconfdir} );
     $substs{maintainer} = "ownCloud Inc." unless( $substs{maintainer} );
     $substs{maintainer_person} = "ownCloud packages <packages\@owncloud.com>" unless( $substs{maintainer_person} );
@@ -216,7 +217,7 @@ sub getSubsts( $ )
 }
 
 # main here.
-getopts('nbohc:');
+getopts('fnbohc:');
 
 help() if( $opt_h );
 help() unless( defined $ARGV[0] && defined $ARGV[1] );
@@ -257,6 +258,44 @@ createClientFromTemplate( $substs );
 my $clientdir = ".";
 my $theme = getFileName( $ARGV[1] );
 
+
+if( $opt_o ) {
+    $clientdir = "oem/$theme-client";
+}
+createTar($clientdir, $dirName);
+
+# Check if really files were added and if the tarball was already added
+# to the osc repo
+my $changeCnt = 0;
+
+if( $opt_o ) {
+    chdir( $clientdir );
+    my %changes = oscChangedFiles($opt_c);
+
+    foreach my $f (keys %changes) {
+	if( $f eq $dirName . ".tar.bz2" && $changes{$f} eq '?' ) {
+	    my @osc = oscParams($opt_c);
+	    push @osc, ('add', $dirName . ".tar.bz2");
+	    $changeCnt++;
+	} else {
+	    print "  Status of $f: $changes{$f}\n";
+	    # count files with real changes
+	    if( $changes{$f} eq '?' ) {
+		print "Error: An unexpected file <$f> was found in the osc package.\n";
+		die("Please remove or osc add and try again!\n");
+	    }
+	    $changeCnt++;
+	}
+    }
+    chdir( "../.." );
+}
+
+# Finished if nothing changed.
+if( $changeCnt == 0 && ! $opt_f ) {
+    print "No changes to the package, exit!\n";
+    exit(0);
+}
+
 # Add changelog entries
 if( $opt_o ) {
     $clientdir = "oem/$theme-client";
@@ -267,7 +306,6 @@ if( $opt_o ) {
     addSpecChangelog( "$theme-client", $change );
     chdir( "../.." );
 }
-createTar($clientdir, $dirName);
 
 # Build the package
 my $buildOk = 0;
