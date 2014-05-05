@@ -28,7 +28,7 @@ use vars qw( @ISA @EXPORT @EXPORT_OK $d %config);
 
 @ISA        = qw(Exporter);
 @EXPORT     = qw( readIniValue doOSC checkoutPackage getFromSpecfile addDebChangelog
-                  addSpecChangelog patchAFile oscParams);
+                  addSpecChangelog patchAFile oscParams debianDesc oscChangedFiles);
 
 # Read values from a config file in Windows Ini format.
 # paramters: 
@@ -53,6 +53,48 @@ sub oscParams($) {
     my ($p) = @_;
 
     return split( /\s+/, $p );
+}
+
+# fix debian description: replace empty lines by a dot
+# and indent everything by one space.
+sub debianDesc( $ )  {
+    my ($desc) = @_;
+
+    # replace empty lines by a .
+    $desc =~ s/\n\s*\n/\n.\n/s;
+
+    # add space at the beginning of a line
+    $desc =~ s/^(.)/ $1/mg;
+
+    # Add a trailing newline
+    $desc .= "\n" unless( $desc =~/\n\n$/ );
+
+    return $desc;
+}
+
+# Compute which files have changed for osc in the current directory.
+# The parameter are additional osc parameters to be passed to oscParams
+sub oscChangedFiles($)
+{
+    my ($params) = @_;
+
+    my @osc = oscParams($params);
+    push @osc, ('status');
+
+    unshift(@osc, "/usr/bin/osc");
+
+    my $cmd = join ( ' ', @osc );
+    print "Status command: $cmd\n";
+    my $res = `$cmd`;
+
+    my %r;
+    my @ll = split( /\n/, $res );
+    foreach my $l ( @ll ) {
+	if( $l =~ /(.)\s+(\S.*)$/ ) {
+	    $r{$2} = $1;
+	}
+    }
+    return %r;
 }
 
 # Execute osc
