@@ -235,17 +235,21 @@ print "Mirall Tarball: $miralltar\n";
 print "Theme Tarball: $themetar\n";
 
 # if -o (osc mode) check if an oem directory exists
+my $theme = getFileName( $ARGV[1] );
+
 if( $opt_o ) {
     unless( -d "./oem" && -d "./oem/.osc" ) {
-	die("OBS checkout not existing. Please checkout project oem from ownCloud OBS");
+	print "Checking out package oem/$theme-client\n";
+	checkoutPackage( "oem", "$theme-client", $opt_c );
+	chdir('../..'); # checkoutPackage chdirs into the package checkout
+    } else {
+	# Update the checkout
+	my @osc = oscParams($opt_c);
+	push @osc, 'up';
+	chdir( 'oem');
+	doOSC( @osc );
+	chdir( '..' );
     }
-
-    # Update the checkout
-    my @osc = oscParams($opt_c);
-    push @osc, 'up';
-    chdir( 'oem');
-    doOSC( @osc );
-    chdir( '..' );
 }
 
 my $dirName = prepareTarBall();
@@ -256,7 +260,6 @@ my $substs = getSubsts($dirName);
 createClientFromTemplate( $substs );
 
 my $clientdir = ".";
-my $theme = getFileName( $ARGV[1] );
 
 
 if( $opt_o ) {

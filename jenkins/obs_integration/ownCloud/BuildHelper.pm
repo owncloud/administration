@@ -118,14 +118,18 @@ sub doOSC {
 # Check out a package from a repo via osc
 # Note: this only works if current working directory is the directory
 # where the checked out packages are
-sub checkoutPackage( $$ ) {
-  my( $repo, $pack ) = @_;
+sub checkoutPackage( $$;$ ) {
+  my( $repo, $pack, $optParam ) = @_;
+
+  my @osc = oscParams($optParam);
 
   if( -d $repo ) {
     chdir $repo;
-    doOSC("up", $pack);
+    push @osc, ('up', $pack);
+    doOSC(@osc);
   } else {
-    doOSC( "checkout", $repo, $pack );
+    push @osc, ('checkout', $repo, $pack);
+    doOSC( @osc );
     chdir $repo;
   }
   chdir $pack;
