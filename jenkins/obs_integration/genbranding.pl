@@ -186,6 +186,8 @@ sub getSubsts( $ )
         },
 	no_chdir => 1 }, "$subsDir");
 
+    die("Please provide a mirall/package.cfg file in the custom dir!\n") unless( $cfgFile );
+
     print "Reading substs from $cfgFile\n";
     my %substs;
 
