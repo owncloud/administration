@@ -146,7 +146,7 @@ sub readOEMcmake( $ )
 
     print "Reading OEM cmake file: $file\n";
     
-    die unless open( OEM, "$file" );
+    die("Could not open <$file>\n") unless open( OEM, "$file" );
     my @lines = <OEM>;
     close OEM;
     
