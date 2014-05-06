@@ -278,14 +278,35 @@ if( $opt_o ) {
     my %changes = oscChangedFiles($opt_c);
 
     foreach my $f (keys %changes) {
-	if( $f eq $dirName . ".tar.bz2" && $changes{$f} eq '?' ) {
+	# print " * Checking $f => $changes{$f} ($dirName.tar.bz2)\n";
+	if( $f eq $dirName . ".tar.bz2" && $changes{$f} =~ /A|\?/ ) {
 	    my @osc = oscParams($opt_c);
-	    push @osc, ('add', $dirName . ".tar.bz2");
-	    $changeCnt++;
+	    if( $changes{$f} eq '?' ) { # Add the new tarball to obs
+		push @osc, ('add', $dirName . ".tar.bz2");
+		doOSC(@osc);
+		$changeCnt++;
+	    }
+
+	    # remove the previous tarball!
+	    my $oldTar = $dirName; # something like mirall-cernbox-1.6.0nightly20140505
+	    $oldTar =~ s/(.+)-.*$/$1/;   # remove the version
+
+	    # search for the old tarball
+	    opendir(my $dh, '.') || die "can't opendir '.': $!";
+	    $oldTar = grep { /$oldTar-.*\.tar\.bz2/ && $_ ne "$dirName.tar.bz2" } readdir($dh);
+            closedir $dh;
+
+	    if( $oldTar && -e $oldTar ) {
+		print "Removing old source file $oldTar\n";
+		@osc = oscParams($opt_c);
+		push @osc, ('rm', $oldTar);
+		doOSC(@osc);
+		$changeCnt++;
+	    }
 	} else {
 	    print "  Status of $f: $changes{$f}\n";
 	    # count files with real changes
-	    if( $changes{$f} eq '?' ) {
+	    if( $changes{$f} !~ /M|D/ ) {
 		print "Error: An unexpected file <$f> was found in the osc package.\n";
 		die("Please remove or osc add and try again!\n");
 	    }
@@ -293,10 +314,11 @@ if( $opt_o ) {
 	}
     }
     chdir( "../.." );
+    print "----\n";
 }
 
 # Finished if nothing changed.
-if( $changeCnt == 0 && ! $opt_f ) {
+if( $changeCnt == 0 && ! $opt_f && $opt_o ) {
     print "No changes to the package, exit!\n";
     exit(0);
 }
@@ -340,3 +362,5 @@ if( $opt_o ) {
     $buildOk = doOSC( @osc );
     chdir( "../.." );
 }
+
+print " Finished!\n\n";
