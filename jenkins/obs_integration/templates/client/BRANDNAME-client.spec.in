@@ -207,7 +207,7 @@ popd
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 
 mkdir -p $RPM_BUILD_ROOT/usr/share/applications/
-cat $RPM_BUILD_ROOT%{_datadir}/applications/[% shortname %].desktop |sed "s,Exec=.*,Exec=/usr/bin/[% shortname %]," > $RPM_BUILD_ROOT/usr/share/applications/[% shortname %].desktop
+cat $RPM_BUILD_ROOT%{_datadir}/applications/[% shortname %].desktop |sed "s,Exec=.*,Exec=/usr/bin/[% APPLICATION_EXECUTABLE %]," > $RPM_BUILD_ROOT/usr/share/applications/[% shortname %].desktop
 # rm $RPM_BUILD_ROOT%{_datadir}/applications/[% shortname %].desktop
 mkdir -p $RPM_BUILD_ROOT/usr/share/icons/hicolor
 mv $RPM_BUILD_ROOT%{_datadir}/icons/hicolor/* $RPM_BUILD_ROOT/usr/share/icons/hicolor
