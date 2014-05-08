@@ -279,7 +279,7 @@ if( $opt_o ) {
 
     foreach my $f (keys %changes) {
 	# print " * Checking $f => $changes{$f} ($dirName.tar.bz2)\n";
-	if( $f eq $dirName . ".tar.bz2" && $changes{$f} =~ /A|\?/ ) {
+	if( $f eq $dirName . ".tar.bz2" && $changes{$f} =~ /[A\?]/ ) {
 	    my @osc = oscParams($opt_c);
 	    if( $changes{$f} eq '?' ) { # Add the new tarball to obs
 		push @osc, ('add', $dirName . ".tar.bz2");
@@ -306,7 +306,7 @@ if( $opt_o ) {
 	} else {
 	    print "  Status of $f: $changes{$f}\n";
 	    # count files with real changes
-	    if( $changes{$f} !~ /M|D/ ) {
+	    if( $changes{$f} !~ /[MD]/ ) {
 		print "Error: An unexpected file <$f> was found in the osc package.\n";
 		die("Please remove or osc add and try again!\n");
 	    }
@@ -364,3 +364,4 @@ if( $opt_o ) {
 }
 
 print " Finished!\n\n";
+
