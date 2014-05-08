@@ -330,6 +330,16 @@ if( $opt_o ) {
     $clientdir = "oem/$theme-client";
 
     chdir( $clientdir );
+    # create and osc add changelog files if they do not exist yet.
+    foreach my $f ( ('debian.changelog', "$theme-client.changes") ) {
+      unless( -e $f ) {
+	system( "touch $f" );
+	my @osc = oscParams($opt_c);
+	push @osc, ('add', $f);
+	doOSC(@osc);
+      }
+    }
+    
     my $change = "  automatically generated branding added.";
     addDebChangelog( "$theme-client", $change, $substs->{version} );
     addSpecChangelog( "$theme-client", $change );

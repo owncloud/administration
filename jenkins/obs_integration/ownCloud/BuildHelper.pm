@@ -172,13 +172,12 @@ sub addDebChangelog( $$$ ) {
   my ($pack, $changelog, $version) = @_;
 
   my $changesfile = "debian.changelog";
-
-  return 1 unless( -e $changesfile );
-
-  open( CHANGES, "<$changesfile" ) || die("No changes-file: $changesfile\n");
-  my @changes = <CHANGES>;
-  close CHANGES;
-
+  my @changes;
+  
+  if( open( CHANGES, "<$changesfile" ) ) {
+    @changes = <CHANGES>;
+    close CHANGES;
+  }
   my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = gmtime(time);
   my @mabbr = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
   my @wabbr = qw( Sun Mon Tue Wed Thu Fri Sat );
@@ -209,10 +208,12 @@ sub addSpecChangelog( $$ ) {
 
   my $changesfile = "$pack.changes";
 
-  open( CHANGES, "<$changesfile" ) || die("No changes-file: $changesfile\n");
-  my @changes = <CHANGES>;
-  close CHANGES;
-
+  my @changes;
+  
+  if( open( CHANGES, "<$changesfile" ) ) {
+    @changes = <CHANGES>;
+    close CHANGES;
+  }
   my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = gmtime(time);
   my @mabbr = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
   my @wabbr = qw( Sun Mon Tue Wed Thu Fri Sat );
