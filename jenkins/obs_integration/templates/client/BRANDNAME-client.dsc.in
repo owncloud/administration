@@ -1,5 +1,5 @@
 Format: 1.0
-Source: [% shortname %]
+Source: [% shortname %]-client
 Version: [% version %]
 Binary: [% shortname %]-client
 Maintainer: [% maintainer %]

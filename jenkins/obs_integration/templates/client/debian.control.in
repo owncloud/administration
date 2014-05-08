@@ -1,4 +1,4 @@
-Source: [% shortname %]
+Source: [% shortname %]-client
 Section: devel
 Priority: optional
 Maintainer: [% maintainer_person %]
