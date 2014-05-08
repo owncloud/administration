@@ -72,7 +72,7 @@ sub prepareTarBall( ) {
     my $mirall = getFileName( $ARGV[0] );
     my $theme = getFileName( $ARGV[1] );
     my $newname = $mirall;
-    $newname =~ s/-/_$theme-/;
+    $newname =~ s/mirall-/$theme-/;
     move($mirall, $newname);
     chdir($newname);
     print "Extracting theme...\n";
