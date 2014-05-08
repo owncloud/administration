@@ -1,4 +1,3 @@
 usr/bin/[% shortname %]*
 usr/share/applications/[% shortname %].desktop
 usr/share/icons/hicolor
-usr/share/man
