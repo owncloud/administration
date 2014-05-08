@@ -1,5 +1,5 @@
 Format: 1.0
-Source: mirall-[% shortname %]
+Source: [% shortname %]
 Version: [% version %]
 Binary: [% shortname %]-client
 Maintainer: [% maintainer %]
