@@ -279,29 +279,31 @@ if( $opt_o ) {
 
     foreach my $f (keys %changes) {
 	# print " * Checking $f => $changes{$f} ($dirName.tar.bz2)\n";
-	if( $f eq $dirName . ".tar.bz2" && $changes{$f} =~ /[A\?]/ ) {
+	if( $changes{$f} =~ /[A\?]/ ) {
 	    my @osc = oscParams($opt_c);
 	    if( $changes{$f} eq '?' ) { # Add the new tarball to obs
-		push @osc, ('add', $dirName . ".tar.bz2");
+		push @osc, ('add', $f);
 		doOSC(@osc);
 		$changeCnt++;
 	    }
 
 	    # remove the previous tarball!
-	    my $oldTar = $dirName; # something like mirall-cernbox-1.6.0nightly20140505
-	    $oldTar =~ s/(.+)-.*$/$1/;   # remove the version
-
 	    # search for the old tarball
-	    opendir(my $dh, '.') || die "can't opendir '.': $!";
-	    $oldTar = grep { /$oldTar-.*\.tar\.bz2/ && $_ ne "$dirName.tar.bz2" } readdir($dh);
-            closedir $dh;
+	    if( $f eq $dirName . ".tar.bz2" ) {
+	      my $oldTar = $dirName; # something like mirall-cernbox-1.6.0nightly20140505
+	      $oldTar =~ s/(.+)-.*$/$1/;   # remove the version
 
-	    if( $oldTar && -e $oldTar ) {
-		print "Removing old source file $oldTar\n";
-		@osc = oscParams($opt_c);
-		push @osc, ('rm', $oldTar);
-		doOSC(@osc);
-		$changeCnt++;
+	      opendir(my $dh, '.') || die "can't opendir '.': $!";
+	      $oldTar = grep { /$oldTar-.*\.tar\.bz2/ && $_ ne "$dirName.tar.bz2" } readdir($dh);
+	      closedir $dh;
+
+	      if( $oldTar && -e $oldTar ) {
+		  print "Removing old source file $oldTar\n";
+		  @osc = oscParams($opt_c);
+		  push @osc, ('rm', $oldTar);
+		  doOSC(@osc);
+		  $changeCnt++;
+	      }
 	    }
 	} else {
 	    print "  Status of $f: $changes{$f}\n";
