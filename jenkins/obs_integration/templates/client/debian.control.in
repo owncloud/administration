@@ -1,4 +1,4 @@
-Source: mirall_[% shortname %]
+Source: [% shortname %]
 Section: devel
 Priority: optional
 Maintainer: [% maintainer_person %]
