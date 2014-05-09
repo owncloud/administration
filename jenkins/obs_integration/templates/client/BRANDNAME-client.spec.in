@@ -171,7 +171,7 @@ cmake .. -DCMAKE_INSTALL_PREFIX=%{_prefix:/usr} -DCMAKE_INSTALL_SYSCONFDIR=/etc/
 %if %{_lib} == lib64
   -DLIB_SUFFIX=64 \
 %endif
-  -DOEM_THEME_DIR=$PWD/../[% shortname %]/mirall
+  -DOEM_THEME_DIR=$PWD/../[% shortname %]/mirall \
   %cmake_args
 
 # documentation here?
