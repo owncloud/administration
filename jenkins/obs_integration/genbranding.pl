@@ -98,7 +98,7 @@ sub createClientFromTemplate($) {
     my $targetDir = "$theme-client";
 
     if( $opt_o ) {
-	$targetDir = "oem/$targetDir";
+	$targetDir = "oem:$theme/$targetDir";
     } else {
 	mkdir("$theme-client");
     }
@@ -240,15 +240,15 @@ print "Theme Tarball: $themetar\n";
 my $theme = getFileName( $ARGV[1] );
 
 if( $opt_o ) {
-    unless( -d "./oem" && -d "./oem/.osc" ) {
-	print "Checking out package oem/$theme-client\n";
-	checkoutPackage( "oem", "$theme-client", $opt_c );
+    unless( -d "./oem" && -d "./oem:$theme/.osc" ) {
+	print "Checking out package oem:$theme/$theme-client\n";
+	checkoutPackage( "oem:$theme", "$theme-client", $opt_c );
 	chdir('../..'); # checkoutPackage chdirs into the package checkout
     } else {
 	# Update the checkout
 	my @osc = oscParams($opt_c);
 	push @osc, 'up';
-	chdir( 'oem');
+	chdir( "oem:$theme");
 	doOSC( @osc );
 	chdir( '..' );
     }
@@ -265,7 +265,7 @@ my $clientdir = ".";
 
 
 if( $opt_o ) {
-    $clientdir = "oem/$theme-client";
+    $clientdir = "oem:$theme/$theme-client";
 }
 createTar($clientdir, $dirName);
 
@@ -352,7 +352,7 @@ if( $opt_b ) {
     my @osc = oscParams($opt_c);
     push @osc, ('build', '--no-service', '--clean', 'openSUSE_13.1', 'x86_64', "$theme-client.spec");
     print "XXX osc " . join( " ", @osc ) . "\n";
-    chdir( "oem/$theme-client" );
+    chdir( "oem:$theme/$theme-client" );
     $buildOk = doOSC( @osc );
     chdir( "../.." );
 }
@@ -362,7 +362,7 @@ if( $opt_o ) {
     if( $opt_b ) {
 	die( "Local build failed, no uplaod!" ) unless ( $buildOk );
     }
-    chdir( "oem/$theme-client" );
+    chdir( "oem:$theme/$theme-client" );
 
     my @osc = oscParams($opt_c);
     push @osc, ('diff');
