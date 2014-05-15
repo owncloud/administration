@@ -127,12 +127,18 @@ sub createClientFromTemplate($) {
 sub createTar($$)
 {
     my ($clientdir, $newname) = @_;
+
     my $tarName = "$clientdir/$newname.tar.bz2";
+
     if( $opt_n ) {
 	die( "Option -n given, but no tarball $tarName exists\n") unless( -e $tarName );
 	return;
     }
+    my $cwd = cwd();
 
+    die( "Can not find directory to tar: $newname\n" ) unless( -d $newname );
+
+    print "Creating tar $tarName from $newname, in cwd $cwd\n";
     system("/bin/tar", "cjfi", $tarName, $newname);
     rmtree("$newname");
     print " success: Created $tarName\n";
@@ -265,7 +271,7 @@ my $clientdir = ".";
 
 
 if( $opt_o ) {
-    $clientdir = "oem:$theme/$theme-client";
+    $clientdir = "oem\\:$theme/$theme-client";
 }
 createTar($clientdir, $dirName);
 
