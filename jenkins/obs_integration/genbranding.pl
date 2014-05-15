@@ -67,7 +67,7 @@ sub getFileName( $ ) {
 sub prepareTarBall( ) {
     print "Preparing tarball...";
 
-    system("/bin/tar", ("xif", $miralltar) );
+    system("/bin/tar", ("xif", $miralltar, "--force-local") );
     print "Extract mirall...\n";
     my $mirall = getFileName( $ARGV[0] );
     my $theme = getFileName( $ARGV[1] );
@@ -76,7 +76,7 @@ sub prepareTarBall( ) {
     move($mirall, $newname);
     chdir($newname);
     print "Extracting theme...\n";
-    my @args = ("--wildcards", "-xif", "$themetar", "*/mirall/*");
+    my @args = ("--wildcards", "--force-local", "-xif", "$themetar", "*/mirall/*");
     system("/bin/tar", @args);
     chdir("..");
 
@@ -140,7 +140,7 @@ sub createTar($$)
     die( "Can not find directory to tar: $newname\n" ) unless( -d $newname );
 
     print "Creating tar $tarName from $newname, in cwd $cwd\n";
-    my @args = ("cjfi", $tarName, $newname) ;
+    my @args = ("cjfi", $tarName, $newname, "--force-local") ;
     system("/bin/tar", @args);
     rmtree("$newname");
     print " success: Created $tarName\n";
