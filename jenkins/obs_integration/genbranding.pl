@@ -67,7 +67,7 @@ sub getFileName( $ ) {
 sub prepareTarBall( ) {
     print "Preparing tarball...";
 
-    system("/bin/tar", "xif", $miralltar);
+    system("/bin/tar", ("xif", $miralltar) );
     print "Extract mirall...\n";
     my $mirall = getFileName( $ARGV[0] );
     my $theme = getFileName( $ARGV[1] );
@@ -76,7 +76,8 @@ sub prepareTarBall( ) {
     move($mirall, $newname);
     chdir($newname);
     print "Extracting theme...\n";
-    system("/bin/tar", "--wildcards", "-xif", "$themetar", "*/mirall/*");
+    my @args = ("--wildcards", "-xif", "$themetar", "*/mirall/*");
+    system("/bin/tar", @args);
     chdir("..");
 
     print " success: $newname\n";
@@ -139,7 +140,8 @@ sub createTar($$)
     die( "Can not find directory to tar: $newname\n" ) unless( -d $newname );
 
     print "Creating tar $tarName from $newname, in cwd $cwd\n";
-    system("/bin/tar", "cjfi", $tarName, $newname);
+    my @args = ("cjfi", $tarName, $newname) ;
+    system("/bin/tar", @args);
     rmtree("$newname");
     print " success: Created $tarName\n";
 }
@@ -271,7 +273,7 @@ my $clientdir = ".";
 
 
 if( $opt_o ) {
-    $clientdir = "oem\\:$theme/$theme-client";
+    $clientdir = "oem:$theme/$theme-client";
 }
 createTar($clientdir, $dirName);
 
@@ -333,8 +335,6 @@ if( $changeCnt == 0 && ! $opt_f && $opt_o ) {
 
 # Add changelog entries
 if( $opt_o ) {
-    $clientdir = "oem/$theme-client";
-
     chdir( $clientdir );
     # create and osc add changelog files if they do not exist yet.
     foreach my $f ( ('debian.changelog', "$theme-client.changes") ) {
@@ -358,7 +358,7 @@ if( $opt_b ) {
     my @osc = oscParams($opt_c);
     push @osc, ('build', '--no-service', '--clean', 'openSUSE_13.1', 'x86_64', "$theme-client.spec");
     print "XXX osc " . join( " ", @osc ) . "\n";
-    chdir( "oem:$theme/$theme-client" );
+    chdir( $clientdir );
     $buildOk = doOSC( @osc );
     chdir( "../.." );
 }
@@ -368,7 +368,7 @@ if( $opt_o ) {
     if( $opt_b ) {
 	die( "Local build failed, no uplaod!" ) unless ( $buildOk );
     }
-    chdir( "oem:$theme/$theme-client" );
+    chdir( $clientdir );
 
     my @osc = oscParams($opt_c);
     push @osc, ('diff');
