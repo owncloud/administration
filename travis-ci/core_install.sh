@@ -3,7 +3,7 @@
 # ownCloud
 #
 # @author Thomas Müller
-# @copyright 2014Thomas Müller thomas.mueller@tmit.eu
+# @copyright 2014 Thomas Müller thomas.mueller@tmit.eu
 #
 DATABASENAME=oc_autotest
 DATABASEUSER=oc_autotest
