@@ -11,8 +11,7 @@
 # Modified by Peter Butkovic <butkovic@gmail.com> to enable i386 install on amd64 architecture (precise 64)
 # based on: http://www.ubuntugeek.com/how-to-install-oracle-10g-xe-in-64-bit-ubuntu.html
 # 
-
-set -e
+# set -ex
 
 #
 # Utilities

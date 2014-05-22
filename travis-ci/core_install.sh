@@ -116,21 +116,9 @@ function execute_tests {
 
 	cp tests/preseed-config.php config/config.php
 
-	# drop database
-	if [ "$1" == "mysql" ] ; then
-		mysql -u $DATABASEUSER -powncloud -e "DROP DATABASE $DATABASENAME"
-	fi
-	if [ "$1" == "pgsql" ] ; then
-		dropdb -U $DATABASEUSER $DATABASENAME
-	fi
 	if [ "$1" == "oracle" ] ; then
 		echo "Load Oracle environment variables so that we can run 'sqlplus'."
 		. $ORACLE_HOME/bin/oracle_env.sh
-
-		echo "drop the database"
-		sqlplus -s -l / as sysdba <<EOF
-			drop user $DATABASENAME cascade;
-EOF
 
 		echo "create the database"
 		sqlplus -s -l / as sysdba <<EOF
