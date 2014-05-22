@@ -30,7 +30,7 @@ if [ "$1" == "pgsql" ] ; then
 fi
 
 if [ "$1" == "oracle" ] ; then
-  if [ ! -f $FROM ]; then
+  if [ ! -f before_install_oracle.sh ]; then
     wget https://raw.githubusercontent.com/owncloud/administration/master/travis-ci/before_install_oracle.sh
   fi
   bash ./before_install_oracle.sh
@@ -40,7 +40,7 @@ fi
 # copy install script
 #
 cd ../core
-if [ ! -f $FROM ]; then
+if [ ! -f core_install.sh ]; then
     wget https://raw.githubusercontent.com/owncloud/administration/master/travis-ci/core_install.sh
 fi
 
