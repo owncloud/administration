@@ -5,6 +5,9 @@
 # @author Thomas Müller
 # @copyright 2014 Thomas Müller thomas.mueller@tmit.eu
 #
+
+set -e
+
 DATABASENAME=oc_autotest
 DATABASEUSER=oc_autotest
 ADMINLOGIN=admin

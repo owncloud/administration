@@ -6,6 +6,8 @@
 # @copyright 2014 Thomas Müller thomas.mueller@tmit.eu
 #
 
+set -e
+
 WORKDIR=$PWD
 APP_NAME=$1
 CORE_BRANCH=$2
@@ -20,17 +22,17 @@ cd apps
 cp -R ../../$APP_NAME/ .
 cd $WORKDIR
 
-if [ "$1" == "mysql" ] ; then
+if [ "$DB" == "mysql" ] ; then
   mysql -e 'create database oc_autotest;'
   mysql -u root -e "CREATE USER 'oc_autotest'@'localhost' IDENTIFIED BY 'owncloud'";
   mysql -u root -e "grant all on oc_autotest.* to 'oc_autotest'@'localhost'";
 fi
 
-if [ "$1" == "pgsql" ] ; then
+if [ "$DB" == "pgsql" ] ; then
   createuser -U travis -s oc_autotest
 fi
 
-if [ "$1" == "oracle" ] ; then
+if [ "$DB" == "oracle" ] ; then
   if [ ! -f before_install_oracle.sh ]; then
     wget https://raw.githubusercontent.com/owncloud/administration/master/travis-ci/before_install_oracle.sh
   fi
