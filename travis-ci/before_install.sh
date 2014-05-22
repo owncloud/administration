@@ -13,6 +13,7 @@ APP_NAME=$1
 CORE_BRANCH=$2
 DB=$3
 echo "Work directory: $WORKDIR"
+echo "Database: $DB"
 cd ..
 git clone --depth 1 -b $CORE_BRANCH https://github.com/owncloud/core
 cd core

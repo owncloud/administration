@@ -58,7 +58,7 @@ sudo apt-get install -qq bc apt-transport-https
 # add Oracle repo + key (please note https is a must here, otherwise "apt-get update" fails for this repo with the "Undetermined error")
 sudo bash -c 'echo "deb https://oss.oracle.com/debian/ unstable main non-free" >/etc/apt/sources.list.d/oracle.list'
 wget -q https://oss.oracle.com/el4/RPM-GPG-KEY-oracle -O- | sudo apt-key add -
-sudo apt-get update -qq
+sudo apt-get --allow-unauthenticated update -qq
 
 # only download the package, to manually install afterwards
 sudo apt-get install -qq --force-yes -d oracle-xe-universal:i386
