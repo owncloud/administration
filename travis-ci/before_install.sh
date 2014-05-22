@@ -33,8 +33,7 @@ if [ "$1" == "oracle" ] ; then
   if [ ! -f $FROM ]; then
     wget https://raw.githubusercontent.com/owncloud/administration/master/travis-ci/before_install_oracle.sh
   fi
-
-  ./before_install_oracle.sh
+  bash ./before_install_oracle.sh
 fi
 
 #
@@ -45,4 +44,4 @@ if [ ! -f $FROM ]; then
     wget https://raw.githubusercontent.com/owncloud/administration/master/travis-ci/core_install.sh
 fi
 
-./core_install.sh
+bash ./core_install.sh
