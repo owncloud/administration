@@ -9,6 +9,7 @@
 WORKDIR=$PWD
 APP_NAME=$1
 CORE_BRANCH=$2
+DB=$3
 echo "Work directory: $WORKDIR"
 cd ..
 git clone --depth 1 -b $CORE_BRANCH https://github.com/owncloud/core
@@ -44,4 +45,4 @@ if [ ! -f core_install.sh ]; then
     wget https://raw.githubusercontent.com/owncloud/administration/master/travis-ci/core_install.sh
 fi
 
-bash ./core_install.sh
+bash ./core_install.sh $DB
