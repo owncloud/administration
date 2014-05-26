@@ -51,13 +51,14 @@ tx -d push -s
 tx -d pull -a 
 perl l10n.pl $APPNAME write 
 find . -name \*.po -type f -delete
+find . -name \*.pot -type f -delete
 cd ..
 
 #
 # push to git
 #
 git status
-git add .
+git add l10n
 git commit -am "[tx-robot] updated from transifex"
 git push origin $BRANCH
 git status
