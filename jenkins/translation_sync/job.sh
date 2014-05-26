@@ -12,10 +12,13 @@ if [ "$#" -ne 2 ]; then
     exit 1
 fi
 
+set -x
+
 BRANCH=$1
 APPNAME=$2
 
 git checkout $BRANCH
+git branch
 git pull --rebase
 
 mkdir -p l10n/.tx
