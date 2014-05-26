@@ -12,10 +12,13 @@ if [ "$#" -ne 2 ]; then
     exit 1
 fi
 
-set -x
+# verbose and exit on error
+set -xe
 
 BRANCH=$1
 APPNAME=$2
+
+rm -rf job.sh
 
 git checkout $BRANCH
 git branch
