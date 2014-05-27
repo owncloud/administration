@@ -17,4 +17,4 @@ SHELL=/bin/bash
 	dh $@
 
 override_dh_auto_configure:
-	dh_auto_configure -- -DCMAKE_INSTALL_LIBDIR=/usr/lib/$(DEB_HOST_MULTIARCH) -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_DOCDIR=/usr/share/doc/[% shortname %]-client -DCMAKE_INSTALL_SYSCONFDIR=/[% sysconfdir %] -DWITH_DOC=FALSE -DOEM_THEME_DIR=$(PWD)/[% shortname %]/mirall
+	dh_auto_configure -- -DCMAKE_INSTALL_LIBDIR=/usr/lib/$(DEB_HOST_MULTIARCH) -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_DOCDIR=/usr/share/doc/[% shortname %]-client -DCMAKE_INSTALL_SYSCONFDIR=/[% sysconfdir %] -DWITH_DOC=FALSE -DOEM_THEME_DIR=$(PWD)/[% themename %]/mirall
