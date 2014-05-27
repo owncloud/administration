@@ -267,7 +267,7 @@ my $dirName = prepareTarBall();
 # returns hash reference
 my $substs = getSubsts($dirName);
 
-$substs{shortname} = $theme;
+$substs->{shortname} = $theme;
 
 createClientFromTemplate( $substs );
 
