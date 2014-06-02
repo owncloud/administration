@@ -18,7 +18,7 @@ sub crawlFiles{
 	foreach my $i ( @files ){
 		next if substr( $i, 0, 1 ) eq '.';
 		next if $i eq 'l10n';
-		
+
 		if( -d $dir.'/'.$i ){
 			push( @found, crawlFiles( $dir.'/'.$i ));
 		}
@@ -115,7 +115,7 @@ elsif( $task eq 'write' ){
 		print "  Processing $app\n";
 		foreach my $language ( @languages ){
 			next if $language eq 'templates';
-			
+
 			my $input = "${whereami}/$language/$app.po";
 			next unless -e $input;
 
@@ -149,6 +149,10 @@ elsif( $task eq 'write' ){
 				}
 			}
 			next if $#strings == -1; # Skip empty files
+
+			for (@strings) {
+				s/\$/\\\$/g;
+			}
 
 			# Write PHP file
 			open( OUT, ">$language.php" );
