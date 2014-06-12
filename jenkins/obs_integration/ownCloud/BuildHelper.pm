@@ -100,7 +100,11 @@ sub oscChangedFiles($)
 # Execute osc
 # Pass an array with parameters, they get appended
 sub doOSC {
-    system( "/usr/bin/osc", @_ );
+    my $osc = $ENV{'OBS_INTEGRATION_OSC'} || '/usr/bin/osc';
+    my @CMD = split ' ', $osc;
+    push @CMD, @_;
+    print "+ @CMD\n" if $ENV{'OBS_INTEGRATION_VERBOSE'};
+    system( @CMD );
     my $re = 0;
 
     if ($? == -1) {
@@ -218,7 +222,8 @@ sub addSpecChangelog( $$ ) {
   my @mabbr = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
   my @wabbr = qw( Sun Mon Tue Wed Thu Fri Sat );
   my $dateClg = sprintf( "%02d:%02d:%02d", $hour, $min, $sec );
-  my $dateline = "$wabbr[$wday] $mabbr[$mon] $mday " . $dateClg . " UTC 2013 - jenkins\@owncloud.org";
+  $year += 1900;
+  my $dateline = "$wabbr[$wday] $mabbr[$mon] $mday " . $dateClg . " UTC $year - jenkins\@owncloud.org";
 
   unshift( @changes, "\n$changelog\n\n" );
   unshift( @changes, "\n$dateline\n" );

@@ -5,7 +5,20 @@
 #
 # Released under GPL V.2.
 #
+# Requires: perl-Config-IniFiles
+# Requires: perl-Template-Toolkit
 #
+# 2014-06-12 jw@owncloud.com, v1.1
+#	- added  OBS_INTEGRATION_VERBOSE, OBS_INTEGRATION_OSC for 
+#	  debugging and more flexibility when calling osc. Suggested usage: 
+#	  env OBS_INTEGRATION_OSC='osc -Ahttps://s2.owncloud.com' ./genbranding.pl ...
+#       - added OBS_INTEGRATION_PRODUCT to overwrite the default product openSUSE_13.1
+#       - added '--download-api-only' per default to avoid issues with download.o.c.
+#	- fixed the year in changelog entries.
+#	- Deriving the version number from the mirall tar ball filename, per default.
+#	  We can remove the version => ... entries from package.cfg now.
+#
+
 use Getopt::Std;
 use Config::IniFiles;
 use File::Copy;
@@ -44,10 +57,17 @@ sub help() {
   Call example:
   ./genbranding.pl mirall-1.5.3.tar.bz2 cern.tar.bz2
 
-  Output will be in directory cern-client
+  Output will be in directory cern-client. 
+  Build directory (with -b) will be oem:cern-client.
 
   Options:
   -h      this help text.
+
+  Environment variables and their defaults:
+    OBS_INTEGRATION_VERBOSE=''
+    OBS_INTEGRATION_OSC='/usr/bin/osc'
+    OBS_INTEGRATION_PRODUCT='openSUSE_13.1'
+    OBS_INTEGRATION_ARCH='x86_64'
 
 ENDHELP
 ;
@@ -268,6 +288,23 @@ my $dirName = prepareTarBall();
 my $substs = getSubsts($dirName);
 $substs->{themename} = $theme;
 
+# Automatically derive version number from the mirall tarball.
+# It is used in the spec file to find the tar ball anyway, so this should be safe.
+unless( defined $substs->{version} )
+  {
+    my $vers = getFileName($miralltar);
+    if ($vers =~ m{-(\d[\d\.]*)$})
+      {
+        $vers = $1;
+      }
+    else
+      {
+        die "\n\nOops: mirall filename $vers does not match {-(\\d[\\d\\.]\*)\$}.\n Cannot exctract version number from here.\n Please add 'version' to package.cfg in $themetar\n";
+      }
+    $substs->{version} = $vers;
+  }
+
+
 createClientFromTemplate( $substs );
 
 my $clientdir = ".";
@@ -357,8 +394,10 @@ if( $opt_o ) {
 my $buildOk = 0;
 if( $opt_b ) {
     my @osc = oscParams($opt_c);
-    push @osc, ('build', '--no-service', '--clean', 'openSUSE_13.1', 'x86_64', "$theme-client.spec");
-    print "XXX osc " . join( " ", @osc ) . "\n";
+    my $product = $ENV{OBS_INTEGRATION_PRODUCT} || 'openSUSE_13.1';
+    my $arch =    $ENV{OBS_INTEGRATION_ARCH}    || 'x86_64';
+    push @osc, ('build', '--no-service', '--clean', '--download-api-only', '--local-package', $product, $arch, "$theme-client.spec");
+    print "+ osc " . join( " ", @osc ) . "\n";
     chdir( $clientdir );
     $buildOk = doOSC( @osc );
     chdir( "../.." );
