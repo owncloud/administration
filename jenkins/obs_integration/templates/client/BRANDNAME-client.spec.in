@@ -270,13 +270,14 @@ fi
 %files -n lib[% shortname %]sync0
 %defattr(-,root,root,-)
 %{_libdir}/lib[% shortname %]sync.so.*
-%{_libdir}/libocsync.so.*
+%{_libdir}/[% shortname %]/libocsync.so.*
+%dir %{_libdir}/[% shortname %]
 
 %files -n lib[% shortname %]sync-devel
 %defattr(-,root,root,-)
 %{_libdir}/lib[% shortname %]sync.so
 %{_libdir}/libhttpbf.a
-%{_libdir}/libocsync.so
+%{_libdir}/[% shortname %]/libocsync.so
 %{_includedir}/[% shortname %]sync/
 %{_includedir}/httpbf.h
 
