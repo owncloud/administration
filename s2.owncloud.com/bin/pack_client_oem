@@ -1,0 +1,39 @@
+#!/bin/sh
+
+if [ $# -ne 2 ]
+  then
+    echo "Call with arguments oem-name and version!"
+    exit 1
+fi
+
+oem=$1
+version=$2
+
+echo "Packaging linux client tarball for $oem version $version"
+
+# copy the build repos to a temporar space
+rm -rf /tmp/$oem
+mkdir /tmp/$oem
+
+cp -a /srv/obs/repos/oem\:/$oem/* /tmp/$oem
+rm -rf /tmp/$oem/*/repocache
+
+# ...and fix the baseurl string in the repo files.
+# find /tmp/$oem -name "*repo" | xargs sed -i 's#repositories/oem:#repositories#'
+
+mv /tmp/$oem /tmp/$oem-$version
+
+# package
+cd /tmp
+if [ -d $oem-$version/CentOS* ]
+then
+  tar cf /tmp/$oem-$version-centos6.tar $oem-$version/CentOS*
+  [ $? -eq 0 ] && rm -rf $oem-$version/CentOS*
+fi
+tar cf /tmp/$oem-$version-linux.tar $oem-$version/*
+
+# ... and remove the tmp
+rm -rf /tmp/$oem-$version
+
+# end.
+

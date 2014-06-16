@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# copy the build repos to a temporar space
+rm -rf /tmp/ee
+mkdir /tmp/ee
+
+cp -a /srv/obs/repos/ee/* /tmp/ee
+
+# ...and fix the baseurl string in the repo files.
+find /tmp/ee -name "*repo" | xargs sed -i 's#repositories/ee#repositories#'
+
+# finally rsync to download server
+rsync -rzv --delete /tmp/ee/* root@download.owncloud.com:/srv/www/htdocs/download/repositories/  
+
+# ... and remove the tmp
+rm -rf /tmp/ee
+
+# end.
+

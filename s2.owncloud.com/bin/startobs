@@ -1,0 +1,14 @@
+#!/bin/sh
+rccron start
+rcmemcached start
+rcmysql start
+rcapache2 start
+rcobssignd start
+rcobssrcserver start
+rcobsrepserver start
+rcobsscheduler start
+rcobsdispatcher start
+rcobsworker start
+rcobspublisher  start
+rcobssigner start
+rcobsapidelayed start
