@@ -4,7 +4,7 @@
 
 # creates or updates a git clone for testing
 
-gittargetdir=/mnt/www/owncloud-git
+gittargetdir='/var/www/oclg'
 calldir=$(pwd)
 
 # service apache2 stop
@@ -16,7 +16,12 @@ if [ "$(ls -A $gittargetdir)" ]; then
 # folder not empty
  cd $gittargetdir
  git pull
- git log -2
+ git shortlog -2
+ cd $gittargetdir/apps2
+ rm -r $gittargetdir/apps2/music
+ rm -r $gittargetdir/apps2/gallery
+ git clone https://github.com/owncloud/gallery.git
+ git clone https://github.com/owncloud/music.git
 
 else
 # folder is empty
@@ -27,8 +32,13 @@ else
  echo 'git clone apps: '$gittargetdir/apps2
  git clone https://github.com/owncloud/apps.git $gittargetdir/apps2
  echo 'git clone 3rdparty: '$gittargetdir
- git clone https://github.com/owncloud/3rdparty.git $gittargetdir/3rdparty 
- git log -2
+ git clone https://github.com/owncloud/3rdparty.git $gittargetdir/3rdparty
+ echo 'git clone gallery and music: '$gittargetdir/apps2
+ cd $gittargetdir/apps2
+ git clone https://github.com/owncloud/gallery.git
+ git clone https://github.com/owncloud/music.git
+
+ git shortlog -2
 
  # check if the directories exist. if not create one. this is due the
  # fact, that this dirs may miss in the github core master file.
@@ -54,4 +64,3 @@ cd $calldir
 
 # service mysql start
 # service apache2 start
-
