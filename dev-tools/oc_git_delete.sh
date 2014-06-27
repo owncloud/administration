@@ -5,7 +5,7 @@
 # deletes a owncloud-git installation, but without the database cleanup
 # and without deleting the remaining gittargetdir directory
 
-gittargetdir=/mnt/www/owncloud-git
+gittargetdir='/var/www/oclg'
 
 # deleting github files
 # check presence of gittdagetdir
@@ -15,10 +15,12 @@ if [ "$(ls -A $gittargetdir)" ]; then
  rm -r $gittargetdir/*
  rm -r $gittargetdir/.g*
  rm -r $gittargetdir/.h*
+ rm -r $gittargetdir/.i*
+ rm -r $gittargetdir/.j*
+ rm -r $gittargetdir/.s*
 else
  # folder is empty
  echo "Nothing to delete"
 fi
 
 echo "Before you reinstall OC-git, delete the database and the db-users!"
- 
