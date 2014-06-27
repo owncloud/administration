@@ -2,6 +2,10 @@
 #
 # (c) 2014, jw@owncloud.com 
 #
+# setup_oem_client.pl expects that the subproject package already exists.
+# it adds a list of known dependencies, so that we can have all relevant binaries 
+# in one repo per oem branding.
+#
 use Data::Dumper;
 sub list_obs_pkg;
 
@@ -11,8 +15,13 @@ my $dest_prj_prefix = 'oem:';
 my $obs_api = 'https://s2.owncloud.com';
 
 my $client_name = $ARGV[0];
-die "Usage: $0 oem:clientname\n" unless $client_name;
-$client_name =~ s{^oem:}{};
+die "Usage: $0 oem:brandname [DESTPROJ:]\nDefault destination project: $dest_prj_prefix\n" unless $client_name;
+if ($ARGV[1])
+  {
+    $dest_prj_prefix = $ARGV[1];
+    warn "submitting package $client_name to nonstandard project prefix '$dest_prj_prefix'\n";
+  }
+$client_name =~ s{^\Q$dest_prj_prefix\E}{};
 
 my $dest_prj = $dest_prj_prefix . $client_name;
 my @existing_pkg = list_obs_pkg($obs_api, $dest_prj);

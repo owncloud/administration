@@ -18,6 +18,10 @@
 #	- Deriving the version number from the mirall tar ball filename, per default.
 #	  We can remove the version => ... entries from package.cfg now.
 #
+# 2014-06-20 jw@owncloud.com, v1.2
+#       - option -p destproj added. Default: 'oem:*' Now I can test in home:jw:oem:* 
+#         without messing with killing official builds.
+#       - option -r relid added. Default '<CI_CNT>.<B_CNT>'
 
 use Getopt::Std;
 use Config::IniFiles;
@@ -30,7 +34,7 @@ use Cwd;
 use Template;
 
 use strict;
-use vars qw($miralltar $themetar $templatedir $dir $opt_h $opt_o $opt_b $opt_c $opt_n $opt_f);
+use vars qw($miralltar $themetar $templatedir $dir $opt_h $opt_o $opt_b $opt_c $opt_n $opt_f $opt_p $dest_prj $opt_r);
 
 sub help() {
   print<<ENDHELP
@@ -53,6 +57,8 @@ sub help() {
   -c "params":  additional osc paramters
   -n:           don't recreate the tarball, use an existing one.
   -f:           force upload, upload even if nothing changed.
+  -p "project":	obs project used for -o and -b. Default: '$dest_prj'
+  -r "relid":	specify a build release identifier. This number will be part of the binary file names built by osc.
 
   Call example:
   ./genbranding.pl mirall-1.5.3.tar.bz2 cern.tar.bz2
@@ -119,7 +125,7 @@ sub createClientFromTemplate($) {
     my $targetDir = "$theme-client";
 
     if( $opt_o ) {
-	$targetDir = "oem:$theme/$targetDir";
+	$targetDir = "$dest_prj:$theme/$targetDir";
     } else {
 	mkdir("$theme-client");
     }
@@ -246,8 +252,12 @@ sub getSubsts( $ )
     return \%substs;
 }
 
+
 # main here.
-getopts('fnbohc:');
+$dest_prj = 'oem';
+getopts('fnbohc:p:r:');
+$dest_prj = $opt_p if defined $opt_p;
+$dest_prj =~ s{:$}{};
 
 help() if( $opt_h );
 help() unless( defined $ARGV[0] && defined $ARGV[1] );
@@ -268,15 +278,17 @@ print "Theme Tarball: $themetar\n";
 my $theme = getFileName( $ARGV[1] );
 
 if( $opt_o ) {
-    unless( -d "./oem" && -d "./oem:$theme/.osc" ) {
-	print "Checking out package oem:$theme/$theme-client\n";
-	checkoutPackage( "oem:$theme", "$theme-client", $opt_c );
-	chdir('../..'); # checkoutPackage chdirs into the package checkout
+    unless( -d "./$dest_prj" && -d "./$dest_prj:$theme/.osc" ) {
+	print "Checking out package $dest_prj:$theme/$theme-client\n";
+	my $cwd = Cwd::getcwd;
+	checkoutPackage( "$dest_prj:$theme", "$theme-client", $opt_c );
+	# chdir('../..'); # checkoutPackage chdirs into the package checkout, if the checkout succeeds.
+	chdir($cwd);
     } else {
 	# Update the checkout
 	my @osc = oscParams($opt_c);
 	push @osc, 'up';
-	chdir( "oem:$theme");
+	chdir( "$dest_prj:$theme");
 	doOSC( @osc );
 	chdir( '..' );
     }
@@ -304,6 +316,17 @@ unless( defined $substs->{version} )
     $substs->{version} = $vers;
   }
 
+unless (defined $substs->{buildrelease} )
+  {
+    if (defined $opt_r)
+      {
+        $substs->{buildrelease} = "<CI_CNT>.<B_CNT>.$opt_r";
+      }
+    else
+      {
+        $substs->{buildrelease} = '0';
+      }
+  }
 
 createClientFromTemplate( $substs );
 
@@ -311,7 +334,7 @@ my $clientdir = ".";
 
 
 if( $opt_o ) {
-    $clientdir = "oem:$theme/$theme-client";
+    $clientdir = "$dest_prj:$theme/$theme-client";
 }
 createTar($clientdir, $dirName);
 
