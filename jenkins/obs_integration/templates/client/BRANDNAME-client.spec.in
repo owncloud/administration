@@ -39,10 +39,13 @@ Patch2:         sle_cmake.diff
 # We need a more recent, prefixed Qt for SLE11
 %define qtprefix opt-
 %define _prefix /opt/qt-4.8
-%define cmake_args -DCMAKE_INCLUDE_PATH=%{_prefix}/include -DCMAKE_LIBRARY_PATH=%{_prefix}/%{_lib} -DNEON_INCLUDE_DIRS=/opt/neon-0.30.0/include/ -DNEON_LIBRARIES=/opt/neon-0.30.0/%{_lib}/libneon.so.27
+%define cmake_args -DCMAKE_INCLUDE_PATH=%{_prefix}/include -DCMAKE_LIBRARY_PATH=%{_prefix}/%{_lib} \
+-DNEON_INCLUDE_DIRS=/opt/neon-0.30.0/include/ -DNEON_LIBRARIES=/opt/neon-0.30.0/%{_lib}/libneon.so.27 \
+-DCMAKE_INSTALL_SYSCONFDIR=/opt/etc/[% shortname %] -DSYSCONF_INSTALL_DIR=/opt/etc/[% shortname %] \
+-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE
 %else
 %define qtprefix %{nil}
-%define cmake_args %{nil}
+%define cmake_args -DCMAKE_INSTALL_SYSCONFDIR=/opt/[% shortname %] -DSYSCONF_INSTALL_DIR=/opt/[% shortname %]
 %endif
 
 # default to have no docs. Cannot be built with old distros.
@@ -160,14 +163,13 @@ export PATH=%{_prefix}/bin:$PATH
 
 mkdir build
 pushd build
-cmake .. -DCMAKE_INSTALL_PREFIX=%{_prefix:/usr} -DCMAKE_INSTALL_SYSCONFDIR=/etc/[% shortname %] -DWITH_DOC=TRUE \
+cmake .. -DCMAKE_INSTALL_PREFIX=%{_prefix:/usr} -DWITH_DOC=TRUE \
   -DCMAKE_C_FLAGS:STRING="%{optflags}" \
   -DCMAKE_CXX_FLAGS:STRING="%{optflags}" \
   -DCMAKE_SKIP_RPATH=ON \
   -DCMAKE_BUILD_TYPE=RelWithDebInfo \
   -DCMAKE_INSTALL_PREFIX=%{_prefix} \
   -DCMAKE_DOC_INSTALL_PATH=%{_docdir}/ocsync \
-  -DSYSCONF_INSTALL_DIR=%{_sysconfdir} \
 %if %{_lib} == lib64
   -DLIB_SUFFIX=64 \
 %endif
