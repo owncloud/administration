@@ -41,11 +41,11 @@ Patch2:         sle_cmake.diff
 %define _prefix /opt/qt-4.8
 %define cmake_args -DCMAKE_INCLUDE_PATH=%{_prefix}/include -DCMAKE_LIBRARY_PATH=%{_prefix}/%{_lib} \
 -DNEON_INCLUDE_DIRS=/opt/neon-0.30.0/include/ -DNEON_LIBRARIES=/opt/neon-0.30.0/%{_lib}/libneon.so.27 \
--DCMAKE_INSTALL_SYSCONFDIR=/opt/etc/[% shortname %] -DSYSCONF_INSTALL_DIR=/opt/etc/[% shortname %] \
+-DCMAKE_INSTALL_SYSCONFDIR=/opt/etc/ -DSYSCONF_INSTALL_DIR=/opt/etc/ \
 -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE
 %else
 %define qtprefix %{nil}
-%define cmake_args -DCMAKE_INSTALL_SYSCONFDIR=/opt/[% shortname %] -DSYSCONF_INSTALL_DIR=/opt/[% shortname %]
+%define cmake_args -DCMAKE_INSTALL_SYSCONFDIR=/opt/etc/ -DSYSCONF_INSTALL_DIR=/opt/etc/
 %endif
 
 # default to have no docs. Cannot be built with old distros.
@@ -183,7 +183,7 @@ then
   mv conf.py doc/
 fi
 
-make %{?_smp_mflags}
+env LD_RUN_PATH=%{_libdir}/[% shortname %] make %{?_smp_mflags}
 
 make doc
 popd
@@ -256,7 +256,9 @@ fi
 /usr/share/applications/[% shortname %].desktop
 /usr/bin/[% shortname %]
 %endif
-%config /[% sysconfdir %]
+# %%config /[% sysconfdir %]
+%config /opt/etc/[% shortname %]
+%dir /opt/etc
 
 %files -n %{name}-doc
 %defattr(-,root,root,-)
