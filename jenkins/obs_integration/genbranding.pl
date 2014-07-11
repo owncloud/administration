@@ -22,6 +22,9 @@
 #       - option -p destproj added. Default: 'oem:*' Now I can test in home:jw:oem:* 
 #         without messing with killing official builds.
 #       - option -r relid added. Default '<CI_CNT>.<B_CNT>'
+#
+# 2014-07-11, jw, V1.3
+#	- allow absolute path names as parameters, too. Needed for scripting!
 
 use Getopt::Std;
 use Config::IniFiles;
@@ -268,8 +271,8 @@ $dir = getcwd;
 # Not used currently
 # mkdir("packages") unless( -d "packages" );
 
-$miralltar = $dir .'/'. $ARGV[0];
-$themetar = $dir .'/'. $ARGV[1];
+$miralltar = ($ARGV[0] =~ m{^/}) ? $ARGV[0] : $dir .'/'. $ARGV[0];
+$themetar  = ($ARGV[1] =~ m{^/}) ? $ARGV[1] : $dir .'/'. $ARGV[1];
 $templatedir = $dir .'/'. "templates";
 print "Mirall Tarball: $miralltar\n";
 print "Theme Tarball: $themetar\n";

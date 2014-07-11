@@ -17,8 +17,16 @@
 use Data::Dumper;
 use File::Temp ();		# tempdir()
 use File::Path;
+use POSIX;			# strftime()
+
 
 my $customer_themes_git = 'git@github.com:owncloud/customer-themes.git';
+my $source_git = 'https://github.com/owncloud/mirall.git';
+my $osc_cmd = 'osc -Ahttps://s2.owncloud.com';
+my $container_project = 'home:jw:oem';
+my $build_token = 'jw_'.strftime("%Y%m%d", localtime);
+my $genbranding = "env OBS_INTEGRATION_OSC='$osc' ./genbranding.pl -p '$container_project' -r '<CI_CNT>.<B_CNT>.$build_token' -o -f";
+
 my $TMPDIR_TEMPL = '_oem_XXXXX';
 our $verbose = 1;
 our $no_op = 0;
@@ -59,7 +67,6 @@ if ($source_tar =~ m{^v[\d\.]+$})
   {
     # CAUTION: keep in sync with
     # https://rotor.owncloud.com/view/mirall/job/mirall-source-master/configure
-    my $source_git = 'https://github.com/owncloud/mirall.git';
     my $branch = $source_tar;
     my $version = $1 if $branch =~ m{^v([\d\.]+)$};
 #    run("git clone --depth 1 --branch $branch $source_git $tmp_s");
@@ -104,4 +111,31 @@ for my $dir (sort @d)
   }
 
 print Dumper \@candidates;
+
+sub obs_prj_from_template
+{
+  my ($osc_cmd, $template_prj, $prj, $title) = @_;
+  open(my $ifd, "$osc_cmd meta prj '$template_prj'|") or die "cannot fetch meta prj desktop: $!\n";
+  my $meta_prj_template = join(<$ifd>);
+  close($ifd);
+  die "not impl";
+}
+
+sub obs_pkg_from_template
+{
+  my ($osc_cmd, $template_prj, $template_pkg, $prj, $pkg, $title) = @_;
+  die "not impl";
+}
+
+obs_prj_from_template('desktop', $osc_cmd, $container_project, "OwnCloud Desktop Client OEM Container project");
+
+for my $branding ('switchdrive')	# @candidates)
+  {
+    warn("skeleton code follows\n");
+    # generate the container projects
+    obs_prj_from_template($osc_cmd, 'desktop', "$container_project:$branding", "OwnCloud Desktop Client project $branding");
+    obs_pkg_from_template($osc_cmd, 'desktop', 'owncloud-client', '$container_project:$branding' '$branding-client', '$branding Desktop Client');
+    run("$genbranding '$source_tar' '$tmp/$branding.tar.bz2'");	# checkout branding-client, update, checkin.
+    run("./setup_oem_client.pl '$branding' '$container_project'");
+  }
 die("unfinished artwork in $tmp");

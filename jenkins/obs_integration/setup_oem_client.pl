@@ -2,7 +2,8 @@
 #
 # (c) 2014, jw@owncloud.com 
 #
-# setup_oem_client.pl expects that the subproject package already exists.
+# setup_oem_client.pl expects that the subproject already exists.
+# The branding-client package itself is not created here. Use genbranding -o to create it.
 # it adds a list of known dependencies, so that we can have all relevant binaries 
 # in one repo per oem branding.
 #
