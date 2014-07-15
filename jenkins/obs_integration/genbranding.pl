@@ -140,6 +140,7 @@ sub createClientFromTemplate($) {
     foreach my $source (grep ! /^\./,  readdir($dh)) {
         my $target = $source;
         $target =~ s/BRANDNAME/$theme/;
+        $target =~ s/SHORTNAME/$substs->{shortname}/;
 
         if($source =~ /\.in$/) {
             $target =~ s/\.in$//;

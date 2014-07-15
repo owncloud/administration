@@ -24,6 +24,11 @@
 #  https://rotor.owncloud.com/job/customer-themes		   (we pull ourselves)
 #  https://rotor.owncloud.com/view/mirall/job/mirall-linux-custom  (another genbranding.pl wrapper)
 #
+# CAUTION:
+# genbranding.pl only works when its cwd is in its own directory. It needs to find its 
+# ownCloud/BuildHelper.pm and templates/clinet/* files.
+# -> disadvantage, it creates a temporary working directory there.
+#
 use Data::Dumper;
 use File::Path;
 use File::Temp ();	# tempdir()
@@ -39,11 +44,11 @@ my $container_project   = 'home:jw:oem';
 my $customer_themes_git = 'git@github.com:owncloud/customer-themes.git';
 my $source_git          = 'https://github.com/owncloud/mirall.git';
 my $osc_cmd             = 'osc -Ahttps://s2.owncloud.com';
-my $genbranding         = "env OBS_INTEGRATION_OSC='$osc_cmd' ./genbranding.pl -p '$container_project' -r '<CI_CNT>.<B_CNT>.$build_token' -o -f";
+my $genbranding         = "env OBS_INTEGRATION_OSC='$osc_cmd' ./genbranding.pl -p '$container_project' -r '$build_token' -o -f";
 
 my $TMPDIR_TEMPL = '_oem_XXXXX';
 our $verbose = 1;
-our $no_op = 0;
+our $no_op = 1;
 my $skipahead = 5;	# 5 start with all tarballs there.
 
 sub run
@@ -242,13 +247,27 @@ for my $branding ('switchdrive')	# @candidates)
     ## create an empty package, so that genbranding is happy.
     obs_pkg_from_template($osc_cmd, 'desktop', 'owncloud-client', "$container_project:$branding", "$branding-client", "$branding Desktop Client");
 
+    # checkout branding-client, update, checkin.
     run("$osc_cmd checkout '$container_project:$branding' '$branding-client'");
-    run("$genbranding '$source_tar' '$tmp/$branding.tar.bz2'");	# checkout branding-client, update, checkin.
+    # we run with closed stdin, so that it does not open less with the *.changes file.
+    run("$genbranding '$source_tar' '$tmp/$branding.tar.bz2' </dev/null");	
     run("rm -rf '$container_project:$branding'");
 
     ## fill in all the support packages.
     ## CAUTION: trailing colon is important!
     run("./setup_oem_client.pl '$branding' '$container_project:'");
+
+    ## babble out the diffs. Just for the logfile.
+    ## This helps catching outdated *.in files in templates/client/* -- 
+    ## genbranding uses them. Mabye it should use files from the template package as template?
+    for my $f ('%s-client.spec', '%s-client.dsc', 'debian.contol', '%s-client.desktop')
+      {
+        my $template_file = sprintf "%f", 'owncloud';
+        my $branding_file = sprintf "%f", $branding;
+	run("$osc_cmd cat desktop owncloud-client $template_file > $tmp/$template_file");
+	run("$osc_cmd cat '$container_project:$branding' '$branding-client' '$branding_file'> $tmp/$branding_file");
+	run("diff -ub '$tmp/$template_file' '$tmp/$branding_file'");
+      }
   }
 
 die("leaving around $tmp");
