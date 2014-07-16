@@ -38,7 +38,7 @@ use Cwd ();
 my $build_token         = 'jw_'.strftime("%Y%m%d", localtime);
 
 my $source_tar          = shift || 'v1.6.1';
-my $container_project   = 'home:jw:oem';
+my $container_project   = 'oem';	#'home:jw:oem';
 
 
 my $customer_themes_git = 'git@github.com:owncloud/customer-themes.git';
@@ -48,8 +48,22 @@ my $genbranding         = "env OBS_INTEGRATION_OSC='$osc_cmd' ./genbranding.pl -
 
 my $TMPDIR_TEMPL = '_oem_XXXXX';
 our $verbose = 1;
-our $no_op = 1;
-my $skipahead = 5;	# 5 start with all tarballs there.
+our $no_op = 0;
+my $skipahead = 0;	# 5 start with all tarballs there.
+
+my $scriptdir = $1 if Cwd::abs_path($0) =~ m{(.*)/};
+
+my $tmp;
+if ($skipahead)
+  {
+    $tmp = '/tmp/_oem_Rjc9m';
+    print "re-using tmp=$tmp\n";
+  }
+else
+  {
+    $tmp = File::Temp::tempdir($TMPDIR_TEMPL, DIR => '/tmp/');
+  }
+my $tmp_t = "$tmp/customer_themes_git";
 
 sub run
 {
@@ -117,19 +131,6 @@ sub fetch_mirall_from_branch
   return $source_tar;
 }
 
-
-my $tmp;
-if ($skipahead)
-  {
-    $tmp = '/tmp/_oem_KxE90';
-    print "re-using tmp=$tmp\n";
-  }
-else
-  {
-    $tmp = File::Temp::tempdir($TMPDIR_TEMPL, DIR => '/tmp/');
-  }
-
-my $tmp_t = "$tmp/customer_themes_git";
 
 $source_tar = fetch_mirall_from_branch($source_git, $source_tar, $tmp) 
   if $source_tar =~ m{^v[\d\.]+$};
@@ -236,10 +237,9 @@ sub obs_pkg_from_template
 
 ## make sure the top project is there in obs
 obs_prj_from_template($osc_cmd, 'desktop', $container_project, "OwnCloud Desktop Client OEM Container project");
-my $scriptdir = $1 if $0 =~ m{(.*)/};
 chdir($scriptdir) if defined $scriptdir;
 
-for my $branding ('switchdrive')	# @candidates)
+for my $branding ('cloudtirea', 'polybox')		# @candidates)
   {
     ## generate the individual container projects
     obs_prj_from_template($osc_cmd, 'desktop', "$container_project:$branding", "OwnCloud Desktop Client project $branding");
@@ -248,9 +248,10 @@ for my $branding ('switchdrive')	# @candidates)
     obs_pkg_from_template($osc_cmd, 'desktop', 'owncloud-client', "$container_project:$branding", "$branding-client", "$branding Desktop Client");
 
     # checkout branding-client, update, checkin.
+    run("rm -rf '$container_project:$branding'");
     run("$osc_cmd checkout '$container_project:$branding' '$branding-client'");
-    # we run with closed stdin, so that it does not open less with the *.changes file.
-    run("$genbranding '$source_tar' '$tmp/$branding.tar.bz2' </dev/null");	
+    # we run in |cat, so that git diff not open less with the (useless) changes 
+    run("$genbranding '$source_tar' '$tmp/$branding.tar.bz2' | cat");	
     run("rm -rf '$container_project:$branding'");
 
     ## fill in all the support packages.
@@ -260,15 +261,24 @@ for my $branding ('switchdrive')	# @candidates)
     ## babble out the diffs. Just for the logfile.
     ## This helps catching outdated *.in files in templates/client/* -- 
     ## genbranding uses them. Mabye it should use files from the template package as template?
-    for my $f ('%s-client.spec', '%s-client.dsc', 'debian.contol', '%s-client.desktop')
+    for my $f ('%s-client.spec', '%s-client.dsc', 'debian.control', '%s-client.desktop')
       {
-        my $template_file = sprintf "%f", 'owncloud';
-        my $branding_file = sprintf "%f", $branding;
+        my $template_file = sprintf "$f", 'owncloud';
+        my $branding_file = sprintf "$f", $branding;
 	run("$osc_cmd cat desktop owncloud-client $template_file > $tmp/$template_file");
 	run("$osc_cmd cat '$container_project:$branding' '$branding-client' '$branding_file'> $tmp/$branding_file");
-	run("diff -ub '$tmp/$template_file' '$tmp/$branding_file'");
+	run("diff -ub '$tmp/$template_file' '$tmp/$branding_file' || true");
+	unlink("$tmp/$template_file");
+	unlink("$tmp/$branding_file");
       }
   }
 
-die("leaving around $tmp");
+if ($skipahead)
+  {
+    die("leaving around $tmp");
+  }
+else
+  {
+    run("sleep 3; rm -rf $tmp");
+  }
 
