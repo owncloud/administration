@@ -39,6 +39,7 @@ my $build_token         = 'jw_'.strftime("%Y%m%d", localtime);
 
 my $source_tar          = shift || 'v1.6.1';
 my $container_project   = 'oem';	#'home:jw:oem';
+# my @client_filter	= qw(cloudtirea);
 
 
 my $customer_themes_git = 'git@github.com:owncloud/customer-themes.git';
@@ -239,8 +240,20 @@ sub obs_pkg_from_template
 obs_prj_from_template($osc_cmd, 'desktop', $container_project, "OwnCloud Desktop Client OEM Container project");
 chdir($scriptdir) if defined $scriptdir;
 
-for my $branding ('cloudtirea', 'polybox')		# @candidates)
+my %client_filter = map { $_ => 1 } @client_filter;
+warn Dumper $client_filter;
+for my $branding (@candidates)
   {
+    if (@client_filter)
+      {
+        unless ($client_filter{$branding})
+	  {
+	    print "Branding $branding skipped: not in client_filter\n";
+	    next;
+	  }
+	delete $client_filter{$branding};
+      }
+
     ## generate the individual container projects
     obs_prj_from_template($osc_cmd, 'desktop', "$container_project:$branding", "OwnCloud Desktop Client project $branding");
 
@@ -271,6 +284,13 @@ for my $branding ('cloudtirea', 'polybox')		# @candidates)
 	unlink("$tmp/$template_file");
 	unlink("$tmp/$branding_file");
       }
+  }
+
+if (@client_filter and scalar(keys %client_filter))
+  {
+    print "unused filter terms: ", Dumper \%client_filter;
+    print "check your spelling!\n";
+    sleep 10;
   }
 
 if ($skipahead)
