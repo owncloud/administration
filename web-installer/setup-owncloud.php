@@ -200,7 +200,7 @@ class oc_setup {
 		');
 
 		if($nextpage === 2) {
-			echo ('Install in subdirectory: <input type="text" name="directory" value="owncloud" required="required"/>');
+			echo ('Install in subdirectory: <input type="text" title="Allowed characters are a-z A-Z 0-9 _" name="directory" value="owncloud" required="required" pattern="[0-9a-zA-Z_]+"/>');
 		}
 		if($nextpage === 3) {
 			echo ('<input type="hidden" value="'.$_GET['directory'].'" name="directory" />');
@@ -244,7 +244,10 @@ class oc_setup {
 	* @brief Shows the install screen
 	*/ 
 	static public function showinstall(){
-		$error=oc_setup::install();
+		$error = oc_setup::checkdirectoryname();
+		if($error==''){
+			$error=oc_setup::install();
+		}
 	
 		if($error=='') {
 			$txt='ownCloud is now installed';
@@ -265,6 +268,17 @@ class oc_setup {
 		
 		// redirect to ownCloud
 		header("Location: ".$_GET['directory']);	
+	}
+
+	/**
+	*@brief Checks if directory name is valid (only a-z A-Z 0-9 _ chars allowed)
+	*/
+	static public function checkdirectoryname(){
+		$error = "";
+		$pattern = '/[^0-9a-zA-Z_]+/';
+		if(preg_match($pattern, $_GET['directory']))
+			$error .= 'Invalid character found in directoryname. You can only use the following characters: a-z A-Z 0-9 _';
+		return $error;
 	}
 	
 }
