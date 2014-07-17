@@ -25,6 +25,9 @@
 #
 # 2014-07-11, jw, V1.3
 #	- allow absolute path names as parameters, too. Needed for scripting!
+#
+# FIXME: We must remove old tar balls, when we add a new one.
+# otherwise debian all fails!
 
 use Getopt::Std;
 use Config::IniFiles;

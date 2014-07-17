@@ -1,4 +1,7 @@
 #!/bin/sh
+# 
+# Repo at github.com:owncloud/administration.git/s2.owncloud.com/bin
+
 
 if [ $# -ne 2 ]
   then
@@ -31,6 +34,7 @@ then
   [ $? -eq 0 ] && rm -rf $oem-$version/CentOS*
 fi
 tar cf /tmp/$oem-$version-linux.tar $oem-$version/*
+ls -la /tmp/$oem-$version*
 
 # ... and remove the tmp
 rm -rf /tmp/$oem-$version
