@@ -41,3 +41,5 @@ rm -rf /tmp/$oem-$version
 
 # end.
 
+echo "You can now copy the packages to dl-oc -- use this command or similar:"
+echo rsync -rzv --delete /tmp/$oem-$version-*.tar root@download.owncloud.com:/srv/www/htdocs/desktop/projects/$oem
