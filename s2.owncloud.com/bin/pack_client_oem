@@ -1,6 +1,8 @@
 #!/bin/sh
 # 
 # Repo at github.com:owncloud/administration.git/s2.owncloud.com/bin
+#
+# 2014-07-18, jw -- split_debug feature added.
 
 
 if [ $# -ne 2 ]
@@ -11,6 +13,9 @@ fi
 
 oem=$1
 version=$2
+
+# comment this line to disable split_debug
+split_debug=split_debug
 
 echo "Packaging linux client tarball for $oem version $version"
 
@@ -30,14 +35,34 @@ mv /tmp/$oem /tmp/$oem-$version
 cd /tmp
 if [ -d $oem-$version/CentOS* ]
 then
+  if [ x$split_debug != x ]; then
+    debugdir=$(ls -d $oem-$version/CentOS*).debug
+    mkdir -p $oem-$version/debug
+    (cd $oem-$version/CentOS_CentOS* ; find . \( -name \*-debuginfo\* -o -name \*src.rpm \) > ../debug.list )
+    ## FIXME mv would be more efficient than cpio + rm. 
+    ## But how can we mv with preserving hierarchy?
+    echo Splitting debug packages
+    (cd $oem-$version/CentOS_CentOS* ; cpio -pdmv < ../debug.list ../debug )
+    (cd $oem-$version/CentOS_CentOS* ; xargs rm -f < ../debug.list )
+    mv $oem-$version/debug $debugdir
+    rm $oem-$version/debug.list
+
+    tar cf /tmp/$oem-$version-centos6.debug.tar $debugdir
+    [ $? -eq 0 ] && rm -rf $debugdir
+  fi
   tar cf /tmp/$oem-$version-centos6.tar $oem-$version/CentOS*
   [ $? -eq 0 ] && rm -rf $oem-$version/CentOS*
 fi
 tar cf /tmp/$oem-$version-linux.tar $oem-$version/*
-ls -la /tmp/$oem-$version*
 
 # ... and remove the tmp
 rm -rf /tmp/$oem-$version
+
+foreach tar in /tmp/$oem-$version*.tar; do
+  check_packed_client_oem.pl $tar || exit 1;
+done
+
+ls -la /tmp/$oem-$version*
 
 # end.
 
