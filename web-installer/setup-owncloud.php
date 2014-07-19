@@ -93,7 +93,9 @@ class oc_setup {
 		$error='';
 		
 		// downloading latest release
-		$error.=oc_setup::getfile('https://download.owncloud.org/download/community/owncloud-latest.zip','oc.zip');
+		if (!file_exists('oc.zip')) {
+			$error.=oc_setup::getfile('https://download.owncloud.org/download/community/owncloud-latest.zip','oc.zip');
+		}
 		
 		// unpacking into owncloud folder
 		$zip = new ZipArchive;
@@ -105,7 +107,14 @@ class oc_setup {
 			$zip->close();
 
 			// Move it to the folder
-			rename($owncloud_tmp_dir.'/owncloud', "./".$_GET['directory']);
+			if ($_GET['directory'] === '.') {
+				foreach (array_diff(scandir($owncloud_tmp_dir.'/owncloud'), array('..', '.')) as $item) {
+					rename($owncloud_tmp_dir.'/owncloud/'.$item, './'.$item);
+				}
+				rmdir($owncloud_tmp_dir.'/owncloud');
+			} else {
+				rename($owncloud_tmp_dir.'/owncloud', './'.$_GET['directory']);
+			}
 			// Delete the tmp folder
 			rmdir($owncloud_tmp_dir);
 		} else {
@@ -200,7 +209,8 @@ class oc_setup {
 		');
 
 		if($nextpage === 2) {
-			echo ('Install in subdirectory: <input type="text" name="directory" value="owncloud" required="required"/>');
+			echo ('<p style="padding-left:0.5em; padding-right:0.5em">Enter a single "." to install in the current directory, or enter a subdirectory to install to:</p>
+				<input type="text" style="margin-left:0; margin-right:0" name="directory" value="owncloud" required="required" />');
 		}
 		if($nextpage === 3) {
 			echo ('<input type="hidden" value="'.$_GET['directory'].'" name="directory" />');
