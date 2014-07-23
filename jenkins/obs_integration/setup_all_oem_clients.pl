@@ -14,15 +14,18 @@
 #  - Remove the checkout working dir. It is not in the tmp area.
 #  - run ./setup_oem_client.pl with the dest_prj, (packages to be created on demand)
 #
-# Poll obs every 5 minutes:
-#  For each packge in the obs tree
-#   - check all enabled targets for binary packages with the given build token number.
-#     if a package has them all ready. Generate the linux package binary tar ball.
-#
 # This replaces:
 #  https://rotor.owncloud.com/view/mirall/job/mirall-source-master (rolled into
 #  https://rotor.owncloud.com/job/customer-themes		   (we pull ourselves)
 #  https://rotor.owncloud.com/view/mirall/job/mirall-linux-custom  (another genbranding.pl wrapper)
+#
+# TODO: Poll obs every 5 minutes:
+#  For each packge in the obs tree
+#   - check all enabled targets for binary packages with the given build token number.
+#     if a package has them all ready. Generate the linux package binary tar ball.
+#   - run administration/s2.owncloud.com/bin pack_client_oem (including check_packed_client_oem.pl)
+#     to consistently publish the client.
+#     
 #
 # CAUTION:
 # genbranding.pl only works when its cwd is in its own directory. It needs to find its 
@@ -35,6 +38,11 @@ use File::Temp ();	# tempdir()
 use POSIX;		# strftime()
 use Cwd ();
 
+# used only by genbranding.pl -- but better crash here if missing:
+use Config::IniFiles;	# Requires: perl-Config-IniFiles
+use Templates;		# Requires: perl-Template-Toolkit
+
+
 my $build_token         = 'jw_'.strftime("%Y%m%d", localtime);
 
 my $source_tar          = shift || 'v1.6.1';
@@ -45,7 +53,7 @@ my $container_project   = 'oem';	#'home:jw:oem';
 my $customer_themes_git = 'git@github.com:owncloud/customer-themes.git';
 my $source_git          = 'https://github.com/owncloud/mirall.git';
 my $osc_cmd             = 'osc -Ahttps://s2.owncloud.com';
-my $genbranding         = "env OBS_INTEGRATION_OSC='$osc_cmd' ./genbranding.pl -p '$container_project' -r '$build_token' -o -f";
+my $genbranding         = "./genbranding.pl -c '-Ahttps://s2.owncloud.com' -p '$container_project' -r '$build_token' -o -f";
 
 my $TMPDIR_TEMPL = '_oem_XXXXX';
 our $verbose = 1;
@@ -265,6 +273,8 @@ for my $branding (@candidates)
     run("$osc_cmd checkout '$container_project:$branding' '$branding-client'");
     # we run in |cat, so that git diff not open less with the (useless) changes 
     run("$genbranding '$source_tar' '$tmp/$branding.tar.bz2' | cat");	
+    # FIXME Abort, if this fails. pipe cat prevents error diagnostics here.
+
     run("rm -rf '$container_project:$branding'");
 
     ## fill in all the support packages.
