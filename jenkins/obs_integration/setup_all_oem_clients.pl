@@ -40,14 +40,22 @@ use Cwd ();
 
 # used only by genbranding.pl -- but better crash here if missing:
 use Config::IniFiles;	# Requires: perl-Config-IniFiles
-use Templates;		# Requires: perl-Template-Toolkit
+use Template;		# Requires: perl-Template-Toolkit
 
 
 my $build_token         = 'jw_'.strftime("%Y%m%d", localtime);
+my $source_tar          = shift;
 
-my $source_tar          = shift || 'v1.6.1';
-my $container_project   = 'oem';	#'home:jw:oem';
-# my @client_filter	= qw(cloudtirea);
+die "Usage: $0 v1.6.1 [home:jw:oem [filterbranding,...]]\n" if !defined $source_tar or $source_tar =~ m{^-};
+
+my $container_project   = shift || 'oem';	#'home:jw:oem';
+
+my $client_filter	= shift || "";
+my @client_filter	= split(/[,\|\s]/, $client_filter);
+my %client_filter = map { $_ => 1 } @client_filter;
+
+die Dumper \@client_filter, \%client_filter;
+
 
 
 my $customer_themes_git = 'git@github.com:owncloud/customer-themes.git';
@@ -158,6 +166,7 @@ my @candidates = ();
 for my $dir (sort @d)
   {
     next unless -d "$tmp_t/$dir/mirall";
+    next if @client_filter and not $client_filter{$dir};
     #  - generate the branding tar ball
     # CAUTION: keep in sync with jenkins jobs customer_themes
     # https://rotor.owncloud.com/view/mirall/job/customer-themes/configure
@@ -248,8 +257,6 @@ sub obs_pkg_from_template
 obs_prj_from_template($osc_cmd, 'desktop', $container_project, "OwnCloud Desktop Client OEM Container project");
 chdir($scriptdir) if defined $scriptdir;
 
-my %client_filter = map { $_ => 1 } @client_filter;
-warn Dumper $client_filter;
 for my $branding (@candidates)
   {
     if (@client_filter)
@@ -272,8 +279,8 @@ for my $branding (@candidates)
     run("rm -rf '$container_project:$branding'");
     run("$osc_cmd checkout '$container_project:$branding' '$branding-client'");
     # we run in |cat, so that git diff not open less with the (useless) changes 
-    run("$genbranding '$source_tar' '$tmp/$branding.tar.bz2' | cat");	
-    # FIXME Abort, if this fails. pipe cat prevents error diagnostics here.
+    run("env PAGER=cat $genbranding '$source_tar' '$tmp/$branding.tar.bz2'");	
+    # FIXME: Test abort, if this fails. Pipe cat prevents error diagnostics here. Maybe PAGER=cat helps?
 
     run("rm -rf '$container_project:$branding'");
 

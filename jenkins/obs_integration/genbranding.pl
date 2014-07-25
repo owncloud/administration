@@ -26,8 +26,8 @@
 # 2014-07-11, jw, V1.3
 #	- allow absolute path names as parameters, too. Needed for scripting!
 #
-# FIXME: We must remove old tar balls, when we add a new one.
-# otherwise debian all fails!
+# 2014-07-25, jw, V1.4
+#	- fixed removal of obsolete tar balls. Otherwise all Debians fail!
 
 use Getopt::Std;
 use Config::IniFiles;
@@ -38,6 +38,7 @@ use File::Find;
 use ownCloud::BuildHelper;
 use Cwd;
 use Template;
+use Data::Dumper;
 
 use strict;
 use vars qw($miralltar $themetar $templatedir $dir $opt_h $opt_o $opt_b $opt_c $opt_n $opt_f $opt_p $dest_prj $opt_r);
@@ -353,39 +354,43 @@ if( $opt_o ) {
     chdir( $clientdir );
     my %changes = oscChangedFiles($opt_c);
 
-    foreach my $f (keys %changes) {
-	# print " * Checking $f => $changes{$f} ($dirName.tar.bz2)\n";
-	if( $changes{$f} =~ /[A\?]/ ) {
+    foreach my $changed_file (keys %changes) {
+	# print " * Checking $changed_file => $changes{$changed_file} ($dirName.tar.bz2)\n";
+	if( $changes{$changed_file} =~ /[A\?M]/ ) {
 	    my @osc = oscParams($opt_c);
-	    if( $changes{$f} eq '?' ) { # Add the new tarball to obs
-		push @osc, ('add', $f);
+	    if( $changes{$changed_file} eq '?' ) { # Add the new tarball to obs
+		push @osc, ('add', $changed_file);
 		doOSC(@osc);
 		$changeCnt++;
 	    }
 
 	    # remove the previous tarball!
 	    # search for the old tarball
-	    if( $f eq $dirName . ".tar.bz2" ) {
+	    if( $changed_file eq $dirName . ".tar.bz2" ) {
 	      my $oldTar = $dirName; # something like mirall-cernbox-1.6.0nightly20140505
-	      $oldTar =~ s/(.+)-.*$/$1/;   # remove the version
+	      $oldTar =~ s/(.+)-.*?$/$1/;   # remove the version	(aka chop at the last '-')
 
 	      opendir(my $dh, '.') || die "can't opendir '.': $!";
-	      $oldTar = grep { /$oldTar-.*\.tar\.bz2/ && $_ ne "$dirName.tar.bz2" } readdir($dh);
+	      my @f = readdir($dh);
 	      closedir $dh;
+	      my @obsoleted = grep { /\Q$oldTar\E-.*\.tar\.bz2/ && $_ ne $changed_file } @f;
 
-	      if( $oldTar && -e $oldTar ) {
-		  print "Removing old source file $oldTar\n";
-		  @osc = oscParams($opt_c);
-		  push @osc, ('rm', $oldTar);
-		  doOSC(@osc);
-		  $changeCnt++;
-	      }
+	      foreach my $begone (@obsoleted)
+		{
+		  if( -e $begone ) {
+		      print "Removing obsolete source tar file $begone\n";
+		      @osc = oscParams($opt_c);
+		      push @osc, ('rm', $begone);
+		      doOSC(@osc);
+		      $changeCnt++;
+		  }
+		}
 	    }
 	} else {
-	    print "  Status of $f: $changes{$f}\n";
+	    print "  Status of $changed_file: $changes{$changed_file}\n";
 	    # count files with real changes
-	    if( $changes{$f} !~ /[MD]/ ) {
-		print "Error: An unexpected file <$f> was found in the osc package.\n";
+	    if( $changes{$changed_file} !~ /[MD]/ ) {
+		print "Error: An unexpected file <$changed_file> was found in the osc package.\n";
 		die("Please remove or osc add and try again!\n");
 	    }
 	    $changeCnt++;
