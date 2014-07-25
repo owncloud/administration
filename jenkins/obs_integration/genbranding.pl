@@ -419,7 +419,8 @@ if( $opt_o ) {
       }
     }
     
-    my $change = "  automatically generated branding added.";
+    my $change = "  Automatically generated branding added. Version=$substs->{version}";
+       $change .= ", release_id=$opt_r\n" if defined $opt_r;
     addDebChangelog( "$theme-client", $change, $substs->{version} );
     addSpecChangelog( "$theme-client", $change );
     chdir( "../.." );

@@ -54,7 +54,6 @@ my $client_filter	= shift || "";
 my @client_filter	= split(/[,\|\s]/, $client_filter);
 my %client_filter = map { $_ => 1 } @client_filter;
 
-die Dumper \@client_filter, \%client_filter;
 
 
 
