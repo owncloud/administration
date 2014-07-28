@@ -3,6 +3,7 @@
 # Repo at github.com:owncloud/administration.git/s2.owncloud.com/bin
 #
 # 2014-07-18, jw -- split_debug feature added.
+# 2014-07-28, jw -- printing userfriendly upload and rm commands at the end.
 
 
 if [ $# -ne 2 ]
@@ -58,7 +59,7 @@ tar cf /tmp/$oem-$version-linux.tar $oem-$version/*
 # ... and remove the tmp
 rm -rf /tmp/$oem-$version
 
-foreach tar in /tmp/$oem-$version*.tar; do
+for tar in /tmp/$oem-$version*.tar; do
   check_packed_client_oem.pl $tar || exit 1;
 done
 
@@ -66,5 +67,13 @@ ls -la /tmp/$oem-$version*
 
 # end.
 
-echo "You can now copy the packages to dl-oc -- use this command or similar:"
-echo rsync -rzv --delete /tmp/$oem-$version-*.tar root@download.owncloud.com:/srv/www/htdocs/desktop/projects/$oem
+# We split the commands in half, if we use the splitdebug feature, so that the user can do copy/paste and 
+# skip 1.8G debug packages per branding.
+normal=$(ls /tmp/$oem-$version-*.tar | grep -v .debug.tar)
+
+echo "You can now copy the packages to dl-oc -- use these commands or similar:"
+if [ x$split_debug != x ]; then
+  echo rsync -rzv --delete /tmp/$oem-$version-*.debug.tar root@download.owncloud.com:/srv/www/htdocs/desktop/projects/$oem
+fi
+echo rsync -rzv --delete $normal root@download.owncloud.com:/srv/www/htdocs/desktop/projects/$oem
+echo rm -f /tmp/$oem-$version-*.tar 
