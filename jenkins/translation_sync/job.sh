@@ -63,6 +63,6 @@ cd ..
 git status
 git add l10n
 git commit -am "[tx-robot] updated from transifex" || true
-git push $BRANCH
+git push master $BRANCH
 git status
 echo "done"
