@@ -51,7 +51,7 @@ fi
 cd l10n/ 
 perl l10n.pl $APPNAME read 
 tx -d push -s 
-tx -d pull -a 
+tx -d pull -a --minimum-perc=75
 perl l10n.pl $APPNAME write 
 find . -name \*.po -type f -delete
 find . -name \*.pot -type f -delete
