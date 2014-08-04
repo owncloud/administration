@@ -118,6 +118,7 @@ if (%building)
   }
 
 ## trigger all that failed.
+my %prj_meta_visited;
 for my $f (keys %failed)
   {
     my ($prj,$target,$arch) = split /\//, $f;
@@ -125,6 +126,15 @@ for my $f (keys %failed)
     $pkg =~ s{^\Q$container_project\E:}{};
     $pkg .= '-client';
 
+    unless ($prj_meta_visited{$prj})
+      {
+        ## if we have a status of broken: interconnect error: api.opensuse.org: no such host
+	## then a simple rebuildpac does not help. We have to touch the meta data of the project
+	## to trigger the rebuild.
+        my $cmd = "$osc_cmd meta $prj ...";
+	$prj_meta_visited{$prj}++;
+	warn "$cmd trigger not implemented\n";
+      }
     my $cmd = "$osc_cmd rebuildpac $prj $pkg $target $arch";
     print "retrying $failed{$f}\n+ $cmd\n";
     system($cmd);
