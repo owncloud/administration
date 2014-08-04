@@ -1,6 +1,6 @@
 Format: 1.0
 Source: [% themename %]-client
-Version: [% version %]
+Version: [% version %]-0.[% buildrelease %]
 Binary: [% shortname %]-client
 Maintainer: [% maintainer %]
 Architecture: any
