@@ -329,10 +329,12 @@ unless (defined $substs->{buildrelease} )
     if (defined $opt_r)
       {
         $substs->{buildrelease} = "<CI_CNT>.<B_CNT>.$opt_r";
+        $substs->{buildrelease_deb} = "0.$opt_r";
       }
     else
       {
         $substs->{buildrelease} = '0';
+        $substs->{buildrelease_deb} = '0';
       }
   }
 
