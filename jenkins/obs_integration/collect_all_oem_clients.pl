@@ -117,6 +117,19 @@ if (%building)
     exit(1) unless $opt_k;
   }
 
+sub touch_meta_prj
+{
+  my ($osc_cmd, $prj) = @_;
+  open(my $ifd, "$osc_cmd meta prj '$prj'|") or die "cannot fetch meta prj $prj: $!\n";
+  my $meta_prj_template = join("",<$ifd>);
+  close($ifd);
+  $meta_prj_template .= ' ';	# make an insignificant change
+  open(my $ofd, "|$osc_cmd meta prj '$prj' -F - >/dev/null") or die "cannot touch meta: $!\n";
+  print $ofd $meta_prj_template;
+  close($ofd) or die "touching prj meta failed: $!\n";
+  print "Project '$prj' meta touched.\n";
+}
+
 ## trigger all that failed.
 my %prj_meta_visited;
 for my $f (keys %failed)
@@ -131,9 +144,8 @@ for my $f (keys %failed)
         ## if we have a status of broken: interconnect error: api.opensuse.org: no such host
 	## then a simple rebuildpac does not help. We have to touch the meta data of the project
 	## to trigger the rebuild.
-        my $cmd = "$osc_cmd meta $prj ...";
 	$prj_meta_visited{$prj}++;
-	warn "$cmd trigger not implemented\n";
+	touch_meta_prj($osc_cmd, $prj);
       }
     my $cmd = "$osc_cmd rebuildpac $prj $pkg $target $arch";
     print "retrying $failed{$f}\n+ $cmd\n";

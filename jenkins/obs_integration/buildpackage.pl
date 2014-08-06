@@ -3,9 +3,17 @@
 # This script automates package build for jenkins based on OBS
 # Copyright Klaas Freitag <freitag@owncloud.com>
 #
+# used by rotor.owncloud.com, mirall-linux-master like this:
+#  cd jenkins/obs_integration
+#  ./buildpackage.pl -p *.tar.bz2
+#
 # Released under GPL V.2.
 #
+# 2014-08-05, jw@owncloud.com -- adapted to proper prerelease versioning.
+#	interface: prerelease, base_version, tar_version, and/or Version
 #
+# FIXME: need to remove old tar balls to make deb happy.
+# 
 use Getopt::Std;
 use Config::IniFiles;
 use File::Copy;
@@ -96,20 +104,50 @@ sub doBuild( $$ ) {
     }
   }
 
-  # Patch the spec file with the new version.
-  my %patchSpec;
-  $patchSpec{Version} = $version;
-  my $specFile = $packName .".spec";
-  patchAFile( $specFile, \%patchSpec );
 
-  # Patch the debian files.
-  %patchSpec = ();
+  my $specFile = $packName .".spec";
   my $debversion = $version;
   $debversion =~ s/_/-/;
+  # prerelease numbers need a '~'
+  $debversion =~ s{[_.-]*(nightly|daily|alpha|beta|rc)}{~$1};
+  if ($debversion =~ m{^(.*)~(.*)$})
+    {
+      my ($base_version, $prerelease) = ($1,$2);
+      my $n = patchAFile($specFile, 
+        {
+	  base_version 	=> $base_version, 
+	  prerelease 	=> $prerelease, 
+	  tar_version 	=> $version 
+	});
+      if ($n < 3) 
+        {
+	  warn "Yor $specFile is not prepared for prerelease config. Trying tar_version + Version in debian '~' style.\n";
+	  if (patchAFile($specFile, 
+	        { 
+		  Version => $debversion, 
+		  tar_version => $version 
+	        } ) < 2)
+	    {
+	      warn "Your $specFile has no tar_version define. Trying simple Version directly from the tar ball. This may spoil package updates.\n";
+	    }
+	}
+    }
+  else
+    {
+      ## we use prerelease %nil to signal to the specfile that this is not a prerelease
+      patchAFile($specFile, 
+        { 
+	  Version 	=> $version, 
+	  base_version 	=> $version, 
+	  tar_version 	=> $version, 
+	  prerelease 	=> '%nil' 
+	});
+    }
 
-  $patchSpec{Version} = $debversion;
+  # Patch the debian files.
+
   my $dscFile = $packName . ".dsc";
-  patchAFile( $dscFile, \%patchSpec );
+  patchAFile( $dscFile, { Version => $debversion } );
 
   # Get the build param
   my $arch = readIniValue( "$dir/buildpackage.ini", $pack, "arch" );
@@ -121,6 +159,7 @@ sub doBuild( $$ ) {
 
   my $changelog = "  * Update to nightly version $debversion";
   addDebChangelog( $packName, $changelog, $debversion );
+
 
   # Do the local builds.
   foreach my $build ( @builds ) {

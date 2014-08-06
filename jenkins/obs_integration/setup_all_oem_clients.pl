@@ -216,7 +216,7 @@ sub obs_prj_from_template
 
   open(my $ofd, "|$osc_cmd meta prj '$prj' -F - >/dev/null") or die "cannot create project: $!\n";
   print $ofd $meta_prj_template;
-  close($ofd);
+  close($ofd) or die "writing prj meta failed: $!\n";
   print "Project '$prj' created.\n";
 }
 

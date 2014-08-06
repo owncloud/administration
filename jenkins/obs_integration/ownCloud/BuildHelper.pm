@@ -18,6 +18,9 @@
 ################################################################
 # Contributors:
 #  Klaas Freitag <freitag@owncloud.com>
+#  Jürgen Weigert <jw@owncloud.com>
+#
+# 2014-08-05, support for %define key added.
 #
 package ownCloud::BuildHelper;
 
@@ -244,28 +247,44 @@ sub addSpecChangelog( $$ ) {
 # 2. Hash reference with values to patch
 #    The keys of the hash are appended automatically with a colon
 #    ie. "name" => "Klaas" sets the tag name: to Klaas
+# Return Value: 
+#   The number of successful substitutions done.
 #
 sub patchAFile( $$ ) {
     my ($filename, $rep) = @_;
     # rep is a hash reference.
 
-    return 1 unless( -e $filename );
+    return 0 unless( -e $filename );
 
     open( SPEC, "<$filename" ) || die("Unable to open $filename: $!\n");
     my @spec = <SPEC>;
     close SPEC;
 
+    my $counter = 0;
     my $line = 0;
     my @newspec;
     foreach my $s ( @spec ) {
       $line++;
 
       foreach my $key ( keys %$rep ) {
+        # no substitution, if the line contains a macro expansion
+        last if $s =~ /[^%]%\{/;	# }
+	
+	# replace key: value
         if( $s =~ /^$key:/ ) {
           $s = "$key: " . $rep->{$key} . "\n";
+	  $counter++;
 	  print "Replacing in line $line: $key -> $rep->{$key}\n";
 	  last;
         }
+	# replace %define key value
+	elsif ($s =~ m{^%define\s+\Q$key\E\s+}) {
+	  $s = "%define $key $rep->{$key}\n";
+	  $counter++;
+	  print "Replacing in line $line: %define $key -> $rep->{$key}\n";
+	  last;
+	}
+
       }
       push @newspec, $s;
     }
@@ -275,5 +294,6 @@ sub patchAFile( $$ ) {
     print SPEC @newspec;
     close SPEC;
 
-    return 1;
+#    warn "patchAFile $filename: counter=$counter ";
+    return $counter;
 }
