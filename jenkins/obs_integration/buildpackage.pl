@@ -12,7 +12,7 @@
 # 2014-08-05, jw@owncloud.com -- adapted to proper prerelease versioning.
 #	interface: prerelease, base_version, tar_version, and/or Version
 #
-# FIXME: need to remove old tar balls to make deb happy.
+# 2014-08-06: remove *all* old tar balls to make deb happy.
 # 
 use Getopt::Std;
 use Config::IniFiles;
@@ -86,22 +86,36 @@ sub doBuild( $$ ) {
   $version =~ s/\.tar\..*$//;
   print "Package Version: $version\n";
 
-  my $oldVersion = getFromSpecfile( $packName, 'Version' );
+  ## This no longer works since we use macros:
+  # my $oldVersion = getFromSpecfile( $packName, 'Version' );
 
-  if( $oldVersion ne $version ) {
+  opendir DIR, ".";
+  my @f = grep { /\.tar\./ } readdir DIR;
+  closedir DIR;
+
+  my $do_add = 1;
+
+  for my $f (@f) {
+    if ($f eq $tarFileName)
+      {
+        $do_add = 0;	# just keep it.
+      }
+    else
+      {
+        # remove an old tarball.
+        my $remFile = $f;
+        print "  >> Removing old source file $remFile\n";
+        if( -e $remFile ) {
+  	  my @oscr = ("remove", $remFile);
+	  doOSC( @oscr );
+      }
+    }
+  }
+
+  if ($do_add) {      
     print(" >> Adding tarball $tarFileName\n");
     my @osca = ("add", $tarFileName);
     doOSC( @osca );
-
-    # Get remove the old tarball.
-    if( $oldVersion ) {
-      my $remFile = "$pack-$oldVersion.tar.bz2";
-      print "  >> Removing old source file $remFile\n";
-      if( -e $remFile ) {
-	my @oscr = ("remove", $remFile);
-	doOSC( @oscr );
-      }
-    }
   }
 
 
