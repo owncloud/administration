@@ -4,6 +4,7 @@
 #
 # 2014-07-18, jw -- split_debug feature added.
 # 2014-07-28, jw -- printing userfriendly upload and rm commands at the end.
+# 2014-08-06, jw -- calling check_packed_client_oem.pl to assert right version.
 
 
 if [ $# -ne 2 ]
@@ -11,6 +12,8 @@ if [ $# -ne 2 ]
     echo "Call with arguments oem-name and version!"
     exit 1
 fi
+
+mydir=$(realpath $(dirname $0))
 
 oem=$1
 version=$2
@@ -60,7 +63,7 @@ tar cf /tmp/$oem-$version-linux.tar $oem-$version/*
 rm -rf /tmp/$oem-$version
 
 for tar in /tmp/$oem-$version*.tar; do
-  check_packed_client_oem.pl $tar || exit 1;
+  $mydir/check_packed_client_oem.pl $tar || exit 1;
 done
 
 ls -la /tmp/$oem-$version*
