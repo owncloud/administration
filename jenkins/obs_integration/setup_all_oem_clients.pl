@@ -120,7 +120,8 @@ sub fetch_mirall_from_branch
   run("git clone --depth 1 --branch $branch $source_git $gitsubdir")
     unless $skipahead > 1;
 
-  my $version = $1 if $branch =~ m{^v([\d\.]+)$};
+  # v1.6.2-themefix is a valid branch name.
+  my $version = $1 if $branch =~ m{^v([\d\.]+)(-\w+)?$};
   my $v_git = pull_VERSION_cmake("$gitsubdir/VERSION.cmake");
   if (defined $version)
     {
@@ -136,8 +137,8 @@ sub fetch_mirall_from_branch
     }
   else
     {
-      print "branch=$branch contains VERSION.cmake version=$version\n";
       $version = $v_git;
+      print "branch=$branch contains VERSION.cmake version=$version\n";
     }
 
   my $pkgname = "mirall-${version}";
@@ -148,11 +149,15 @@ sub fetch_mirall_from_branch
 }
 
 
+print "source_tar=$source_tar\n";
 $source_tar = fetch_mirall_from_branch($source_git, $source_tar, $tmp) 
-  if $source_tar =~ m{^v[\d\.]+$};
+  if $source_tar =~ m{^v[\d\.]+};
+print "source_tar=$source_tar\n";
 $source_tar = Cwd::abs_path($source_tar);	# we'll chdir() around. Take care.
+print "source_tar=$source_tar\n";
+sleep 5;
 
-die "need a source_tar path name or version number matching /^v[\\d\\.]+$/\n" unless defined $source_tar;
+die "need a source_tar path name or version number matching /^v[\\d\\.]+/\n" unless defined $source_tar and -e $source_tar;
 
 run("git clone --depth 1 $customer_themes_git $tmp_t") 
   unless $skipahead > 3;

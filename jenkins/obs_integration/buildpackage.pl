@@ -21,7 +21,7 @@ use ownCloud::BuildHelper;
 use Cwd;
 
 use strict;
-use vars qw($tarball $dir $opt_p $opt_h);
+use vars qw($tarball $dir $opt_p $opt_h $opt_n);
 
 sub help() {
   print<<ENDHELP
@@ -37,6 +37,7 @@ sub help() {
   Options:
   -h      this help text.
   -p      do the push to OBS.
+  -n      no local build attempts.
 
 ENDHELP
 ;
@@ -112,7 +113,7 @@ sub doBuild( $$ ) {
     }
   }
 
-  if ($do_add) {      
+  if (1) {	# $do_add) {      
     print(" >> Adding tarball $tarFileName\n");
     my @osca = ("add", $tarFileName);
     doOSC( @osca );
@@ -133,7 +134,7 @@ sub doBuild( $$ ) {
 	  prerelease 	=> $prerelease, 
 	  tar_version 	=> $version 
 	});
-      if ($n < 3) 
+      if ($n < 2) 
         {
 	  warn "Yor $specFile is not prepared for prerelease config. Trying tar_version + Version in debian '~' style.\n";
 	  if (patchAFile($specFile, 
@@ -174,22 +175,23 @@ sub doBuild( $$ ) {
   my $changelog = "  * Update to nightly version $debversion";
   addDebChangelog( $packName, $changelog, $debversion );
 
+  unless ($opt_n) {
+    # Do the local builds.
+    foreach my $build ( @builds ) {
+      # Do the build.
+      print " ** Building for $build\n";
+      my $buildPackDir = "$packDir/$build";
+      my $buildDescExt = 'spec';
+      $buildDescExt = 'dsc' if( $build =~ /ubuntu/i );
 
-  # Do the local builds.
-  foreach my $build ( @builds ) {
-    # Do the build.
-    print " ** Building for $build\n";
-    my $buildPackDir = "$packDir/$build";
-    my $buildDescExt = 'spec';
-    $buildDescExt = 'dsc' if( $build =~ /ubuntu/i );
-
-    mkdir( $buildPackDir, 0755) unless( -d $buildPackDir );
-    my @osc = ( "build", "--noservice", "--clean", "-k", $buildPackDir, "-p", $buildPackDir, "$build", "x86_64", "$packName.$buildDescExt");
-    print " ** Starting build with " . join( " ", @osc ) . "\n";
-    unless( doOSC( @osc ) ) {
-      print "Build Job failed for $build => exiting!\n";
-      $re = 0;
-      last;
+      mkdir( $buildPackDir, 0755) unless( -d $buildPackDir );
+      my @osc = ( "build", "--noservice", "--clean", "-k", $buildPackDir, "-p", $buildPackDir, "$build", "x86_64", "$packName.$buildDescExt");
+      print " ** Starting build with " . join( " ", @osc ) . "\n";
+      unless( doOSC( @osc ) ) {
+        print "Build Job failed for $build => exiting!\n";
+        $re = 0;
+        last;
+      }
     }
   }
 
@@ -203,7 +205,7 @@ sub doBuild( $$ ) {
 }
 
 # main here.
-getopts('hp');
+getopts('hpn');
 my $argc = @ARGV;
 
 help() if( $opt_h || $argc == 0 );
