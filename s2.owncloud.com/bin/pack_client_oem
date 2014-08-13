@@ -6,6 +6,7 @@
 # 2014-07-28, jw -- printing userfriendly upload and rm commands at the end.
 # 2014-08-06, jw -- calling check_packed_client_oem.pl to assert right version.
 # 2014-08-13, jw -- proper splitting without adduming there is exactly one CentOS
+#                   dest folder mapping added: surfcloudlinuxupdater goes to surfcloud.
 
 if [ $# -ne 2 ]
   then
@@ -75,6 +76,19 @@ ls -la /tmp/$oem-$version*
 
 # end.
 
+function dest_folder ()
+{
+  tar=$1
+  brand=$(expr match $tar '.*/\(\w\+\)-')
+
+  case "$brand" in
+    surfcloudlinuxupdater) echo surfcloud ;;
+    surfcloudlinux) echo surfcloud ;;
+    *) echo $brand ;;
+  esac
+  exit 1	# not reached.
+}
+
 # We split the commands in half, if we use the splitdebug feature, so that the user can do copy/paste and 
 # skip 1.8G debug packages per branding.
 normal=$(ls /tmp/*-*-*.tar | grep -v .debug.tar)
@@ -83,10 +97,13 @@ debug=$(ls /tmp/*-*-debug.tar)
 echo "You can now copy the packages to dl-oc -- use these commands or similar:"
 if [ "x$debug" != x ]; then
   for tar in $debug; do
+    oem=$(dest_folder $tar)
     echo rsync -rzv --progress --delete $tar root@download.owncloud.com:/srv/www/htdocs/desktop/projects/$oem
   done
+  echo ""
 fi
 for tar in $normal; do
+  oem=$(dest_folder $tar)
   echo rsync -rzv --progress --delete $tar root@download.owncloud.com:/srv/www/htdocs/desktop/projects/$oem
 done
 echo rm -f /tmp/$oem-$version-\*.tar 
