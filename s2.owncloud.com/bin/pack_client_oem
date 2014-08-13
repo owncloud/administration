@@ -5,7 +5,7 @@
 # 2014-07-18, jw -- split_debug feature added.
 # 2014-07-28, jw -- printing userfriendly upload and rm commands at the end.
 # 2014-08-06, jw -- calling check_packed_client_oem.pl to assert right version.
-# 2014-08-13, jw -- safeguard against multiple CentOS. Need proper fix.
+# 2014-08-13, jw -- proper splitting without adduming there is exactly one CentOS
 
 if [ $# -ne 2 ]
   then
@@ -23,6 +23,7 @@ split_debug=split_debug
 
 echo "Packaging linux client tarball for $oem version $version"
 
+if true; then
 # copy the build repos to a temporar space
 rm -rf /tmp/$oem
 mkdir /tmp/$oem
@@ -34,30 +35,32 @@ rm -rf /tmp/$oem/*/repocache
 # find /tmp/$oem -name "*repo" | xargs sed -i 's#repositories/oem:#repositories#'
 
 mv /tmp/$oem /tmp/$oem-$version
-
-# package
-cd /tmp
-## FIXME: we may have multiple CentOS* directories. Convert this into a loop!
-if [ -d $oem-$version/CentOS_CentOS* ]
-then
-  if [ x$split_debug != x ]; then
-    debugdir=$(ls -d $oem-$version/CentOS*).debug
-    mkdir -p $oem-$version/debug
-    (cd $oem-$version/CentOS_CentOS* ; find . \( -name \*-debuginfo\* -o -name \*src.rpm \) > ../debug.list )
-    ## FIXME mv would be more efficient than cpio + rm. 
-    ## But how can we mv with preserving hierarchy?
-    echo Splitting debug packages
-    (cd $oem-$version/CentOS_CentOS* ; cpio -pdmv < ../debug.list ../debug )
-    (cd $oem-$version/CentOS_CentOS* ; xargs rm -f < ../debug.list )
-    mv $oem-$version/debug $debugdir
-    rm $oem-$version/debug.list
-
-    tar cf /tmp/$oem-$version-centos6.debug.tar $debugdir
-    [ $? -eq 0 ] && rm -rf $debugdir
-  fi
-  tar cf /tmp/$oem-$version-centos6.tar $oem-$version/CentOS*
-  [ $? -eq 0 ] && rm -rf $oem-$version/CentOS*
 fi
+
+cd /tmp/$oem-$version
+# strip toolchain packages.
+find . \( -name cmake-\* \)  | xargs rm -f
+
+# package into tar balls.
+if [ x$split_debug != x ]; then
+  find . \( -name \*-debuginfo\* -o -name \*src.rpm \) > debug.list
+  mkdir -p debug/$oem-$version
+  ## FIXME mv would be more efficient than cpio + rm. 
+  ## But how can we mv with preserving hierarchy?
+  cpio -pdmv debug/$oem-$version/ < debug.list
+  xargs rm -f < debug.list
+  rm debug.list
+  (cd debug; tar cf /tmp/$oem-$version-debug.tar $oem-$version)
+  rm -rf debug
+fi
+
+## we may have multiple CentOS* directories. They are fat. We create a tar for each of them.
+for centos in CentOS*; do
+  test -d $centos || continue;	# we come here with an unexpanded Centos* if nothing matches.
+  (cd ..; tar cf /tmp/$oem-$version-$centos.tar $oem-$version/$centos)
+  rm -rf $centos
+done
+cd /tmp
 tar cf /tmp/$oem-$version-linux.tar $oem-$version/*
 
 # ... and remove the tmp
@@ -79,5 +82,7 @@ echo "You can now copy the packages to dl-oc -- use these commands or similar:"
 if [ x$split_debug != x ]; then
   echo rsync -rzv --delete /tmp/$oem-$version-*.debug.tar root@download.owncloud.com:/srv/www/htdocs/desktop/projects/$oem
 fi
-echo rsync -rzv --delete $normal root@download.owncloud.com:/srv/www/htdocs/desktop/projects/$oem
-echo rm -f /tmp/$oem-$version-*.tar 
+for tar in $normal; do
+  echo rsync -rzv --delete $tar root@download.owncloud.com:/srv/www/htdocs/desktop/projects/$oem
+done
+echo rm -f /tmp/$oem-$version-\*.tar 
