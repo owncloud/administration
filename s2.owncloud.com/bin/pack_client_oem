@@ -81,7 +81,7 @@ normal=$(ls /tmp/*-*-*.tar | grep -v .debug.tar)
 debug=$(ls /tmp/*-*-debug.tar)
 
 echo "You can now copy the packages to dl-oc -- use these commands or similar:"
-if [ x$debug != x ]; then
+if [ "x$debug" != x ]; then
   for tar in $debug; do
     echo rsync -rzv --progress --delete $tar root@download.owncloud.com:/srv/www/htdocs/desktop/projects/$oem
   done
