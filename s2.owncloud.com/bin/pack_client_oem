@@ -5,7 +5,7 @@
 # 2014-07-18, jw -- split_debug feature added.
 # 2014-07-28, jw -- printing userfriendly upload and rm commands at the end.
 # 2014-08-06, jw -- calling check_packed_client_oem.pl to assert right version.
-
+# 2014-08-13, jw -- safeguard against multiple CentOS. Need proper fix.
 
 if [ $# -ne 2 ]
   then
@@ -37,7 +37,8 @@ mv /tmp/$oem /tmp/$oem-$version
 
 # package
 cd /tmp
-if [ -d $oem-$version/CentOS* ]
+## FIXME: we may have multiple CentOS* directories. Convert this into a loop!
+if [ -d $oem-$version/CentOS_CentOS* ]
 then
   if [ x$split_debug != x ]; then
     debugdir=$(ls -d $oem-$version/CentOS*).debug
