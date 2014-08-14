@@ -1,0 +1,496 @@
+#!/bin/bash
+
+#================================================================================
+#
+#         FILE:  library
+#
+#        USAGE:  Source(d) by makemac.sh or makewinlin.sh
+#
+#  DESCRIPTION:  Functions to be used by makemac.sh or makewinlin.sh
+#
+# REQUIREMENTS:  ---
+#       AUTHOR:  Koen Willems
+#                Sendin B.V. <info at sendin.nl>
+#      VERSION:  1.0.0
+#      CREATED:  August 10, 2014
+#
+#================================================================================
+
+#================================================================================
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; version 2 of the License.
+#
+#  This program is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+#  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+#  for more details.
+#
+#================================================================================
+
+
+
+#================================================================================
+#
+#        NAME: in_array
+# DESCRIPTION: Returns 0 if needle is in haystack, and 1 if needle is not
+#  PARAMETERS: array haystack
+#              string needle
+#      OUTPUT: bool
+#
+#================================================================================
+
+function in_array() {
+    local haystack=${1}[@]
+    local needle=${2}
+
+    for i in ${!haystack} ; do
+        if [[ ${i} == ${needle} ]] ; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+
+
+#================================================================================
+#
+#        NAME: code section
+# DESCRIPTION: Set default values and change them according to the parameters
+#              that were given when the script was invoked.
+#              Any unknown parameter will stop the script.
+#
+#================================================================================
+
+#
+# Set default values.
+#
+BUILDENVIRONMENT=0
+DEPENDENCIES=0
+DEPENDENCIES_ONLY=0
+HELP=0
+INTERACTIVE=0
+LINUX_ONLY=0
+CUSTOMIZE=1
+GARBAGECLEAN=0
+CODESIGN=0
+CODESIGN_ONLY=0
+SPARKLE=0
+SPARKLE_ONLY=0
+WINDOWS_ONLY=0
+
+#
+# Put all allowed parameters per OS in an array,
+# so we can validate a given parameter.
+#
+if [ ${OSLINUX} -eq 0 ] ; then
+    arrayParams=("-b" "--build-environment" "-d" "--dependencies" "-do" "--dependencies-only" \
+        "-h" "--help" "--man" "-i" "--interactive" "-nc" "--no-customizations" \
+        "-gc" "--garbageclean" "-s" "--sign" "-so" "--sign-only" \
+         "-sp" "--sparkle" "-spo" "--sparkle-only")
+elif [ ${OSLINUX} -eq 1 ] ; then
+    arrayParams=("-b" "--build-environment" "-d" "--dependencies" "-do" "--dependencies-only" \
+        "-h" "--help" "--man" "-i" "--interactive" "-lin" "--linux" "-nc" "--no-customizations" \
+        "-gc" "--garbageclean" "-s" "--sign" "-so" "--sign-only" \
+        "-win" "--windows")
+fi
+
+#
+# Catch the parameters.
+#
+while [ -n "$1" ]; do
+
+    #
+    # Stop the script if a parameter is not in the array with allowed parameters.
+    #
+    if ! in_array arrayParams "$1" ; then
+        echo $'\nUnknown parameter. Use <-h, --help or --man> for the help page.\n'
+        exit 1
+    fi
+
+    #
+    # Convert the parameters to variables.
+    #
+    case $1 in
+        -b  | --build-environment )
+            BUILDENVIRONMENT=1
+            ;;
+        -d  | --dependencies )
+            DEPENDENCIES=1
+            ;;
+        -do | --dependencies-only )
+            DEPENDENCIES=1
+            DEPENDENCIES_ONLY=1
+            ;;
+        -h  | --help | --man )
+            HELP=1
+            ;;
+        -i  | --interactive )
+            INTERACTIVE=1
+            ;;
+        -lin| --linux )
+            LINUX_ONLY=1
+            ;;
+        -nc | --no-customizations )
+            CUSTOMIZE=0
+            ;;
+        -gc | --garbageclean )
+            GARBAGECLEAN=1
+            ;;
+        -s  | --sign )
+            CODESIGN=1
+            ;;
+        -so | --sign-only )
+            CODESIGN=1
+            CODESIGN_ONLY=1
+            ;;
+        -sp | --sparkle )
+            SPARKLE=1
+            ;;
+        -spo| --sparkle-only )
+            SPARKLE=1
+            SPARKLE_ONLY=1
+            ;;
+        -win| --windows )
+            WINDOWS_ONLY=1
+            ;;
+    esac
+    shift
+done
+
+
+
+#================================================================================
+#
+#        NAME: buildCustomizations
+# DESCRIPTION: Overwrite original build scripts and files with your own.
+#              Carefully read the comments for instructions!
+#
+#================================================================================
+
+function buildCustomizations() {
+    cd "${CUR_DIR}"
+    if [ ${CUSTOMIZE} -eq 1 ] ; then
+
+        #------------------------------------------------------------------------
+        # THEMING
+        #
+        # - In /replacements/mirall/CMakeLists.txt on line 9 change <OEM_THEME_DIR"">
+        #   to <OEM_THEME_DIR "${CMAKE_SOURCE_DIR}/theme_new">; remove ifno theming
+        #   is required.
+        # - Replace /replacements/mirall/resources/owncloud_logo_blue.png with
+        #   your own.
+        # - Replace the icons in /replacements/theme_new/theme/black, colored and
+        #   white with your own.
+        # - In /replacements/theme_new/admin/win/nsi replace page_header.bmp and
+        #   welcome.bmp with your own.
+        # - Change data in /replacements/theme_new/OEM.cmake, OEM_linux.cmake and
+        #   theme.qrc. If you changed file names in /replacements/theme_new/theme/
+        #   black, colored and white you have to do that in theme.qrc also.
+        #   OEM.cmake and OEM_linux.cmake have hints what you can change.
+        #
+        #------------------------------------------------------------------------
+
+        if [ -f ./replacements/mirall/CMakeLists.txt ] ; then
+            cp ./replacements/mirall/CMakeLists.txt ./buildenv/mirall/
+        fi
+
+        if [ -f ./replacements/mirall/resources/owncloud_logo_blue.png ] ; then
+            cp ./replacements/mirall/resources/owncloud_logo_blue.png ./buildenv/mirall/resources/
+        fi
+
+        if [ -d ./replacements/theme_new ] ; then
+            cp -r ./replacements/theme_new ./buildenv/mirall/
+        fi
+
+        #------------------------------------------------------------------------
+        # CUSTOMIZE LANGUAGE FILES
+        #
+        # The translation files are version dependend, so only use these if you
+        # know wat you are doing. You can replace the original translation files
+        # with your own. Furthermore one can choose to remove all original files
+        # by uncommenting the appropriate line.
+        #
+        #------------------------------------------------------------------------
+
+        if [ -d ./buildenv/mirall/translations ] ; then
+            #rm ./buildenv/mirall/translations/*.ts
+            cp ./replacements/mirall/translations/*.* ./buildenv/mirall/translations/
+        fi
+
+        #------------------------------------------------------------------------
+        # CHANGE VERSIONING
+        #
+        # This file is version dependend ... duh. So only use this if you know
+        # what you are doing. One could choose to postfix a digit to the original.
+        #
+        #------------------------------------------------------------------------
+
+        if [ -f ./replacements/mirall/VERSION.cmake ] ; then
+            cp ./replacements/mirall/VERSION.cmake ./buildenv/mirall/
+        fi
+
+        #------------------------------------------------------------------------
+        # CHANGE URL HELP
+        #
+        # Have your own help page? Great, introduce it here on line 107 by replacing
+        # ("htp://doc.owncloud.org/desktop/ %1.%2/").arg(MIRALL_VERSION_MAJOR).arg(MIRALL_VERSION_MINOR);
+        # with for example ("htps://yoursite.com/support");
+        #
+        #------------------------------------------------------------------------
+
+        if [ -f ./replacements/mirall/src/mirall/owncloudtheme.cpp ] ; then
+            cp ./replacements/mirall/src/mirall/owncloudtheme.cpp ./buildenv/mirall/src/mirall/
+        fi
+
+        #------------------------------------------------------------------------
+        # CHANGE URL CLIENT UPDATER
+        #
+        # Needed if you provide your own updates. See line 213.
+        #
+        #------------------------------------------------------------------------
+
+        if [ -f ./replacements/mirall/src/mirall/theme.cpp ] ; then
+            cp ./replacements/mirall/src/mirall/theme.cpp ./buildenv/mirall/src/mirall/
+        fi
+
+        #------------------------------------------------------------------------
+        # CHANGE PUBLIC KEY
+        #
+        # In /replacements/mirall/admin/osx/sparkle/ replace the public key by
+        # your own. This is needed for the Sparkle updater.
+        #
+        #------------------------------------------------------------------------
+
+        if [ -f ./replacements/mirall/admin/osx/sparkle/dsa_pub.pem ] ; then
+            cp ./replacements/mirall/admin/osx/sparkle/dsa_pub.pem ./buildenv/mirall/admin/osx/sparkle/
+        fi
+
+    fi
+    cd "${BUILD_DIR}"
+}
+
+
+
+#================================================================================
+#
+#        NAME: grabMirall
+# DESCRIPTION: Download and install mirall and all other owncloud files to build.
+#              If BUILDENVIRONMENT=1 the script stops here.
+#
+#================================================================================
+
+function grabMirall() {
+    git clone git://github.com/owncloud/mirall.git
+    cd mirall
+    if [ -n "${mirallhash}" ] ; then
+        git reset --hard ${mirallhash}
+    fi
+    pause
+
+    cd src/3rdparty
+    git clone git://github.com/shadone/qtmacgoodies.git
+    cd "${CUR_DIR}"
+
+
+    #------------------------------------------------------------------------
+    # Remove libqtkeychain.dll in NSIS.template.in. Needed temporarily.
+    # See https://github.com/owncloud/mirall/commit/8b1aebc.
+    #
+    #------------------------------------------------------------------------
+    cd "${CUR_DIR}"
+    if [ -f ./replacements/mirall/cmake/modules/NSIS.template.in ] ; then
+        cp ./replacements/mirall/cmake/modules/NSIS.template.in ./buildenv/mirall/cmake/modules/
+    fi
+
+    cd "${BUILD_DIR}"
+    if [ ${BUILDENVIRONMENT} -eq 1 ] ; then
+        echo $'\nYou can find the build environment in '\"${BUILD_DIR}\"$'.\n'
+
+        exit 0
+    fi
+}
+
+
+
+#================================================================================
+#
+#        NAME: pause
+# DESCRIPTION: Pause the script.
+#
+#================================================================================
+
+function pause() {
+    if [ ${INTERACTIVE} -eq 1 ] ; then
+        echo
+        if [ $# -eq 0 ] ; then
+            read -p "Hit [Enter] to continue or hit [CTRL-C] to quit."
+        else
+            read -p "$*"
+        fi
+        echo
+    fi
+}
+
+
+
+#================================================================================
+#
+#        NAME: checkHelp
+# DESCRIPTION: Help requests are served first; when served quit.
+#
+#================================================================================
+
+function checkHelp() {
+    if [ ${HELP} -eq 1 ] ; then
+        helpPage
+        exit 0
+    fi
+}
+
+
+
+#================================================================================
+#
+#        NAME: makeBuildEnv
+# DESCRIPTION: Create build environment.
+#              If it already exists it will be removed,
+#              because we want it fresh and clean.
+#
+#================================================================================
+
+function makeBuildEnv () {
+    if [ -d "${BUILD_DIR}" ] ; then
+        echo $'\nDirectory '\"${BUILD_DIR}\"$' already excists and will be removed.\n'
+        rm -rf "${BUILD_DIR}"
+    fi
+
+    mkdir client
+    mkdir -p "${BUILD_DIR}"
+    cd "${BUILD_DIR}"
+}
+
+
+
+#================================================================================
+#
+#        NAME: cleanBuildGarbage
+# DESCRIPTION: Remove the files and folders the build scripts have generated;
+#              only executed if GARBAGECLEAN=1.
+#
+#================================================================================
+
+function cleanBuildGarbage() {
+    if [ ${GARBAGECLEAN} -eq 1 ] ; then
+        rm -rf "${BUILD_DIR}"
+    fi
+}
+
+
+
+#================================================================================
+#
+#        NAME: showMessage
+# DESCRIPTION: Show a message.
+#        TODO: Extend this with a build report.
+#
+#================================================================================
+
+function showMessage() {
+    echo $'\nPackage(s) compiled. Installation file(s) can be found in '\"${CUR_DIR}/client/\"$'.\n'
+}
+
+
+
+#================================================================================
+#
+#        NAME: helpPage
+# DESCRIPTION: Clears the screen and show a help page.
+#
+#================================================================================
+
+function helpPage() {
+    bold=$(tput bold)
+    normal=$(tput sgr0)
+
+    clear
+    echo "${bold}NAME${normal}"
+
+    if [ ${OSLINUX} -eq 1 ] ; then
+        echo $'\tmakewinlin.sh\n'
+    else
+        echo $'\tmakemac.sh\n'
+    fi
+
+    echo "${bold}SYNOPSIS${normal}"
+    if [ ${OSLINUX} -eq 1 ] ; then
+        echo $'\tmakewinlin.sh [-short option | --long option]\n'
+    else
+        echo $'\tmakemac.sh\t[-short option | --long option]\n'
+    fi
+
+    echo "${bold}AUTHOR${normal}"
+    echo $'\tKoen Willems'
+    echo $'\tSendin B.V. <info at sendin.nl>\n'
+
+    echo "${bold}LICENSE${normal}"
+    echo $'\tGNU GPL v2\n'
+
+    echo "${bold}OPTIONS${normal}"
+
+    echo $'\t'${bold}'-b, --build-environment'${normal}
+    echo $'\t\tOnly the build environment will be installed.\n'
+
+    echo $'\t'${bold}'-d, --dependencies'${normal}
+    echo $'\t\tFirst the necessary dependencies will be installed or updated.\n'
+
+    echo $'\t'${bold}'-do, --dependencies-only'${normal}
+    echo $'\t\tThe script will stop after installing or updating the necessary dependencies.\n'
+
+    echo $'\t'${bold}'-gc, --garbageclean'${normal}
+    echo $'\t\tAfter finishing the script the build files and folders will be removed.\n'
+
+    echo $'\t'${bold}'-h, --help, --man'${normal}
+    echo $'\t\tThis page.\n'
+
+    echo $'\t'${bold}'-i, --interactive'${normal}
+    echo $'\t\tDuring the running of the script it will pause several times.\n'
+
+    if [ ${OSLINUX} -eq 1 ] ; then
+        echo $'\t'${bold}'-lin, --linux'${normal}
+        echo $'\t\tOnly the Linux client will be build.\n'
+    fi
+
+    echo $'\t'${bold}'-nc, --no-customizations'${normal}
+    echo $'\t\tNo customizations will be made to the original ownCloud files.\n'
+
+    echo $'\t'${bold}'-s, --sign'${normal}
+    if [ ${OSLINUX} -eq 1 ] ; then
+        echo $'\t\tThe executable (EXE) in the folder \"client\" will be code signed.\n'
+    else
+        echo $'\t\tThe executable (DMG) in the folder \"client\" will be code signed.\n'
+    fi
+
+    echo $'\t'${bold}'-so, --sign-only'${normal}
+    if [ ${OSLINUX} -eq 1 ] ; then
+        echo $'\t\tThe script will stop after code signing the executable (EXE) in the folder \"client\".\n'
+    else
+        echo $'\t\tThe script will stop after code signing the executable (DMG) in the folder \"client\".\n'
+    fi
+
+    if [ ${OSLINUX} -eq 0 ] ; then
+        echo $'\t'${bold}'-sp, --sparkle'${normal}
+        echo $'\t\tA Sparkle DSA signature will be created and stored in a TXT file.\n'
+
+        echo $'\t'${bold}'-spo, --sparkle-only'${normal}
+        echo $'\t\tThe script will stop after creating and storing a Sparkle DSA signature.\n\n'
+    fi
+
+    if [ ${OSLINUX} -eq 1 ] ; then
+        echo $'\t'${bold}'-win, --windows'${normal}
+        echo $'\t\tOnly the Windows client will be build.\n\n'
+    fi
+}
