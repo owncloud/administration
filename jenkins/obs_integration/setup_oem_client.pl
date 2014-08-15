@@ -7,6 +7,8 @@
 # it adds a list of known dependencies, so that we can have all relevant binaries 
 # in one repo per oem branding.
 #
+# 2014-08-15, jw, more parameters for obs and template change.
+#
 use Data::Dumper;
 sub list_obs_pkg;
 
@@ -16,12 +18,23 @@ my $dest_prj_prefix = 'oem:';
 my $obs_api = 'https://s2.owncloud.com';
 
 my $client_name = $ARGV[0];
-die "Usage: $0 oem:brandname [DESTPROJ:]\nDefault destination project: $dest_prj_prefix\n" unless $client_name;
+die qq{
+Usage: $0 oem:brandname [DESTPROJ: [obs_api [tmpl_prj]]]
+
+Default destination project: $dest_prj_prefix
+Default obs api: $obs_api
+Default template project: $src_prj
+} unless $client_name;
+
 if ($ARGV[1])
   {
     $dest_prj_prefix = $ARGV[1];
     warn "submitting package $client_name to nonstandard project prefix '$dest_prj_prefix'\n";
   }
+
+$obs_api = $ARGV[2] if defined $ARGV[2];
+$src_prj = $ARGV[3] if defined $ARGV[3];
+
 $client_name =~ s{^\Q$dest_prj_prefix\E}{};
 
 my $dest_prj = $dest_prj_prefix . $client_name;

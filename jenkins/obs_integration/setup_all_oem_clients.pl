@@ -32,6 +32,10 @@
 # ownCloud/BuildHelper.pm and templates/clinet/* files.
 # -> disadvantage, it creates a temporary working directory there.
 #
+#
+# 2014-08-15, jw, added support for testpilotcloud at obs.
+# 
+
 use Data::Dumper;
 use File::Path;
 use File::Temp ();	# tempdir()
@@ -46,7 +50,16 @@ use Template;		# Requires: perl-Template-Toolkit
 my $build_token         = 'jw_'.strftime("%Y%m%d", localtime);
 my $source_tar          = shift;
 
-die "Usage: $0 v1.6.1 [home:jw:oem [filterbranding,...]]\n" if !defined $source_tar or $source_tar =~ m{^-};
+if (!defined $source_tar or $source_tar =~ m{^-})
+  {
+    die qq{
+Usage: $0 v1.6.2 [home:jw:oem [filterbranding,... [api [tmpl]]]]
+
+       $0 v1.7.0-alpha1 isv:ownCloud:oem testpilotcloud https://api.opensuse.org isv:ownCloud:community:nightly
+       
+... or similar
+};
+  }
 
 my $container_project   = shift || 'oem';	#'home:jw:oem';
 
@@ -54,13 +67,15 @@ my $client_filter	= shift || "";
 my @client_filter	= split(/[,\|\s]/, $client_filter);
 my %client_filter = map { $_ => 1 } @client_filter;
 
-
+my $obs_api             = shift || 'https://s2.owncloud.com';
+my $template_prj 	= shift || 'desktop';
+my $template_pkg 	= shift || 'owncloud-client';
 
 
 my $customer_themes_git = 'git@github.com:owncloud/customer-themes.git';
 my $source_git          = 'https://github.com/owncloud/mirall.git';
-my $osc_cmd             = 'osc -Ahttps://s2.owncloud.com';
-my $genbranding         = "./genbranding.pl -c '-Ahttps://s2.owncloud.com' -p '$container_project' -r '$build_token' -o -f";
+my $osc_cmd             = "osc -A$obs_api";
+my $genbranding         = "./genbranding.pl -c '-A$obs_api' -p '$container_project' -r '$build_token' -o -f";
 
 my $TMPDIR_TEMPL = '_oem_XXXXX';
 our $verbose = 1;
@@ -258,7 +273,7 @@ sub obs_pkg_from_template
 
 
 ## make sure the top project is there in obs
-obs_prj_from_template($osc_cmd, 'desktop', $container_project, "OwnCloud Desktop Client OEM Container project");
+obs_prj_from_template($osc_cmd, $template_prj, $container_project, "OwnCloud Desktop Client OEM Container project");
 chdir($scriptdir) if defined $scriptdir;
 
 for my $branding (@candidates)
@@ -274,10 +289,10 @@ for my $branding (@candidates)
       }
 
     ## generate the individual container projects
-    obs_prj_from_template($osc_cmd, 'desktop', "$container_project:$branding", "OwnCloud Desktop Client project $branding");
+    obs_prj_from_template($osc_cmd, $template_prj, "$container_project:$branding", "OwnCloud Desktop Client project $branding");
 
     ## create an empty package, so that genbranding is happy.
-    obs_pkg_from_template($osc_cmd, 'desktop', 'owncloud-client', "$container_project:$branding", "$branding-client", "$branding Desktop Client");
+    obs_pkg_from_template($osc_cmd, $template_prj, $template_pkg, "$container_project:$branding", "$branding-client", "$branding Desktop Client");
 
     # checkout branding-client, update, checkin.
     run("rm -rf '$container_project:$branding'");
@@ -290,7 +305,7 @@ for my $branding (@candidates)
 
     ## fill in all the support packages.
     ## CAUTION: trailing colon is important!
-    run("./setup_oem_client.pl '$branding' '$container_project:'");
+    run("./setup_oem_client.pl '$branding' '$container_project:' '$obs_api' '$template_prj'");
 
     ## babble out the diffs. Just for the logfile.
     ## This helps catching outdated *.in files in templates/client/* -- 
@@ -299,8 +314,8 @@ for my $branding (@candidates)
       {
         my $template_file = sprintf "$f", 'owncloud';
         my $branding_file = sprintf "$f", $branding;
-	run("$osc_cmd cat desktop owncloud-client $template_file > $tmp/$template_file");
-	run("$osc_cmd cat '$container_project:$branding' '$branding-client' '$branding_file'> $tmp/$branding_file");
+	run("$osc_cmd cat $template_prj $template_pkg $template_file > $tmp/$template_file || true");
+	run("$osc_cmd cat '$container_project:$branding' '$branding-client' '$branding_file'> $tmp/$branding_file || true");
 	run("diff -ub '$tmp/$template_file' '$tmp/$branding_file' || true");
 	unlink("$tmp/$template_file");
 	unlink("$tmp/$branding_file");
