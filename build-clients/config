@@ -29,6 +29,19 @@
 #
 #================================================================================
 
+#================================================================================
+#
+# Theme client
+#
+# Set OWNTHEME to 1 if you want to theme the client. In that case put the required
+# files in '/replacements/mytheme/' Read the comment for buildCustomizations() in
+# the file 'library' for more information.
+# example: OWNTHEME=0
+
+#================================================================================
+
+OWNTHEME=0
+
 
 
 #================================================================================

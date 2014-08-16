@@ -99,7 +99,7 @@ function buildLinuxDependencies() {
             mingw32-libqt5-qtimageformats mingw32-libqt5-qtsvg mingw32-libqt5-qtwebkit \
             mingw32-libqt5-qttools mingw32-libqt5-qttranslations mingw32-cross-libqt5-qttools \
             mingw32-angleproject-devel mingw32-qt5keychain mingw32-libneon-openssl mingw32-libwinpthread1 \
-            osslsigncode \
+            osslsigncode mingw32-qtkeychain \
 
         #
         # The following is not really needed.
@@ -136,8 +136,14 @@ function buildWindowsClient() {
         mkdir -p windows/mirall-build
         cd windows/mirall-build
 
+        ownThemeDir=""
+        if [ ${OWNTHEME} -eq 1 ] ; then
+            ownThemeDir="-DOEM_THEME_DIR=${BUILD_DIR}/mirall/mytheme"
+        fi
+
         cmake -DCMAKE_BUILD_TYPE="Debug" ../../mirall \
-            -DCMAKE_TOOLCHAIN_FILE=../../mirall/admin/win/Toolchain-mingw32-openSUSE.cmake
+            -DCMAKE_TOOLCHAIN_FILE=../../mirall/admin/win/Toolchain-mingw32-openSUSE.cmake \
+            ${ownThemeDir}
 
         pause
 
@@ -177,9 +183,9 @@ function buildLinuxClient() {
         # and the file is available.
         #
         if [ ${CUSTOMIZE} -eq 1 ] ; then
-            if [ -f ./buildenv/mirall/theme_new/OEM_linux.cmake ] ; then
+            if [ -f ./buildenv/mirall/mytheme/OEM_linux.cmake ] ; then
                 cd "${CUR_DIR}"
-                cp ./buildenv/mirall/theme_new/OEM_linux.cmake ./buildenv/mirall/theme_new/OEM.cmake
+                cp ./buildenv/mirall/mytheme/OEM_linux.cmake ./buildenv/mirall/mytheme/OEM.cmake
             fi
         fi
 

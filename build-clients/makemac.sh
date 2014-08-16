@@ -130,6 +130,11 @@ function buildMirallAndPackage() {
     mkdir mirall-build
     cd mirall-build
 
+    ownThemeDir=""
+    if [ ${OWNTHEME} -eq 1 ] ; then
+        ownThemeDir="-DOEM_THEME_DIR=${BUILD_DIR}/mirall/mytheme"
+    fi
+
     updateParam=""
     if [ -n "${macUpdateURL}" ] ; then
         updateParam="-DAPPLICATION_UPDATE_URL=${macUpdateURL}"
@@ -137,7 +142,7 @@ function buildMirallAndPackage() {
 
     cmake -DCMAKE_PREFIX_PATH=/usr/local/opt/qt5/ \
         -DCMAKE_BUILD_TYPE="Debug" ../mirall \
-        ${updateParam}
+        ${ownThemeDir} ${updateParam}
 
     pause
 
