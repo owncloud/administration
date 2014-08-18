@@ -56,6 +56,34 @@ public:
     virtual QString updateCheckUrl() const {
         return QLatin1String( "https://updates.owncloud.com/client/" );
     }
+
+    /*
+     * Enter the color of the header title in the setup wizard.
+     * example: return QColor("#FFFFFF");
+     */
+	virtual QColor wizardHeaderTitleColor() const
+	{
+	    return QColor("#FFFFFF");
+	}
+
+    /*
+     * Enter the background color of the header in the setup wizard.
+     * example: return QColor("#10283F");
+     */
+	virtual QColor wizardHeaderBackgroundColor() const
+	{
+	    return QColor("#10283F");
+	}
+
+    /*
+     * The logo you want to be seen in the header of the setup wizard..
+     * example: return QPixmap(":/mirall/theme/colored/wizard_logo.png");
+     */
+	virtual QPixmap wizardHeaderLogo() const
+	{
+	    return QPixmap(":/mirall/theme/colored/wizard_logo.png");
+	}
+
 };
 
 } // namespace mirall
