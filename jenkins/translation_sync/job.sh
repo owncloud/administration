@@ -58,6 +58,13 @@ find . -name \*.pot -type f -delete
 cd ..
 
 #
+# cleanup
+#
+rm -rf l10n/l10n.pl
+git rm -rf l10n/l10n.pl
+
+
+#
 # push to git
 #
 git status
