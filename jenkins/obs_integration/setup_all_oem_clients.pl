@@ -47,7 +47,7 @@ use Config::IniFiles;	# Requires: perl-Config-IniFiles
 use Template;		# Requires: perl-Template-Toolkit
 
 
-my $create_msg 		= $ENV{OBS_INTEGRATION_MSG} || "created by: $0 $ARGV";
+my $create_msg 		= $ENV{OBS_INTEGRATION_MSG} || "created by: $0 @ARGV";
 my $build_token         = 'jw_'.strftime("%Y%m%d", localtime);
 my $source_tar          = shift;
 
