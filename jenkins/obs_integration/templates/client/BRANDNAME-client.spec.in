@@ -230,7 +230,7 @@ cmake .. -DWITH_DOC=TRUE \
 %if %{_lib} == lib64
   -DLIB_SUFFIX=64 \
 %endif
-%if %{name} != owncloud-client
+%if "%{name}" != "owncloud-client"
   -DOEM_THEME_DIR=$PWD/../[% themename %]/mirall \
 %endif
   %cmake_args
