@@ -29,7 +29,9 @@
 # 2014-07-25, jw, V1.4
 #	- fixed removal of obsolete tar balls. Otherwise all Debians fail!
 # 2014-08-19, jw, V1.5
-#       - added [% prerelease %] support for the new universal specfile.
+#       - added -P -> [% prerelease %] support for the new universal specfile.
+#       - added OBS_INTEGRATION_MSG for a tunneling a 'created by' message.
+#
 
 use Getopt::Std;
 use Config::IniFiles;
@@ -42,8 +44,10 @@ use Cwd;
 use Template;
 use Data::Dumper;
 
+my $msg_def = "created by: $0 @ARGV";
+
 use strict;
-use vars qw($miralltar $themetar $templatedir $dir $opt_h $opt_o $opt_b $opt_c $opt_n $opt_f $opt_p $dest_prj $opt_r);
+use vars qw($miralltar $themetar $templatedir $dir $opt_h $opt_o $opt_b $opt_c $opt_n $opt_f $opt_p $dest_prj $opt_r $opt_P);
 
 sub help() {
   print<<ENDHELP
@@ -66,7 +70,8 @@ sub help() {
   -c "params":  additional osc paramters
   -n:           don't recreate the tarball, use an existing one.
   -f:           force upload, upload even if nothing changed.
-  -p "project":	obs project used for -o and -b. Default: '$dest_prj'
+  -p "project":	obs (p)roject used for -o and -b. Default: '$dest_prj'
+  -P "prerel":	switch to (P)rerelease mode: e.g. alpha, beta, rc, nightly, ... Default none.
   -r "relid":	specify a build release identifier. This number will be part of the binary file names built by osc.
 
   Call example:
@@ -79,6 +84,7 @@ sub help() {
   -h      this help text.
 
   Environment variables and their defaults:
+    OBS_INTEGRATION_MSG='$msg_def'
     OBS_INTEGRATION_VERBOSE=''
     OBS_INTEGRATION_OSC='/usr/bin/osc'
     OBS_INTEGRATION_PRODUCT='openSUSE_13.1'
@@ -269,6 +275,8 @@ getopts('fnbohc:p:r:');
 $dest_prj = $opt_p if defined $opt_p;
 $dest_prj =~ s{:$}{};
 
+my $changelog_msg = $ENV{OBS_INTEGRATION_MSG} || $msg_def;
+
 help() if( $opt_h );
 help() unless( defined $ARGV[0] && defined $ARGV[1] );
 
@@ -328,16 +336,25 @@ unless( defined $substs->{version} )
 
 unless (defined $substs->{buildrelease} )
   {
+    if (defined $opt_P)
+      {
+        $substs->{prerelease} = $opt_P;
+	$substs->{version_deb} = $substs->{version} . '~' . $opt_P;
+      }
+    else
+      {
+        $substs->{prerelease} = '%nil';		# this is how the specfile switches off ~ versions.
+	$substs->{version_deb} = $substs->{version};
+      }
+
     if (defined $opt_r)
       {
-        $substs->{prerelease} = $opt_r;
         $substs->{buildrelease} = "<CI_CNT>.<B_CNT>.$opt_r";
         $substs->{buildrelease_deb} = "0.$opt_r";
 	$substs->{buildrelease_deb} =~ s{[^a-zA-Z0-9\.]}{}g;	# sanitized
       }
     else
       {
-        $substs->{prerelease} = '%nil';		# this is how the specfile switches off ~ versions.
         $substs->{buildrelease} = '0';
         $substs->{buildrelease_deb} = '0';
       }
@@ -427,8 +444,10 @@ if( $opt_o ) {
     }
     
     my $change = "  Automatically generated branding added. Version=$substs->{version}";
-       $change .= ", release_id=$opt_r\n" if defined $opt_r;
-    addDebChangelog( "$theme-client", $change, $substs->{version} );
+       $change .= ", release_id=$opt_r" if defined $opt_r;
+       $change .= "\n  $changelog_msg"  if length $changelog_msg;
+       $change .= "\n";
+    addDebChangelog( "$theme-client", $change, $substs->{version_deb} );
     addSpecChangelog( "$theme-client", $change );
     chdir( "../.." );
 }
@@ -458,7 +477,7 @@ if( $opt_o ) {
     doOSC( @osc );
 
     @osc = oscParams($opt_c);
-    push @osc, ('commit', '-m', 'Pushed by genbranding.pl');
+    push @osc, ('commit', '-m', 'Pushed by genbranding.pl; ' . $changelog_msg);
 
     $buildOk = doOSC( @osc );
     chdir( "../.." );

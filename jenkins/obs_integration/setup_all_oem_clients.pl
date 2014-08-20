@@ -25,7 +25,6 @@
 #     if a package has them all ready. Generate the linux package binary tar ball.
 #   - run administration/s2.owncloud.com/bin pack_client_oem (including check_packed_client_oem.pl)
 #     to consistently publish the client.
-#     
 #
 # CAUTION:
 # genbranding.pl only works when its cwd is in its own directory. It needs to find its 
@@ -34,6 +33,7 @@
 #
 #
 # 2014-08-15, jw, added support for testpilotcloud at obs.
+# 2014-08-19, jw, calling genbranding.pl with -P if prerelease and with OBS_INTEGRATION_MSG 
 # 
 
 use Data::Dumper;
@@ -47,6 +47,7 @@ use Config::IniFiles;	# Requires: perl-Config-IniFiles
 use Template;		# Requires: perl-Template-Toolkit
 
 
+my $create_msg 		= $ENV{OBS_INTEGRATION_MSG} || "created by: $0 $ARGV";
 my $build_token         = 'jw_'.strftime("%Y%m%d", localtime);
 my $source_tar          = shift;
 
@@ -135,8 +136,12 @@ sub fetch_mirall_from_branch
   run("git clone --depth 1 --branch $branch $source_git $gitsubdir")
     unless $skipahead > 1;
 
+  # v1.7.0-alpha1
   # v1.6.2-themefix is a valid branch name.
-  my $version = $1 if $branch =~ m{^v([\d\.]+)(-\w+)?$};
+  my ($version,$prerelease) = $1 if $branch =~ m{^v([\d\.]+)(-\w+)?$};
+  $prerelease =~ s{^-}{} if defined $prerelease;
+  $genbranding .= " -P '$prerelease'" if defined $prerelease;
+
   my $v_git = pull_VERSION_cmake("$gitsubdir/VERSION.cmake");
   if (defined $version)
     {
@@ -160,16 +165,19 @@ sub fetch_mirall_from_branch
   $source_tar = "$destdir/$pkgname.tar.bz2";
   run("cd $gitsubdir && git archive HEAD --prefix=$pkgname/ --format tar | bzip2 > $source_tar")
     unless $skipahead > 2;
-  return $source_tar;
+  return ($source_tar, $version, $prerelease);
 }
 
 
 print "source_tar=$source_tar\n";
-$source_tar = fetch_mirall_from_branch($source_git, $source_tar, $tmp) 
+my $version = undef;
+my $prerelease = undef;
+($source_tar,$version,$prerelease) = fetch_mirall_from_branch($source_git, $source_tar, $tmp) 
   if $source_tar =~ m{^v[\d\.]+};
 print "source_tar=$source_tar\n";
 $source_tar = Cwd::abs_path($source_tar);	# we'll chdir() around. Take care.
 print "source_tar=$source_tar\n";
+print "prerelease=$prerelease\n" if defined $prerelease;
 sleep 5;
 
 die "need a source_tar path name or version number matching /^v[\\d\\.]+/\n" unless defined $source_tar and -e $source_tar;
@@ -298,8 +306,8 @@ for my $branding (@candidates)
     run("rm -rf '$container_project:$branding'");
     run("$osc_cmd checkout '$container_project:$branding' '$branding-client'");
     # we run in |cat, so that git diff not open less with the (useless) changes 
-    run("env PAGER=cat $genbranding '$source_tar' '$tmp/$branding.tar.bz2'");	
-    # FIXME: Test abort, if this fails. Pipe cat prevents error diagnostics here. Maybe PAGER=cat helps?
+    run("env PAGER=cat OBS_INTEGRATION_MSG='$create_msg' $genbranding '$source_tar' '$tmp/$branding.tar.bz2'");	
+    # FIXME: abort, if this fails. Pipe cat prevents error diagnostics here. Maybe PAGER=cat helps?
 
     run("rm -rf '$container_project:$branding'");
 
