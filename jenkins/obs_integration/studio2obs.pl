@@ -72,7 +72,7 @@ additional actions are taken:
  If in a project directory, specify a PACK_NAME, and an implicit
  'osc mkpac PACK_NAME; cd PACK_NAME' is done.
  If in a package directory, the PACK_NAME is taken from the current directory.
- PROJ_PREFIX defaults to '', if .osc/apiurl refers to api.opensuse.org;
+ PROJ_PREFIX defaults to '', if .osc/_apiurl refers to api.opensuse.org;
  PROJ_PREFIX defaults to 'openSUSE.org' otherwise.
 
 PACK_NAME is mandatory, when outside of a checkout directory.
@@ -140,6 +140,10 @@ kiwi_studio2obs($kiwifile, $api_url) if -f $kiwifile;
 run("touch '$pkg_name.changes'");
 run("osc add * || true") if -d ".osc";
 run("ls -la .");
+
+print "Now you can try this:\n\n";
+print "cd $pkg_name; " unless -f ".osc/_package";
+print "osc build *.kiwi images\n";
 
 exit(0);
 # ------------------------------------------------------
