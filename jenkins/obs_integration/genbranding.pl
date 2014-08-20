@@ -271,7 +271,7 @@ sub getSubsts( $ )
 
 # main here.
 $dest_prj = 'oem';
-getopts('fnbohc:p:r:');
+getopts('fnbohc:p:r:P:');
 $dest_prj = $opt_p if defined $opt_p;
 $dest_prj =~ s{:$}{};
 
