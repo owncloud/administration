@@ -28,6 +28,8 @@
 #
 # 2014-07-25, jw, V1.4
 #	- fixed removal of obsolete tar balls. Otherwise all Debians fail!
+# 2014-08-19, jw, V1.5
+#       - added [% prerelease %] support for the new universal specfile.
 
 use Getopt::Std;
 use Config::IniFiles;
@@ -328,12 +330,14 @@ unless (defined $substs->{buildrelease} )
   {
     if (defined $opt_r)
       {
+        $substs->{prerelease} = $opt_r;
         $substs->{buildrelease} = "<CI_CNT>.<B_CNT>.$opt_r";
         $substs->{buildrelease_deb} = "0.$opt_r";
 	$substs->{buildrelease_deb} =~ s{[^a-zA-Z0-9\.]}{}g;	# sanitized
       }
     else
       {
+        $substs->{prerelease} = '%nil';		# this is how the specfile switches off ~ versions.
         $substs->{buildrelease} = '0';
         $substs->{buildrelease_deb} = '0';
       }
