@@ -138,7 +138,7 @@ sub fetch_mirall_from_branch
 
   # v1.7.0-alpha1
   # v1.6.2-themefix is a valid branch name.
-  my ($version,$prerelease) = $1 if $branch =~ m{^v([\d\.]+)(-\w+)?$};
+  my ($version,$prerelease) = ($1,$2) if $branch =~ m{^v([\d\.]+)(-\w+)?$};
   $prerelease =~ s{^-}{} if defined $prerelease;
   $genbranding .= " -P '$prerelease'" if defined $prerelease;
 
