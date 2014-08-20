@@ -275,7 +275,7 @@ getopts('fnbohc:p:r:P:');
 $dest_prj = $opt_p if defined $opt_p;
 $dest_prj =~ s{:$}{};
 
-my $changelog_msg = $ENV{OBS_INTEGRATION_MSG} || $msg_def;
+my $create_msg = $ENV{OBS_INTEGRATION_MSG} || $msg_def;
 
 help() if( $opt_h );
 help() unless( defined $ARGV[0] && defined $ARGV[1] );
@@ -317,6 +317,7 @@ my $dirName = prepareTarBall();
 # returns hash reference
 my $substs = getSubsts($dirName);
 $substs->{themename} = $theme;
+$substs->{create_msg} = $create_msg || '' unless defined $substs->{create_msg};
 
 # Automatically derive version number from the mirall tarball.
 # It is used in the spec file to find the tar ball anyway, so this should be safe.
@@ -445,7 +446,7 @@ if( $opt_o ) {
     
     my $change = "  Automatically generated branding added. Version=$substs->{version}";
        $change .= ", release_id=$opt_r" if defined $opt_r;
-       $change .= "\n  $changelog_msg"  if length $changelog_msg;
+       $change .= "\n  $create_msg"  if length $create_msg;
        $change .= "\n";
     addDebChangelog( "$theme-client", $change, $substs->{version_deb} );
     addSpecChangelog( "$theme-client", $change );
@@ -477,7 +478,7 @@ if( $opt_o ) {
     doOSC( @osc );
 
     @osc = oscParams($opt_c);
-    push @osc, ('commit', '-m', 'Pushed by genbranding.pl; ' . $changelog_msg);
+    push @osc, ('commit', '-m', 'Pushed by genbranding.pl; ' . $create_msg);
 
     $buildOk = doOSC( @osc );
     chdir( "../.." );

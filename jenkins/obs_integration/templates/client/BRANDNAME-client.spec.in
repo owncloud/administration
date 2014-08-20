@@ -22,6 +22,8 @@
 ##  github.com/owncloud/administration/jenkins/obs_integration/templates/client/BRANDNAME.client.spec.in
 ##  -> you can modify it in testing, and play around for a while, but then merge into the copy
 ##     github, which is authorative for the branded clients.
+##
+## [% create_msg %]
 
 ## One specfile to rule them all:
 ##  versions 1.6.x or 1.7.x, released or prerelease versions. All rpm based platforms.
@@ -33,7 +35,7 @@
 ## define prerelease as %nil, if this is not a prerelease.
 %define prerelease [% prerelease %]
 %define base_version [% version %]
-%define tar_version %{base_version}%{prerelease}
+%define tar_version %{base_version}
 Name:           [% shortname %]-client
 
 %if 0%{?centos_version} == 600 || 0%{?fedora_version} || "%{prerelease}" == ""
@@ -57,7 +59,7 @@ License:        GPL-2.0+
 Summary:        [% summary %]
 Url:            [% projecturl %]
 Group:          Productivity/Networking/Other
-Source0:        [% themename %]-%{version}.tar.bz2
+Source0:        [% themename %]-%{tar_version}.tar.bz2
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 Source1:        [% shortname %].sh
 Patch1:         autostart_use_wrapper.diff
@@ -205,7 +207,7 @@ in the nautilus file manager.
 %endif
 
 %prep
-%setup -q -n [% themename %]-%{version}
+%setup -q -n [% themename %]-%{tar_version}
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 # autostart_use_wrapper.diff
 %patch1 -p1
