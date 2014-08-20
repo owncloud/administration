@@ -1,7 +1,7 @@
 #
 # spec file for package [% shortname %]-client
 #
-# Copyright (c) 2014 ownCloud GmbH, Nuernberg, Germany.
+# Copyright (c) 2012 ownCloud, inc.; Nuernberg, Germany.
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -15,9 +15,44 @@
 # Please submit bugfixes, issues or comments via http://github.com/owncloud/
 #
 
+## Caution: This spec file exists in multiple locations. Keep in sync:
+##  isv:ownCloud:desktop
+##  isv:ownCloud:community:nightly
+##  isv:ownCloud:community:testing
+##  github.com/owncloud/administration/jenkins/obs_integration/templates/client/BRANDNAME.client.spec.in
+##  -> you can modify it in testing, and play around for a while, but then merge into the copy
+##     github, which is authorative for the branded clients.
+
+## One specfile to rule them all:
+##  versions 1.6.x or 1.7.x, released or prerelease versions. All rpm based platforms.
+##  testing, branding, whatever.
+##
+## Caution: do not change the names of the following three defines.
+## prerelease, base_version, tar_version are the interface into buildpackage.pl 
+## used in rotor.o.c job mirall-linux-master
+## define prerelease as %nil, if this is not a prerelease.
+%define prerelease [% prerelease %]
+%define base_version [% version %]
+%define tar_version %{base_version}%{prerelease}
 Name:           [% shortname %]-client
-Version:        [% version %]
-Release:        [% buildrelease %]
+
+%if 0%{?centos_version} == 600 || 0%{?fedora_version} || "%{prerelease}" == ""
+# For beta and rc versions we use the ~ notation, as documented in
+# http://en.opensuse.org/openSUSE:Package_naming_guidelines
+# Some distro's (centos_6) don't allow ~ characters. There we follow the Fedora guidelines, 
+# which suggests massaging the buildrelease number. 
+# Otoh: for openSUSE, this technique is discouraged by the package naming guidelines.
+Version:       	%{base_version}
+%if "%{prerelease}" == ""
+Release:        0
+%else
+Release:       	0.<CI_CNT>.<B_CNT>.%{prerelease}
+%endif
+%else
+Version:       	%{base_version}~%{prerelease}
+Release:        0
+%endif
+
 License:        GPL-2.0+
 Summary:        [% summary %]
 Url:            [% projecturl %]
@@ -27,9 +62,8 @@ Source0:        [% themename %]-%{version}.tar.bz2
 Source1:        [% shortname %].sh
 Patch1:         autostart_use_wrapper.diff
 %endif
-%if 0%{?suse_version} == 1110
-Patch2:         sle_cmake.diff
-%endif
+
+%define is_version_1_7_x 0%(expr match %version 1.7)
 
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 %if 0%{?suse_version} == 1110
@@ -39,17 +73,19 @@ Patch2:         sle_cmake.diff
 # We need a more recent, prefixed Qt for SLE11
 %define qtprefix opt-
 %define _prefix /opt/qt-4.8
-# Must be all in one line:
+# Must be all in one line: 
 %define cmake_args -DCMAKE_INCLUDE_PATH=%{_prefix}/include -DCMAKE_LIBRARY_PATH=%{_prefix}/%{_lib} -DNEON_INCLUDE_DIRS=/opt/neon-0.30.0/include/ -DNEON_LIBRARIES=/opt/neon-0.30.0/%{_lib}/libneon.so.27 -DCMAKE_INSTALL_SYSCONFDIR=/opt/etc/ -DSYSCONF_INSTALL_DIR=/opt/etc/ -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE
 %else
 %define qtprefix %{nil}
-%define cmake_args -DCMAKE_INSTALL_SYSCONFDIR=/opt/etc/ -DSYSCONF_INSTALL_DIR=/opt/etc/
+%define cmake_args -DCMAKE_INSTALL_SYSCONFDIR=%{_sysconfdir} -DSYSCONF_INSTALL_DIR=%{_sysconfdir}
 %endif
 
 # default to have no docs. Cannot be built with old distros.
 %define have_doc 0
 
-BuildRequires:  cmake gcc gcc-c++ %{qtprefix}libqtkeychain-devel
+BuildRequires:  cmake >= 2.8.11
+BuildRequires:  gcc gcc-c++
+BuildRequires:  %{qtprefix}libqtkeychain-devel
 
 %if 0%{?fedora_version}
 BuildRequires:  qt4 qt4-devel >= 4.7
@@ -63,16 +99,22 @@ BuildRequires:  libneon-devel
 BuildRequires:  update-desktop-files
 %endif
 
+%if 0%{?fedora_version}
+BuildRequires:  python-sphinx
+%endif
+
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 BuildRequires:  oc-neon-devel
 %else
 BuildRequires:  neon-devel
+%define have_doc 1
 %endif
 
 %if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
 BuildRequires:  sqlite-devel
 BuildRequires:  inetd desktop-file-utils
 %else
+BuildRequires:  python-Sphinx
 BuildRequires:  sqlite3-devel
 BuildRequires:  libneon-devel
 BuildRequires:  update-desktop-files
@@ -88,16 +130,20 @@ BuildRequires:  libqt4-devel >= 4.7
 
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 Requires:       %{qtprefix}libqt4-x11
+# libQtWebKit4 is implicitly pulled by libowncloudsync0
 Requires:       %{qtprefix}libQtWebKit4
+# libqt4-sql is implicitly pulled by libqt4-sql-sqlite
 Requires:       %{qtprefix}libqt4-sql
 Requires:       %{qtprefix}libqt4-sql-sqlite
 Requires:       oc-neon
-%else
-%if  0%{?fedora_version}
-Requires:       qt4-sqlite
-%else
-Requires:       libqt4-sql-sqlite
 %endif
+
+%if 0%{?suse_version}
+Requires: 	%{qtprefix}libqt4-sql-sqlite
+%endif
+
+%if  0%{?fedora_version}
+Requires: 	%{qtprefix}qt4-sqlite
 %endif
 
 Requires: %{name}-l10n
@@ -146,13 +192,23 @@ Requires: lib[% shortname %]sync0 = %{version}
 %description -n lib[% shortname %]sync-devel
 Development files for the [% displayname %] sync library.
 
-%prep
-%setup -q -n [% tarball %]
-%if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
-%patch1 -p1
+%if %is_version_1_7_x
+%package -n %{name}-nautilus
+Summary:        Nautilus overlay icons
+Group:          Productivity/Networking/Other
+Requires:       nautilus, python-nautilus
+Requires:       %{name}%{?_isa} = %{version}-%{release}
+
+%description -n %{name}-nautilus
+This package provides overlay icons to visualize the sync state
+in the nautilus file manager.
 %endif
-%if 0%{?suse_version} == 1110
-%patch2 -p1
+
+%prep
+%setup -q -n [% themename %]-%{version}
+%if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
+# autostart_use_wrapper.diff
+%patch1 -p1
 %endif
 
 %build
@@ -161,17 +217,20 @@ export PATH=%{_prefix}/bin:$PATH
 
 mkdir build
 pushd build
-cmake .. -DCMAKE_INSTALL_PREFIX=%{_prefix:/usr} -DWITH_DOC=TRUE \
+# http://www.cmake.org/Wiki/CMake_RPATH_handling#Default_RPATH_settings
+cmake .. -DWITH_DOC=TRUE \
   -DCMAKE_C_FLAGS:STRING="%{optflags}" \
   -DCMAKE_CXX_FLAGS:STRING="%{optflags}" \
-  -DCMAKE_SKIP_RPATH=ON \
+  -DCMAKE_SKIP_RPATH=OFF \
   -DCMAKE_BUILD_TYPE=RelWithDebInfo \
   -DCMAKE_INSTALL_PREFIX=%{_prefix} \
   -DCMAKE_DOC_INSTALL_PATH=%{_docdir}/ocsync \
 %if %{_lib} == lib64
   -DLIB_SUFFIX=64 \
 %endif
+%if %{name} != owncloud-client
   -DOEM_THEME_DIR=$PWD/../[% themename %]/mirall \
+%endif
   %cmake_args
 
 # documentation here?
@@ -199,15 +258,21 @@ then
   mv ${RPM_BUILD_ROOT}%{_docdir}/%{name}/html/unthemed/* ${RPM_BUILD_ROOT}%{_docdir}/%{name}/html/
   rmdir ${RPM_BUILD_ROOT}%{_docdir}/%{name}/html/unthemed
 
-  mkdir -p ${RPM_BUILD_ROOT}%{_mandir}/man1
-  mv ${RPM_BUILD_ROOT}/usr/share/man/man/* ${RPM_BUILD_ROOT}%{_mandir}/man1
+  if [ -d ${RPM_BUILD_ROOT}/usr/share/man/man/ ]; then
+    # obsoleted in 1.6.2 
+    mkdir -p ${RPM_BUILD_ROOT}%{_mandir}/man1
+    mv ${RPM_BUILD_ROOT}/usr/share/man/man/* ${RPM_BUILD_ROOT}%{_mandir}/man1
+  fi
 fi
 popd
 
+if [ -d ${RPM_BUILD_ROOT}%{_mandir}/man1 ]; then
+  gzip ${RPM_BUILD_ROOT}%{_mandir}/man1/*.1
+fi
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 
 mkdir -p $RPM_BUILD_ROOT/usr/share/applications/
-cat $RPM_BUILD_ROOT%{_datadir}/applications/[% shortname %].desktop |sed "s,Exec=.*,Exec=/usr/bin/[% APPLICATION_EXECUTABLE %]," > $RPM_BUILD_ROOT/usr/share/applications/[% shortname %].desktop
+cat $RPM_BUILD_ROOT%{_datadir}/applications/[% shortname %].desktop |sed "s,Exec=.*,Exec=/usr/bin/[% shortname %]," > $RPM_BUILD_ROOT/usr/share/applications/[% shortname %].desktop
 # rm $RPM_BUILD_ROOT%{_datadir}/applications/[% shortname %].desktop
 mkdir -p $RPM_BUILD_ROOT/usr/share/icons/hicolor
 mv $RPM_BUILD_ROOT%{_datadir}/icons/hicolor/* $RPM_BUILD_ROOT/usr/share/icons/hicolor
@@ -218,6 +283,14 @@ install -m 755 %{SOURCE1} $RPM_BUILD_ROOT/usr/bin/[% shortname %]
 %if %{?suse_version:1}0
 %suse_update_desktop_file -n [% shortname %]
 %endif
+
+%check
+## use exit 0 instead of exit 1 to turn this into warnings:
+if [ "%{prerelease}" == "" ]; then
+ expr match '%{distribution}' '.*:community:\(testing\|nightly\)' && { echo "Error: Need a prerelease here, not %{version}"; exit 1; }
+else
+ expr match '%{distribution}' '.*:community:desktop' && { echo "Error: Must not have a prerelease here, not %{version}"; exit 1; }
+fi
 
 %if 0%{?fedora_version}
 %post
@@ -247,6 +320,12 @@ fi
 %{_datadir}/icons/hicolor
 %if 0%{have_doc}
 %{_mandir}/man1/[% shortname %]*
+%endif
+
+%if 0%{?suse_version} == 1110
+# needed for SLES11 SP3. Not sure why all others can do without...
+%{_prefix}/share/*
+%dir /opt/etc
 %endif
 
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
@@ -282,5 +361,14 @@ fi
 %{_libdir}/[% shortname %]/libocsync.so
 %{_includedir}/[% shortname %]sync/
 %{_includedir}/httpbf.h
+
+%if %is_version_1_7_x
+%files -n %{name}-nautilus
+%defattr(-,root,root,-)
+# Fedora also has *.pyc and *.pyo files here.
+%{_datadir}/nautilus-python/extensions/ownCloud.py*
+%dir %{_datadir}/nautilus-python/extensions
+%dir %{_datadir}/nautilus-python
+%endif
 
 %changelog
