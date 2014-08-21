@@ -269,10 +269,14 @@ fi
 popd
 
 if [ -d ${RPM_BUILD_ROOT}%{_mandir}/man1 ]; then
+%if "%{name}" != "owncloud-client"
+  mv ${RPM_BUILD_ROOT}%{_mandir}/man1/{owncloud.1,[% shortname %].1}
+  mv ${RPM_BUILD_ROOT}%{_mandir}/man1/{owncloudcmd.1,[% shortname %]cmd.1}
+%endif
   gzip ${RPM_BUILD_ROOT}%{_mandir}/man1/*.1
 fi
-%if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 
+%if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 mkdir -p $RPM_BUILD_ROOT/usr/share/applications/
 cat $RPM_BUILD_ROOT%{_datadir}/applications/[% shortname %].desktop |sed "s,Exec=.*,Exec=/usr/bin/[% shortname %]," > $RPM_BUILD_ROOT/usr/share/applications/[% shortname %].desktop
 # rm $RPM_BUILD_ROOT%{_datadir}/applications/[% shortname %].desktop
@@ -334,10 +338,12 @@ fi
 /usr/share/icons/hicolor
 /usr/share/applications/[% shortname %].desktop
 /usr/bin/[% shortname %]
-%endif
-# %%config /[% sysconfdir %]
 %config /opt/etc/[% shortname %]
 %dir /opt/etc
+%else
+%config /etc/[% shortname %]
+%dir /etc
+%endif
 
 %files -n %{name}-doc
 %defattr(-,root,root,-)
