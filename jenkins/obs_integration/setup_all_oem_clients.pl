@@ -34,7 +34,7 @@
 #
 # 2014-08-15, jw, added support for testpilotcloud at obs.
 # 2014-08-19, jw, calling genbranding.pl with -P if prerelease and with OBS_INTEGRATION_MSG 
-# 
+# 2014-08-20, jw, split prerelease from branch where [abr-]...
 
 use Data::Dumper;
 use File::Path;
@@ -138,7 +138,7 @@ sub fetch_mirall_from_branch
 
   # v1.7.0-alpha1
   # v1.6.2-themefix is a valid branch name.
-  my ($version,$prerelease) = ($1,$2) if $branch =~ m{^v([\d\.]+)(-\w+)?$};
+  my ($version,$prerelease) = ($1,$2) if $branch =~ m{^v([\d\.]+)([abr-]\w+)?$}i;
   $prerelease =~ s{^-}{} if defined $prerelease;
   $genbranding .= " -P '$prerelease'" if defined $prerelease;
 
@@ -174,7 +174,6 @@ my $version = undef;
 my $prerelease = undef;
 ($source_tar,$version,$prerelease) = fetch_mirall_from_branch($source_git, $source_tar, $tmp) 
   if $source_tar =~ m{^v[\d\.]+};
-print "source_tar=$source_tar\n";
 $source_tar = Cwd::abs_path($source_tar);	# we'll chdir() around. Take care.
 print "source_tar=$source_tar\n";
 print "prerelease=$prerelease\n" if defined $prerelease;
