@@ -61,7 +61,7 @@ cd ..
 # cleanup
 #
 rm -rf l10n/l10n.pl
-git rm -rf l10n/l10n.pl
+git rm -rf l10n/l10n.pl || true
 
 
 #
