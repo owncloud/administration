@@ -283,6 +283,11 @@ if [ -d ${RPM_BUILD_ROOT}%{_mandir}/man1 ]; then
   gzip ${RPM_BUILD_ROOT}%{_mandir}/man1/*.1
 fi
 
+%define %extdir ${RPM_BUILD_ROOT}%{_datadir}/nautilus-python/extensions
+test -f %{extdir}/ownCloud.py  && mv %extdir/[% shortname %].py
+test -f %{extdir}/ownCloud.pyo && mv %extdir/[% shortname %].pyo
+test -f %{extdir}/ownCloud.pyc && mv %extdir/[% shortname %].pyc
+
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 mkdir -p $RPM_BUILD_ROOT/usr/share/applications/
 cat $RPM_BUILD_ROOT%{_datadir}/applications/[% shortname %].desktop |sed "s,Exec=.*,Exec=/usr/bin/[% shortname %]," > $RPM_BUILD_ROOT/usr/share/applications/[% shortname %].desktop
@@ -381,7 +386,7 @@ fi
 %files -n %{name}-nautilus
 %defattr(-,root,root,-)
 # Fedora also has *.pyc and *.pyo files here.
-%{_datadir}/nautilus-python/extensions/ownCloud.py*
+%{_datadir}/nautilus-python/extensions/[% shortname %].py*
 %dir %{_datadir}/nautilus-python/extensions
 %dir %{_datadir}/nautilus-python
 %endif

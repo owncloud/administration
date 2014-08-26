@@ -52,11 +52,11 @@ Description: [% displayname %] sync library development files.
  .
  This package contains the development files.
 
-Package: owncloud-client-nautilus
+Package: [% themename %]-client-nautilus
 Architecture: all
 Section: devel
-Depends: owncloud-client (= ${binary:Version}), ${misc:Depends}, libowncloudsync0, python-nautilus, nautilus
-Description: ownCloud nautilus plugin 
+Depends: [% themename %]-client (= ${binary:Version}), ${misc:Depends}, lib[% themename %]sync0, python-nautilus, nautilus
+Description: [% displayname %] nautilus plugin 
  This package contains a nautilus plugin to display overlay icons. 
  .
  This is a nice gui feature.
