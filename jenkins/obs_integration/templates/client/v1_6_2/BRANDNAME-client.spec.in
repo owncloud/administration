@@ -35,7 +35,7 @@
 ## define prerelease as %nil, if this is not a prerelease.
 %define prerelease [% prerelease %]
 %define base_version [% version %]
-%define tar_version %{base_version}
+%define tar_version %{base_version}%{prerelease}
 Name:           [% shortname %]-client
 
 %if 0%{?centos_version} == 600 || 0%{?fedora_version} || "%{prerelease}" == ""

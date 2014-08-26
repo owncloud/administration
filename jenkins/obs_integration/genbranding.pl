@@ -105,15 +105,17 @@ sub getFileName( $ ) {
 }
 
 # Extracts the mirall tarball and puts the theme tarball the new dir
-sub prepareTarBall( ) {
+sub prepareTarBall($$$) {
+    my ($argv0, $argv1, $prerelease) = @_;
     print "Preparing tarball...";
 
     system("/bin/tar", ("xif", $miralltar, "--force-local") );
     print "Extract mirall...\n";
-    my $mirall = getFileName( $ARGV[0] );
-    my $theme = getFileName( $ARGV[1] );
+    my $mirall = getFileName( $argv0 );
+    my $theme = getFileName( $argv1 );
     my $newname = $mirall;
     $newname =~ s/mirall-/$theme-/;
+    $newname .= $prerelease if defined $prerelease;
     move($mirall, $newname);
     chdir($newname);
     print "Extracting theme...\n";
@@ -346,7 +348,7 @@ if( $opt_o ) {
     }
 }
 
-my $dirName = prepareTarBall();
+my $dirName = prepareTarBall($ARGV[0], $ARGV[1], $opt_P);
 
 # returns hash reference
 my $substs = getSubsts($dirName);
