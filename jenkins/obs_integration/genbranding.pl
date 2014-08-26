@@ -145,20 +145,22 @@ sub createClientFromTemplate($) {
 	mkdir("$theme-client");
     }
 
-    my $versdir = 'v'.$1 if $subst->{version} =~ m{^([^-]+)};
+    my $versdir = 'v'.$1 if $substs->{version} =~ m{^([^-]+)};
     $versdir =~ s{\.}{_}g;
-    unless (opendir(my $dh, "$clienttemplatedir/$versdir))
+    print "versdir=$clienttemplatedir/$versdir\n";
+    my $dh;
+    unless (opendir($dh, "$clienttemplatedir/$versdir"))
       {
         opendir DIR, $clienttemplatedir;
         my @have_vdirs = grep { -d "$clienttemplatedir/$_" and /^v/ } readdir DIR;
-        closedir DIRM
+        closedir DIR;
 	my $have_vdirs = join(' ', sort @have_vdirs);
         die qq{$0: missing a $versdir subdirectory in $clienttemplatedir/. 
-There we expect to find all the templates for this $subst->{version} version.
+There we expect to find all the templates for this $substs->{version} version.
 All we have is: $have_vdirs
 
 Please do the following steps (or similar):
- \$ git clone git@github.com:owncloud/administration.git
+ \$ git clone git\@github.com:owncloud/administration.git
  \$ cd jenkins/obs_integration/templates/client
  \$ mkdir $versdir;
  # Chosse a v... dir that is similar.
@@ -173,7 +175,7 @@ Please do the following steps (or similar):
 };
       }
 
-    my @tmpl_files = map { "$versdir/$_" } grep { ! /^\./ } readdir($dh);
+    my @tmpl_files = grep { ! /^\./ } readdir($dh);
     closedir($dh);
 
     my $source;
@@ -187,9 +189,11 @@ Please do the following steps (or similar):
 
         if($source =~ /\.in$/) {
             $target =~ s/\.in$//;
-            $tt->process("$clienttemplatedir/$source", $substs, "$targetDir/$target") or die $tt->error();
+            $tt->process("$clienttemplatedir/$versdir/$source", $substs, "$targetDir/$target") or die $tt->error();
+            print "process $clienttemplatedir/$versdir/$source ...\n";
         } else {
-            copy("$clienttemplatedir/$source", "$targetDir/$target");
+            copy("$clienttemplatedir/$versdir/$source", "$targetDir/$target");
+            print "copy $clienttemplatedir/$versdir/$source ...\n";
         }
      }
 

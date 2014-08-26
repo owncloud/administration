@@ -14,6 +14,7 @@ Package: [% themename %]-client-doc
 Architecture: all
 Section: devel
 Depends: [% themename %]-client (= ${binary:Version}), ${misc:Depends}, lib[% themename %]sync0
+Suggests: [% themename %]-client-nautilus
 Description: development files for the [% displayname %] sync lib.
  Main package for [% displayname %].
  .

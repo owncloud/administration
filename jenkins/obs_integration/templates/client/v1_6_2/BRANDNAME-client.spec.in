@@ -140,7 +140,11 @@ Requires:       %{qtprefix}libqt4-sql-sqlite
 Requires:       oc-neon
 %endif
 %if %is_version_1_7_x
-Requires:	%{name}-nautilus
+%if 0%{?fedora_version} > 20 || 0%{?centos_version} || 0%{?suse_version} || 0%{?rhel_version}
+# Fedora 19 and 20 don't have Suggests.
+# How about CentOS?
+Suggests:	%{name}-nautilus
+%endif
 %endif
 
 %if 0%{?suse_version}
