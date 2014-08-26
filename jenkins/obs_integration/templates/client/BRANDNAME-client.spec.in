@@ -139,6 +139,9 @@ Requires:       %{qtprefix}libqt4-sql
 Requires:       %{qtprefix}libqt4-sql-sqlite
 Requires:       oc-neon
 %endif
+%if %is_version_1_7_x
+Requires:	%{name}-nautilus
+%endif
 
 %if 0%{?suse_version}
 Requires: 	%{qtprefix}libqt4-sql-sqlite
