@@ -1,0 +1,62 @@
+Source: [% themename %]-client
+Section: devel
+Priority: optional
+Maintainer: [% maintainer_person %]
+Build-Depends: debhelper (>= 9), cmake, libqt4-dev (>= 4.7), libqtwebkit-dev (>= 2.2.0), qtkeychain-dev, libneon27-gnutls-dev, libsqlite3-dev, python-sphinx | python3-sphinx
+Standards-Version: 3.9.5
+
+Package: [% themename %]-client
+Architecture: any
+Multi-Arch: same
+Depends: ${misc:Depends}, ${shlibs:Depends}, lib[% themename %]sync0 (= ${binary:Version}), [% themename %]-client-l10n, libqt4-sql-sqlite 
+Description: [% pkgdescription_debian %]
+Package: [% themename %]-client-doc
+Architecture: all
+Section: devel
+Depends: [% themename %]-client (= ${binary:Version}), ${misc:Depends}, lib[% themename %]sync0
+Description: development files for the [% displayname %] sync lib.
+ Main package for [% displayname %].
+ .
+ This package contains the library development files.
+
+Package: [% themename %]-client-l10n
+Architecture: all
+Section: devel
+Depends: [% themename %]-client (= ${binary:Version}), ${misc:Depends}, lib[% themename %]sync0
+Breaks: [% themename %]-client (<= 1.5.0)
+Description: Internationalisation files for [% displayname %]
+ Internationalisation files for [% displayname %].
+ .
+ This package contains the translation packages.
+
+Package: lib[% themename %]sync0
+Architecture: any
+Multi-Arch: same
+Section: devel
+Depends: ${misc:Depends}, ${shlibs:Depends}, libqtkeychain0 (>= 0.3)
+Pre-Depends: ${misc:Pre-Depends}
+Breaks: libocsync0
+Replaces: libocsync0
+Description: ownCloud sync library.
+ [% displayname %] uses this as a sync engine implementation.
+ .
+ This package contains the library.
+
+Package: lib[% themename %]sync-dev
+Architecture: any
+Section: devel
+Depends: lib[% themename %]sync0, ${misc:Depends}
+Description: [% displayname %] sync library development files.
+ [% displayname %] uses this as a sync engine implementation.
+ .
+ This package contains the development files.
+
+Package: owncloud-client-nautilus
+Architecture: all
+Section: devel
+Depends: owncloud-client (= ${binary:Version}), ${misc:Depends}, libowncloudsync0, python-nautilus, nautilus
+Description: ownCloud nautilus plugin 
+ This package contains a nautilus plugin to display overlay icons. 
+ .
+ This is a nice gui feature.
+
