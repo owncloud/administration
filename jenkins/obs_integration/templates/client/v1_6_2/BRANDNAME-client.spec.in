@@ -283,7 +283,7 @@ if [ -d ${RPM_BUILD_ROOT}%{_mandir}/man1 ]; then
   gzip ${RPM_BUILD_ROOT}%{_mandir}/man1/*.1
 fi
 
-%define %extdir ${RPM_BUILD_ROOT}%{_datadir}/nautilus-python/extensions
+%define extdir ${RPM_BUILD_ROOT}%{_datadir}/nautilus-python/extensions
 test -f %{extdir}/ownCloud.py  && mv %extdir/[% shortname %].py
 test -f %{extdir}/ownCloud.pyo && mv %extdir/[% shortname %].pyo
 test -f %{extdir}/ownCloud.pyc && mv %extdir/[% shortname %].pyc
