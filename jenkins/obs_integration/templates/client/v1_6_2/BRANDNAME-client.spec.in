@@ -284,9 +284,9 @@ if [ -d ${RPM_BUILD_ROOT}%{_mandir}/man1 ]; then
 fi
 
 %define extdir ${RPM_BUILD_ROOT}%{_datadir}/nautilus-python/extensions
-test -f %{extdir}/ownCloud.py  && mv %extdir/[% shortname %].py
-test -f %{extdir}/ownCloud.pyo && mv %extdir/[% shortname %].pyo
-test -f %{extdir}/ownCloud.pyc && mv %extdir/[% shortname %].pyc
+test -f %{extdir}/ownCloud.py  && mv %{extdir}/ownCloud.py  %{extdir}/[% shortname %].py
+test -f %{extdir}/ownCloud.pyo && mv %{extdir}/ownCloud.pyo %{extdir}/[% shortname %].pyo
+test -f %{extdir}/ownCloud.pyc && mv %{extdir}/ownCloud.pyc %{extdir}/[% shortname %].pyc
 
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 mkdir -p $RPM_BUILD_ROOT/usr/share/applications/
