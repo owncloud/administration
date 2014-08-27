@@ -6,7 +6,7 @@
 # copy the build repos to a temporary space
 major=6
 rm -rf /tmp/ee$major
-mkdir /tmp/ee6$major
+mkdir /tmp/ee$major
 
 cp -a /srv/obs/repos/ee\:/$major.0/* /tmp/ee$major
 
