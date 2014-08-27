@@ -2,9 +2,11 @@
 #
 # Maintained at: https://github.com/owncloud/administration/tree/master/s2.owncloud.com/bin
 #
+# jw, Wed Aug 20 11:20:57 EDT 2014
+#   changed destination from repositories/ to repositories/5.0/
 
 # copy the build repos to a temporary space
-major=6
+major=5
 rm -rf /tmp/ee$major
 mkdir /tmp/ee6$major
 
