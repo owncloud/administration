@@ -50,8 +50,73 @@ my %platforms = (
 );
 
 my $specfile = 'installation-test.spec';
+opendir DIR, ".";
+my @f = grep { /\.spec$'/ } readdir DIR;
+closedir DIR;
+$specfile = $f[0] if defined $f[0];
 
-my @spec_parts = read_spec_parts($specfile);
+my @spec_parts = (
+q{#
+# spec file for package installation-test
+#
+# Copyright (c) 2014 ownCloud GmbH, Nuernberg, Germany.
+#
+# All modifications and additions to the file contributed by third parties
+# remain the property of their copyright owners, unless otherwise agreed
+# upon. The license for this file, and modifications and additions to the
+# file, is the same license as for the pristine package itself (unless the
+# license for the pristine package is not an Open Source License, in which
+# case the license is the MIT License). An "Open Source License" is a
+# license that conforms to the Open Source Definition (Version 1.9)
+# published by the Open Source Initiative.
+
+# Please submit bugfixes, issues or comments via http://github.com/owncloud/
+#
+
+Name:           installation-test
+
+Version:       	1.0
+Release:        0
+
+Source0:        README
+Url:            http://www.owncloud.org
+BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+Summary:        Basic install test. Runtime dependencies, and such
+License:        MIT
+BuildArch:	noarch
+Group:          Productivity/Networking/Web/Utilities
+## REQUIRES_START
+}, '', q{
+## REQUIRES_END
+
+%description
+This package provides nothing useful for a production system.
+It tests the installation, so that we know if it is installable.
+
+
+%prep
+%setup -T -c -q -n %{name}
+cp %{SOURCE0} .
+
+%build
+
+%install
+
+%clean
+rm -rf "$RPM_BUILD_ROOT"
+
+%files
+%defattr(0644,root,wheel,0755)
+%doc README
+
+%changelog
+});
+
+if ( -f $spec_parts )
+  {
+    @spec_parts = read_spec_parts($specfile);
+  }
+
 $spec_parts[1] = '';
 my $base = parse_apache_dir($repo);
 for my $dir (@{$base->{dirs}})
