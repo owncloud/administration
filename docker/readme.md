@@ -22,10 +22,16 @@ Install docker on a linux machine or linux VM for easy usage.
 Run 
 ===
 
+Inside the docker folder some scripts are available
+
 build-docker.sh
 ---------------
 
-Build all docker images
+Build all docker images 
+
+```
+./build-docker.sh
+```
 
 start-docker.sh
 ---------------
