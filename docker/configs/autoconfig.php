@@ -1,7 +1,7 @@
 <?php 
 $AUTOCONFIG = array(
   "dbtype"        => "sqlite",
-  'directory' => '/var/www/owncloud/data', 
+  'directory' => '/data-vol/oc-data', 
   'adminlogin' => 'admin',
   'adminpass' => 'password'
 );

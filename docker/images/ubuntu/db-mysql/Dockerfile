@@ -1,5 +1,5 @@
 FROM ubuntu:latest
-MAINTAINER Erik Wittek <erik@webhippie.de>
+MAINTAINER Felix Böhm "felix@owncloud.com"
 
 # Install packages
 RUN apt-get update

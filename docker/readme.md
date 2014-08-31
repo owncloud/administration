@@ -27,7 +27,7 @@ Inside the docker folder some scripts are available
 build-docker.sh
 ---------------
 
-Build all docker images 
+Build all docker images in this repository
 
 ```
 ./build-docker.sh
@@ -36,7 +36,7 @@ Build all docker images
 start-docker.sh
 ---------------
 
-Runs ownCloud in docker container with selected os, server, db ...
+Runs / restarts ownCloud in docker container with selected os, server, db ...
 
 ```
 ./start-docker.sh [options]

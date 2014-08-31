@@ -1,4 +1,5 @@
 FROM phusion/baseimage:latest
+MAINTAINER Felix Böhm "felix@owncloud.com"
 
 # Set correct environment variables.
 ENV HOME /root

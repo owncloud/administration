@@ -4,7 +4,7 @@ OS=ubuntu
 SERVER=apache
 DB=mysql
 PORT=8888
-DATA_VOLUME_DIR="/data-vol"
+VOLUME_DIR="/data-vol"
 
 while getopts "o:s:d:p:h" opt; do
   case $opt in
@@ -22,7 +22,7 @@ while getopts "o:s:d:p:h" opt; do
       ;;
     d)
       if [ -d $OPTARG ]; then 
-        DATA_VOLUME_DIR=$OPTARG
+        VOLUME_DIR=$OPTARG
       fi
       ;;
     h)
@@ -46,8 +46,6 @@ done
 BASE_PATH=$(dirname $0)
 cd $BASE_PATH
 
-[ -d $DATA_VOLUME_DIR ] || mkdir $DATA_VOLUME_DIR
-
 SERVER_IMAGE_NAME="oc-$SERVER-$OS"
 DB_IMAGE_NAME="db-$DB-$OS"
 DATA_IMAGE_NAME="data-vol-$OS"
@@ -63,7 +61,7 @@ docker rm -f $SERVER_NAME
 
 echo "Start ownCloud server $SERVER on port $PORT with database $DB"
 
-docker run -dv $DATA_VOLUME_DIR:/data-vol --name=$DATA_NAME $DATA_IMAGE_NAME
+docker run -dv $VOLUME_DIR:/data-vol --name=$DATA_NAME $DATA_IMAGE_NAME
 
 
 if [ $DB == sqlite ]; then
@@ -76,26 +74,25 @@ fi
 
 
 if [ $SERVER == apache ]; then
-  docker run -dp $PORT:80 -h $SERVER_NAME --name=$SERVER_NAME $DB_LINK --volumes-from $DATA_NAME $SERVER_IMAGE_NAME /sbin/my_init --enable-insecure-key
+  echo "docker run -dp $PORT:80 -h $SERVER_NAME --name=$SERVER_NAME $DB_LINK --volumes-from $DATA_NAME $SERVER_IMAGE_NAME /sbin/my_init --enable-insecure-key"
+  docker run -dp $PORT:80 -h $SERVER_NAME --name=$SERVER_NAME $DB_LINK --volumes-from $DATA_NAME $SERVER_IMAGE_NAME /sbin/my_init --enable-insecure-key > /dev/null 2>&1
 fi
 
 if [ $SERVER == nginx ]; then
-  docker run -dp $PORT:8000/tcp -h $SERVER_NAME --name=$SERVER_NAME $DB_LINK --volumes-from $DATA_NAME $SERVER_IMAGE_NAME /sbin/my_init --enable-insecure-key
+  echo "docker run -dp $PORT:8000/tcp -h $SERVER_NAME --name=$SERVER_NAME $DB_LINK --volumes-from $DATA_NAME $SERVER_IMAGE_NAME /sbin/my_init --enable-insecure-key"
+  docker run -dp $PORT:8000/tcp -h $SERVER_NAME --name=$SERVER_NAME $DB_LINK --volumes-from $DATA_NAME $SERVER_IMAGE_NAME /sbin/my_init --enable-insecure-key > /dev/null 2>&1
 fi
 
 
 echo "Discover IP"
 #Get IP of ownCLoud-Server
 IP=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" $SERVER_NAME)
-while ! ssh -o'UserKnownHostsFile /dev/null' -oStrictHostKeyChecking=no -i configs/insecure_key root@$IP ls -la /data-vol > /dev/null 2>&1
+while ! ssh -o'UserKnownHostsFile /dev/null' -oStrictHostKeyChecking=no -i configs/insecure_key root@$IP ls -la $VOLUME_DIR > /dev/null 2>&1
 do
   printf "." && sleep 1
 done
 
 echo
-echo "Data Volume:"
-ssh -o'UserKnownHostsFile /dev/null' -oStrictHostKeyChecking=no -i configs/insecure_key root@$IP ls -la /data-vol
-
 echo "Connect with:"
 echo "ssh -o'UserKnownHostsFile /dev/null' -oStrictHostKeyChecking=no -i configs/insecure_key root@$IP"
 

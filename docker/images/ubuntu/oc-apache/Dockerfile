@@ -1,5 +1,5 @@
 FROM phusion/baseimage:latest
-MAINTAINER Erik Wittek "erik@webhippie.de"
+MAINTAINER Felix Böhm "felix@owncloud.com"
 
 ENV HOME /root
 ENV DEBIAN_FRONTEND noninteractive
