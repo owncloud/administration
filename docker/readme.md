@@ -38,14 +38,16 @@ start-docker.sh
 
 Runs ownCloud in docker container with selected os, server, db ...
 
-
 ```
 ./start-docker.sh [options]
 ```
 Options: 
-* -o          ubuntu, TODO: centos      default: ubuntu
-* -s          apache, nginx             default: apache
-* -d          sqlite, mysql             default: sqlite
-* -p          <Port>                    default: 8888
-* -d          <Dir> to mount in docker  default: /data-vol
-* -h          help screen
+
+```
+ -o          ubuntu, TODO: centos      default: ubuntu
+ -s          apache, nginx             default: apache
+ -d          sqlite, mysql             default: sqlite
+ -p          <Port>                    default: 8888
+ -d          <Dir> to mount in docker  default: /data-vol
+ -h          help screen
+```
