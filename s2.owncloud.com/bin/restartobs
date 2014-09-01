@@ -1,0 +1,10 @@
+#! /bin/sh
+set -x
+stopobs
+sleep 3
+startobs
+         curl -s http://s2.owncloud.com | grep title && exit 0
+sleep 1; curl -s http://s2.owncloud.com | grep title && exit 0
+sleep 1; curl -s http://s2.owncloud.com | grep title && exit 0
+sleep 1; curl -s http://s2.owncloud.com | grep title && exit 0
+sleep 1; curl -s http://s2.owncloud.com | grep title && exit 0
