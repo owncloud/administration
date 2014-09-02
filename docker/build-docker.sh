@@ -14,6 +14,8 @@ do
   for IMAGE in `find $IMAGE_PATH/$OS -mindepth 1 -maxdepth 1 -type d`
   do
     NAME=$(basename $IMAGE)
+    echo
+    echo
     echo "Found docker image $NAME-$OS"
     docker build -t $NAME-$OS $IMAGE_PATH/$OS/$NAME
   done
