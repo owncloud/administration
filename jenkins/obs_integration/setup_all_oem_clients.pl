@@ -345,3 +345,5 @@ else
     run("sleep 3; rm -rf $tmp");
   }
 
+print "Wait an hour or so, then check if things have built.\n";
+print "You can use collect_all_oem_clients.pl to push the build results to download.owncloud.com\n";
