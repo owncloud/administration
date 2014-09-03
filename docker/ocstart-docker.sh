@@ -5,6 +5,7 @@ SERVER=apache
 DB=mysql
 PORT=8888
 VOLUME_DIR="/data-vol"
+SSH="/sbin/my_init --enable-insecure-key"
 
 while getopts "o:s:d:p:h" opt; do
   case $opt in
@@ -49,48 +50,75 @@ cd $BASE_PATH
 SERVER_IMAGE_NAME="oc-$SERVER-$OS"
 DB_IMAGE_NAME="db-$DB-$OS"
 DATA_IMAGE_NAME="data-vol-$OS"
+MEMCACHED_IMAGE="memcached-$OS"
 
 SERVER_NAME="oc-server"
 DB_NAME="oc-$DB"
 DATA_NAME="oc-data"
+MEMCACHED_NAME="memcached"
+
+SERVER_INSTANCES=3
 
 echo "Restart test system"
 docker rm -f $DATA_NAME 
+docker rm -f $MEMCACHED_NAME
 docker rm -f $DB_NAME 
-docker rm -f $SERVER_NAME 
+for i in $(seq 1 $SERVER_INSTANCES)
+do
+  docker rm -f $SERVER_NAME-$i $QUIET
+done
+
 
 echo "Start ownCloud server $SERVER on port $PORT with database $DB"
 
-docker run -dv $VOLUME_DIR:/data-vol --name=$DATA_NAME $DATA_IMAGE_NAME
+echo "docker run -dv $VOLUME_DIR:/data-vol --name=$DATA_NAME $DATA_IMAGE_NAME $QUIET"
+docker run -dv $VOLUME_DIR:/data-vol --name=$DATA_NAME $DATA_IMAGE_NAME > /dev/null 2>&1
 
+echo "docker run -dp 127.0.0.1:11211:11211 -h $MEMCACHED_NAME --name $MEMCACHED_NAME $MEMCACHED_IMAGE $QUIET"
+docker run -dp 127.0.0.1:11211:11211 -h $MEMCACHED_NAME --name $MEMCACHED_NAME $MEMCACHED_IMAGE > /dev/null 2>&1
+MEMCACHE_LINK=" --link=$MEMCACHED_NAME:memcached"
 
 if [ $DB == sqlite ]; then
   DB_LINK=""
 fi
 if [ $DB == mysql ]; then
-  docker run -d -e MYSQL_PASS="rootpass" --name=$DB_NAME $DB_IMAGE_NAME
+  echo "docker run -dp 3306:3306 -v $VOLUME_DIR/mysql:/var/lib/mysql -e MYSQL_PASS="rootpass" --name=$DB_NAME -h $DB_NAME $DB_IMAGE_NAME $SSH"
+  docker run -dp 3306:3306 -v $VOLUME_DIR/mysql:/var/lib/mysql -e MYSQL_PASS="rootpass" --name=$DB_NAME -h $DB_NAME $DB_IMAGE_NAME $SSH > /dev/null 2>&1
+  echo " on IP $(docker inspect -f "{{ .NetworkSettings.IPAddress }}" $DB_NAME)"
   DB_LINK=" --link=$DB_NAME:db"
 fi
 
 
 if [ $SERVER == apache ]; then
-  echo "docker run -dp $PORT:80 -h $SERVER_NAME --name=$SERVER_NAME $DB_LINK --volumes-from $DATA_NAME $SERVER_IMAGE_NAME /sbin/my_init --enable-insecure-key"
-  docker run -dp $PORT:80 -h $SERVER_NAME --name=$SERVER_NAME $DB_LINK --volumes-from $DATA_NAME $SERVER_IMAGE_NAME /sbin/my_init --enable-insecure-key > /dev/null 2>&1
+  for i in $(seq 1 $SERVER_INSTANCES)
+  do
+    INSTANCE_PORT=$(($PORT + $i - 1))
+    echo "docker run -dp 127.0.0.1:$INSTANCE_PORT:80 -h $SERVER_NAME-$i --name=$SERVER_NAME-$i $DB_LINK $MEMCACHE_LINK --volumes-from $DATA_NAME $SERVER_IMAGE_NAME $SSH"
+    docker run -dp 127.0.0.1:$INSTANCE_PORT:80 -h $SERVER_NAME-$i --name=$SERVER_NAME-$i $DB_LINK $MEMCACHE_LINK --volumes-from $DATA_NAME $SERVER_IMAGE_NAME $SSH #> /dev/null 2>&1
+    echo " on IP $(docker inspect -f "{{ .NetworkSettings.IPAddress }}" $SERVER_NAME-$i)"
+  done
 fi
 
 if [ $SERVER == nginx ]; then
-  echo "docker run -dp $PORT:8000/tcp -h $SERVER_NAME --name=$SERVER_NAME $DB_LINK --volumes-from $DATA_NAME $SERVER_IMAGE_NAME /sbin/my_init --enable-insecure-key"
-  docker run -dp $PORT:8000/tcp -h $SERVER_NAME --name=$SERVER_NAME $DB_LINK --volumes-from $DATA_NAME $SERVER_IMAGE_NAME /sbin/my_init --enable-insecure-key > /dev/null 2>&1
+  echo "docker run -dp 127.0.0.1:$PORT:8000/tcp -h $SERVER_NAME --name=$SERVER_NAME $DB_LINK $MEMCACHE_LINK --volumes-from $DATA_NAME $SERVER_IMAGE_NAME $SSH"
+  docker run -dp 127.0.0.1:$PORT:8000/tcp -h $SERVER_NAME --name=$SERVER_NAME $DB_LINK $MEMCACHE_LINK --volumes-from $DATA_NAME $SERVER_IMAGE_NAME $SSH > /dev/null 2>&1
 fi
 
 
-echo "Discover IP"
+printf "Wait for bootup "
 #Get IP of ownCLoud-Server
-IP=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" $SERVER_NAME)
+IP=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" $SERVER_NAME-1)
 while ! ssh -o'UserKnownHostsFile /dev/null' -oStrictHostKeyChecking=no -i configs/insecure_key root@$IP ls -la $VOLUME_DIR > /dev/null 2>&1
 do
   printf "." && sleep 1
 done
+echo
+echo "Install and configure"
+# echo "scp -oStrictHostKeyChecking=no -i configs/insecure_key configs/autoconfig_sqlite.php root@$IP:/var/www/owncloud/config/autoconfig.php"
+# scp -oStrictHostKeyChecking=no -i configs/insecure_key configs/autoconfig_sqlite.php root@$IP:/var/www/owncloud/config/autoconfig.php
+# curl $IP:$PORT 
+
+ssh -o'UserKnownHostsFile /dev/null' -oStrictHostKeyChecking=no -i configs/insecure_key root@$IP ls -la /var/www/owncloud/config
 
 echo
 echo "Connect with:"
