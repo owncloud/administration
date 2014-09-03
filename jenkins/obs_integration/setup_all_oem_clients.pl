@@ -35,6 +35,7 @@
 # 2014-08-15, jw, added support for testpilotcloud at obs.
 # 2014-08-19, jw, calling genbranding.pl with -P if prerelease and with OBS_INTEGRATION_MSG 
 # 2014-08-20, jw, split prerelease from branch where [abr-]...
+# 2014-09-03, jw, template named in create_msg, so that the changelogs (at least) refers to the relevant changelog.
 
 use Data::Dumper;
 use File::Path;
@@ -47,7 +48,6 @@ use Config::IniFiles;	# Requires: perl-Config-IniFiles
 use Template;		# Requires: perl-Template-Toolkit
 
 
-my $create_msg 		= $ENV{OBS_INTEGRATION_MSG} || "created by: $0 @ARGV";
 my $build_token         = 'jw_'.strftime("%Y%m%d", localtime);
 my $source_tar          = shift;
 
@@ -71,6 +71,7 @@ my %client_filter = map { $_ => 1 } @client_filter;
 my $obs_api             = shift || 'https://s2.owncloud.com';
 my $template_prj 	= shift || 'desktop';
 my $template_pkg 	= shift || 'owncloud-client';
+my $create_msg 		= $ENV{OBS_INTEGRATION_MSG} || "created by: $0 @ARGV; template=$template_prj/$template_pkg";
 
 
 my $customer_themes_git = 'git@github.com:owncloud/customer-themes.git';
