@@ -67,17 +67,19 @@ Patch1:         autostart_use_wrapper.diff
 
 %define is_version_1_7_x 0%(expr match %version 1.7)
 
-%if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
+%if (0%{?rhel_version} && 0%{?rhel_version}<700) || 0%{?centos_version} || 0%{?suse_version} == 1110
 %if 0%{?suse_version} == 1110
 # SLES 11 calls make_install makeinstall
 %define make_install %{makeinstall}
 %endif
 # We need a more recent, prefixed Qt for SLE11
+%define opt_hack 1
 %define qtprefix opt-
 %define _prefix /opt/qt-4.8
 # Must be all in one line: 
 %define cmake_args -DCMAKE_INCLUDE_PATH=%{_prefix}/include -DCMAKE_LIBRARY_PATH=%{_prefix}/%{_lib} -DNEON_INCLUDE_DIRS=/opt/neon-0.30.0/include/ -DNEON_LIBRARIES=/opt/neon-0.30.0/%{_lib}/libneon.so.27 -DCMAKE_INSTALL_SYSCONFDIR=/opt/etc/ -DSYSCONF_INSTALL_DIR=/opt/etc/ -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE
 %else
+%define opt_hack 0
 %define qtprefix %{nil}
 %define cmake_args -DCMAKE_INSTALL_SYSCONFDIR=%{_sysconfdir} -DSYSCONF_INSTALL_DIR=%{_sysconfdir}
 %endif
@@ -105,7 +107,7 @@ BuildRequires:  update-desktop-files
 BuildRequires:  python-sphinx
 %endif
 
-%if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
+%if %opt_hack
 BuildRequires:  oc-neon-devel
 %else
 BuildRequires:  neon-devel
@@ -130,7 +132,7 @@ BuildRequires:  %{qtprefix}libQtWebKit4
 BuildRequires:  libqt4-devel >= 4.7
 %endif
 
-%if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
+%if %opt_hack
 Requires:       %{qtprefix}libqt4-x11
 # libQtWebKit4 is implicitly pulled by libowncloudsync0
 Requires:       %{qtprefix}libQtWebKit4
@@ -287,7 +289,7 @@ test -f %{extdir}/ownCloud.py  && mv %{extdir}/ownCloud.py  %{extdir}/[% shortna
 test -f %{extdir}/ownCloud.pyo && mv %{extdir}/ownCloud.pyo %{extdir}/[% shortname %].pyo
 test -f %{extdir}/ownCloud.pyc && mv %{extdir}/ownCloud.pyc %{extdir}/[% shortname %].pyc
 
-%if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
+%if %opt_hack
 mkdir -p $RPM_BUILD_ROOT/usr/share/applications/
 cat $RPM_BUILD_ROOT%{_datadir}/applications/[% shortname %].desktop |sed "s,Exec=.*,Exec=/usr/bin/[% shortname %]," > $RPM_BUILD_ROOT/usr/share/applications/[% shortname %].desktop
 # rm $RPM_BUILD_ROOT%{_datadir}/applications/[% shortname %].desktop
@@ -345,7 +347,7 @@ fi
 %dir /opt/etc
 %endif
 
-%if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
+%if %opt_hack
 /usr/share/icons/hicolor
 /usr/share/applications/[% shortname %].desktop
 /usr/bin/[% shortname %]
