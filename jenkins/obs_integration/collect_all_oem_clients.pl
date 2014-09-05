@@ -184,10 +184,11 @@ my $caution = 0;
 for my $oem (@oem_projects)
   {
     my $b_or_f = has_building_or_failed($oem);
+    my $version = find_consistent_version($oem);
 
     $oem =~ s{^.*:}{};
-    $script .= "# https://s2.owncloud.com/package/show/oem:$oem/$oem-client\n# " if $b_or_f;
-    $script .= "bin/pack_client_oem $oem\n";
+    $script .= "\n# https://s2.owncloud.com/package/show/oem:$oem/$oem-client\n# " if $b_or_f;
+    $script .= "bin/pack_client_oem $oem $version\n";
     $caution += $b_or_f;
   }
 
@@ -201,6 +202,48 @@ print "$scriptfile written.\n";
 
 exit 0;
 ###########################################################
+
+sub find_consistent_version
+{
+  my ($oemprj) = @_;
+
+  my $pkg = "$1-client" if $oemprj =~ m{:(.*)};
+  my $cmd = "$osc_cmd ls -b $oemprj $pkg";
+  my %vers;
+  open(my $ifd, "$cmd|") or die "cannot list binaries $cmd: $!\n";
+    # xUbuntu_12.04/x86_64
+    #  _statistics
+    #  libtubcloudsync-dev_1.6.3-0.jw20140905_amd64.deb
+    #  libtubcloudsync0_1.6.3-0.jw20140905_amd64.deb
+    #  tubcloud-client-doc_1.6.3-0.jw20140905_all.deb
+    #  tubcloud-client-l10n_1.6.3-0.jw20140905_all.deb
+    #  tubcloud-client_1.6.3-0.jw20140905.diff.gz
+    #  tubcloud-client_1.6.3-0.jw20140905.dsc
+    #  tubcloud-client_1.6.3-0.jw20140905_amd64.deb
+    #  tubcloud-client_1.6.3.orig.tar.gz
+    # openSUSE_13.1/i586
+    #  _statistics
+    #  libtubcloudsync-devel-1.6.3-2.1.i586.rpm
+    #  libtubcloudsync0-1.6.3-2.1.i586.rpm
+    #  rpmlint.log
+    #  tubcloud-client-1.6.3-2.1.i586.rpm
+    #  tubcloud-client-1.6.3-2.1.src.rpm
+    #  tubcloud-client-appdata.xml
+    #  tubcloud-client-doc-1.6.3-2.1.i586.rpm
+    #  tubcloud-client-l10n-1.6.3-2.1.i586.rpm
+  while (defined(my $line = <$ifd>))
+    {
+      chomp $line;
+      if ($line =~ m{^\s*\Q$pkg\E[-_](\d[\d\.]+\d)})
+        {
+          $vers{$1}++;
+        }
+    }
+  close $ifd;
+  my @vers = keys %vers;
+  die "$oemprj $pkg: built differing versions: @vers\n" if scalar @vers > 1;
+  return $vers[0];
+}
 
 sub has_building_or_failed
 {
