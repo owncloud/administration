@@ -2,8 +2,8 @@
 #
 # (c) 2014 jw@owncloud.com - GPLv2 or ask.
 #
-# 
-# 
+# 2014-09-04, unfinsihed draft. Do not use.
+# do we have an older collect script? If so, use that.
 
 use Getopt::Std;
 use Data::Dumper;
@@ -11,6 +11,7 @@ use Data::Dumper;
 my $osc_cmd             = 'osc -Ahttps://s2.owncloud.com';
 my $out_dir 		= '/tmp/';
 my $container_project   = 'oem';	 #'home:jw:oem';
+my $verbose		= 1;
 use vars qw($opt_p $opt_f $opt_r $opt_h $opt_o $opt_k);
 getopts('hp:f:r:o:k');
 
@@ -110,25 +111,13 @@ for my $prj (@oem_projects)
       }
   }
 
+printf "building: %d, failed: %d, succeeded: %d\n", scalar keys %building, scalar keys %failed, scalar keys %succeeded if $verbose;
 if (%building)
   {
     my @k = keys %building;
     printf("%d packages currently building.\n $k[0] $building{$k[0]}\n  Wait a bit?\n", scalar keys %building);
     exit(1) unless $opt_k;
   }
-
-sub touch_meta_prj
-{
-  my ($osc_cmd, $prj) = @_;
-  open(my $ifd, "$osc_cmd meta prj '$prj'|") or die "cannot fetch meta prj $prj: $!\n";
-  my $meta_prj_template = join("",<$ifd>);
-  close($ifd);
-  $meta_prj_template .= ' ';	# make an insignificant change
-  open(my $ofd, "|$osc_cmd meta prj '$prj' -F - >/dev/null") or die "cannot touch meta: $!\n";
-  print $ofd $meta_prj_template;
-  close($ofd) or die "touching prj meta failed: $!\n";
-  print "Project '$prj' meta touched.\n";
-}
 
 ## trigger all that failed.
 my %prj_meta_visited;
@@ -148,7 +137,7 @@ for my $f (keys %failed)
 	touch_meta_prj($osc_cmd, $prj);
       }
     my $cmd = "$osc_cmd rebuildpac $prj $pkg $target $arch";
-    print "retrying $failed{$f}\n+ $cmd\n";
+    print "retrying reason was: '$failed{$f}'\n+ $cmd\n";
     system($cmd);
   }
 
@@ -159,5 +148,22 @@ if (%failed)
   }
 
 printf("%d packages succeeded.\n", scalar keys %succeeded);
-die Dumper \%succeeded;
 
+print "Unfinsihed artwork. Try\n\n ssh root@s2.owncloud.com\n bin/pack_client_oem\n";
+# die Dumper \%succeeded;
+
+exit 0;
+###########################################################
+
+sub touch_meta_prj
+{
+  my ($osc_cmd, $prj) = @_;
+  open(my $ifd, "$osc_cmd meta prj '$prj'|") or die "cannot fetch meta prj $prj: $!\n";
+  my $meta_prj_template = join("",<$ifd>);
+  close($ifd);
+  $meta_prj_template .= ' ';	# make an insignificant change
+  open(my $ofd, "|$osc_cmd meta prj '$prj' -F - >/dev/null") or die "cannot touch meta: $!\n";
+  print $ofd $meta_prj_template;
+  close($ofd) or die "touching prj meta failed: $!\n";
+  print "Project '$prj' meta touched.\n";
+}
