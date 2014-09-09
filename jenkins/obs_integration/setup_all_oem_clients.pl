@@ -88,8 +88,7 @@ if ($ENV{'OSC_CMD'})
     $genbranding        = "./genbranding.pl -c '$osc_param -A$obs_api' -p '$container_project' -r '$build_token' -o -f";
   }
 
-print "osc_cmd='$osc_cmd'; genbranding='$genbranding';\n";
-exit 0;
+print "osc_cmd='$osc_cmd';\ngenbranding='$genbranding';\n";
 
 my $TMPDIR_TEMPL = '_oem_XXXXX';
 our $verbose = 1;
