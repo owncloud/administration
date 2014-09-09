@@ -5,9 +5,11 @@ SERVER=apache
 DB=mysql
 PORT=8888
 VOLUME_DIR="/data-vol"
+SERVER_INSTANCES=3
+
 SSH="/sbin/my_init --enable-insecure-key"
 
-while getopts "o:s:d:p:h" opt; do
+while getopts "o:s:d:p:i:h" opt; do
   case $opt in
     o)
       ([ $OPTARG == ubuntu ] || [ $OPTARG == centos ]) && OS=$OPTARG
@@ -26,17 +28,21 @@ while getopts "o:s:d:p:h" opt; do
         VOLUME_DIR=$OPTARG
       fi
       ;;
+    i)
+      [ "$OPTARG" -ge 1 -a "$OPTARG" -le 32 ] && SERVER_INSTANCES=$OPTARG
+      ;;
     h)
       echo "Start ownCloud Docker Container"
       echo  
       echo "  ocstart-docker.sh [ Options ]"
       echo
       echo "  Options: "
-      echo "  -o          ubuntu, TODO: centos      default: ubuntu"
-      echo "  -s          apache, nginx             default: apache"
-      echo "  -d          sqlite, mysql             default: sqlite"
-      echo "  -p          <Port>                    default: 8888"
-      echo "  -d          <Dir> to mount in docker  default: /data-vol"
+      echo "  -o          ubuntu, TODO: centos            default: ubuntu"
+      echo "  -s          apache, nginx                   default: apache"
+      echo "  -d          sqlite, mysql                   default: sqlite"
+      echo "  -p          <Port>                          default: 8888"
+      echo "  -d          <Dir> to mount in docker        default: /data-vol"
+      echo "  -i          <Number> of server instances    default: 3"
       echo "  -h          This help screen"
       echo
       exit
@@ -56,8 +62,6 @@ SERVER_NAME="oc-server"
 DB_NAME="oc-$DB"
 DATA_NAME="oc-data"
 MEMCACHED_NAME="memcached"
-
-SERVER_INSTANCES=3
 
 echo "Restart test system"
 docker rm -f $DATA_NAME 

@@ -17,6 +17,14 @@ cat > /var/www/owncloud/info.php << EOF
 echo phpinfo();
 EOF
 
+cat > /var/www/owncloud/proxy.php << EOF
+<?php
+header('Content-Type: text/plain');
+echo "Server IP: ".\$_SERVER['SERVER_ADDR'];
+echo "\nClient IP: ".\$_SERVER['REMOTE_ADDR'];
+echo "\nX-Forwarded-for: ".\$_SERVER['HTTP_X_FORWARDED_FOR'];
+EOF
+
 mysql -u$DB_ENV_MYSQL_USER -p$DB_ENV_MYSQL_PASS -h$DB_PORT_3306_TCP_ADDR -e "CREATE DATABASE IF NOT EXISTS owncloud;"
 
 if [ $MEMCACHED_PORT_11211_TCP ]; then
