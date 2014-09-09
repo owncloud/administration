@@ -15,3 +15,7 @@ The scripts have no significant error checking. So, basicly you are on your own.
 Installation
 ------------
 Download or clone the scripts and run makemac.sh or makewinlin.sh in your terminal.
+
+Further information
+-------------------
+Read the file in the folder 'doc'.
