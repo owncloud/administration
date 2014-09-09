@@ -83,11 +83,13 @@ my $genbranding         = "./genbranding.pl -c '-A$obs_api' -p '$container_proje
 if ($ENV{'OSC_CMD'})
   {
     $osc_cmd = "$ENV{'OSC_CMD'} -A$obs_api";
-    $osc_param =~ s{^\S+\s+}{};
+    $osc_param = $ENV{'OSC_CMD'};
+    $osc_param =~ s{^\S+\s+}{};	# cut away $0
     $genbranding        = "./genbranding.pl -c '$osc_param -A$obs_api' -p '$container_project' -r '$build_token' -o -f";
   }
 
 print "osc_cmd='$osc_cmd'; genbranding='$genbranding';\n";
+exit 0;
 
 my $TMPDIR_TEMPL = '_oem_XXXXX';
 our $verbose = 1;
