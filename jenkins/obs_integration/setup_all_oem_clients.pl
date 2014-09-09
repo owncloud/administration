@@ -36,6 +36,8 @@
 # 2014-08-19, jw, calling genbranding.pl with -P if prerelease and with OBS_INTEGRATION_MSG 
 # 2014-08-20, jw, split prerelease from branch where [abr-]...
 # 2014-09-03, jw, template named in create_msg, so that the changelogs (at least) refers to the relevant changelog.
+# 2014-09-09, jw, dragged in OSC_CMD to infuse additional osc parameters. Needed for jenkins mirall-linux-oem job
+#
 
 use Data::Dumper;
 use File::Path;
@@ -78,6 +80,14 @@ my $customer_themes_git = 'git@github.com:owncloud/customer-themes.git';
 my $source_git          = 'https://github.com/owncloud/mirall.git';
 my $osc_cmd             = "osc -A$obs_api";
 my $genbranding         = "./genbranding.pl -c '-A$obs_api' -p '$container_project' -r '$build_token' -o -f";
+if ($ENV{'OSC_CMD'})
+  {
+    $osc_cmd = "$ENV{'OSC_CMD'} -A$obs_api";
+    $osc_param =~ s{^\S+\s+}{};
+    $genbranding        = "./genbranding.pl -c '$osc_param -A$obs_api' -p '$container_project' -r '$build_token' -o -f";
+  }
+
+print "osc_cmd='$osc_cmd'; genbranding='$genbranding';\n";
 
 my $TMPDIR_TEMPL = '_oem_XXXXX';
 our $verbose = 1;
