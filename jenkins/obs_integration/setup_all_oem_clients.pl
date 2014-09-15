@@ -357,5 +357,10 @@ else
     run("sleep 3; rm -rf $tmp");
   }
 
+$obs_api =~ s{api\.opensuse\.org}{build.opensuse.org};	# special case them; with our s2 the names match.
 print "Wait an hour or so, then check if things have built.\n";
 print "You can use collect_all_oem_clients.pl to push the build results to download.owncloud.com\n";
+for my $branding (@candidates)
+  {
+    print " $obs_api/package/show/$container_project:$branding/$branding-client\n";
+  }

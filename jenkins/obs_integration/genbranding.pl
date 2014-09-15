@@ -31,7 +31,8 @@
 # 2014-08-19, jw, V1.5
 #       - added -P -> [% prerelease %] support for the new universal specfile.
 #       - added OBS_INTEGRATION_MSG for a tunneling a 'created by' message.
-#
+# 2014-09-15, jw, V1.6
+#       - support for upper [% themename_deb %] and [% executable %].
 
 use Getopt::Std;
 use Config::IniFiles;
@@ -255,6 +256,9 @@ sub readOEMcmake( $ )
     }
     if( $substs{APPLICATION_DOMAIN} ) {
 	$substs{projecturl} = $substs{APPLICATION_DOMAIN};
+    }
+    if( $substs{APPLICATION_EXECUTABLE} ) {
+	$substs{executable} = $substs{APPLICATION_EXECUTABLE};
     }
     # more tags: APPLICATION_EXECUTABLE, APPLICATION_VENDOR, APPLICATION_REV_DOMAIN, THEME_CLASS, WIN_SETUP_BITMAP_PATH
     return %substs;
