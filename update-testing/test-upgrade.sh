@@ -48,7 +48,8 @@ if [[ $TO_VERSION == git* ]]; then
   rm -rf g
 fi
 
-DATADIR=$BASEDIR/$FROM_VERSION-$TO_VERSION-$DATABASE
+BASEDIR_W=`pwd -W`
+DATADIR=$BASEDIR_W/$FROM_VERSION-$TO_VERSION-$DATABASE
 
 if [ ! -f $FROM ]; then
   wget http://download.owncloud.org/community/$FROM
@@ -135,6 +136,23 @@ cat > ./autoconfig-oci.php <<DELIM
 );
 DELIM
 
+cat > ./autoconfig-mssql.php <<DELIM
+<?php
+\$AUTOCONFIG = array (
+  'installed' => false,
+  'dbtype' => 'mssql',
+  'dbtableprefix' => 'oc_',
+  'adminlogin' => '$ADMINLOGIN',
+  'adminpass' => 'admin',
+  'directory' => '$DATADIR/owncloud/data',
+  'dbuser' => '$DATABASEUSER',
+  'dbname' => '$DATABASENAME',
+  'dbhost' => 'localhost\sqlexpress',
+  'dbpass' => 'owncloud',
+);
+DELIM
+
+
 # database cleanup
 if [ "$DATABASE" == "mysql" ] ; then
 	mysql -u $DATABASEUSER -powncloud -e "DROP DATABASE $DATABASENAME"
@@ -166,6 +184,9 @@ EOF
 		exit;
 EOF
 fi
+if [ "$DATABASE" == "mssql" ] ; then
+	sqlcmd -S "localhost\sqlexpress" -U $DATABASEUSER -P owncloud -Q "IF EXISTS (SELECT name FROM sys.databases WHERE name=N'$DATABASENAME') DROP DATABASE [$DATABASENAME]"
+fi
 
 rm -rf $DATADIR
 mkdir $DATADIR
@@ -180,6 +201,10 @@ mkdir data
 cp $BASEDIR/autoconfig-$DATABASE.php config/autoconfig.php
 
 php -f index.php
+
+echo "Done"
+exit
+
 
 if [ -f console.php ]; then
   # install test data
@@ -222,6 +247,9 @@ cd owncloud
 
 # generate db migration script
 php -f console.php db:generate-change-script > $BASEDIR/migration-$FROM_VERSION-$TO_VERSION-$DATABASE.sql
+
+echo "Done"
+exit
 
 # UPGRADE
 echo "Start upgrading from $FROM to $TO"
