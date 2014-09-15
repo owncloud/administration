@@ -1,1 +1,36 @@
-../v1_6_2/sle_cmake.diff
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 4d53962..b8a0c0b 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -56,20 +56,20 @@ set(DATADIR ${DATA_INSTALL_DIR})
+ #####
+ ## handle BUILD_OWNCLOUD_OSX_BUNDLE
+ # BUILD_OWNCLOUD_OSX_BUNDLE was not initialized OR set to true on OSX
+-if(APPLE AND (NOT DEFINED BUILD_OWNCLOUD_OSX_BUNDLE OR BUILD_OWNCLOUD_OSX_BUNDLE))
+-    set(BUILD_OWNCLOUD_OSX_BUNDLE ON)
+-    set(OWNCLOUD_OSX_BUNDLE "${APPLICATION_EXECUTABLE}.app")
+-    set(LIB_INSTALL_DIR "${APPLICATION_EXECUTABLE}.app/Contents/MacOS")
+-    set(BIN_INSTALL_DIR "${APPLICATION_EXECUTABLE}.app/Contents/MacOS")
+-
+-# BUILD_OWNCLOUD_OSX_BUNDLE was disabled on OSX
+-elseif(APPLE AND NOT BUILD_OWNCLOUD_OSX_BUNDLE)
+-    message(FATAL_ERROR "Building in non-bundle mode on OSX is currently not supported. Comment this error out if you want to work on/test it.")
++#if(APPLE AND (NOT DEFINED BUILD_OWNCLOUD_OSX_BUNDLE OR BUILD_OWNCLOUD_OSX_BUNDLE))
++#    set(BUILD_OWNCLOUD_OSX_BUNDLE ON)
++#    set(OWNCLOUD_OSX_BUNDLE "${APPLICATION_EXECUTABLE}.app")
++#    set(LIB_INSTALL_DIR "${APPLICATION_EXECUTABLE}.app/Contents/MacOS")
++#    set(BIN_INSTALL_DIR "${APPLICATION_EXECUTABLE}.app/Contents/MacOS")
++#
++## BUILD_OWNCLOUD_OSX_BUNDLE was disabled on OSX
++#elseif(APPLE AND NOT BUILD_OWNCLOUD_OSX_BUNDLE)
++#    message(FATAL_ERROR "Building in non-bundle mode on OSX is currently not supported. Comment this error out if you want to work on/test it.")
+
+ # any other platform
+-else()
++#else()
+     set(BUILD_OWNCLOUD_OSX_BUNDLE OFF)
+-endif()
++#endif()
+ #####
+
+ #### find libs

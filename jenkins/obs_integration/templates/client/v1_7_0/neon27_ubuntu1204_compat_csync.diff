@@ -1,1 +1,23 @@
-../v1_6_2/neon27_ubuntu1204_compat_csync.diff
+--- csync/src/csync_misc.c.orig	2014-07-29 14:55:01.890803678 +0200
++++ csync/src/csync_misc.c	2014-07-29 14:55:48.517080183 +0200
+@@ -31,6 +31,7 @@
+ #include <stdio.h>
+ #include <sys/types.h>
+ #include <errno.h>
++#include <openssl/ssl.h>	// only needed for SSLv2_server_method() below.
+ 
+ #if _WIN32
+ # ifndef _WIN32_IE
+@@ -261,3 +262,12 @@
+     return buf;
+ }
+ 
++// backport to make neon happy with only OpenSSL 1.0.0 available
++// FROM: https://bugs.launchpad.net/ubuntu/+source/neon27/+bug/845901/comments/3
++const SSL_METHOD *
++SSLv2_server_method(void)
++{
++    // use SSL v2 and v3 even if only v2 is requested
++    return SSLv23_server_method();
++}
++

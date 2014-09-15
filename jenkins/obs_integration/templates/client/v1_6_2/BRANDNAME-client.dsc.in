@@ -1,13 +1,13 @@
 Format: 1.0
-Source: [% themename %]-client
+Source: [% themename_deb %]-client
 Version: [% version_deb %]-[% buildrelease_deb %]
-Binary: [% themename %]-client
+Binary: [% themename_deb %]-client
 Maintainer: [% maintainer %]
 Architecture: any
 Standards-Version: 3.7.2
 Build-Depends: debhelper (>= 4.2.21), cmake, libqt4-dev (>= 4.7), libqtwebkit-dev (>= 2.2.0), qtkeychain-dev, libqtkeychain0 (>= 0.3), libneon27-gnutls-dev, libsqlite3-dev, python-sphinx
 Package-List:
- lib[% themename %]sync0 deb libs optional
- [% themename %]-client deb net optional
- [% themename %]-client-doc deb doc optional
- [% themename %]-client-l10n deb localization optional
+ lib[% themename_deb %]sync0 deb libs optional
+ [% themename_deb %]-client deb net optional
+ [% themename_deb %]-client-doc deb doc optional
+ [% themename_deb %]-client-l10n deb localization optional

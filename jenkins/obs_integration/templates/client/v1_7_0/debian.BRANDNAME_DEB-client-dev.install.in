@@ -1,0 +1,2 @@
+usr/include/[% shortname %]sync
+usr/lib*/lib[% shortname %]sync.so

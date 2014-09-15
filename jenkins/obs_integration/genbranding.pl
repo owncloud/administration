@@ -186,7 +186,8 @@ Please do the following steps (or similar):
 
     foreach my $source (@tmpl_files) {
         my $target = $source;
-        $target =~ s/BRANDNAME/$theme/;
+        $target =~ s/BRANDNAME/$substs->{themename}/;
+        $target =~ s/BRANDNAME_DEB/$substs->{themename_deb}/;
         $target =~ s/SHORTNAME/$substs->{shortname}/;
 
         if($source =~ /\.in$/) {
@@ -353,6 +354,7 @@ my $dirName = prepareTarBall($ARGV[0], $ARGV[1], $opt_P);
 # returns hash reference
 my $substs = getSubsts($dirName);
 $substs->{themename} = $theme;
+$substs->{themename_deb} = lc $theme;	# debian packagin guide allows no upper case. (e.g. SURFdrive).
 $substs->{create_msg} = $create_msg || '' unless defined $substs->{create_msg};
 
 # Automatically derive version number from the mirall tarball.
@@ -484,8 +486,8 @@ if( $opt_o ) {
        $change .= ", release_id=$opt_r" if defined $opt_r;
        $change .= "\n  $create_msg"  if length $create_msg;
        $change .= "\n";
-    addDebChangelog( "$theme-client", $change, $substs->{version_deb} );
-    addSpecChangelog( "$theme-client", $change );
+    addDebChangelog(  "$substs->{themename_deb}-client", $change, $substs->{version_deb} );
+    addSpecChangelog( "$substs->{themename}-client", $change );
     chdir( "../.." );
 }
 

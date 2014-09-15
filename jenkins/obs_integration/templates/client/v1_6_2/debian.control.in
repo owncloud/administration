@@ -1,35 +1,35 @@
-Source: [% themename %]-client
+Source: [% themename_deb %]-client
 Section: devel
 Priority: optional
 Maintainer: [% maintainer_person %]
 Build-Depends: debhelper (>= 9), cmake, libqt4-dev (>= 4.7), libqtwebkit-dev (>= 2.2.0), qtkeychain-dev, libneon27-gnutls-dev, libsqlite3-dev, python-sphinx | python3-sphinx
 Standards-Version: 3.9.5
 
-Package: [% themename %]-client
+Package: [% themename_deb %]-client
 Architecture: any
 Multi-Arch: same
-Depends: ${misc:Depends}, ${shlibs:Depends}, lib[% themename %]sync0 (= ${binary:Version}), [% themename %]-client-l10n, libqt4-sql-sqlite 
+Depends: ${misc:Depends}, ${shlibs:Depends}, lib[% themename_deb %]sync0 (= ${binary:Version}), [% themename_deb %]-client-l10n, libqt4-sql-sqlite 
 Description: [% pkgdescription_debian %]
-Package: [% themename %]-client-doc
+Package: [% themename_deb %]-client-doc
 Architecture: all
 Section: devel
-Depends: [% themename %]-client (= ${binary:Version}), ${misc:Depends}, lib[% themename %]sync0
+Depends: [% themename_deb %]-client (= ${binary:Version}), ${misc:Depends}, lib[% themename_deb %]sync0
 Description: development files for the [% displayname %] sync lib.
  Main package for [% displayname %].
  .
  This package contains the library development files.
 
-Package: [% themename %]-client-l10n
+Package: [% themename_deb %]-client-l10n
 Architecture: all
 Section: devel
-Depends: [% themename %]-client (= ${binary:Version}), ${misc:Depends}, lib[% themename %]sync0
-Breaks: [% themename %]-client (<= 1.5.0)
+Depends: [% themename_deb %]-client (= ${binary:Version}), ${misc:Depends}, lib[% themename_deb %]sync0
+Breaks: [% themename_deb %]-client (<= 1.5.0)
 Description: Internationalisation files for [% displayname %]
  Internationalisation files for [% displayname %].
  .
  This package contains the translation packages.
 
-Package: lib[% themename %]sync0
+Package: lib[% themename_deb %]sync0
 Architecture: any
 Multi-Arch: same
 Section: devel
@@ -42,10 +42,10 @@ Description: ownCloud sync library.
  .
  This package contains the library.
 
-Package: lib[% themename %]sync-dev
+Package: lib[% themename_deb %]sync-dev
 Architecture: any
 Section: devel
-Depends: lib[% themename %]sync0, ${misc:Depends}
+Depends: lib[% themename_deb %]sync0, ${misc:Depends}
 Description: [% displayname %] sync library development files.
  [% displayname %] uses this as a sync engine implementation.
  .

@@ -178,6 +178,8 @@ sub getFromSpecfile( $$ ) {
 sub addDebChangelog( $$$ ) {
   my ($pack, $changelog, $version) = @_;
 
+  $pack = lc $pack;	# debian forbids upper case in *.deb package names.
+
   my $changesfile = "debian.changelog";
   my @changes;
   
