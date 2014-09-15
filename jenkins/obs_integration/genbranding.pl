@@ -186,8 +186,8 @@ Please do the following steps (or similar):
 
     foreach my $source (@tmpl_files) {
         my $target = $source;
+        $target =~ s/BRANDNAME_DEB/$substs->{themename_deb}/;	# longer subst first. We have no delimiters.
         $target =~ s/BRANDNAME/$substs->{themename}/;
-        $target =~ s/BRANDNAME_DEB/$substs->{themename_deb}/;
         $target =~ s/SHORTNAME/$substs->{shortname}/;
 
         if($source =~ /\.in$/) {
