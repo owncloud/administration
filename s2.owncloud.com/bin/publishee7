@@ -8,7 +8,11 @@ major=7
 rm -rf /tmp/ee$major
 mkdir /tmp/ee$major
 
-cp -a /srv/obs/repos/ee\:/$major.0/* /tmp/ee$major
+# *_* is a hack to exclude images/* thi folder contains he appliance.
+cp -a /srv/obs/repos/ee\:/$major.0/*_* /tmp/ee$major
+
+# do not publish the eval-license key package.
+find /tmp/ee$major -name \*eval-license\* | xargs rm
 
 # ...and fix the baseurl string in the repo files.
 find /tmp/ee$major -name "*repo" | xargs sed -i 's#repositories/ee:#repositories#'
