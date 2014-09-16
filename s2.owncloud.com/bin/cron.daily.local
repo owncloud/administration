@@ -1,0 +1,9 @@
+#! /bin/sh
+# called by /etc/cron.daily/suse.de-cron-local
+#
+# 2014-09-16, jw, daily appliance push added.
+#
+# FIXME: should this be done by jenkins???
+
+./publish_eval_appliance_oc7ee
+
