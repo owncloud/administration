@@ -5,7 +5,7 @@
 
 srcdir=/srv/obs/repos/ee\:/7.0/images/
 destdir=internal/eval_appliance/oc7ee/
-rsync -rzv --delete $srcdir/*.qcow2* $srcdir/*-vmx* root@download.owncloud.com:/srv/www/htdocs/$destdir
+rsync -rzv --exclude '*-raw.*' --delete-delay $srcdir root@download.owncloud.com:/srv/www/htdocs/$destdir
 
 echo Download url: http://download.owncloud.com/$destdir
 # end.
