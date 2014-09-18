@@ -168,7 +168,7 @@ function signDMG() {
     if [ ${CODESIGN} -eq 1 ] ; then
         if [ -n "${macDeveloperIDApplication}" ] ; then
             cd "${CUR_DIR}"/client
-            PATH=/usr/local/Cellar/qt5/5.3.1/bin/:$PATH
+            PATH=/usr/local/Cellar/qt5/5.3.2/bin/:$PATH
             for file in *.dmg
             do
                 source "${BUILD_DIR}"/mirall/admin/osx/sign_dmg.sh "${file}" "${macDeveloperIDApplication}"
