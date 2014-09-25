@@ -19,8 +19,12 @@ for raw in $srcdir/*-raw.tar.bz2; do
   tar xvf $raw -C $tempdir/eval-$$
 done
 
+# stow away the checksums. Having so many files is confusing.
+mkdir $tempdir/eval-$$/SHA256
+mv    $tempdir/eval-$$/*.sha256 $tempdir/eval-$$/SHA256
+
 # push everything (that is not a raw image) to the download server.
-rsync -rzv --exclude '*-raw.*' --delete-delay $tempdir/eval-$$ root@download.owncloud.com:/srv/www/htdocs/$destdir
+rsync -rzv --exclude '*-raw.*' --delete-delay $tempdir/eval-$$/ root@download.owncloud.com:/srv/www/htdocs/$destdir
 rm -rf $tempdir/eval-$$
 
 echo Download url: http://download.owncloud.com/$destdir
