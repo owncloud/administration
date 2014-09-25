@@ -11,6 +11,8 @@
 if [ $# -ne 2 ]
   then
     echo "Call with arguments oem-name and version!"
+    echo "Possible oem-names are: " 
+    ls /srv/obs/repos/oem:
     exit 1
 fi
 
@@ -91,8 +93,8 @@ function dest_folder ()
 
 # We split the commands in half, if we use the splitdebug feature, so that the user can do copy/paste and 
 # skip 1.8G debug packages per branding.
-normal=$(ls /tmp/*-*-*.tar | grep -v .debug.tar)
-debug=$(ls /tmp/*-*-debug.tar)
+normal=$(ls /tmp/*-$version-*.tar | grep -v .debug.tar)
+debug=$(ls /tmp/*-$version-debug.tar)
 
 echo "You can now copy the packages to dl-oc -- use these commands or similar:"
 if [ "x$debug" != x ]; then
@@ -106,4 +108,4 @@ for tar in $normal; do
   oem=$(dest_folder $tar)
   echo rsync -rzv --progress --delete $tar root@download.owncloud.com:/srv/www/htdocs/desktop/projects/$oem
 done
-echo rm -f /tmp/$oem-$version-\*.tar 
+echo rm -f /tmp/*-$version-\*.tar 

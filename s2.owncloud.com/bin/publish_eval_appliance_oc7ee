@@ -5,7 +5,23 @@
 
 srcdir=/srv/obs/repos/ee\:/7.0/images/
 destdir=internal/eval_appliance/oc7ee/
-rsync -rzv --exclude '*-raw.*' --delete-delay $srcdir root@download.owncloud.com:/srv/www/htdocs/$destdir
+tempdir=/var/run/publish
+mkdir -p $tempdir/eval-$$
+
+set -x
+
+# pull all that are not raw tar balls into the temp.
+rsync -rzv --exclude '*-raw.*' --delete-delay $srcdir $tempdir/eval-$$
+
+# unpack the raw tar balls, most of them do not contain a raw image, but one of the other VHD or OVA formats.
+for raw in $srcdir/*-raw.tar.bz2; do
+  # Caution: Are overwrites dangerous here?
+  tar xvf $raw -C $tempdir/eval-$$
+done
+
+# push everything (that is not a raw image) to the download server.
+rsync -rzv --exclude '*-raw.*' --delete-delay $tempdir/eval-$$ root@download.owncloud.com:/srv/www/htdocs/$destdir
+rm -rf $tempdir/eval-$$
 
 echo Download url: http://download.owncloud.com/$destdir
 # end.
