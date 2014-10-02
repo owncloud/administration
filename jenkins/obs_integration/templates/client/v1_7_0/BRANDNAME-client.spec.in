@@ -38,7 +38,7 @@
 %define tar_version %{base_version}%{prerelease}
 Name:           [% shortname %]-client
 
-%if 0%{?centos_version} == 600 || 0%{?rhel_version = 600 || 0%{?fedora_version} || "%{prerelease}" == ""
+%if 0%{?centos_version} == 600 || 0%{?rhel_version} == 600 || 0%{?fedora_version} || "%{prerelease}" == ""
 # For beta and rc versions we use the ~ notation, as documented in
 # http://en.opensuse.org/openSUSE:Package_naming_guidelines
 # Some distro's (centos_6) don't allow ~ characters. There we follow the Fedora guidelines, 
@@ -67,7 +67,7 @@ Patch1:         autostart_use_wrapper.diff
 
 %define is_version_1_7_x 0%(expr match %version 1.7)
 
-%if (0%{?rhel_version} && 0%{?rhel_version}<700) || 0%{?centos_version} || 0%{?suse_version} == 1110
+%if (0%{?rhel_version} && 0%{?rhel_version}<700) || (0%{?centos_version} && 0%{?centos_version}<700) || 0%{?suse_version} == 1110
 %if 0%{?suse_version} == 1110
 # SLES 11 calls make_install makeinstall
 %define make_install %{makeinstall}
@@ -77,7 +77,7 @@ Patch1:         autostart_use_wrapper.diff
 %define qtprefix opt-
 %define _prefix /opt/qt-4.8
 # Must be all in one line: 
-%define cmake_args -DCMAKE_INCLUDE_PATH=%{_prefix}/include -DCMAKE_LIBRARY_PATH=%{_prefix}/%{_lib} -DNEON_INCLUDE_DIRS=/opt/neon-0.30.0/include/ -DNEON_LIBRARIES=/opt/neon-0.30.0/%{_lib}/libneon.so.27 -DCMAKE_INSTALL_SYSCONFDIR=/opt/etc/ -DSYSCONF_INSTALL_DIR=/opt/etc/ -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE
+%define cmake_args -DCMAKE_INCLUDE_PATH=%{_prefix}/include -DCMAKE_LIBRARY_PATH=%{_prefix}/%{_lib} -DNEON_INCLUDE_DIRS=/opt/neon-0.30.0/include/ -DNEON_LIBRARIES=/opt/neon-0.30.0/%{_lib}/libneon.so.27 -DCMAKE_INSTALL_SYSCONFDIR=/opt/etc/ownCloud -DSYSCONF_INSTALL_DIR=/opt/etc/ownCloud -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE
 %else
 %define opt_hack 0
 %define qtprefix %{nil}
@@ -91,7 +91,7 @@ BuildRequires:  cmake >= 2.8.11
 BuildRequires:  gcc gcc-c++
 BuildRequires:  %{qtprefix}libqtkeychain-devel
 
-%if 0%{?fedora_version} || 0%{?centos_version} == 700
+%if 0%{?fedora_version} || 0%{?centos_version} == 700 || 0%{?rhel_version} == 700
 BuildRequires:  qt4 qt4-devel >= 4.7
 BuildRequires:  inetd desktop-file-utils
 BuildRequires:  qtwebkit >= 2.2
@@ -124,11 +124,12 @@ BuildRequires:  libneon-devel
 BuildRequires:  update-desktop-files
 %endif
 
-%if 0%{?suse_version} || (0%{?rhel_version} && 0%{?rhel_version} < 700) || ( 0%{?centos_version} && 0%{?centos_version} < 700)
+%if 0%{?suse_version} || (0%{?rhel_version} && 0%{?rhel_version} < 700) || (0%{?centos_version} && 0%{?centos_version} < 700)
 BuildRequires:  %{qtprefix}libqt4-devel >= 4.7
 BuildRequires:  %{qtprefix}libQtWebKit-devel
 BuildRequires:  %{qtprefix}libQtWebKit4
 %else
+## what platform is this??
 BuildRequires:  libqt4-devel >= 4.7
 %endif
 
@@ -235,6 +236,7 @@ cmake .. -DWITH_DOC=TRUE \
   -DCMAKE_BUILD_TYPE=RelWithDebInfo \
   -DCMAKE_INSTALL_PREFIX=%{_prefix} \
   -DCMAKE_DOC_INSTALL_PATH=%{_docdir}/ocsync \
+  -DSYSCONF_INSTALL_DIR=%{_sysconfdir} \
 %if %{_lib} == lib64
   -DLIB_SUFFIX=64 \
 %endif
@@ -250,7 +252,7 @@ then
   mv conf.py doc/
 fi
 
-env LD_RUN_PATH=%{_libdir}/[% shortname %] make %{?_smp_mflags}
+env LD_RUN_PATH=%{_libdir}/[% shortname %] make %{?_smp_mflags} VERBOSE=1
 
 make doc
 popd
@@ -267,12 +269,6 @@ then
   rm ${RPM_BUILD_ROOT}%{_docdir}/%{name}/html/unthemed/.buildinfo
   mv ${RPM_BUILD_ROOT}%{_docdir}/%{name}/html/unthemed/* ${RPM_BUILD_ROOT}%{_docdir}/%{name}/html/
   rmdir ${RPM_BUILD_ROOT}%{_docdir}/%{name}/html/unthemed
-
-  if [ -d ${RPM_BUILD_ROOT}/usr/share/man/man/ ]; then
-    # obsoleted in 1.6.2 
-    mkdir -p ${RPM_BUILD_ROOT}%{_mandir}/man1
-    mv ${RPM_BUILD_ROOT}/usr/share/man/man/* ${RPM_BUILD_ROOT}%{_mandir}/man1
-  fi
 fi
 popd
 
@@ -283,6 +279,11 @@ if [ -d ${RPM_BUILD_ROOT}%{_mandir}/man1 ]; then
 %endif
   gzip ${RPM_BUILD_ROOT}%{_mandir}/man1/*.1
 fi
+
+%define extdir ${RPM_BUILD_ROOT}%{_datadir}/nautilus-python/extensions
+test -f %{extdir}/ownCloud.py  && mv %{extdir}/ownCloud.py  %{extdir}/[% shortname %].py  || true
+test -f %{extdir}/ownCloud.pyo && mv %{extdir}/ownCloud.pyo %{extdir}/[% shortname %].pyo || true
+test -f %{extdir}/ownCloud.pyc && mv %{extdir}/ownCloud.pyc %{extdir}/[% shortname %].pyc || true
 
 %if %opt_hack
 mkdir -p $RPM_BUILD_ROOT/usr/share/applications/
