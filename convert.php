@@ -57,8 +57,8 @@ $output = '';
 // array that holds all RST representations of all config options to copy them
 $lookup = array();
 
-foreach($blocks as $block) {
-    if(trim($block) === '') {
+foreach ($blocks as $block) {
+    if (trim($block) === '') {
         continue;
     }
     $block = '/**' . $block;
@@ -67,7 +67,7 @@ foreach($blocks as $block) {
     $doc = '';
     $code = '';
     // there should be exactly two parts after the split - otherwise there are some mistakes in the parsed block
-    if(count($parts) !== 2) {
+    if (count($parts) !== 2) {
         echo '<h3>Uncommon part count!</h3><pre>';
         print_r($parts);
         echo '</pre>';
@@ -79,14 +79,14 @@ foreach($blocks as $block) {
     // this checks if there is a config option below the comment (should be one if there is a config option or none if
     // the comment is just a heading of the next section
     preg_match('!^\'([^\']*)\'!m', $block, $matches);
-    if(!in_array(count($matches), array(0, 2))) {
+    if (!in_array(count($matches), array(0, 2))) {
         echo 'Uncommon matches count<pre>';
         print_r($matches);
         echo '</pre>';
     }
 
     // if there are two matches a config option was found -> set it as ID
-    if(count($matches) === 2) {
+    if (count($matches) === 2) {
         $id = $matches[1];
     }
 
@@ -95,10 +95,10 @@ foreach($blocks as $block) {
 
     // check for tagged elements to replace the tag with the actual config description
     $references = $phpdoc->getTagsByName($COPY_TAG);
-    if(!empty($references)) {
-        foreach($references as $reference) {
+    if (!empty($references)) {
+        foreach ($references as $reference) {
             $name = $reference->getContent();
-            if(array_key_exists($name, $lookup)) {
+            if (array_key_exists($name, $lookup)) {
                 // append the element at the current position
                 $output .= $lookup[$name];
             }
@@ -108,13 +108,13 @@ foreach($blocks as $block) {
     $RSTRepresentation = '';
 
     // generate RST output
-    if(is_null($id)) {
+    if (is_null($id)) {
         // print heading - no
         $heading = $phpdoc->getShortDescription();
         $RSTRepresentation .= $heading . "\n";
         $RSTRepresentation .= str_repeat('-', strlen($heading)) . "\n\n";
         $longDescription = $phpdoc->getLongDescription();
-        if(trim($longDescription) !== '') {
+        if (trim($longDescription) !== '') {
             $RSTRepresentation .= $longDescription . "\n\n";
             $RSTRepresentation .= "\n----\n\n";
         }
@@ -126,9 +126,9 @@ foreach($blocks as $block) {
         // mark as literal (code block)
         $RSTRepresentation .= "::\n\n";
         // trim whitespace
-        $code =  trim($code);
+        $code = trim($code);
         // intend every line by an tab - also trim whitespace (for example: empty lines at the end)
-        foreach(explode("\n", trim($code)) as $line) {
+        foreach (explode("\n", trim($code)) as $line) {
             $RSTRepresentation .= "\t" . $line . "\n";
         }
         $RSTRepresentation .= "\n";
