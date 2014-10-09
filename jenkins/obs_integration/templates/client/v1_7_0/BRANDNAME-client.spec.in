@@ -222,6 +222,10 @@ in the nautilus file manager.
 %patch1 -p1
 %endif
 
+%if 0%{?rhel_version} == 600 || 0%{?centos_version} == 600
+sed -i -e 's/OVERRIDE=override/OVERRIDE=/' cmake/modules/QtVersionAbstraction.cmake
+%endif
+
 %build
 export LD_LIBRARY_PATH=%{_prefix}/lib64
 export PATH=%{_prefix}/bin:$PATH
