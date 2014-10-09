@@ -339,7 +339,7 @@ print "Theme Tarball: $themetar\n";
 # if -o (osc mode) check if an oem directory exists
 my $theme = getFileName( $ARGV[1] );
 my $dest_prj_theme = "$dest_prj:$theme";
-$dest_prj_theme = $dest_prj if $dest_prj =~ m{/$}{};
+$dest_prj_theme = $dest_prj if $dest_prj =~ m{/$};
 $dest_prj_theme =~ s{/$}{};
 
 if( $opt_o ) {

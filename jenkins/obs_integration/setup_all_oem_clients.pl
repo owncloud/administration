@@ -331,7 +331,7 @@ for my $branding (@candidates)
       {
         $project = $container_project;
 	$project =~ s{/$}{};
-        $container_project_colon = $container_project";
+        $container_project_colon = $container_project;
       }
 
     ## generate the individual container projects
