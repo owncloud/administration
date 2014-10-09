@@ -51,7 +51,7 @@ use Data::Dumper;
 my $msg_def = "created by: $0 @ARGV";
 
 use strict;
-use vars qw($miralltar $themetar $templatedir $dir $opt_h $opt_o $opt_b $opt_c $opt_n $opt_f $opt_p $dest_prj $opt_r $opt_P);
+use vars qw($miralltar $themetar $templatedir $dir $opt_h $opt_o $opt_b $opt_c $opt_n $opt_f $opt_p $dest_prj $dest_prj_theme $opt_r $opt_P);
 
 sub help() {
   print<<ENDHELP
@@ -146,7 +146,7 @@ sub createClientFromTemplate($) {
     my $targetDir = "$theme-client";
 
     if( $opt_o ) {
-	$targetDir = "$dest_prj:$theme/$targetDir";
+	$targetDir = "$dest_prj_theme/$targetDir";
     } else {
 	mkdir("$theme-client");
     }
@@ -338,7 +338,7 @@ print "Theme Tarball: $themetar\n";
 
 # if -o (osc mode) check if an oem directory exists
 my $theme = getFileName( $ARGV[1] );
-my $dest_prj_theme = "$dest_prj:$theme";
+$dest_prj_theme = "$dest_prj:$theme";
 $dest_prj_theme = $dest_prj if $dest_prj =~ m{/$};
 $dest_prj_theme =~ s{/$}{};
 
