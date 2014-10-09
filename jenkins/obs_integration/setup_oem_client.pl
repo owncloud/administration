@@ -8,6 +8,8 @@
 # in one repo per oem branding.
 #
 # 2014-08-15, jw, more parameters for obs and template change.
+# 2014-10-09, jw, support for trailing slash at project name. 
+#                 See setup_all_oem_client.pl for the semantics.
 #
 use Data::Dumper;
 sub list_obs_pkg;
@@ -19,11 +21,13 @@ my $obs_api = 'https://s2.owncloud.com';
 
 my $client_name = $ARGV[0];
 die qq{
-Usage: $0 oem:brandname [DESTPROJ: [obs_api [tmpl_prj]]]
+Usage: $0 oem_brandname [DESTPROJ: [obs_api [tmpl_prj]]]
+       $0 oem_brandname [DESTPROJ/ [obs_api [tmpl_prj]]]
 
 Default destination project: $dest_prj_prefix
 Default obs api: $obs_api
 Default template project: $src_prj
+
 } unless $client_name;
 
 if ($ARGV[1])
@@ -38,6 +42,8 @@ $src_prj = $ARGV[3] if defined $ARGV[3];
 $client_name =~ s{^\Q$dest_prj_prefix\E}{};
 
 my $dest_prj = $dest_prj_prefix . $client_name;
+$dest_prj = $dest_prj_prefix if $dest_prj_prefix =~ s{/$}{};
+
 my @existing_pkg = list_obs_pkg($obs_api, $dest_prj);
 my %existing_pkg = map { $_ => 1 } @existing_pkg;
 

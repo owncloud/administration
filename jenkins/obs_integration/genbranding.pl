@@ -33,6 +33,9 @@
 #       - added OBS_INTEGRATION_MSG for a tunneling a 'created by' message.
 # 2014-09-15, jw, V1.6
 #       - support for upper [% themename_deb %] and [% executable %].
+# 2014-10-09, jw, V1.7
+#       - support for trailing slash with -p proj_name/ added. 
+#         Semantics see setup_all_oem_client.pl
 
 use Getopt::Std;
 use Config::IniFiles;
@@ -335,19 +338,22 @@ print "Theme Tarball: $themetar\n";
 
 # if -o (osc mode) check if an oem directory exists
 my $theme = getFileName( $ARGV[1] );
+my $dest_prj_theme = "$dest_prj:$theme";
+$dest_prj_theme = $dest_prj if $dest_prj =~ m{/$}{};
+$dest_prj_theme =~ s{/$}{};
 
 if( $opt_o ) {
-    unless( -d "./$dest_prj" && -d "./$dest_prj:$theme/.osc" ) {
-	print "Checking out package $dest_prj:$theme/$theme-client\n";
+    unless( -d "./$dest_prj_theme" && -d "./$dest_prj_theme/.osc" ) {
+	print "Checking out package $dest_prj_theme/$theme-client\n";
 	my $cwd = Cwd::getcwd;
-	checkoutPackage( "$dest_prj:$theme", "$theme-client", $opt_c );
+	checkoutPackage( "$dest_prj_theme", "$theme-client", $opt_c );
 	# chdir('../..'); # checkoutPackage chdirs into the package checkout, if the checkout succeeds.
 	chdir($cwd);
     } else {
 	# Update the checkout
 	my @osc = oscParams($opt_c);
 	push @osc, 'up';
-	chdir( "$dest_prj:$theme");
+	chdir( "$dest_prj_theme");
 	doOSC( @osc );
 	chdir( '..' );
     }
@@ -409,7 +415,7 @@ my $clientdir = ".";
 
 
 if( $opt_o ) {
-    $clientdir = "$dest_prj:$theme/$theme-client";
+    $clientdir = "$dest_prj_theme/$theme-client";
 }
 createTar($clientdir, $dirName);
 

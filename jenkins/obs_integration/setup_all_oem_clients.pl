@@ -37,6 +37,7 @@
 # 2014-08-20, jw, split prerelease from branch where [abr-]...
 # 2014-09-03, jw, template named in create_msg, so that the changelogs (at least) refers to the relevant changelog.
 # 2014-09-09, jw, dragged in OSC_CMD to infuse additional osc parameters. Needed for jenkins mirall-linux-oem job
+# 2014-10-09, jw, trailing slash after project name means: no automatic subproject please.
 #
 
 use Data::Dumper;
@@ -56,11 +57,22 @@ my $source_tar          = shift;
 if (!defined $source_tar or $source_tar =~ m{^-})
   {
     die qq{
-Usage: $0 v1.6.2 [home:jw:oem [filterbranding,... [api [tmpl]]]]
+Usage: $0 v1.6.2 [home:jw:oem[/] [filterbranding,... [api [tmpl]]]]
 
        $0 v1.7.0-alpha1 isv:ownCloud:oem testpilotcloud https://api.opensuse.org isv:ownCloud:community:nightly
-       
-... or similar
+       $0 v1.6.4-rc1 isv:ownCloud:oem:community:testing:1.6/ testpilotcloud https://api.opensuse.org isv:ownCloud:desktop
+
+... or similar.
+
+The build service project name is normally constructed from second and third 
+ parameter. I.e.  the brandname is appended to the specified 'parent project 
+ name' to form the complete subproject name.
+ This is useful to create one subproject per branding.
+
+If you specify the projectname with a trialing slash, it is taken as the 
+ subproject name as is.  This is useful to have all brandings in the same 
+ project, or if only one branding is intended.
+ 
 };
   }
 
@@ -231,6 +243,9 @@ sub obs_prj_from_template
 {
   my ($osc_cmd, $template_prj, $prj, $title) = @_;
 
+  $prj =~ s{/$}{};
+  $template_prj =~ s{/$}{};
+
   # test, if it is already there, if so, do nothing:
   open(my $tfd, "$osc_cmd meta prj '$prj' 2>/dev/null|") or die "cannot check '$prj'\n";
   if (<$tfd>)
@@ -264,6 +279,9 @@ sub obs_prj_from_template
 sub obs_pkg_from_template
 {
   my ($osc_cmd, $template_prj, $template_pkg, $prj, $pkg, $title) = @_;
+
+  $prj =~ s{/$}{};
+  $template_prj =~ s{/$}{};
 
   # test, if it is already there, if so, do nothing:
   open(my $tfd, "$osc_cmd meta pkg '$prj' '$pkg' 2>/dev/null|") or die "cannot check '$prj/$pkg'\n";
@@ -307,24 +325,34 @@ for my $branding (@candidates)
 	delete $client_filter{$branding};
       }
 
+    my $project = "$container_project:$branding";
+    my $container_project_colon = "$container_project:";
+    if ($container_project =~ m{/$})
+      {
+        $project = $container_project;
+	$project =~ s{/$}{};
+        $container_project_colon = $container_project";
+      }
+
     ## generate the individual container projects
-    obs_prj_from_template($osc_cmd, $template_prj, "$container_project:$branding", "OwnCloud Desktop Client project $branding");
+    obs_prj_from_template($osc_cmd, $template_prj, $project, "OwnCloud Desktop Client project $branding");
 
     ## create an empty package, so that genbranding is happy.
-    obs_pkg_from_template($osc_cmd, $template_prj, $template_pkg, "$container_project:$branding", "$branding-client", "$branding Desktop Client");
+    obs_pkg_from_template($osc_cmd, $template_prj, $template_pkg, $project, "$branding-client", "$branding Desktop Client");
 
     # checkout branding-client, update, checkin.
-    run("rm -rf '$container_project:$branding'");
-    run("$osc_cmd checkout '$container_project:$branding' '$branding-client'");
+    run("rm -rf '$project'");
+    run("$osc_cmd checkout '$project' '$branding-client'");
     # we run in |cat, so that git diff not open less with the (useless) changes 
     run("env PAGER=cat OBS_INTEGRATION_MSG='$create_msg' $genbranding '$source_tar' '$tmp/$branding.tar.bz2'");	
     # FIXME: abort, if this fails. Pipe cat prevents error diagnostics here. Maybe PAGER=cat helps?
 
-    run("rm -rf '$container_project:$branding'");
+    run("rm -rf '$project'");
 
     ## fill in all the support packages.
-    ## CAUTION: trailing colon is important!
-    run("./setup_oem_client.pl '$branding' '$container_project:' '$obs_api' '$template_prj'");
+    ## CAUTION: trailing colon is important when catenating. 
+    ## We use trailing slash here again to avoid catenating.
+    run("./setup_oem_client.pl '$branding' '$container_project_colon' '$obs_api' '$template_prj'");
 
     ## babble out the diffs. Just for the logfile.
     ## This helps catching outdated *.in files in templates/client/* -- 
@@ -334,7 +362,7 @@ for my $branding (@candidates)
         my $template_file = sprintf "$f", 'owncloud';
         my $branding_file = sprintf "$f", $branding;
 	run("$osc_cmd cat $template_prj $template_pkg $template_file > $tmp/$template_file || true");
-	run("$osc_cmd cat '$container_project:$branding' '$branding-client' '$branding_file'> $tmp/$branding_file || true");
+	run("$osc_cmd cat '$project' '$branding-client' '$branding_file'> $tmp/$branding_file || true");
 	run("diff -ub '$tmp/$template_file' '$tmp/$branding_file' || true");
 	unlink("$tmp/$template_file");
 	unlink("$tmp/$branding_file");
@@ -362,5 +390,7 @@ print "Wait an hour or so, then check if things have built.\n";
 print "You can use collect_all_oem_clients.pl to push the build results to download.owncloud.com\n";
 for my $branding (@candidates)
   {
-    print " $obs_api/package/show/$container_project:$branding/$branding-client\n";
+    my $suffix = ":$branding/";
+    $suffix = '' if $container_project =~ m{/$};
+    print " $obs_api/package/show/$container_project$suffix$branding-client\n";
   }
