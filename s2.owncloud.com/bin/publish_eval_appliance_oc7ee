@@ -2,31 +2,61 @@
 #
 # Maintained at: https://github.com/owncloud/administration/tree/master/s2.owncloud.com/bin
 #
+# 2014-10-13, jw@owncloud.com
+#
+# Requires: zip
+# Requires: ovftool 
+#  Installation procedure: (ovftool, 40MB from VMware)
+#  https://developercenter.vmware.com/tool/ovf/3.5.0
+#  yes | sudo sh VMware-ovftool-3.5.0-1274719-lin.x86_64.bundle | cat
+#   -> unpacks to /usr/lib/vmware-installer/ /usr/lib/vmware-ovftool/ /etc/vmware* /usr/bin/ovftool
+#     
+
 
 srcdir=/srv/obs/repos/ee\:/7.0/images/
 destdir=internal/eval_appliance/oc7ee/
 tempdir=/var/run/publish
-mkdir -p $tempdir/eval-$$
+dir=$tempdir/eval-$$
+mkdir -p $dir
 
 set -x
 
 # pull all that are not raw tar balls into the temp.
-rsync -rzv --exclude '*-raw.*' --delete-delay $srcdir $tempdir/eval-$$
+# rsync -ratzvatz --exclude '*-raw.*' --delete-delay $srcdir $dir
 
-# unpack the raw tar balls, most of them do not contain a raw image, but one of the other VHD or OVA formats.
-for raw in $srcdir/*-raw.tar.bz2; do
-  # Caution: Are overwrites dangerous here?
-  tar xvf $raw -C $tempdir/eval-$$
+## unpack the raw tar balls, most of them do not contain a raw image, but one of the other VHD or OVA formats.
+# for raw in $srcdir/*-raw.tar.bz2; do
+#   # Caution: Are overwrites dangerous here?
+#   tar xvf $raw -C $dir
+# done
+
+for vmx in $srcdir/*-vmx.tar.bz2; do
+  mkdir $dir/vmx
+  archive_name=$(basename $vmx -vmx.tar.bz2)
+  tar xvf $vmx -C $dir/vmx
+  zip --junk-paths $dir/$archive_name.vmx.zip $dir/vmx/*
+  mkdir $dir/ova
+  ovftool $dir/vmx/*.vmx $dir/ova/$archive_name.ova
+  rm -rf $dir/vmx
+  zip --junk-paths $dir/$archive_name.ova.zip $dir/ova/*
+  rm -rf $dir/ova
 done
 
-# stow away the checksums. Having so many files is confusing.
-mkdir $tempdir/eval-$$/SHA256
-mv    $tempdir/eval-$$/*.sha256 $tempdir/eval-$$/SHA256
+for qcow2 in $srcdir/*.qcow2; do
+  archive_name=$(basename $vmx .qcow2)
+  zip --junk-paths $dir/$archive_name.qcow2.zip $qcow2
+done
+
+# stow away checksums in a subdirectory. Having so many files is confusing.
+mkdir $dir/SHA256
+for zip in $dir/*.zip; do
+  file=$(basename .zip)
+  sha256sum $zip > $dir/SHA256/$file.sha256
+done
 
 # push everything (that is not a raw image) to the download server.
-rsync -rzv --exclude '*-raw.*' --delete-delay $tempdir/eval-$$/ root@download.owncloud.com:/srv/www/htdocs/$destdir
-rm -rf $tempdir/eval-$$
+rsync -ratzvatz --exclude '*-raw.*' --delete-delay $dir/ root@download.owncloud.com:/srv/www/htdocs/$destdir
+rm -rf $dir
 
 echo Download url: http://download.owncloud.com/$destdir
 # end.
-
