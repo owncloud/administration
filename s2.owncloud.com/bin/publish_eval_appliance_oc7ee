@@ -64,7 +64,7 @@ for zip in $dir/daily/*.zip; do
 done
 
 # push everything (that is not a raw image) to the download server.
-rsync -ratzvatz --exclude '*-raw.*' --delete-delay $dir/daily root@download.owncloud.com:/srv/www/htdocs/$destdir_daily
+rsync -ratzvatz --exclude '*-raw.*' --delete-delay $dir/daily/ root@download.owncloud.com:/srv/www/htdocs/$destdir_daily
 rm -rf $dir/daily
 rsync -ratzvatz --exclude '*-raw.*' --delete-delay $dir/ root@download.owncloud.com:/srv/www/htdocs/$destdir
 rm -rf $dir
