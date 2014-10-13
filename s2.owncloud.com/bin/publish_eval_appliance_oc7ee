@@ -50,7 +50,7 @@ done
 # stow away checksums in a subdirectory. Having so many files is confusing.
 mkdir $dir/SHA256
 for zip in $dir/*.zip; do
-  file=$(basename .zip)
+  file=$(basename $zip .zip)
   sha256sum $zip > $dir/SHA256/$file.sha256
 done
 
