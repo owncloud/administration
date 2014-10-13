@@ -43,7 +43,7 @@ for vmx in $srcdir/*-vmx.tar.bz2; do
 done
 
 for qcow2 in $srcdir/*.qcow2; do
-  archive_name=$(basename $vmx .qcow2)
+  archive_name=$(basename $qcow2 .qcow2)
   zip --junk-paths $dir/$archive_name.qcow2.zip $qcow2
 done
 
