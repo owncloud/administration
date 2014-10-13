@@ -12,8 +12,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -25,7 +25,8 @@
  */
 
 /**
- * This code extracts the code comments out of ownCloud's config/config.sample.php and creates a RST document
+ * This code extracts the code comments out of ownCloud's
+ * config/config.sample.php and creates a RST document
  */
 
 
@@ -34,9 +35,9 @@ require 'vendor/autoload.php';
 // tag which invokes to copy a config description to the current position
 $COPY_TAG = 'see';
 // file which should be parsed
-$CONFIG_SAMPLE_FILE = 'config/config.sample.php';
-// file to put output in
-$OUTPUT_FILE = 'sample_config.rst';
+$CONFIG_SAMPLE_FILE = '../core/config/config.sample.php';
+// config documentation file to put content in
+$OUTPUT_FILE = 'admin_manual/configuration/configuration_config_sample_php.rst';
 
 /**
  * h - help
@@ -44,12 +45,15 @@ $OUTPUT_FILE = 'sample_config.rst';
  * o - output file
  * t - tag
  */
-$options = getopt('ht::i::o::', array('help', 'input-file::', 'output-file::', 'tag::'));
+$options = getopt(
+	'ht::i::o::',
+	array('help', 'input-file::', 'output-file::', 'tag::'));
+
 if(array_key_exists('h', $options) || array_key_exists('help', $options)) {
 	$helptext = $argv[0] . " [OPTION] ... (all options are optional)\n\n" .
 	" -h, --help                   Print this help text\n".
-	" -iFILE, --input-file=FILE    Specify the input file (Default: config/config.sample.php)\n".
-	" -oFILE, --output-file=FILE   Specify the input file (Default: sample_config.rst)\n".
+	" -iFILE, --input-file=FILE    Specify the input file (Default: ../core/config/config.sample.php)\n".
+	" -oFILE, --output-file=FILE   Specify the output file (Default: admin_manual/configuration/configuration_config_sample_php.rst)\n".
 	" -tNAME, --tag=NAME           Tag to use for copying a config entry (default: see)\n".
 	"\n";
 	print($helptext);
@@ -90,8 +94,13 @@ $blocks = explode('/**', $docBlock);
 
 // output that gets written to the file
 $output = '';
+$outputFirstParagraph = '';
 // array that holds all RST representations of all config options to copy them
 $lookup = array();
+
+// check if the current processed block is the first section (first call sets
+// this to true and all other sections to false)
+$isFirstSection = null;
 
 foreach ($blocks as $block) {
 	if (trim($block) === '') {
@@ -102,7 +111,8 @@ foreach ($blocks as $block) {
 	$id = null;
 	$doc = '';
 	$code = '';
-	// there should be exactly two parts after the split - otherwise there are some mistakes in the parsed block
+	// there should be exactly two parts after the split - otherwise there are
+	// some mistakes in the parsed block
 	if (count($parts) !== 2) {
 		echo '<h3>Uncommon part count!</h3><pre>';
 		print_r($parts);
@@ -112,8 +122,9 @@ foreach ($blocks as $block) {
 		$code = $parts[1];
 	}
 
-	// this checks if there is a config option below the comment (should be one if there is a config option or none if
-	// the comment is just a heading of the next section
+	// this checks if there is a config option below the comment (should be one
+	// if there is a config option or none if the comment is just a heading of
+	// the next section
 	preg_match('!^\'([^\']*)\'!m', $block, $matches);
 	if (!in_array(count($matches), array(0, 2))) {
 		echo 'Uncommon matches count<pre>';
@@ -129,7 +140,8 @@ foreach ($blocks as $block) {
 	// parse the doc block
 	$phpdoc = new \phpDocumentor\Reflection\DocBlock($doc);
 
-	// check for tagged elements to replace the tag with the actual config description
+	// check for tagged elements to replace the tag with the actual config
+	// description
 	$references = $phpdoc->getTagsByName($COPY_TAG);
 	if (!empty($references)) {
 		foreach ($references as $reference) {
@@ -152,28 +164,73 @@ foreach ($blocks as $block) {
 		$longDescription = $phpdoc->getLongDescription();
 		if (trim($longDescription) !== '') {
 			$RSTRepresentation .= $longDescription . "\n\n";
-			$RSTRepresentation .= "\n----\n\n";
+		}
+		if($isFirstSection === null) {
+			$isFirstSection = true;
+		} else {
+			$isFirstSection = false;
 		}
 	} else {
-		// print description
-		$RSTRepresentation .= $phpdoc->getText();
-		// empty line
-		$RSTRepresentation .= "\n\n";
 		// mark as literal (code block)
-		$RSTRepresentation .= "::\n\n";
+		$RSTRepresentation .= "\n::\n\n";
 		// trim whitespace
 		$code = trim($code);
-		// intend every line by an tab - also trim whitespace (for example: empty lines at the end)
+		// intend every line by an tab - also trim whitespace
+		// (for example: empty lines at the end)
 		foreach (explode("\n", trim($code)) as $line) {
 			$RSTRepresentation .= "\t" . $line . "\n";
 		}
+		$RSTRepresentation .= "\n";
+		// print description
+		$RSTRepresentation .= $phpdoc->getText();
+		// empty line
 		$RSTRepresentation .= "\n";
 
 		$lookup[$id] = $RSTRepresentation;
 	}
 
-	$output .= $RSTRepresentation;
+	if($isFirstSection) {
+		$outputFirstParagraph .= $RSTRepresentation;
+	} else {
+		$output .= $RSTRepresentation;
+	}
 }
 
+$configDocumentation = file_get_contents($OUTPUT_FILE);
+$configDocumentationOutput = '';
+
+$tmp = explode('DEFAULT_SECTION_START', $configDocumentation);
+if(count($tmp) !== 2) {
+	print("There are several DEFAULT_SECTION_START in the config documentation\n");
+	exit();
+}
+
+$configDocumentationOutput .= $tmp[0];
+// append start placeholder
+$configDocumentationOutput .= "DEFAULT_SECTION_START\n\n";
+// append first paragraph
+$configDocumentationOutput .= $outputFirstParagraph;
+// append end placeholder
+$configDocumentationOutput .= ".. DEFAULT_SECTION_END";
+
+$tmp = explode('DEFAULT_SECTION_END', $tmp[1]);
+if(count($tmp) !== 2) {
+	print("There are several DEFAULT_SECTION_END in the config documentation\n");
+	exit();
+}
+// drop the first part (old generated documentation which should be overwritten
+// by  this script) and just process
+$tmp  = explode('ALL_OTHER_SECTIONS_START', $tmp[1]);
+if(count($tmp) !== 2) {
+	print("There are several ALL_OTHER_SECTIONS_START in the config documentation\n");
+	exit();
+}
+// apppend middle part between DEFAULT_SECTION_END and ALL_OTHER_SECTIONS_START
+$configDocumentationOutput .= $tmp[0];
+// append start placeholder
+$configDocumentationOutput .= "ALL_OTHER_SECTIONS_START\n\n";
+// append rest of generated code
+$configDocumentationOutput .= $output;
+
 // write content to file
-file_put_contents($OUTPUT_FILE, $output);
+file_put_contents($OUTPUT_FILE, $configDocumentationOutput);
