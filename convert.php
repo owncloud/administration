@@ -38,6 +38,42 @@ $CONFIG_SAMPLE_FILE = 'config/config.sample.php';
 // file to put output in
 $OUTPUT_FILE = 'sample_config.rst';
 
+/**
+ * h - help
+ * i - input file
+ * o - output file
+ * t - tag
+ */
+$options = getopt('ht::i::o::', array('help', 'input-file::', 'output-file::', 'tag::'));
+if(array_key_exists('h', $options) || array_key_exists('help', $options)) {
+	$helptext = $argv[0] . " [OPTION] ... (all options are optional)\n\n" .
+	" -h, --help                   Print this help text\n".
+	" -iFILE, --input-file=FILE    Specify the input file (Default: config/config.sample.php)\n".
+	" -oFILE, --output-file=FILE   Specify the input file (Default: sample_config.rst)\n".
+	" -tNAME, --tag=NAME           Tag to use for copying a config entry (default: see)\n".
+	"\n";
+	print($helptext);
+	exit(0);
+}
+
+if(array_key_exists('t', $options)){
+	$COPY_TAG = $options['t'];
+} elseif (array_key_exists('tag', $options)) {
+	$COPY_TAG = $options['tag'];
+}
+
+if(array_key_exists('i', $options)){
+	$CONFIG_SAMPLE_FILE = $options['i'];
+} elseif (array_key_exists('input-file', $options)) {
+	$CONFIG_SAMPLE_FILE = $options['input-file'];
+}
+
+if(array_key_exists('o', $options)){
+	$OUTPUT_FILE = $options['o'];
+} elseif (array_key_exists('output-file', $options)) {
+	$OUTPUT_FILE = $options['output-file'];
+}
+
 // read file
 $docBlock = file_get_contents($CONFIG_SAMPLE_FILE);
 
@@ -58,85 +94,85 @@ $output = '';
 $lookup = array();
 
 foreach ($blocks as $block) {
-    if (trim($block) === '') {
-        continue;
-    }
-    $block = '/**' . $block;
-    $parts = explode(' */', $block);
-    $id = null;
-    $doc = '';
-    $code = '';
-    // there should be exactly two parts after the split - otherwise there are some mistakes in the parsed block
-    if (count($parts) !== 2) {
-        echo '<h3>Uncommon part count!</h3><pre>';
-        print_r($parts);
-        echo '</pre>';
-    } else {
-        $doc = $parts[0] . ' */';
-        $code = $parts[1];
-    }
+	if (trim($block) === '') {
+		continue;
+	}
+	$block = '/**' . $block;
+	$parts = explode(' */', $block);
+	$id = null;
+	$doc = '';
+	$code = '';
+	// there should be exactly two parts after the split - otherwise there are some mistakes in the parsed block
+	if (count($parts) !== 2) {
+		echo '<h3>Uncommon part count!</h3><pre>';
+		print_r($parts);
+		echo '</pre>';
+	} else {
+		$doc = $parts[0] . ' */';
+		$code = $parts[1];
+	}
 
-    // this checks if there is a config option below the comment (should be one if there is a config option or none if
-    // the comment is just a heading of the next section
-    preg_match('!^\'([^\']*)\'!m', $block, $matches);
-    if (!in_array(count($matches), array(0, 2))) {
-        echo 'Uncommon matches count<pre>';
-        print_r($matches);
-        echo '</pre>';
-    }
+	// this checks if there is a config option below the comment (should be one if there is a config option or none if
+	// the comment is just a heading of the next section
+	preg_match('!^\'([^\']*)\'!m', $block, $matches);
+	if (!in_array(count($matches), array(0, 2))) {
+		echo 'Uncommon matches count<pre>';
+		print_r($matches);
+		echo '</pre>';
+	}
 
-    // if there are two matches a config option was found -> set it as ID
-    if (count($matches) === 2) {
-        $id = $matches[1];
-    }
+	// if there are two matches a config option was found -> set it as ID
+	if (count($matches) === 2) {
+		$id = $matches[1];
+	}
 
-    // parse the doc block
-    $phpdoc = new \phpDocumentor\Reflection\DocBlock($doc);
+	// parse the doc block
+	$phpdoc = new \phpDocumentor\Reflection\DocBlock($doc);
 
-    // check for tagged elements to replace the tag with the actual config description
-    $references = $phpdoc->getTagsByName($COPY_TAG);
-    if (!empty($references)) {
-        foreach ($references as $reference) {
-            $name = $reference->getContent();
-            if (array_key_exists($name, $lookup)) {
-                // append the element at the current position
-                $output .= $lookup[$name];
-            }
-        }
-    }
+	// check for tagged elements to replace the tag with the actual config description
+	$references = $phpdoc->getTagsByName($COPY_TAG);
+	if (!empty($references)) {
+		foreach ($references as $reference) {
+			$name = $reference->getContent();
+			if (array_key_exists($name, $lookup)) {
+				// append the element at the current position
+				$output .= $lookup[$name];
+			}
+		}
+	}
 
-    $RSTRepresentation = '';
+	$RSTRepresentation = '';
 
-    // generate RST output
-    if (is_null($id)) {
-        // print heading - no
-        $heading = $phpdoc->getShortDescription();
-        $RSTRepresentation .= $heading . "\n";
-        $RSTRepresentation .= str_repeat('-', strlen($heading)) . "\n\n";
-        $longDescription = $phpdoc->getLongDescription();
-        if (trim($longDescription) !== '') {
-            $RSTRepresentation .= $longDescription . "\n\n";
-            $RSTRepresentation .= "\n----\n\n";
-        }
-    } else {
-        // print description
-        $RSTRepresentation .= $phpdoc->getText();
-        // empty line
-        $RSTRepresentation .= "\n\n";
-        // mark as literal (code block)
-        $RSTRepresentation .= "::\n\n";
-        // trim whitespace
-        $code = trim($code);
-        // intend every line by an tab - also trim whitespace (for example: empty lines at the end)
-        foreach (explode("\n", trim($code)) as $line) {
-            $RSTRepresentation .= "\t" . $line . "\n";
-        }
-        $RSTRepresentation .= "\n";
+	// generate RST output
+	if (is_null($id)) {
+		// print heading - no
+		$heading = $phpdoc->getShortDescription();
+		$RSTRepresentation .= $heading . "\n";
+		$RSTRepresentation .= str_repeat('-', strlen($heading)) . "\n\n";
+		$longDescription = $phpdoc->getLongDescription();
+		if (trim($longDescription) !== '') {
+			$RSTRepresentation .= $longDescription . "\n\n";
+			$RSTRepresentation .= "\n----\n\n";
+		}
+	} else {
+		// print description
+		$RSTRepresentation .= $phpdoc->getText();
+		// empty line
+		$RSTRepresentation .= "\n\n";
+		// mark as literal (code block)
+		$RSTRepresentation .= "::\n\n";
+		// trim whitespace
+		$code = trim($code);
+		// intend every line by an tab - also trim whitespace (for example: empty lines at the end)
+		foreach (explode("\n", trim($code)) as $line) {
+			$RSTRepresentation .= "\t" . $line . "\n";
+		}
+		$RSTRepresentation .= "\n";
 
-        $lookup[$id] = $RSTRepresentation;
-    }
+		$lookup[$id] = $RSTRepresentation;
+	}
 
-    $output .= $RSTRepresentation;
+	$output .= $RSTRepresentation;
 }
 
 // write content to file
