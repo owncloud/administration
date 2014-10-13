@@ -14,8 +14,8 @@
 
 
 srcdir=/srv/obs/repos/ee\:/7.0/images/
-destdir=internal/eval_appliance/oc7ee/
-destdir_daily=internal/eval_appliance/oc7ee_daily/
+destdir=internal/eval-appliance/oc7ee/
+destdir_daily=internal/eval-appliance/oc7ee-daily/
 tempdir=/var/run/publish
 dir=$tempdir/eval-$$
 mkdir -p $dir
