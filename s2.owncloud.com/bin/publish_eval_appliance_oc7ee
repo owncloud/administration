@@ -2,7 +2,7 @@
 #
 # Maintained at: https://github.com/owncloud/administration/tree/master/s2.owncloud.com/bin
 #
-# 2014-10-13, jw@owncloud.com
+# 2014-10-14, jw@owncloud.com
 #
 # Requires: zip
 # Requires: ovftool 
@@ -55,12 +55,13 @@ mv $dir/*daily*.zip $dir/daily
 mkdir $dir/SHA256
 for zip in $dir/*.zip; do
   file=$(basename $zip .zip)
-  sha256sum $zip > $dir/SHA256/$file.sha256
+  # no path names in sha256 files
+  sha256sum $zip | sed -e 's@\s.*/@ @' > $dir/SHA256/$file.sha256
 done
 mkdir $dir/daily/SHA256
 for zip in $dir/daily/*.zip; do
   file=$(basename $zip .zip)
-  sha256sum $zip > $dir/daily/SHA256/$file.sha256
+  sha256sum $zip | sed -e 's@\s.*/@ @' > $dir/daily/SHA256/$file.sha256
 done
 
 # push everything (that is not a raw image) to the download server.
