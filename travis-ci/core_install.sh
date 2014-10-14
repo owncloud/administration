@@ -176,8 +176,8 @@ echo "data directory:"
 ls -ll $DATADIR
 
 echo "owncloud.log:"
-cat $DATADIR/owncloud.log
-cat $BASEDIR/data/owncloud.log
+[ -f "$DATADIR/owncloud.log" ] && cat $DATADIR/owncloud.log
+[ -f "$BASEDIR/data/owncloud.log" ] && cat $BASEDIR/data/owncloud.log
 
 cd $BASEDIR
 
