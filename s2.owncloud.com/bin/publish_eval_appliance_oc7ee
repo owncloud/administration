@@ -69,6 +69,7 @@ rsync -ratzvatz --exclude '*-raw.*' --delete-delay $dir/daily/ root@download.own
 rm -rf $dir/daily
 rsync -ratzvatz --exclude '*-raw.*' --delete-delay $dir/ root@download.owncloud.com:/srv/www/htdocs/$destdir
 rm -rf $dir
+set -x
 
 echo Download urls: http://download.owncloud.com/$destdir
 echo                http://download.owncloud.com/$destdir_daily
