@@ -159,7 +159,7 @@ foreach ($blocks as $block) {
 	if (is_null($id)) {
 		// print heading - no
 		$heading = $phpdoc->getShortDescription();
-		$RSTRepresentation .= $heading . "\n";
+		$RSTRepresentation .= "\n" . $heading . "\n";
 		$RSTRepresentation .= str_repeat('-', strlen($heading)) . "\n\n";
 		$longDescription = $phpdoc->getLongDescription();
 		if (trim($longDescription) !== '') {

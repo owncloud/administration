@@ -10,7 +10,6 @@ fi
 # fetch documentation repo
 git clone -q git@github.com:owncloud/documentation.git /tmp/owncloud-documentation
 cd /tmp/owncloud-documentation
-git checkout -q config-sample-preparation
 git checkout -q -b config-update-$(date +%Y-%m-%d)
 cd $currentDir
 
