@@ -2,9 +2,10 @@
 #
 # Maintained at: https://github.com/owncloud/administration/tree/master/s2.owncloud.com/bin
 #
-# 2014-10-14, jw@owncloud.com
+# 2014-10-17, jw@owncloud.com
 #
 # Requires: zip
+# Requires: qemu-img fom qemu-tools
 # Requires: ovftool 
 #  Installation procedure: (ovftool, 40MB from VMware)
 #  https://developercenter.vmware.com/tool/ovf/3.5.0
@@ -46,7 +47,24 @@ done
 for qcow2 in $srcdir/*.qcow2; do
   archive_name=$(basename $qcow2 .qcow2)
   zip --junk-paths $dir/$archive_name.qcow2.zip $qcow2
+
+  ## If this generates bad vhd disks, we can also create 
+  ## them from *.vmdk instead of from *.qcow2
+  qemu-img convert $qcow2 $dir/$archive_name.vhd
+  # prepare a nice *.XML to go into the zip with the vhd file?
+  zip --junk-paths $dir/$archive_name.vhd.zip $dir/$archive_name.vhd
+  rm $dir/$archive_name.vhd
 done
+
+# in $HOME/vhd we have *.XML files that may help with vhd.
+if [ -d "$HOME/vhd" ]; then 
+  cp -a $HOME/vhd $dir 
+fi
+
+mkdir -p $srcdir.zip
+ls -la $dir
+# push back to s2
+rsync -ratzvatz --exclude '*-raw.*' --delete-delay $dir/ $srcdir.zip
 
 mkdir $dir/daily
 mv $dir/*daily*.zip $dir/daily
@@ -64,13 +82,18 @@ for zip in $dir/daily/*.zip; do
   sha256sum $zip | sed -e 's@\s.*/@ @' > $dir/daily/SHA256/$file.sha256
 done
 
+
 # push everything (that is not a raw image) to the download server.
 rsync -ratzvatz --exclude '*-raw.*' --delete-delay $dir/daily/ root@download.owncloud.com:/srv/www/htdocs/$destdir_daily
-rm -rf $dir/daily
-rsync -ratzvatz --exclude '*-raw.*' --delete-delay $dir/ root@download.owncloud.com:/srv/www/htdocs/$destdir
-rm -rf $dir
-set -x
 
-echo Download urls: http://download.owncloud.com/$destdir
-echo                http://download.owncloud.com/$destdir_daily
+rm -rf $dir/daily
+
+rsync -ratzvatz --exclude '*-raw.*' --delete-delay $dir/ root@download.owncloud.com:/srv/www/htdocs/$destdir
+
+rm -rf $dir
+set +x
+
+echo ""
+echo "Download urls: http://download.owncloud.com/$destdir"
+echo "               http://download.owncloud.com/$destdir_daily"
 # end.
