@@ -227,7 +227,7 @@ sed -i -e 's/OVERRIDE=override/OVERRIDE=/' cmake/modules/QtVersionAbstraction.cm
 %endif
 
 %build
-export LD_LIBRARY_PATH=%{_prefix}/lib64
+export LD_LIBRARY_PATH=%{_prefix}/%{_lib}
 export PATH=%{_prefix}/bin:$PATH
 
 mkdir build
