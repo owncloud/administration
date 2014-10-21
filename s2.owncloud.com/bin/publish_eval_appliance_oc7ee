@@ -12,7 +12,8 @@
 #  https://developercenter.vmware.com/tool/ovf/3.5.0
 #  yes | sudo sh VMware-ovftool-3.5.0-1274719-lin.x86_64.bundle | cat
 #   -> unpacks to /usr/lib/vmware-installer/ /usr/lib/vmware-ovftool/ /etc/vmware* /usr/bin/ovftool
-#     
+#
+# 2014-10-21, jw using ovftool --lax option to help with vsphere hardware checks.
 
 
 srcdir=/srv/obs/repos/ee\:/7.0/images
@@ -39,7 +40,7 @@ for vmx in $srcdir/*-vmx.tar.bz2; do
   tar xvf $vmx -C $dir/vmx
   zip --junk-paths $dir/$archive_name.vmx.zip $dir/vmx/*
   mkdir $dir/ova
-  ovftool $dir/vmx/*.vmx $dir/ova/$archive_name.ova
+  ovftool --lax $dir/vmx/*.vmx $dir/ova/$archive_name.ova
   rm -rf $dir/vmx
   zip --junk-paths $dir/$archive_name.ova.zip $dir/ova/*
   rm -rf $dir/ova
