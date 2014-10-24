@@ -3,20 +3,29 @@
 # (c) 2014 jw@owncloud.com - GPLv2 or ask.
 #
 # 2014-09-04, unfinsihed draft. 
+# 2014-10-24, jw: Finished prettyprint_urls(). Already very useful for statistics.
 # 
 # This should eventually allow jenkins to collect the build results on a polling basis.
 # Currently we only create a shell script for a human to run on s2.
+#
+# Caution: This script expects, that eventually all build jobs finish.
+# It will not print pack_client_oem instructions, while builds keep re-starting
+# Force printing of instructions with -k option.
 
 use Getopt::Std;
 use Data::Dumper;
+
+my %blacklist = map { $_ => 1 } qw( oem:SURFdrive oem:beta );
+			# beta is a container. Only subprojects are interesting, if any.
+			# oem:SURFdrive is only for windows and mac. For linux we have surfdrivelinux.
 
 my $osc_cmd             = 'osc -Ahttps://s2.owncloud.com';
 my $out_dir 		= '/tmp';
 my $scriptfile 		= "$out_dir/pack_oem.sh";
 my $container_project   = 'oem';	 #'home:jw:oem';
 my $verbose		= 1;
-use vars qw($opt_p $opt_f $opt_r $opt_h $opt_o $opt_k $opt_t);
-getopts('hp:f:r:o:kt');
+use vars qw($opt_p $opt_v $opt_f $opt_r $opt_h $opt_o $opt_k $opt_t);
+getopts('hp:f:r:o:ktv');
 
 $container_project = $opt_p if defined $opt_p;
 $container_project =~ s{:$}{};
@@ -62,11 +71,13 @@ else
     my @all_prj = split(/\s+/, $info);
     for my $p (@all_prj)
       {
+        next if $blacklist{$p};
         push @oem_projects, $p if $p =~ m{^\Q$container_project\E:};
       }
   }
 
 # die Dumper \@oem_projects;
+
 my %failed;
 my %building;
 my %succeeded;
@@ -75,6 +86,8 @@ for my $prj (@oem_projects)
     my $pkg = $prj;
     $pkg =~ s{^\Q$container_project\E:}{};
     $pkg .= '-client';
+
+    print STDERR ".";
 
     # check for failed builds
     open(my $ifd, "$osc_cmd r -v $prj $pkg|") or die "cannot get build results for $prj $pkg: $!\n";
@@ -114,12 +127,16 @@ for my $prj (@oem_projects)
 	  }
       }
   }
+print STDERR "\n";
 
 printf "building: %d, failed: %d, succeeded: %d\n", scalar keys %building, scalar keys %failed, scalar keys %succeeded if $verbose;
 if (%building)
   {
     my @k = keys %building;
-    printf("%d binaries currently building.\n $k[0] $building{$k[0]}\n  Wait a bit?\n", scalar keys %building);
+    printf("%d binaries currently building.\n $k[0] $building{$k[0]}\n", scalar keys %building);
+    prettyprint_urls(\%failed);
+    print "\n  Wait a bit?\n";
+
     exit(1) unless $opt_k;
   }
 
@@ -158,10 +175,7 @@ if (%failed)
     else
       {
         printf("%d binaries failed. Try with -t to trigger rebuilds or investigate?\n", scalar keys %failed);
-	# for my $f (sort keys %failed)
-	#   {
-	#     printf "$f\n";
-	#   }
+        prettyprint_urls(\%failed) unless %building;
       }
     exit(1) unless $opt_k;
   }
@@ -187,7 +201,7 @@ for my $oem (@oem_projects)
     my $version = find_consistent_version($oem);
 
     $oem =~ s{^.*:}{};
-    $script .= "\n# https://s2.owncloud.com/package/show/oem:$oem/$oem-client\n# " if $b_or_f;
+    $script .= "\n# " . mk_url($oem) . "\n# " if $b_or_f;
     $script .= "bin/pack_client_oem $oem $version\n";
     $caution += $b_or_f;
   }
@@ -202,6 +216,12 @@ print "$scriptfile written.\n";
 
 exit 0;
 ###########################################################
+
+sub mk_url
+{
+  my ($name) = @_;
+  return "https://s2.owncloud.com/package/show/oem:$name/$name-client";
+}
 
 sub find_consistent_version
 {
@@ -266,4 +286,43 @@ sub touch_meta_prj
   print $ofd $meta_prj_template;
   close($ofd) or die "touching prj meta failed: $!\n";
   print "Project '$prj' meta touched.\n";
+}
+
+sub prettyprint_urls
+{
+  my ($f_all, $prefix) = @_;
+  # 'oem:surfdrivelinux/xUbuntu_12.04/x86_64' => 'unresolvable: nothing provides qtkeychain-dev,       nothing provides libqtkeychain0 >= 0.3',
+
+  my %names;
+
+  for my $f (keys %$f_all)
+    {
+      if ($f =~ m{^([^/]+)/(.*)$})
+        {
+	  my ($name,$plat) = ($1,$2);
+	  push @{$names{$name}{target}}, $plat;
+	  for my $e (split(/,\s*/, $f_all->{$f}))
+	    {
+	      if ($e =~ s{^(unresolvable: )?nothing provides }{})
+	        {
+	          $names{$name}{depends}{$e}++;
+		}
+	      else
+	        {
+	          $names{$name}{err}{$f_all->{$f}}++;
+		}
+	    }
+	}
+    }
+
+  for my $name (keys %names)
+    {
+      my $err = join(',', keys(%{$names{$name}{err}}));
+      my $dep = join(',', keys(%{$names{$name}{depends}}));
+      my $n = scalar @{$names{$name}{target}};
+      print mk_url($name) . " (${n}x): ";
+      print "$err; " if $err;
+      print "dependencies: $dep" if $dep;
+      print "\n";
+    }
 }
