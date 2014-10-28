@@ -263,7 +263,7 @@ sub find_consistent_version
   close $ifd;
   my @vers = keys %vers;
   warn mk_url($oemname) . "\n : built differing versions: @vers\n" if scalar @vers > 1;
-  die "retry with -k to continue\n" unless $opt_k;
+  die "retry with -k to continue\n" if scalar @vers > 1 and not $opt_k;
   return $vers[0];
 }
 
