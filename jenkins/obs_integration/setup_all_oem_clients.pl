@@ -88,6 +88,11 @@ my $template_pkg 	= shift || 'owncloud-client';
 my $create_msg 		= $ENV{OBS_INTEGRATION_MSG} || "created by: $0 @ARGV; template=$template_prj/$template_pkg";
 
 
+my $TMPDIR_TEMPL = '_oem_XXXXX';
+our $verbose = 1;
+our $no_op = 0;
+my $skipahead = 0;	# 5 start with all tarballs there.
+
 my $customer_themes_git = 'git@github.com:owncloud/customer-themes.git';
 my $source_git          = 'https://github.com/owncloud/mirall.git';
 my $osc_cmd             = "osc -A$obs_api";
@@ -100,12 +105,15 @@ if ($ENV{'OSC_CMD'})
     $genbranding        = "./genbranding.pl -c '$osc_param -A$obs_api' -p '$container_project' -r '$build_token' -o -f";
   }
 
-print "osc_cmd='$osc_cmd';\ngenbranding='$genbranding';\n";
+unless ($ENV{CREATE_TOP} || obs_prj_exists($osc_cmd, $container_project))
+  {
+    print "container_project $container_project does not exist.\n";
+    print "Check your command line: version container pkgfilter ...\n";
+    print "If you want to creat it, run again with 'env CREATE_TOP=1 ...'\n";
+    exit(0);
+  }
 
-my $TMPDIR_TEMPL = '_oem_XXXXX';
-our $verbose = 1;
-our $no_op = 0;
-my $skipahead = 0;	# 5 start with all tarballs there.
+print "osc_cmd='$osc_cmd';\ngenbranding='$genbranding';\n";
 
 my $scriptdir = $1 if Cwd::abs_path($0) =~ m{(.*)/};
 
@@ -238,6 +246,19 @@ sub obs_user
   return $info;
 }
 
+sub obs_prj_exists
+{
+  my ($osc_cmd, $prj) = @_;
+
+  open(my $tfd, "$osc_cmd meta prj '$prj' 2>/dev/null|") or die "cannot check '$prj'\n";
+  if (<$tfd>)
+    {
+      close($tfd);
+      return 1;
+    }
+  return 0;
+}
+
 # KEEP IN SYNC with obs_pkg_from_template
 sub obs_prj_from_template
 {
@@ -246,11 +267,8 @@ sub obs_prj_from_template
   $prj =~ s{/$}{};
   $template_prj =~ s{/$}{};
 
-  # test, if it is already there, if so, do nothing:
-  open(my $tfd, "$osc_cmd meta prj '$prj' 2>/dev/null|") or die "cannot check '$prj'\n";
-  if (<$tfd>)
+  if (obs_prj_exists($osc_cmd, $prj))
     {
-      close($tfd);
       print "Project '$prj' already there.\n";
       return;
     }
@@ -307,7 +325,6 @@ sub obs_pkg_from_template
   close($ofd);
   print "Package '$prj/$pkg' created.\n";
 }
-
 
 ## make sure the top project is there in obs
 obs_prj_from_template($osc_cmd, $template_prj, $container_project, "OwnCloud Desktop Client OEM Container project");

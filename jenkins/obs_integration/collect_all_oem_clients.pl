@@ -15,9 +15,9 @@
 use Getopt::Std;
 use Data::Dumper;
 
-my %blacklist = map { $_ => 1 } qw( oem:SURFdrive oem:beta );
-			# beta is a container. Only subprojects are interesting, if any.
-			# oem:SURFdrive is only for windows and mac. For linux we have surfdrivelinux.
+my $blacklist_re = qr{^(oem:SURFdrive|oem:beta|oem:beta:.*)$};
+			# beta is a container. No sub projects there are interesting for automated uploads.
+			# oem:SURFdrive is only for Windows and Mac. For Linux we have surfdrivelinux.
 
 my $osc_cmd             = 'osc -Ahttps://s2.owncloud.com';
 my $out_dir 		= '/tmp';
@@ -71,7 +71,7 @@ else
     my @all_prj = split(/\s+/, $info);
     for my $p (@all_prj)
       {
-        next if $blacklist{$p};
+        next if $p =~ m{$blacklist_re};
         push @oem_projects, $p if $p =~ m{^\Q$container_project\E:};
       }
   }
@@ -227,7 +227,8 @@ sub find_consistent_version
 {
   my ($oemprj) = @_;
 
-  my $pkg = "$1-client" if $oemprj =~ m{:(.*)};
+  my $oemname = $1 if $oemprj =~ m{:(.*)};
+  my $pkg = "$oemname-client";
   my $cmd = "$osc_cmd ls -b $oemprj $pkg";
   my %vers;
   open(my $ifd, "$cmd|") or die "cannot list binaries $cmd: $!\n";
@@ -261,7 +262,8 @@ sub find_consistent_version
     }
   close $ifd;
   my @vers = keys %vers;
-  die "$oemprj $pkg: built differing versions: @vers\n" if scalar @vers > 1;
+  warn mk_url($oemname) . "\n : built differing versions: @vers\n" if scalar @vers > 1;
+  die "retry with -k to continue\n" unless $opt_k;
   return $vers[0];
 }
 
