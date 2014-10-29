@@ -50,7 +50,7 @@ OWNTHEME=0
 #
 # Enter path and file name of your certificate to code sign the windows client.
 # The PFX file should contain your private key.
-# example: pathCodeSignCertificate=""${CUR_DIR}/certificate.pfx""
+# example: pathCodeSignCertificate="${CUR_DIR}/certificate.pfx"
 #
 # Enter the url of your timestamp server.
 # example: serverTimeStamp="http://timestamp.comodoca.com/authenticode"
@@ -115,4 +115,7 @@ macUpdateURL=""
 #mirallhash="0f37484b8a708dacba99697cf5bb17e1b2b6d5e2"
 
 # version 1.6.3 (2014-09-03)
-mirallhash="cc1121ef008d85f2142c6a2887e3ee196061e97f"
+#mirallhash="cc1121ef008d85f2142c6a2887e3ee196061e97f"
+
+# version 1.6.4 (2014-10-22)
+mirallhash="c4a9e524e603bae54eee944edb555646fbb1edf3"
