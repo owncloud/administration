@@ -157,7 +157,7 @@ elsif( $task eq 'write' ){
 				s/\$/\\\$/g;
 			}
 
-			if ( -e 'l10n/no-php' ) {
+			if ( -e 'no-php' ) {
 				# delete old php file
 				unlink "$language.php";
 			} else {
