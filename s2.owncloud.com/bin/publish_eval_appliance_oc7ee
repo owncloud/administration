@@ -37,6 +37,8 @@ set -x
 for vmx in $srcdir/*-vmx.tar.bz2; do
   mkdir $dir/vmx
   archive_name=$(basename $vmx -vmx.tar.bz2)
+  # must strip -vmdk from archive name, according to enterprise#386
+  archive_name=${archive_name//-vmdk/}
   tar xvf $vmx -C $dir/vmx
   zip --junk-paths $dir/$archive_name.vmx.zip $dir/vmx/*
   mkdir $dir/ova
