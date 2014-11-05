@@ -5,20 +5,30 @@
 
 # copy the build repos to a temporary space
 major=6
-rm -rf /tmp/ee$major
-mkdir /tmp/ee$major
+download_path=download/repositories/$major.0 
+download_url=http://download.ownCLOUD.com/$download_path
 
-cp -a /srv/obs/repos/ee\:/$major.0/* /tmp/ee$major
+tmp=/tmp/_publishee$major.$$
+rm -rf $tmp/ee$major
+mkdir -p $tmp/ee$major
+set -x
+
+rsync -ratzvatz /srv/obs/repos/ee\:/$major.0/* $tmp/ee$major
 
 # ...and fix the baseurl string in the repo files.
-find /tmp/ee$major -name "*repo" | xargs sed -i 's#repositories/ee:#repositories#'
+# This is what we expect to see coming from s2, or similar...
+# baseurl=http://USERNAME:PASSWORD@s2.owncloud.com:83//ee:/6.0/openSUSE_13.1/
+# baseurl=https://download.owncloud.com/download/repositories/6.0/CentOS_CentOS-6/
+#
+find $tmp/ee$major -name "*.repo" | xargs sed -i "s@=.*/$major.0/@=$download_url/@"
+
 
 # finally rsync to download server
-rsync -rzv --delete /tmp/ee$major/* root@download.owncloud.com:/srv/www/htdocs/download/repositories/$major.0 
+rsync -rzv --delete $tmp/ee$major/* root@download.owncloud.com:/srv/www/htdocs/$download_path
 
 # ... and remove the tmp
-rm -rf /tmp/ee$major
+rm -rf $tmp/ee$major
 
-echo Download url: http://download.owncloud.com/download/repositories/$major.0 
+echo Download url: $download_url
 # end.
 
