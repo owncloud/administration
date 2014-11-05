@@ -6,7 +6,7 @@
 # copy the build repos to a temporary space
 major=6
 download_path=download/repositories/$major.0 
-download_url=http://download.ownCLOUD.com/$download_path
+download_url="http://ownCloudEE:customer42!@download.ownCLOUD.com/$download_path"
 
 tmp=/tmp/_publishee$major.$$
 rm -rf $tmp/ee$major
