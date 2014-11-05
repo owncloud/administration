@@ -9,6 +9,9 @@ SERVER_INSTANCES=3
 
 SSH="/sbin/my_init --enable-insecure-key"
 
+# change permission of key otherwise it wouldn't be used
+chmod 600 configs/insecure_key
+
 while getopts "o:s:d:p:i:h" opt; do
   case $opt in
     o)
