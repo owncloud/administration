@@ -20,7 +20,7 @@ rsync -ratzvatz /srv/obs/repos/ee\:/$major.0/* $tmp/ee$major
 # baseurl=http://USERNAME:PASSWORD@s2.owncloud.com:83//ee:/6.0/openSUSE_13.1/
 # baseurl=https://download.owncloud.com/download/repositories/6.0/CentOS_CentOS-6/
 #
-find $tmp/ee$major -name "*.repo" | xargs sed -i "s@=.*/$major.0/@=$download_url/@"
+find $tmp/ee$major -name "*.repo" | xargs sed -i "s#=.*/$major.0/#=$download_url/#"
 
 
 # finally rsync to download server

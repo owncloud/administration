@@ -20,9 +20,9 @@ rsync -ratzvatz --exclude openssl\* --exclude oc-eval-license\* --exclude php5-A
 # baseurl=http://USERNAME:PASSWORD@s2.owncloud.com:83//ee:/7.0/openSUSE_13.1/
 # baseurl=https://download.owncloud.com/download/repositories/7.0/CentOS_CentOS-6/
 #
-find $tmp/ee$major -name "*.repo" | xargs sed -i "s@=.*/$major.0/@=$download_url/@"
+find $tmp/ee$major -name "*.repo" | xargs sed -i "s#=.*/$major.0/#=$download_url/#"
 # must not be there:
-find $tmp/ee$major -name "oc-eval-license* | xargs rm -f
+find $tmp/ee$major -name "oc-eval-license*" | xargs rm -f
 
 # finally rsync to download server
 rsync -rzv --delete $tmp/ee$major/* root@download.owncloud.com:/srv/www/htdocs/$download_path
