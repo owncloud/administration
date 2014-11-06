@@ -61,6 +61,10 @@ my %package_replace =
     <package name='apache2'/>
     },
 
+  'grub2' => 
+  q{<package name='grub2'/>
+    <package name='grub2-i386-efi' arch='i586'/>
+    },
 );
 
 unless (-f $studio_tar)

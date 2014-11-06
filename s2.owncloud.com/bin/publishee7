@@ -25,7 +25,12 @@ find $tmp/ee$major -name "*.repo" | xargs sed -i "s#=.*/$major.0/#=$download_url
 find $tmp/ee$major -name "oc-eval-license*" | xargs rm -f
 
 # finally rsync to download server
-rsync -rzv --delete $tmp/ee$major/* root@download.owncloud.com:/srv/www/htdocs/$download_path
+#Thu Nov  6 17:17:19 EST 2014 - draht:
+# DO NOT use download.owncloud.com, this refers to all of the download servers.
+# your chances to get this actually placed where you want it are 25%.
+# I have generically revoked access to all download.owncloud.com servers except
+# for the master.
+rsync -rzv --delete $tmp/ee$major/* root@dl-oc.owncloud.com:/srv/www/htdocs/$download_path
 
 # ... and remove the tmp
 rm -rf $tmp/ee$major

@@ -16,7 +16,7 @@ cp -a /srv/obs/repos/ee\:/$major.0/* /tmp/ee$major
 find /tmp/ee$major -name "*repo" | xargs sed -i 's#repositories/ee:#repositories#'
 
 # finally rsync to download server
-rsync -rzv --delete /tmp/ee$major/* root@download.owncloud.com:/srv/www/htdocs/download/repositories/$major.0 
+rsync -rzv --delete /tmp/ee$major/* root@dl-oc.owncloud.com:/srv/www/htdocs/download/repositories/$major.0 
 
 # ... and remove the tmp
 rm -rf /tmp/ee$major

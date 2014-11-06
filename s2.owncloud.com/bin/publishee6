@@ -24,7 +24,7 @@ find $tmp/ee$major -name "*.repo" | xargs sed -i "s#=.*/$major.0/#=$download_url
 
 
 # finally rsync to download server
-rsync -rzv --delete $tmp/ee$major/* root@download.owncloud.com:/srv/www/htdocs/$download_path
+rsync -rzv --delete $tmp/ee$major/* root@dl-oc.owncloud.com:/srv/www/htdocs/$download_path
 
 # ... and remove the tmp
 rm -rf $tmp/ee$major
