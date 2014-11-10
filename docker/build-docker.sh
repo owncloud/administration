@@ -17,7 +17,7 @@ do
     echo
     echo
     echo "Found docker image $NAME-$OS"
-    docker build -t $NAME-$OS $IMAGE_PATH/$OS/$NAME
+    docker build --no-cache -t $NAME-$OS $IMAGE_PATH/$OS/$NAME
   done
 done
 

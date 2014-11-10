@@ -107,8 +107,8 @@ if [ $SERVER == apache ]; then
 fi
 
 if [ $SERVER == nginx ]; then
-  echo "docker run -dp 127.0.0.1:$PORT:8000/tcp -h $SERVER_NAME --name=$SERVER_NAME $DB_LINK $MEMCACHE_LINK --volumes-from $DATA_NAME $SERVER_IMAGE_NAME $SSH"
-  docker run -dp 127.0.0.1:$PORT:8000/tcp -h $SERVER_NAME --name=$SERVER_NAME $DB_LINK $MEMCACHE_LINK --volumes-from $DATA_NAME $SERVER_IMAGE_NAME $SSH > /dev/null 2>&1
+  echo "docker run -dp 127.0.0.1:$PORT:8000/tcp -h $SERVER_NAME-1 --name=$SERVER_NAME-1 $DB_LINK $MEMCACHE_LINK --volumes-from $DATA_NAME $SERVER_IMAGE_NAME $SSH"
+  docker run -dp 127.0.0.1:$PORT:8000/tcp -h $SERVER_NAME-1 --name=$SERVER_NAME-1 $DB_LINK $MEMCACHE_LINK --volumes-from $DATA_NAME $SERVER_IMAGE_NAME $SSH > /dev/null 2>&1
 fi
 
 
