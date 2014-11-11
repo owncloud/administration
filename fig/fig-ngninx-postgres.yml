@@ -1,0 +1,13 @@
+nginx:
+    image: maxexcloo/nginx-php
+    ports:
+        - "8000:80"
+    links:
+        - postgres
+    volumes:
+        - /home/mjob/Projekte/owncloud/master:/data/http
+        - nginx/nginx-owncloud.conf:/data/conf/nginx-owncloud.conf:ro
+        - config/init01:/config/init01:ro
+        - config/init02:/config/init02:ro
+postgres:
+    image: postgres

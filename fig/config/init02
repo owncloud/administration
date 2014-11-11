@@ -1,0 +1,5 @@
+mkdir -p /data/config /data/http /data/logs /data/secure
+chown core:core /data/http
+chown core:core /data/logs
+chown core:core /data/secure
+chmod 0770 /data/secure
