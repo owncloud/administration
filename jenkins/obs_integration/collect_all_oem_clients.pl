@@ -135,7 +135,7 @@ if (%building)
     my @k = keys %building;
     printf("%d binaries currently building.\n $k[0] $building{$k[0]}\n", scalar keys %building);
     prettyprint_urls(\%failed);
-    print "\n  Wait a bit?\n";
+    print "\n  Wait a bit? Or try -k to continue.\n";
 
     exit(1) unless $opt_k;
   }
@@ -174,7 +174,7 @@ if (%failed)
       }
     else
       {
-        printf("%d binaries failed. Try with -t to trigger rebuilds or investigate?\n", scalar keys %failed);
+        printf("%d binaries failed. Try with -t to trigger rebuilds, -k to ignore, or investigate?\n", scalar keys %failed);
         prettyprint_urls(\%failed) unless %building;
       }
     exit(1) unless $opt_k;
@@ -220,6 +220,7 @@ exit 0;
 sub mk_url
 {
   my ($name) = @_;
+  $name =~ s{^oem:}{};	# don't call us with oem prefix, but nevermind
   return "https://s2.owncloud.com/package/show/oem:$name/$name-client";
 }
 
