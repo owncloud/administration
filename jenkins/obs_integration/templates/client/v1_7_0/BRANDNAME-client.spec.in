@@ -208,7 +208,12 @@ Development files for the [% displayname %] sync library.
 %package -n %{name}-nautilus
 Summary:        Nautilus overlay icons
 Group:          Productivity/Networking/Other
-Requires:       nautilus, python-nautilus
+Requires:       nautilus
+%if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
+Requires:       nautilus-python
+%else
+Requires:       python-nautilus
+%endif
 Requires:       %{name}%{?_isa} = %{version}-%{release}
 
 %description -n %{name}-nautilus
