@@ -295,6 +295,7 @@ sub prettyprint_urls
 {
   my ($f_all, $prefix) = @_;
   # 'oem:surfdrivelinux/xUbuntu_12.04/x86_64' => 'unresolvable: nothing provides qtkeychain-dev,       nothing provides libqtkeychain0 >= 0.3',
+  # 'oem:polybox/xUbuntu_14.10/i586' => 'failed'
 
   my %names;
 
@@ -323,7 +324,8 @@ sub prettyprint_urls
       my $err = join(',', keys(%{$names{$name}{err}}));
       my $dep = join(',', keys(%{$names{$name}{depends}}));
       my $n = scalar @{$names{$name}{target}};
-      print mk_url($name) . " (${n}x): ";
+      my %targets = map { $1 => 1 if $_ =~ m{(.*)/} } @{$names{$name}{target}};
+      print mk_url($name) . " (${n}x; ". join(',', sort keys %targets). "): ";
       print "$err; " if $err;
       print "dependencies: $dep" if $dep;
       print "\n";
