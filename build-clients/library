@@ -222,6 +222,15 @@ function buildCustomizations() {
             source extra_customizations
         fi
 
+        #------------------------------------------------------------------------
+        # TEMPORARY FIX FOR https://github.com/owncloud/mirall/issues/2491
+        #
+        #------------------------------------------------------------------------
+
+        if [ -f ./replacements/mirall/cmake/modules/AddAppIconMacro.cmake ] ; then
+            cp ./replacements/mirall/cmake/modules/AddAppIconMacro.cmake ./buildenv/mirall/cmake/modules/
+        fi
+
     fi
     cd "${BUILD_DIR}"
 }
