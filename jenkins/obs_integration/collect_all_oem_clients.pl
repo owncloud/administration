@@ -55,7 +55,7 @@ ENDHELP
 }
 help() if $opt_h;
 
-print "project=$container_project, osc='$osc_cmd', client_filter='$client_filter' out_dir='$out_dir'\n";
+# print "project=$container_project, osc='$osc_cmd', client_filter='$client_filter' out_dir='$out_dir'\n";
 
 my @oem_projects;
 
