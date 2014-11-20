@@ -44,7 +44,7 @@
 CUR_DIR=$PWD
 BUILD_DIR="${CUR_DIR}/buildenv"
 OSLINUX=0
-
+PATH=/usr/local/Cellar/qt5/5.3.2/bin/qmake:$PATH
 
 
 #================================================================================
@@ -127,6 +127,7 @@ function buildMacDependencies() {
 #================================================================================
 
 function buildMirallAndPackage() {
+    mkdir install
     mkdir mirall-build
     cd mirall-build
 
@@ -141,16 +142,27 @@ function buildMirallAndPackage() {
     fi
 
     cmake -DCMAKE_PREFIX_PATH=/usr/local/opt/qt5/ \
+        -DCMAKE_INSTALL_PREFIX=../install \
         -DCMAKE_BUILD_TYPE="Debug" ../mirall \
         ${ownThemeDir} ${updateParam}
 
     pause
 
-    make
-    make package
+    make install
+
+    if [ ${CODESIGN} -eq 1 ] ; then
+	    if [ -n "${macDeveloperIDInstaller}" ] ; then
+		    source admin/osx/create_mac.sh "${BUILD_DIR}"/install "${BUILD_DIR}"/mirall-build "${macDeveloperIDInstaller}"
+		else
+            echo $'\nThere is no Developer ID Installer entered in \"config\", so nothing is code signed.\n'
+        fi
+	else
+		source admin/osx/create_mac.sh "${BUILD_DIR}"/install "${BUILD_DIR}"/mirall-build
+	fi
 
     cd "${BUILD_DIR}"
-    cp "${BUILD_DIR}"/mirall-build/*.dmg "${CUR_DIR}"/client
+    cp "${BUILD_DIR}"/install/*.pkg "${CUR_DIR}"/client
+    cp "${BUILD_DIR}"/install/*.pkg.tbz "${CUR_DIR}"/client
 }
 
 
@@ -158,24 +170,23 @@ function buildMirallAndPackage() {
 #================================================================================
 #
 #        NAME: signDMG
-# DESCRIPTION: Code sign the DMG.
-#              Runs when CODESIGN=1 and macDeveloperIDApplication exists
+# DESCRIPTION: Code sign the PKG.
+#              Runs when CODESIGN=1 and macDeveloperIDInstaller exists
 #              and is longer than 0.
+#              Only used with parameter -so (sign only).
 #
 #================================================================================
 
 function signDMG() {
     if [ ${CODESIGN} -eq 1 ] ; then
-        if [ -n "${macDeveloperIDApplication}" ] ; then
-            cd "${CUR_DIR}"/client
-            PATH=/usr/local/Cellar/qt5/5.3.2/bin/:$PATH
-            for file in *.dmg
+        if [ -n "${macDeveloperIDInstaller}" ] ; then
+        	cd "${CUR_DIR}"/client
+            for file in *.pkg
             do
-                source "${BUILD_DIR}"/mirall/admin/osx/sign_dmg.sh "${file}" "${macDeveloperIDApplication}"
-                rm writable_"${file}"
-            done
+        	    productsign --sign "${macDeveloperIDInstaller}" "${file}" "signed_${file}"
+    	    done
         else
-            echo $'\nThere is no Developer ID Application entered in \"config\", so nothing is code signed.\n'
+        	echo $'\nThere is no Developer ID Installer entered in \"config\", so nothing is code signed.\n'
         fi
     fi
 }
@@ -215,7 +226,7 @@ function signSparkle() {
                 cd "${CUR_DIR}"/client
                 openssl=/usr/bin/openssl
 
-                for file in *.dmg
+                for file in *.tbz
                 do
                     $openssl dgst -sha1 -binary < "${file}" | $openssl dgst -dss1 -sign "${sparklePrivateKey}" | $openssl enc -base64 > dsa-signature-for-\<\<"${file}"\>\>.txt
                 done
@@ -263,7 +274,6 @@ makeBuildEnv
 grabMirall
 buildCustomizations
 buildMirallAndPackage
-signDMG
 signSparkle
 cleanBuildGarbage
 showMessage

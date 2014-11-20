@@ -105,17 +105,5 @@ macUpdateURL=""
 #
 #================================================================================
 
-# version 1.6.0 (2014-06-02)
-#mirallhash="746c15b4aa5f1b80ee1aec3b5cee1c29eb311e5c"
-
-# version 1.6.1 (2014-06-26)
-#mirallhash="40d765c73aa64de2fcf8503886f27c8da7b7d3d9"
-
-# version 1.6.2 (2014-07-28)
-#mirallhash="0f37484b8a708dacba99697cf5bb17e1b2b6d5e2"
-
-# version 1.6.3 (2014-09-03)
-#mirallhash="cc1121ef008d85f2142c6a2887e3ee196061e97f"
-
-# version 1.6.4 (2014-10-22)
-mirallhash="c4a9e524e603bae54eee944edb555646fbb1edf3"
+# version 1.7.0 (2014-11-06)
+mirallhash="17a4299f74f4db7fc82f4b90f1e501c81288697b"

@@ -136,6 +136,8 @@ function buildWindowsClient() {
         mkdir -p windows/mirall-build
         cd windows/mirall-build
 
+        source "${BUILD_DIR}"/mirall/admin/win/download_runtimes.sh
+
         ownThemeDir=""
         if [ ${OWNTHEME} -eq 1 ] ; then
             ownThemeDir="-DOEM_THEME_DIR=${BUILD_DIR}/mirall/mytheme"
@@ -157,7 +159,14 @@ function buildWindowsClient() {
             done
         fi
 
-        cp "${BUILD_DIR}"/windows/mirall-build/*.exe "${CUR_DIR}"/client
+        # This is rickety coding; have to look at it
+        for file in *.exe
+        do
+            cp "${BUILD_DIR}"/windows/mirall-build/*.exe "${CUR_DIR}"/client
+        done
+        rm "${CUR_DIR}"/client/vcredist_x64.exe.exe
+        rm "${CUR_DIR}"/client/vcredist_x86.exe.exe
+
         cd ${BUILD_DIR}
 
         signEXE

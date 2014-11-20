@@ -211,6 +211,19 @@ function buildCustomizations() {
         fi
 
         #------------------------------------------------------------------------
+        # TEMPORARY CUSTOMIZATION
+        #
+        # See https://github.com/owncloud/mirall/issues/2388
+        # At the moment only ownCloud.socket is supported and no theme name, so
+        # only one client can run at the same time.
+        #
+        #------------------------------------------------------------------------
+
+		if [ -f ./replacements/mirall/src/mirall/socketapi.cpp ] ; then
+            cp ./replacements/mirall/src/mirall/socketapi.cpp ./buildenv/mirall/src/mirall/
+        fi
+
+        #------------------------------------------------------------------------
         # EXTRA CUSTOMIZATIONS
         #
         # If you want to make more customizations you can write an extra script
@@ -255,6 +268,9 @@ function grabMirall() {
 
     cd src/3rdparty
     git clone git://github.com/shadone/qtmacgoodies.git
+
+    cd "${BUILD_DIR}"/mirall
+    git clone git://github.com/owncloud/owncloud-client-binary.git binary
 
     cd "${BUILD_DIR}"
     if [ ${BUILDENVIRONMENT} -eq 1 ] ; then
