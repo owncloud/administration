@@ -165,14 +165,14 @@ function buildWindowsClient() {
             cp "${BUILD_DIR}"/windows/mirall-build/*.exe "${CUR_DIR}"/client
         done
 
-        cd ${BUILD_DIR}
-        signEXE
-
         cd "${CUR_DIR}"/client
         for file in vcredist*
         do
             rm ${file}
         done
+
+        cd ${BUILD_DIR}
+        signEXE
     fi
 }
 
