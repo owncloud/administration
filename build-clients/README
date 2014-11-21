@@ -18,4 +18,5 @@ Download or clone the scripts and run makemac.sh or makewinlin.sh in your termin
 
 Further information
 -------------------
-Read the file in the folder 'doc'.
+If you want to build the Mac client you will have to install Packages. Read the documentation in the folder 'doc'.
+
