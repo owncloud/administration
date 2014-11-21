@@ -223,7 +223,7 @@ function buildLinuxClient() {
 #
 #        NAME: signEXE
 # DESCRIPTION: Code sign the EXE
-#              Runs when CODESIGN=1, macDeveloperIDApplication exists and
+#              Runs when CODESIGN=1, pathCodeSignCertificate exists and
 #              is longer than 0 and the certificate is present at the given location.
 #              Furthermore, it is highly recommended to time stamp the EXE.
 #
