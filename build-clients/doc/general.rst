@@ -35,7 +35,7 @@ Sparkle
 -------
 
 If you want to use the Sparkle updater for the Mac client you have to install the Sparkle framework on your Mac before you build that client.
-Download the package on http://sparkle-project.org/, unpack it and copy ``SPARKLE.framework`` and its contents to ``./Library/Frameworks/``.
+Download the package on http://sparkle-project.org, unpack it and copy ``SPARKLE.framework`` and its contents to ``./Library/Frameworks/``.
 
 Furthermore you have to generate a keypair. In the folder you just unpacked run ``./bin/generate_keys.sh``.
 Copy the public key (``dsa_pub.pem``) to ``./replacements/mirall/admin/osx/sparkle/``.
@@ -43,3 +43,10 @@ Back up the private key (``dsa_priv.pem``) and keep it safe. You do not want any
 
 In ``config`` you enter the path and name of your private key. If ``makemac.sh`` is run with the parameter ``-sp`` a DSA signature is created for each build DMG file. That signature has to be filled in the so called appcast you have to upload to your server. An example of such an appcast can be found in ``/buildenv/mirall/admin/osx/sparkle/example_update_rss.rss``.
 
+Packages
+--------
+
+Contrary to earlier versions, version 1.7 and later of the client for OS X is packaged as a pkg installer. Therefore the Packages tool from http://s.sudre.free.fr/Software/Packages/about.html_ should be available on the machine in which you build the client for OS X.
+So, download Packages and install it.
+
+.. _`http://s.sudre.free.fr/Software/Packages/about.html`: http://s.sudre.free.fr/Software/Packages/about.html
