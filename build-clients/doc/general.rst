@@ -46,7 +46,5 @@ In ``config`` you enter the path and name of your private key. If ``makemac.sh``
 Packages
 --------
 
-Contrary to earlier versions, version 1.7 and later of the client for OS X is packaged as a pkg installer. Therefore the Packages tool from http://s.sudre.free.fr/Software/Packages/about.html_ should be available on the machine in which you build the client for OS X.
+Contrary to earlier versions, version 1.7 and later of the client for OS X is packaged as a pkg installer. Therefore the Packages tool from http://s.sudre.free.fr/Software/Packages/about.html should be available on the machine in which you build the client for OS X.
 So, download Packages and install it.
-
-.. _`http://s.sudre.free.fr/Software/Packages/about.html`: http://s.sudre.free.fr/Software/Packages/about.html
