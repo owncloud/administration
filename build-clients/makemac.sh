@@ -9,6 +9,7 @@
 #                           [-do, --dependencies-only]
 #                           [-h, --help | --man]
 #                           [-i, --interactive]
+#                           [-le --local-environment]
 #                           [-nc, --no-customizations]
 #                           [-gc, --garbageclean]
 #                           [-s, --sign]
