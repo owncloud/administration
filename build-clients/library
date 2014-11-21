@@ -215,19 +215,6 @@ function buildCustomizations() {
         fi
 
         #------------------------------------------------------------------------
-        # TEMPORARY CUSTOMIZATION
-        #
-        # See https://github.com/owncloud/mirall/issues/2388
-        # At the moment only ownCloud.socket is supported and no theme name, so
-        # only one client can run at the same time.
-        #
-        #------------------------------------------------------------------------
-
-		if [ -f ./replacements/mirall/src/mirall/socketapi.cpp ] ; then
-            cp ./replacements/mirall/src/mirall/socketapi.cpp ./buildenv/mirall/src/mirall/
-        fi
-
-        #------------------------------------------------------------------------
         # EXTRA CUSTOMIZATIONS
         #
         # If you want to make more customizations you can write an extra script
@@ -239,16 +226,30 @@ function buildCustomizations() {
             source extra_customizations
         fi
 
-        #------------------------------------------------------------------------
-        # TEMPORARY FIX FOR https://github.com/owncloud/mirall/issues/2491
-        #
-        #------------------------------------------------------------------------
-
-        if [ -f ./replacements/mirall/cmake/modules/AddAppIconMacro.cmake ] ; then
-            cp ./replacements/mirall/cmake/modules/AddAppIconMacro.cmake ./buildenv/mirall/cmake/modules/
-        fi
-
     fi
+
+    #------------------------------------------------------------------------
+    # TEMPORARY CUSTOMIZATION
+    #
+    # See https://github.com/owncloud/mirall/issues/2388
+    # At the moment only ownCloud.socket is supported and no theme name, so
+    # only one client can run at the same time.
+    #
+    #------------------------------------------------------------------------
+
+	if [ -f ./replacements/mirall/src/mirall/socketapi.cpp ] ; then
+        cp ./replacements/mirall/src/mirall/socketapi.cpp ./buildenv/mirall/src/mirall/
+    fi
+
+    #------------------------------------------------------------------------
+    # TEMPORARY FIX FOR https://github.com/owncloud/mirall/issues/2491
+    #
+    #------------------------------------------------------------------------
+
+    if [ -f ./replacements/mirall/cmake/modules/AddAppIconMacro.cmake ] ; then
+        cp ./replacements/mirall/cmake/modules/AddAppIconMacro.cmake ./buildenv/mirall/cmake/modules/
+    fi
+
     cd "${BUILD_DIR}"
 }
 
