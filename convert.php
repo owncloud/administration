@@ -37,7 +37,7 @@ $COPY_TAG = 'see';
 // file which should be parsed
 $CONFIG_SAMPLE_FILE = '../core/config/config.sample.php';
 // config documentation file to put content in
-$OUTPUT_FILE = 'admin_manual/configuration/configuration_config_sample_php.rst';
+$OUTPUT_FILE = 'admin_manual/configuration/config_sample_php_parameters.rst';
 
 /**
  * h - help
@@ -53,7 +53,7 @@ if(array_key_exists('h', $options) || array_key_exists('help', $options)) {
 	$helptext = $argv[0] . " [OPTION] ... (all options are optional)\n\n" .
 	" -h, --help                   Print this help text\n".
 	" -iFILE, --input-file=FILE    Specify the input file (Default: ../core/config/config.sample.php)\n".
-	" -oFILE, --output-file=FILE   Specify the output file (Default: admin_manual/configuration/configuration_config_sample_php.rst)\n".
+	" -oFILE, --output-file=FILE   Specify the output file (Default: admin_manual/configuration/config_sample_php_parameters.rst)\n".
 	" -tNAME, --tag=NAME           Tag to use for copying a config entry (default: see)\n".
 	"\n";
 	print($helptext);
