@@ -165,6 +165,11 @@ while [ -n "$1" ]; do
     shift
 done
 
+if [ ${WINDOWS_ONLY} -eq 1  -a ${LINUX_ONLY} -eq 1 ] ; then
+    WINDOWS_ONLY=0
+    LINUX_ONLY=0
+fi
+
 
 
 #================================================================================
