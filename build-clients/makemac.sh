@@ -19,7 +19,7 @@
 #
 #  DESCRIPTION:  Build the ownCloud client for MAC
 #
-# REQUIREMENTS:  OS X 10.9 or higher in case you want to code sign
+# REQUIREMENTS:  OS X 10.9 in case you want to code sign
 #       AUTHOR:  Koen Willems
 #                Sendin B.V. <info at sendin.nl>
 #      VERSION:  1.0.0
