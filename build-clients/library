@@ -78,6 +78,7 @@ CUSTOMIZE=1
 GARBAGECLEAN=0
 CODESIGN=0
 CODESIGN_ONLY=0
+LOCALBUILD=0
 SPARKLE=0
 SPARKLE_ONLY=0
 WINDOWS_ONLY=0
@@ -88,12 +89,12 @@ WINDOWS_ONLY=0
 #
 if [ ${OSLINUX} -eq 0 ] ; then
     arrayParams=("-b" "--build-environment" "-d" "--dependencies" "-do" "--dependencies-only" \
-        "-h" "--help" "--man" "-i" "--interactive" "-nc" "--no-customizations" \
+        "-h" "--help" "--man" "-i" "--interactive" "-le" "--local-environment" "-nc" "--no-customizations" \
         "-gc" "--garbageclean" "-s" "--sign" "-so" "--sign-only" \
          "-sp" "--sparkle" "-spo" "--sparkle-only")
 elif [ ${OSLINUX} -eq 1 ] ; then
     arrayParams=("-b" "--build-environment" "-d" "--dependencies" "-do" "--dependencies-only" \
-        "-h" "--help" "--man" "-i" "--interactive" "-lin" "--linux" "-nc" "--no-customizations" \
+        "-h" "--help" "--man" "-i" "--interactive" "-lin" "--linux" "-le" "--local-environment" "-nc" "--no-customizations" \
         "-gc" "--garbageclean" "-s" "--sign" "-so" "--sign-only" \
         "-win" "--windows")
 fi
@@ -131,6 +132,9 @@ while [ -n "$1" ]; do
         -i  | --interactive )
             INTERACTIVE=1
             ;;
+        -le | --local-environment )
+            LOCALBUILD=1
+            ;;
         -lin| --linux )
             LINUX_ONLY=1
             ;;
@@ -160,6 +164,15 @@ while [ -n "$1" ]; do
     esac
     shift
 done
+
+#
+# If both parameters -win and -lin are given
+# build both clients instead of none.
+#
+if [ ${WINDOWS_ONLY} -eq 1  -a ${LINUX_ONLY} -eq 1 ] ; then
+    WINDOWS_ONLY=0
+    LINUX_ONLY=0
+fi
 
 
 
@@ -222,16 +235,30 @@ function buildCustomizations() {
             source extra_customizations
         fi
 
-        #------------------------------------------------------------------------
-        # TEMPORARY FIX FOR https://github.com/owncloud/mirall/issues/2491
-        #
-        #------------------------------------------------------------------------
-
-        if [ -f ./replacements/mirall/cmake/modules/AddAppIconMacro.cmake ] ; then
-            cp ./replacements/mirall/cmake/modules/AddAppIconMacro.cmake ./buildenv/mirall/cmake/modules/
-        fi
-
     fi
+
+    #------------------------------------------------------------------------
+    # TEMPORARY CUSTOMIZATION
+    #
+    # See https://github.com/owncloud/mirall/issues/2388
+    # At the moment only ownCloud.socket is supported and no theme name, so
+    # only one client can run at the same time.
+    #
+    #------------------------------------------------------------------------
+
+	if [ -f ./replacements/mirall/src/mirall/socketapi.cpp ] ; then
+        cp ./replacements/mirall/src/mirall/socketapi.cpp ./buildenv/mirall/src/mirall/
+    fi
+
+    #------------------------------------------------------------------------
+    # TEMPORARY FIX FOR https://github.com/owncloud/mirall/issues/2491
+    #
+    #------------------------------------------------------------------------
+
+    if [ -f ./replacements/mirall/cmake/modules/AddAppIconMacro.cmake ] ; then
+        cp ./replacements/mirall/cmake/modules/AddAppIconMacro.cmake ./buildenv/mirall/cmake/modules/
+    fi
+
     cd "${BUILD_DIR}"
 }
 
@@ -246,21 +273,26 @@ function buildCustomizations() {
 #================================================================================
 
 function grabMirall() {
-    git clone git://github.com/owncloud/mirall.git
-    cd mirall
-    if [ -n "${mirallhash}" ] ; then
-        git reset --hard ${mirallhash}
-    fi
-    pause
+    if [ ${LOCALBUILD} -eq 0 ] ; then
+        git clone git://github.com/owncloud/mirall.git
+        cd mirall
+        if [ -n "${mirallhash}" ] ; then
+            git reset --hard ${mirallhash}
+        fi
+        pause
 
-    cd src/3rdparty
-    git clone git://github.com/shadone/qtmacgoodies.git
+        cd src/3rdparty
+        git clone git://github.com/shadone/qtmacgoodies.git
 
-    cd "${BUILD_DIR}"
-    if [ ${BUILDENVIRONMENT} -eq 1 ] ; then
-        echo $'\nYou can find the build environment in '\"${BUILD_DIR}\"$'.\n'
+        cd "${BUILD_DIR}"/mirall
+        git clone git://github.com/owncloud/owncloud-client-binary.git binary
 
-        exit 0
+        cd "${BUILD_DIR}"
+        if [ ${BUILDENVIRONMENT} -eq 1 ] ; then
+            echo $'\nYou can find the build environment in '\"${BUILD_DIR}\"$'.\n'
+
+            exit 0
+        fi
     fi
 }
 
@@ -313,14 +345,16 @@ function checkHelp() {
 #================================================================================
 
 function makeBuildEnv () {
-    if [ -d "${BUILD_DIR}" ] ; then
-        echo $'\nDirectory '\"${BUILD_DIR}\"$' already excists and will be removed.\n'
-        rm -rf "${BUILD_DIR}"
-    fi
+    if [ ${LOCALBUILD} -eq 0 ] ; then
+        if [ -d "${BUILD_DIR}" ] ; then
+            echo $'\nDirectory '\"${BUILD_DIR}\"$' already excists and will be removed.\n'
+            rm -rf "${BUILD_DIR}"
+        fi
 
-    mkdir client
-    mkdir -p "${BUILD_DIR}"
-    cd "${BUILD_DIR}"
+        mkdir client
+        mkdir -p "${BUILD_DIR}"
+        cd "${BUILD_DIR}"
+    fi
 }
 
 
@@ -408,6 +442,10 @@ function helpPage() {
 
     echo $'\t'${bold}'-i, --interactive'${normal}
     echo $'\t\tDuring the running of the script it will pause several times.\n'
+
+    echo $'\t'${bold}'-le, --local-environment'${normal}
+    echo $'\t\tThe source files will not be collected from Github, but should be present locally already.'
+    echo $'\t\tThis might come in handy if you want to adjust some files.\n'
 
     if [ ${OSLINUX} -eq 1 ] ; then
         echo $'\t'${bold}'-lin, --linux'${normal}

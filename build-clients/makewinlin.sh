@@ -9,6 +9,7 @@
 #                              [-do, --dependencies-only]
 #                              [-h, --help, --man]
 #                              [-i, --interactive]
+#                              [-le --local-environment]
 #                              [-lin, --linux]
 #                              [-nc, --no-customizations]
 #                              [-gc, --garbageclean]
@@ -136,6 +137,8 @@ function buildWindowsClient() {
         mkdir -p windows/mirall-build
         cd windows/mirall-build
 
+        source "${BUILD_DIR}"/mirall/admin/win/download_runtimes.sh
+
         ownThemeDir=""
         if [ ${OWNTHEME} -eq 1 ] ; then
             ownThemeDir="-DOEM_THEME_DIR=${BUILD_DIR}/mirall/mytheme"
@@ -157,9 +160,19 @@ function buildWindowsClient() {
             done
         fi
 
-        cp "${BUILD_DIR}"/windows/mirall-build/*.exe "${CUR_DIR}"/client
-        cd ${BUILD_DIR}
+        # This is rickety coding; have to look at it
+        for file in *.exe
+        do
+            cp "${BUILD_DIR}"/windows/mirall-build/*.exe "${CUR_DIR}"/client
+        done
 
+        cd "${CUR_DIR}"/client
+        for file in vcredist*
+        do
+            rm ${file}
+        done
+
+        cd ${BUILD_DIR}
         signEXE
     fi
 }
@@ -211,7 +224,7 @@ function buildLinuxClient() {
 #
 #        NAME: signEXE
 # DESCRIPTION: Code sign the EXE
-#              Runs when CODESIGN=1, macDeveloperIDApplication exists and
+#              Runs when CODESIGN=1, pathCodeSignCertificate exists and
 #              is longer than 0 and the certificate is present at the given location.
 #              Furthermore, it is highly recommended to time stamp the EXE.
 #

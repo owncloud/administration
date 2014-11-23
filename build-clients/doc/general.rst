@@ -10,6 +10,8 @@ Configuration can be done in ``config``, while some code used by both ``makemac.
 ``makemac.sh`` should run on OSX 10.9 or newer and ``makewinlin.sh`` on OpenSUSE 13.1 64 bit.
 The scripts are supposed to run on fresh build systems. Using virtual machines would be pretty handy and convenient.
 
+After the build proces has finished you can find the client(s) in a folder called ``client``.
+
 Warning
 -------
 The scripts have no significant error checking. So, basicly you are on your own.
@@ -30,16 +32,19 @@ Code signing
 ------------
 In ``config`` you can enter all information needed for code signing the Windows and the Mac clients. You will need to purchase the required certificates yourselve.
 
+Packages
+--------
+Contrary to earlier versions, version 1.7 and later of the client for OS X is packaged as a PKG installer. Therefore the Packages tool from http://s.sudre.free.fr/Software/Packages/about.html should be available on the (virtual) machine on which you build the client for OS X.
+So, download Packages and install it.
 
 Sparkle
 -------
-
+When the Sparkle updater is implemented the Mac client itself will notify a user if there is a new version of the client. Unfortunatly Sparkle can not handle PKG files at the moment. In order to serve Sparkle the client will be packet and should be uploaded to your server as a TBZ file.
 If you want to use the Sparkle updater for the Mac client you have to install the Sparkle framework on your Mac before you build that client.
-Download the package on http://sparkle-project.org/, unpack it and copy ``SPARKLE.framework`` and its contents to ``./Library/Frameworks/``.
+Download the package on http://sparkle-project.org, unpack it and copy ``SPARKLE.framework`` and its contents to ``./Library/Frameworks/``.
 
 Furthermore you have to generate a keypair. In the folder you just unpacked run ``./bin/generate_keys.sh``.
 Copy the public key (``dsa_pub.pem``) to ``./replacements/mirall/admin/osx/sparkle/``.
 Back up the private key (``dsa_priv.pem``) and keep it safe. You do not want anyone else getting it. If you lose it, you will not be able to issue any new updates.
 
-In ``config`` you enter the path and name of your private key. If ``makemac.sh`` is run with the parameter ``-sp`` a DSA signature is created for each build DMG file. That signature has to be filled in the so called appcast you have to upload to your server. An example of such an appcast can be found in ``/buildenv/mirall/admin/osx/sparkle/example_update_rss.rss``.
-
+In ``config`` you enter the path and name of your private key. If ``makemac.sh`` runs with the parameter ``-sp`` a DSA signature is created for each build TBZ file. That signature has to be filled in in the so called appcast you have to upload to your server. An example of such an appcast can be found in ``/buildenv/mirall/admin/osx/sparkle/example_update_rss.rss``.
