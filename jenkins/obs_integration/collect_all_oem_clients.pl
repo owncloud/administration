@@ -20,7 +20,6 @@ my $blacklist_re = qr{^(oem:SURFdrive|oem:beta|oem:beta:.*)$};
 			# beta is a container. No sub projects there are interesting for automated uploads.
 			# oem:SURFdrive is only for Windows and Mac. For Linux we have surfdrivelinux.
 
-my $publish_ssh		= 'ssh root@s2.owncloud.com';
 my $publish_cmd         = 'bin/publish_oem_client';
 my $osc_cmd             = 'osc -Ahttps://s2.owncloud.com';
 my $out_dir 		= '/tmp';
