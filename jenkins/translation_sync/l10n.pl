@@ -5,6 +5,7 @@ use Cwd;
 use Data::Dumper;
 use File::Path;
 use File::Basename;
+use Digest::MD5 qw(md5 md5_hex md5_base64);
 
 sub crawlFiles{
 	my( $dir ) = @_;
@@ -134,8 +135,11 @@ elsif( $task eq 'write' ){
 				elsif( defined( $string->msgstr_n() )){
 					# plural translations
 					my @variants = ();
-					my $identifier = $string->msgid()."::".$string->msgid_plural();
-					$identifier =~ s/"/_/g;
+                                        my $msgid = $string->msgid();
+                                        $msgid =~ s/^"(.*)"$/$1/;
+                                        my $msgid_plural = $string->msgid_plural();
+                                        $msgid_plural =~ s/^"(.*)"$/$1/;
+					my $identifier = $msgid."::".$msgid_plural;
 
 					foreach my $variant ( sort { $a <=> $b} keys( %{$string->msgstr_n()} )){
 						push( @variants, $string->msgstr_n()->{$variant} );
