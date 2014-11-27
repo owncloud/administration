@@ -388,9 +388,9 @@ for my $branding (@candidates)
 
 if (@client_filter and scalar(keys %client_filter))
   {
-    print "unused filter terms: ", Dumper \%client_filter;
-    print "check your spelling!\n";
-    sleep 10;
+    print "ERROR: branding not found: unused filter terms: ", Dumper \%client_filter;
+    print "Check your spelling!\n";
+    exit(0);
   }
 
 if ($skipahead)
@@ -404,10 +404,13 @@ else
 
 $obs_api =~ s{api\.opensuse\.org}{build.opensuse.org};	# special case them; with our s2 the names match.
 print "Wait an hour or so, then check if things have built.\n";
-print "You can use collect_all_oem_clients.pl to push the build results to download.owncloud.com\n";
+
 for my $branding (@candidates)
   {
     my $suffix = ":$branding/";
     $suffix = '' if $container_project =~ m{/$};
     print " $obs_api/package/show/$container_project$suffix$branding-client\n";
   }
+
+print "To check for build progress and publish the packages, try (repeatedly) the following command:\n";
+print "\n internal/collect_all_oem_clients.pl -f ".join(',',@candidates)." -r $build_token\n";
