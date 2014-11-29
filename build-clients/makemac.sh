@@ -48,6 +48,7 @@ OSLINUX=0
 PATH=/usr/local/Cellar/qt5/5.3.2/bin/qmake:$PATH
 
 
+
 #================================================================================
 #
 #        NAME: code section
@@ -64,6 +65,23 @@ fi
 if ! source library ; then
     echo $'\nThe file \"library\" is not available; we\'ll quit.\n'
     exit 1
+fi
+
+
+#================================================================================
+#
+#        NAME: code section
+# DESCRIPTION: Simple check if 'Packages' is installed.
+#              If packagesutil and/or packagesbuild are not present the script
+#              assumes Packages is not installed.
+#
+#================================================================================
+
+if [ ! -f /usr/local/bin/packagesutil ] || [ ! -f /usr/local/bin/packagesbuild ] ; then
+	echo
+	echo 'You have to install "Packages", see "http://s.sudre.free.fr/Software/Packages/about.html".'
+	echo
+	exit 1
 fi
 
 
