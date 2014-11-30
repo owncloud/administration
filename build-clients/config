@@ -50,7 +50,7 @@ OWNTHEME=0
 #
 # Enter path and file name of your certificate to code sign the windows client.
 # The PFX file should contain your private key.
-# example: pathCodeSignCertificate=""${CUR_DIR}/certificate.pfx""
+# example: pathCodeSignCertificate="${CUR_DIR}/certificate.pfx"
 #
 # Enter the url of your timestamp server.
 # example: serverTimeStamp="http://timestamp.comodoca.com/authenticode"
