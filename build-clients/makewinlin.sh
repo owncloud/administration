@@ -19,7 +19,7 @@
 #
 #  DESCRIPTION:  Build the ownCloud clients for Windows and Linux
 # KNOWN ISSUES:  Run as sudo to build Linux clients
-# REQUIREMENTS:  OpenSuse 13.2 64 bit
+# REQUIREMENTS:  OpenSUSE 13.2 64 bit
 #       AUTHOR:  Koen Willems
 #                Sendin B.V. <info at sendin.nl>
 #      VERSION:  1.0.0

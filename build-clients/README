@@ -20,5 +20,4 @@ Download or clone the scripts and run makemac.sh or makewinlin.sh in your termin
 
 Further information
 -------------------
-If you want to build the Mac client you will have to install Packages. Read the documentation in the folder 'doc'.
-
+If you want to build the Mac client you will have to install Packages on your building maschine first. To implement the Sparkle updater you will have to install the Sparkle framework too. Read the documentation in the folder 'doc'.

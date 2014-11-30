@@ -7,7 +7,9 @@ These set of files have the purpose to build the desktop clients for ownCloud. T
 The building itself is done by ``makemac.sh`` for the Mac client and ``makewinlin.sh`` voor de Windows and Linux clients.
 Configuration can be done in ``config``, while some code used by both ``makemac.sh`` and ``makewinlin.sh`` is in ``library``.
 
-``makemac.sh`` should run on OSX 10.9 or newer and ``makewinlin.sh`` on OpenSUSE 13.2 64 bit.
+``makemac.sh`` should run on OSX 10.9, Mavericks that is.
+IT PRODUCES AN CLIENT WITH AN ERROR WHEN BUILD ON YOSEMITE. This will be fixed in futere releases of Mirall.
+``makewinlin.sh`` should run on OpenSUSE 13.2 64 bit.
 The scripts are supposed to run on fresh build systems. Using virtual machines would be pretty handy and convenient.
 
 After the build proces has finished you can find the client(s) in a folder called ``client``.
