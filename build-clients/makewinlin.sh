@@ -19,7 +19,7 @@
 #
 #  DESCRIPTION:  Build the ownCloud clients for Windows and Linux
 # KNOWN ISSUES:  Run as sudo to build Linux clients
-# REQUIREMENTS:  OpenSuse 13.1 64 bit
+# REQUIREMENTS:  OpenSuse 13.2 64 bit
 #       AUTHOR:  Koen Willems
 #                Sendin B.V. <info at sendin.nl>
 #      VERSION:  1.0.0
@@ -79,11 +79,11 @@ fi
 function buildLinuxDependencies() {
     if [ ${DEPENDENCIES} -eq 1 ] ; then
 
-        #sudo zypper --gpg-auto-import-keys addrepo http://download.opensuse.org/repositories/isv:ownCloud:devel/openSUSE_13.1/isv:ownCloud:devel.repo
-        sudo zypper --gpg-auto-import-keys addrepo http://download.opensuse.org/repositories/isv:ownCloud:desktop/openSUSE_13.1/isv:ownCloud:desktop.repo
+        #sudo zypper --gpg-auto-import-keys addrepo http://download.opensuse.org/repositories/isv:ownCloud:devel/openSUSE_13.2/isv:ownCloud:devel.repo
+        sudo zypper --gpg-auto-import-keys addrepo http://download.opensuse.org/repositories/isv:ownCloud:desktop/openSUSE_13.2/isv:ownCloud:desktop.repo
 
-        sudo zypper --gpg-auto-import-keys addrepo http://download.opensuse.org/repositories/windows:/mingw:/win32/openSUSE_13.1/windows:mingw:win32.repo
-        sudo zypper --gpg-auto-import-keys addrepo http://download.opensuse.org/repositories/windows:/mingw/openSUSE_13.1/windows:mingw.repo
+        sudo zypper --gpg-auto-import-keys addrepo http://download.opensuse.org/repositories/windows:/mingw:/win32/openSUSE_13.2/windows:mingw:win32.repo
+        sudo zypper --gpg-auto-import-keys addrepo http://download.opensuse.org/repositories/windows:/mingw/openSUSE_13.2/windows:mingw.repo
 
         sudo zypper --gpg-auto-import-keys refresh
         sudo zypper -n install owncloud-client
@@ -108,7 +108,7 @@ function buildLinuxDependencies() {
         #sudo zypper -n install mingw32-cmocka-devel texlive-latex python-sphinx
 
         #
-        # The following will work on openSUSE 12.2 and 13.1 too.
+        # The following will work on openSUSE 12.2, 13.1 and 13.2 too.
         #
         sudo rpm --nosignature -i http://download.tomahawk-player.org/packman/mingw:32/openSUSE_12.1/x86_64/mingw32-cross-nsis-plugin-processes-0-1.1.x86_64.rpm
         sudo rpm --nosignature -i http://download.tomahawk-player.org/packman/mingw:32/openSUSE_12.1/x86_64/mingw32-cross-nsis-plugin-uac-0-3.1.x86_64.rpm

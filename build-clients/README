@@ -11,7 +11,7 @@ The scripts can install all needed dependencies, (cross) compile the desktop cli
 
 makemac.sh should run on OSX 10.9, Mavericks that is.
 IT PRODUCES AN CLIENT WITH AN ERROR WHEN BUILD ON YOSEMITE. This will be fixed in futere releases of Mirall.
-makewinlin.sh should run on OpenSUSE 13.1 64 bit.
+makewinlin.sh should run on OpenSUSE 13.2 64 bit.
 The scripts have no significant error checking. So, basicly you are on your own.
 
 Installation
