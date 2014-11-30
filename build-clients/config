@@ -50,7 +50,7 @@ OWNTHEME=0
 #
 # Enter path and file name of your certificate to code sign the windows client.
 # The PFX file should contain your private key.
-# example: pathCodeSignCertificate="${CUR_DIR}/certificate.pfx"
+# example: pathCodeSignCertificate=""${CUR_DIR}/certificate.pfx""
 #
 # Enter the url of your timestamp server.
 # example: serverTimeStamp="http://timestamp.comodoca.com/authenticode"
@@ -78,8 +78,8 @@ CHANGENAME=0
 #
 # Mac client
 #
-# Leave empty if you have no Developer ID Application
-# example: macDeveloperIDApplication="Developer ID Application: Name (AB123A1A11)"
+# Leave empty if you have no Developer ID Installer
+# example: macDeveloperIDInstaller="Developer ID Installer: Name (AB123A1A11)"
 # (as it apears in keychain.app)
 #
 # Enter path and file name of your Sparkle private key; leave empty if you have none;
@@ -91,7 +91,7 @@ CHANGENAME=0
 #
 #================================================================================
 
-macDeveloperIDApplication=""
+macDeveloperIDInstaller=""
 
 sparklePrivateKey=""
 
