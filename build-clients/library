@@ -281,11 +281,8 @@ function grabMirall() {
         fi
         pause
 
-        cd src/3rdparty
-        git clone git://github.com/shadone/qtmacgoodies.git
-
-        cd "${BUILD_DIR}"/mirall
-        git clone git://github.com/owncloud/owncloud-client-binary.git binary
+        git submodule init
+        git submodule update
 
         cd "${BUILD_DIR}"
         if [ ${BUILDENVIRONMENT} -eq 1 ] ; then
