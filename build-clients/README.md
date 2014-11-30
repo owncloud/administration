@@ -10,7 +10,7 @@ There are four files concerned. The building itself is done by ``makemac.sh`` fo
 The scripts can install all needed dependencies, (cross) compile the desktop clients and code sign the installer files. With the help of these scripts its quiet easy to theme the clients.
 
 ``makemac.sh`` should run on OSX 10.9, Mavericks that is.  
-IT PRODUCES AN CLIENT WITH AN ERROR WHEN BUILD ON YOSEMITE. This will be fixed in futere releases of Mirall.
+IT PRODUCES AN CLIENT WITH AN ERROR WHEN BUILD ON YOSEMITE. This will be fixed in future releases of Mirall.
 ``makewinlin.sh`` should run on OpenSUSE 13.2 64 bit.  
 The scripts are supposed to run on fresh build systems. Using virtual machines would be pretty handy and convenient.
 
@@ -23,14 +23,13 @@ By the way, they are bash scripts.
 
 Installation
 ------------
-Download or clone the scripts and run makemac.sh or makewinlin.sh in your terminal.
+Download or clone the scripts and run ``makemac.sh`` or ``makewinlin.sh`` in your terminal.
 
 Options
 -------
-With ``makemac.sh -h`` or ``makewinlin.sh -h`` you will get a concise manpage with all available options. ``makemac.sh`` and ``makewinlin.sh`` have each different options.
+With ``makemac.sh -h`` or ``makewinlin.sh -h`` you will get a concise manpage with all available options. ``makemac.sh`` and ``makewinlin.sh`` have each different options. More options at a time can be used.
 
 The first time you run ``makemac.sh`` or ``makewinlin.sh`` you have to provide the parameter ``-d`` or ``-do``, so all needed dependencies will be installed.  
-More options at a time can be used.
 
 Theming
 -------
@@ -38,7 +37,7 @@ All information needed for theming the client can be found in the comments for `
 
 Code signing
 ------------
-In ``config`` you can enter all information needed for code signing the Windows and the OS X clients. You will need to purchase the required certificates yourselve.
+In ``config`` you can enter all information needed for code signing the Windows and the OS X clients. You will need to purchase the required certificates yourself.
 
 Xcode
 -----
@@ -55,7 +54,7 @@ So, download Packages and install it.
 
 Sparkle
 -------
-When the Sparkle updater is implemented the OS X client itself will notify a user if there is a new version of the client. Unfortunatly Sparkle can not handle PKG files at the moment. In order to serve Sparkle the client will be packet and should be uploaded to your server as a TBZ file. For human downloads you provide the PKG file to your visitors.
+When the Sparkle updater is implemented the OS X client itself will notify a user if there is a new version of the client. Unfortunatly Sparkle can not handle PKG files at the moment. In order to serve Sparkle the client will be packed and should be uploaded to your server as a TBZ file. For human downloads you provide the PKG file to your visitors.
 
 If you want to use the Sparkle updater for the OS X client you have to install the Sparkle framework on your building Mac.  
 Download the package on http://sparkle-project.org, unpack it and copy ``SPARKLE.framework`` and its contents to ``./Library/Frameworks/``.
