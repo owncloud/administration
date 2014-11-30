@@ -19,7 +19,12 @@
 #
 #  DESCRIPTION:  Build the ownCloud client for MAC
 #
-# REQUIREMENTS:  OS X 10.9 in case you want to code sign
+# REQUIREMENTS:  OS X 10.9
+#                XCode (with command line tools)
+#                Homebrew, see http://brew.sh/
+#                Packages, see http://s.sudre.free.fr/Software/Packages/about.html
+#                Sparkle, see http://sparkle-project.org/ (optional)
+#
 #       AUTHOR:  Koen Willems
 #                Sendin B.V. <info at sendin.nl>
 #      VERSION:  1.0.0

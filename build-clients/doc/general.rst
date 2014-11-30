@@ -32,7 +32,15 @@ All information needed for theming the client can be found in the comments for `
 
 Code signing
 ------------
-In ``config`` you can enter all information needed for code signing the Windows and the Mac clients. You will need to purchase the required certificates yourselve.
+In ``config`` you can enter all information needed for code signing the Windows and the OS X clients. You will need to purchase the required certificates yourselve.
+
+Xcode
+-----
+When you build the OS X  client XCode and the command line tools should be installed on the Mac on which you build the client.
+
+Homebrew
+--------
+To build the OS X client extra dependencies are required on the building machine. These dependencies can be installed with Homebrew: http://brew.sh/ The script will take care of this, but Homebrew should be installed on your building Mac.
 
 Packages
 --------
@@ -41,8 +49,9 @@ So, download Packages and install it.
 
 Sparkle
 -------
-When the Sparkle updater is implemented the Mac client itself will notify a user if there is a new version of the client. Unfortunatly Sparkle can not handle PKG files at the moment. In order to serve Sparkle the client will be packet and should be uploaded to your server as a TBZ file.
-If you want to use the Sparkle updater for the Mac client you have to install the Sparkle framework on your Mac before you build that client.
+When the Sparkle updater is implemented the OS X client itself will notify a user if there is a new version of the client. Unfortunatly Sparkle can not handle PKG files at the moment. In order to serve Sparkle the client will be packet and should be uploaded to your server as a TBZ file. For human downloads you provide the PKG file to your visitors.
+
+If you want to use the Sparkle updater for the OS X client you have to install the Sparkle framework on your building Mac.
 Download the package on http://sparkle-project.org, unpack it and copy ``SPARKLE.framework`` and its contents to ``./Library/Frameworks/``.
 
 Furthermore you have to generate a keypair. In the folder you just unpacked run ``./bin/generate_keys.sh``.
