@@ -78,6 +78,12 @@ CHANGENAME=0
 #
 # Mac client
 #
+# macDeveloperIDApplication
+# Leave empty if you have no Developer ID Application
+# example: macDeveloperIDApplication="Developer ID Application: Name (AB123A1A11)"
+# (as it apears in keychain.app)
+#
+# macDeveloperIDInstaller
 # Leave empty if you have no Developer ID Installer
 # example: macDeveloperIDInstaller="Developer ID Installer: Name (AB123A1A11)"
 # (as it apears in keychain.app)
@@ -90,6 +96,8 @@ CHANGENAME=0
 # example: macUpdateURL="https://updates.owncloud.com/client/"
 #
 #================================================================================
+
+macDeveloperIDApplication=""
 
 macDeveloperIDInstaller=""
 

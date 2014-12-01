@@ -50,8 +50,8 @@
 CUR_DIR=$PWD
 BUILD_DIR="${CUR_DIR}/buildenv"
 OSLINUX=0
-PATH=/usr/local/Cellar/qt5/5.3.2/bin/qmake:$PATH
-
+PATH=/usr/local/Cellar/qt5/5.3.2/bin:$PATH
+#export PATH
 
 
 #================================================================================
@@ -175,13 +175,23 @@ function buildMirallAndPackage() {
     make install
 
     if [ ${CODESIGN} -eq 1 ] ; then
+		cd "${BUILD_DIR}"/install
+        if [ -n "${macDeveloperIDApplication}" ] ; then
+            for file in *.app
+            do
+                source "${BUILD_DIR}"/mirall/admin/osx/sign_app.sh "${file}" "${macDeveloperIDApplication}"
+            done
+        else
+            echo $'\nThere is no Developer ID Application entered in \"config\", so nothing is code signed.\n'
+        fi
+
 	    if [ -n "${macDeveloperIDInstaller}" ] ; then
-		    source admin/osx/create_mac.sh "${BUILD_DIR}"/install "${BUILD_DIR}"/mirall-build "${macDeveloperIDInstaller}"
+		    source "${BUILD_DIR}"/mirall-build/admin/osx/create_mac.sh "${BUILD_DIR}"/install "${BUILD_DIR}"/mirall-build "${macDeveloperIDInstaller}"
 		else
             echo $'\nThere is no Developer ID Installer entered in \"config\", so nothing is code signed.\n'
         fi
 	else
-		source admin/osx/create_mac.sh "${BUILD_DIR}"/install "${BUILD_DIR}"/mirall-build
+		source "${BUILD_DIR}"/mirall-build/admin/osx/create_mac.sh "${BUILD_DIR}"/install "${BUILD_DIR}"/mirall-build
 	fi
 
     cd "${BUILD_DIR}"
