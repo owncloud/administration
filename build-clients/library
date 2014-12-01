@@ -79,6 +79,7 @@ GARBAGECLEAN=0
 CODESIGN=0
 CODESIGN_ONLY=0
 LOCALBUILD=0
+NON_INTERACTIVE=""
 SPARKLE=0
 SPARKLE_ONLY=0
 WINDOWS_ONLY=0
@@ -90,7 +91,7 @@ WINDOWS_ONLY=0
 if [ ${OSLINUX} -eq 0 ] ; then
     arrayParams=("-b" "--build-environment" "-d" "--dependencies" "-do" "--dependencies-only" \
         "-h" "--help" "--man" "-i" "--interactive" "-le" "--local-environment" "-nc" "--no-customizations" \
-        "-gc" "--garbageclean" "-s" "--sign" "-so" "--sign-only" \
+        "-ni" "--non-interactive" "-gc" "--garbageclean" "-s" "--sign" "-so" "--sign-only" \
          "-sp" "--sparkle" "-spo" "--sparkle-only")
 elif [ ${OSLINUX} -eq 1 ] ; then
     arrayParams=("-b" "--build-environment" "-d" "--dependencies" "-do" "--dependencies-only" \
@@ -140,6 +141,9 @@ while [ -n "$1" ]; do
             ;;
         -nc | --no-customizations )
             CUSTOMIZE=0
+            ;;
+        -ni | --non-interactive )
+            NON_INTERACTIVE="--non-interactive"
             ;;
         -gc | --garbageclean )
             GARBAGECLEAN=1
@@ -451,6 +455,12 @@ function helpPage() {
 
     echo $'\t'${bold}'-nc, --no-customizations'${normal}
     echo $'\t\tNo customizations will be made to the original ownCloud files.\n'
+
+    if [ ${OSLINUX} -eq 1 ] ; then
+        echo $'\t'${bold}'-ni, --non-interactive'${normal}
+        echo $'\t\tEnable \'zypper --non-interactive\' mode.\n'
+
+    fi
 
     echo $'\t'${bold}'-s, --sign'${normal}
     if [ ${OSLINUX} -eq 1 ] ; then
