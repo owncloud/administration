@@ -79,10 +79,10 @@ GARBAGECLEAN=0
 CODESIGN=0
 CODESIGN_ONLY=0
 LOCALBUILD=0
-NON_INTERACTIVE=""
 SPARKLE=0
 SPARKLE_ONLY=0
 WINDOWS_ONLY=0
+ZYPPER_NON_INTERACTIVE=""
 
 #
 # Put all allowed parameters per OS in an array,
@@ -143,7 +143,7 @@ while [ -n "$1" ]; do
             CUSTOMIZE=0
             ;;
         -ni | --non-interactive )
-            NON_INTERACTIVE="--non-interactive"
+            ZYPPER_NON_INTERACTIVE="--non-interactive"
             ;;
         -gc | --garbageclean )
             GARBAGECLEAN=1
