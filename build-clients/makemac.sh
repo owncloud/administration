@@ -51,7 +51,7 @@ CUR_DIR=$PWD
 BUILD_DIR="${CUR_DIR}/buildenv"
 OSLINUX=0
 PATH=/usr/local/Cellar/qt5/5.3.2/bin:$PATH
-#export PATH
+
 
 
 #================================================================================
