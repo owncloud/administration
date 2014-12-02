@@ -7,13 +7,14 @@
 # V0.1 -- jw	initial draught, with APT only.
 # V0.2 -- jw	support for extra-packages added, support for YUM, ZYPP added.
 #               support debian packages without release number
+# V0.3 -- jw	updated run() to capture exit code, fixed X11 connection via unix:0
 
 from argparse import ArgumentParser
 import json, sys, os, re, time
 import subprocess, urllib2, base64
 
 
-__VERSION__="0.2"
+__VERSION__="0.3"
 target="xUbuntu_14.04"
 
 default_obs_config = {
@@ -54,8 +55,8 @@ docker_volumes=[]
 
 ################################################################################
 
-# Keep in sync with docker_install_oc.py
-def run(args, input=None, redirect=None, redirect_stdout=True, redirect_stderr=True, return_tuple=False, tee=False):
+# Keep in sync with internal_tar2obs.py obs_docker_install.py
+def run(args, input=None, redirect=None, redirect_stdout=True, redirect_stderr=True, return_tuple=False, return_code=False, tee=False):
   """
      make the subprocess monster usable
   """
@@ -90,9 +91,10 @@ def run(args, input=None, redirect=None, redirect_stdout=True, redirect_stderr=T
     if out: print >>tee, " "+ out
     if err: print >>tee, " STDERROR: " + err
 
-  if return_tuple: return (out,err)
-  if err and out: return out + "\nSTDERROR: " + err
-  if err: return "STDERROR: " + err
+  if return_code:  return p.returncode
+  if return_tuple: return (out,err,p.returncode)
+  if err and out:  return out + "\nSTDERROR: " + err
+  if err:          return "STDERROR: " + err
   return out
 
 def urlopen_auth(url, username, password):
@@ -371,19 +373,19 @@ elif docker["fmt"] == "YUM":
   dockerfile+="RUN yum install -y "+args.package+" || true\n"
   dockerfile+="RUN echo 'yum install -y "+args.package+"' >> ~/.bash_history\n"
 elif docker["fmt"] == "ZYPP":
-  dockerfile+="RUN zypper --non-interactive "+download["url"]+target+"/"+args.project+".repo\n" 
+  dockerfile+="RUN zypper --non-interactive addrepo "+download["url"]+target+"/"+args.project+".repo\n" 
   dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys refresh\n"
   if docker.has_key("pre") and len(docker["pre"]):
     dockerfile+="RUN zypper --non-interactive install "+" ".join(docker["pre"])+"\n"
   if args.extra_packages:
-    dockerfile+="RUN uypper --non-interactive install "+re.sub(',',' ',args.extra_packages)+"\n"
+    dockerfile+="RUN zypper --non-interactive install "+re.sub(',',' ',args.extra_packages)+"\n"
   dockerfile+="RUN zypper --non-interactive install "+args.package+" || true\n"
   dockerfile+="RUN echo 'zypper install "+args.package+"' >> ~/.bash_history\n"
 else:
   raise ValueError("dockerfile generator not implemented for fmt="+docker["fmt"])
 
 if args.xauth:
-  dockerfile+="ENV DISPLAY :0\n"
+  dockerfile+="ENV DISPLAY unix:0\n"
   dockerfile+="ENV XAUTHORITY "+xauthfile+"\n"
   dockerfile+='RUN : "'+xa_cmd+'"'+"\n"
 dockerfile+='RUN : "'+" ".join(docker_run)+'"'+"\n"
@@ -392,16 +394,24 @@ dockerfile+="CMD /bin/bash\n"
 # print obs_api, download, image_name, target, docker 
 print dockerfile
 
+r=0
+docker_build=["docker", "build"]
+if args.rm: docker_build.append("--rm")
+if args.no_cache: docker_build.append("--no-cache")
+docker_build.extend(["-t", image_name, "-"])
+
 if args.no_operation:
-  print " - You can use the above Dockerfile to create an image like this:\n docker build -t "+image_name+" -\n"
+  print "You can use the above Dockerfile to create an image like this:\n "+" ".join(docker_build)+"\n"
 else:
-  docker_build=["docker", "build"]
-  if args.rm: docker_build.append("--rm")
-  if args.no_cache: docker_build.append("--no-cache")
-  run(docker_build+["-t", image_name, "-"], input=dockerfile, redirect_stdout=False, redirect_stderr=False)  
-  print "Image created. Check for errors in the above log.\n"
-if not args.rm:
+  r=run(docker_build, input=dockerfile, redirect_stdout=False, redirect_stderr=False, return_code=True)  
+  if r:
+    print "Failed with non-zero exit code="+str(r)+". Check for errors in the above log.\n"
+  else:
+    print "Image successfully created. Check for warnings in the above log.\n"
+
+if not args.rm and not r:
   print "Please remove intermediate images with e.g."
   print " docker ps -a | grep Exited | awk '{ print $1 }' | xargs docker rm\n"
 
-print "You can run the new image with:\n "+" ".join(docker_run)
+if not r:
+  print "You can run the new image with:\n "+" ".join(docker_run)
