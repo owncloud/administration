@@ -388,17 +388,19 @@ wget_cmd+=" "+download["url"]
 if not re.search('/$', wget_cmd): wget_cmd+='/'
 
 if docker["fmt"] == "APT":
-  dockerfile+="RUN apt-get -y update\n"
+  dockerfile+="ENV DEBIAN_FRONTEND=noninteractive\n"
+  dockerfile+="RUN apt-get -q -y update\n"
   if docker.has_key("pre") and len(docker["pre"]):
-    dockerfile+="RUN apt-get -y install "+" ".join(docker["pre"])+"\n"
+    dockerfile+="RUN apt-get -q -y install "+" ".join(docker["pre"])+"\n"
   dockerfile+="RUN "+wget_cmd+target+"/Release.key\n"
   dockerfile+="RUN apt-key add - < Release.key\n"
   dockerfile+="RUN echo 'deb "+download["url_cred"]+"/"+target+"/ /' >> /etc/apt/sources.list.d/"+args.package+".list\n"
-  dockerfile+="RUN apt-get -y update\n"
+  dockerfile+="RUN apt-get -q -y update\n"
   if args.extra_packages:
-    dockerfile+="RUN apt-get -y install "+re.sub(',',' ',args.extra_packages)+"\n"
-  dockerfile+="RUN apt-get -y install "+args.package+" || true\n"
+    dockerfile+="RUN apt-get -q -y install "+re.sub(',',' ',args.extra_packages)+"\n"
+  dockerfile+="RUN apt-get -q -y install "+args.package+" || true\n"
   dockerfile+="RUN echo 'apt-get install "+args.package+"' >> ~/.bash_history\n"
+
 elif docker["fmt"] == "YUM":
   dockerfile+="RUN yum clean expire-cache\n" 
   if docker.has_key("pre") and len(docker["pre"]):
@@ -408,6 +410,7 @@ elif docker["fmt"] == "YUM":
     dockerfile+="RUN yum install -y "+re.sub(',',' ',args.extra_packages)+"\n"
   dockerfile+="RUN yum install -y "+args.package+" || true\n"
   dockerfile+="RUN echo 'yum install -y "+args.package+"' >> ~/.bash_history\n"
+
 elif docker["fmt"] == "ZYPP":
   dockerfile+="RUN zypper --non-interactive addrepo "+download["url"]+target+"/"+args.project+".repo\n" 
   dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys refresh\n"
@@ -417,8 +420,10 @@ elif docker["fmt"] == "ZYPP":
     dockerfile+="RUN zypper --non-interactive install "+re.sub(',',' ',args.extra_packages)+"\n"
   dockerfile+="RUN zypper --non-interactive install "+args.package+" || true\n"
   dockerfile+="RUN echo 'zypper install "+args.package+"' >> ~/.bash_history\n"
+
 else:
   raise ValueError("dockerfile generator not implemented for fmt="+docker["fmt"])
+
 
 if args.xauth:
   dockerfile+="ENV DISPLAY unix:0\n"
