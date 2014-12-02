@@ -4,13 +4,16 @@
 # Distribute under GPLv2 or ask.
 #
 # obs_docker_install.py -- prepare a docker image with owncloud packages
+# V0.1 -- jw	initial draught, with APT only.
+# V0.2 -- jw	support for extra-packages added, support for YUM, ZYPP added.
+#               support debian packages without release number
 
 from argparse import ArgumentParser
 import json, sys, os, re, time
 import subprocess, urllib2, base64
 
 
-__VERSION__="0.1"
+__VERSION__="0.2"
 target="xUbuntu_14.04"
 
 default_obs_config = {
@@ -23,27 +26,27 @@ default_obs_config = {
 	  "prj_re": "^(isv:ownCloud:|home:jnweiger)",
 	  "download": 
 	    { 
-	      "public":   "https://download.opensuse.org/repositories/", 
+	      "public":   "http://download.opensuse.org/repositories/", 
 	    },
 	},
     },
   "target":
     {
-      "xUbuntu_14.10":   { "fmt":"DEB", "pre": ["wget","apt-transport-https"], "from":"ubuntu:14.10" },
-      "xUbuntu_14.04":   { "fmt":"DEB", "pre": ["wget","apt-transport-https"], "from":"ubuntu:14.04" },
-      "xUbuntu_13.10":   { "fmt":"DEB", "pre": ["wget","apt-transport-https"], "from":"ubuntu:13.10" },
-      "xUbuntu_13.04":   { "fmt":"DEB", "pre": ["wget","apt-transport-https"], "from":"ubuntu:13.04" },
-      "xUbuntu_12.10":   { "fmt":"DEB", "pre": ["wget","apt-transport-https"], "from":"ubuntu:12.10" },
-      "xUbuntu_12.04":   { "fmt":"DEB", "pre": ["wget","apt-transport-https"], "from":"ubuntu:12.04" },
-      "Debian_6.0":      { "fmt":"DEB", "pre": ["wget","apt-transport-https"], "from":"debian:6.0" },
-      "Debian_7.0":      { "fmt":"DEB", "pre": ["wget","apt-transport-https"], "from":"debian:7" },
+      "xUbuntu_14.10":   { "fmt":"APT", "pre": ["wget","apt-transport-https"], "from":"ubuntu:14.10" },
+      "xUbuntu_14.04":   { "fmt":"APT", "pre": ["wget","apt-transport-https"], "from":"ubuntu:14.04" },
+      "xUbuntu_13.10":   { "fmt":"APT", "pre": ["wget","apt-transport-https"], "from":"ubuntu:13.10" },
+      "xUbuntu_13.04":   { "fmt":"APT", "pre": ["wget","apt-transport-https"], "from":"ubuntu:13.04" },
+      "xUbuntu_12.10":   { "fmt":"APT", "pre": ["wget","apt-transport-https"], "from":"ubuntu:12.10" },
+      "xUbuntu_12.04":   { "fmt":"APT", "pre": ["wget","apt-transport-https"], "from":"ubuntu:12.04" },
+      "Debian_6.0":      { "fmt":"APT", "pre": ["wget","apt-transport-https"], "from":"debian:6.0" },
+      "Debian_7.0":      { "fmt":"APT", "pre": ["wget","apt-transport-https"], "from":"debian:7" },
 
-      "CentOS_7":        { "fmt":"RPM", "from":"centos:centos7" },
-      "CentOS_6":        { "fmt":"RPM", "from":"centos:centos6" },
-      "CentOS_CentOS-6": { "fmt":"RPM", "from":"centos:centos6" },
-      "Fedora_20":       { "fmt":"RPM", "from":"fedora:20" },
-      "openSUSE_13.2":   { "fmt":"RPM", "from":"opensuse:13.2" },
-      "openSUSE_13.1":   { "fmt":"RPM", "from":"opensuse:13.1" }
+      "CentOS_7":        { "fmt":"YUM", "pre": ["wget"], "from":"centos:centos7" },
+      "CentOS_6":        { "fmt":"YUM", "pre": ["wget"], "from":"centos:centos6" },
+      "CentOS_CentOS-6": { "fmt":"YUM", "pre": ["wget"], "from":"centos:centos6" },
+      "Fedora_20":       { "fmt":"YUM", "pre": ["wget"], "from":"fedora:20" },
+      "openSUSE_13.2":   { "fmt":"ZYPP", "from":"opensuse:13.2" },
+      "openSUSE_13.1":   { "fmt":"ZYPP", "from":"opensuse:13.1" }
     }
 }
 
@@ -147,6 +150,9 @@ def obs_fetch_bin_version(api, prj, pkg, target):
   # cernbox-client_1.7.0-0.jw20141127_amd64.deb
   m = re.search('^\s*'+re.escape(args.package)+'_(\d+[^-\s]+)\-(\d+[^_\s]+)_.*?\.deb$', bin_seen, re.M)
   if m: return (m.group(1),m.group(2))
+  # owncloud-client_1.7.0_i386.deb
+  m = re.search('^\s*'+re.escape(args.package)+'_(\d+[^_\s]+)_.*?\.deb$', bin_seen, re.M)
+  if m: return (m.group(1),'')
 
   # cloudtirea-client-1.7.0-4.1.i686.rpm
   m = re.search('^\s*'+re.escape(args.package)+'-(\d+[^-\s]+)\-([\w\.]+?)\.(x86_64|i\d86|noarch)\.rpm$', bin_seen, re.M)
@@ -162,6 +168,15 @@ def docker_from_obs(obs_target_name):
   raise ValueError("no docker base image known for '"+obs_target_name+"' - choose other obs target or update config in "+args.configfile)
 
 def obs_download(config, item, prj_path):
+  """
+    prj_path is appended to url_cred, where all ':' are replaced with ':/'
+    a '/' is asserted between url_cred and prj_path.
+    url_cred is guaranteed to end in '/'
+    url, username, password, are derived from url_cred.
+
+    Side-Effect:
+      The resulting url_cred is tested, and a warning is printed, if it is not accessible.
+  """
   if not config.has_key('download'):
     raise ValueError("obs_download: cannot read download url from config")
   if not config["download"].has_key(item):
@@ -171,6 +186,7 @@ def obs_download(config, item, prj_path):
   if not prj_path is None:
     if not re.search('/$', url_cred): url_cred += '/'
     url_cred += re.sub(':',':/',prj_path)
+  if not re.search('/$', url_cred): url_cred += '/'
   data = { "url_cred":url_cred }
 
   # yet another fluffy url parser ahead
@@ -201,6 +217,7 @@ def obs_download(config, item, prj_path):
     data['url'] = url_cred	# oops.
 
   try:
+    print "testing "+data['url']
     if data.has_key('username') and data.has_key('password'):
       uo = urlopen_auth(data['url'], data['username'], data['password'])
     else:
@@ -217,7 +234,7 @@ def obs_download(config, item, prj_path):
 ################################################################################
 
 ap = ArgumentParser(epilog="""Example:
- """+sys.argv[0]+""" isv:ownCloud:desktop/owncloud-client CentOS_6
+ """+sys.argv[0]+""" isv:ownCloud:desktop/owncloud-client CentOS_CentOS-6
 
 Version:
  """+__VERSION__, description="Create docker images for owncloud packages built with openSUSE Build Service (public or other instance).")
@@ -225,11 +242,14 @@ ap.add_argument("-p", "--platform", dest="target", metavar="TARGET", help="obs b
 ap.add_argument("-f", "--from", metavar="IMG", help="docker base image to start with. Exclusive with specifying a -p platform name")
 ap.add_argument("-V", "--version", default=False, action="store_true", help="print version number and exit")
 ap.add_argument("-d", "--download", default='public', metavar="SERVER", help='use a different download server. Try "internal" or a full url. Default: "public"')
-ap.add_argument("-c", "--configfile", default='obs_config.json', metavar="FILE", help='specify different config file. Default: generate a default file if missing, so that you can edit')
+ap.add_argument("-c", "--configfile", default='obs_docker.json', metavar="FILE", help='specify different config file. Default: generate a default file if missing, so that you can edit')
 ap.add_argument("-W", "--writeconfig", default=False, action="store_true", help='Write a default config file and exit. Default: use existing config file')
 ap.add_argument("-A", "--obs-api", help="Identify the build service. Default: guessed from project name")
 ap.add_argument("-n", "--image-name", help="Specify the name of the generated docker image. Default: construct a name and print")
+ap.add_argument("-e", "--extra-packages", help="Comma separated list of packages to pre-install. Default: only per 'pre' in the config file")
 ap.add_argument("-N", "--no-operation", default=False, action="store_true", help="Print docker commands to create an image only. Default: create an image")
+ap.add_argument("-R", "--rm", default=False, action="store_true", help="Remove intermediate docker containers after a successful build")
+ap.add_argument("--no-cache", default=False, action="store_true", help="Do not use cache when building the image. Default: use docker cache as available")
 ap.add_argument("-X", "--xauth", default=False, action="store_true", help="Prepare a docker image that can connect to your X-Server.")
 ap.add_argument("project", metavar="PROJECT", nargs="?", help="obs project name. Alternate syntax to PROJ/PACK")
 ap.add_argument("package", metavar="PACKAGE",  nargs="?", help="obs package name, or PROJ/PACK")
@@ -322,22 +342,49 @@ print "#+ " + " ".join(docker_run)
 
 dockerfile="FROM "+docker['from']+"\n"
 dockerfile+="ENV TERM ansi\n"
-if docker["fmt"] == "DEB":
+
+wget_cmd="wget"
+if download.has_key("username"): wget_cmd+=" --user '"+download["username"]+"'"
+if download.has_key("password"): wget_cmd+=" --password '"+download["password"]+"'"
+wget_cmd+=" "+download["url"]
+if not re.search('/$', wget_cmd): wget_cmd+='/'
+
+if docker["fmt"] == "APT":
   dockerfile+="RUN apt-get -y update\n"
   if docker.has_key("pre") and len(docker["pre"]):
     dockerfile+="RUN apt-get -y install "+" ".join(docker["pre"])+"\n"
-  dockerfile+="RUN wget"
-  if download.has_key("username"): dockerfile+=" --user '"+download["username"]+"'"
-  if download.has_key("password"): dockerfile+=" --password '"+download["password"]+"'"
-  dockerfile+=" "+download["url"]+"/"+target+"/Release.key\n"
+  dockerfile+="RUN "+wget_cmd+target+"/Release.key\n"
   dockerfile+="RUN apt-key add - < Release.key\n"
   dockerfile+="RUN echo 'deb "+download["url_cred"]+"/"+target+"/ /' >> /etc/apt/sources.list.d/"+args.package+".list\n"
   dockerfile+="RUN apt-get -y update\n"
+  if args.extra_packages:
+    dockerfile+="RUN apt-get -y install "+re.sub(',',' ',args.extra_packages)+"\n"
   dockerfile+="RUN apt-get -y install "+args.package+" || true\n"
   dockerfile+="RUN echo 'apt-get install "+args.package+"' >> ~/.bash_history\n"
+elif docker["fmt"] == "YUM":
+  dockerfile+="RUN yum clean expire-cache\n" 
+  if docker.has_key("pre") and len(docker["pre"]):
+    dockerfile+="RUN yum install -y "+" ".join(docker["pre"])+"\n"
+  dockerfile+="RUN "+wget_cmd+target+'/'+args.project+".repo -O /etc/yum.repos.d/"+args.project+".repo\n"
+  if args.extra_packages:
+    dockerfile+="RUN yum install -y "+re.sub(',',' ',args.extra_packages)+"\n"
+  dockerfile+="RUN yum install -y "+args.package+" || true\n"
+  dockerfile+="RUN echo 'yum install -y "+args.package+"' >> ~/.bash_history\n"
+elif docker["fmt"] == "ZYPP":
+  dockerfile+="RUN zypper --non-interactive "+download["url"]+target+"/"+args.project+".repo\n" 
+  dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys refresh\n"
+  if docker.has_key("pre") and len(docker["pre"]):
+    dockerfile+="RUN zypper --non-interactive install "+" ".join(docker["pre"])+"\n"
+  if args.extra_packages:
+    dockerfile+="RUN uypper --non-interactive install "+re.sub(',',' ',args.extra_packages)+"\n"
+  dockerfile+="RUN zypper --non-interactive install "+args.package+" || true\n"
+  dockerfile+="RUN echo 'zypper install "+args.package+"' >> ~/.bash_history\n"
 else:
   raise ValueError("dockerfile generator not implemented for fmt="+docker["fmt"])
+
 if args.xauth:
+  dockerfile+="ENV DISPLAY :0\n"
+  dockerfile+="ENV XAUTHORITY "+xauthfile+"\n"
   dockerfile+='RUN : "'+xa_cmd+'"'+"\n"
 dockerfile+='RUN : "'+" ".join(docker_run)+'"'+"\n"
 dockerfile+="CMD /bin/bash\n"
@@ -346,9 +393,15 @@ dockerfile+="CMD /bin/bash\n"
 print dockerfile
 
 if args.no_operation:
-  print "You can use the above Dockerfile to create an image like this:\n docker build -t "+image_name+" -\n"
+  print " - You can use the above Dockerfile to create an image like this:\n docker build -t "+image_name+" -\n"
 else:
-  run(["docker", "build", "-t", image_name, "-"], input=dockerfile, redirect_stdout=False, redirect_stderr=False)  
-  print "image created.\nIf you see errors in the above log, please remove intermediate docker images now."
+  docker_build=["docker", "build"]
+  if args.rm: docker_build.append("--rm")
+  if args.no_cache: docker_build.append("--no-cache")
+  run(docker_build+["-t", image_name, "-"], input=dockerfile, redirect_stdout=False, redirect_stderr=False)  
+  print "Image created. Check for errors in the above log.\n"
+if not args.rm:
+  print "Please remove intermediate images with e.g."
+  print " docker ps -a | grep Exited | awk '{ print $1 }' | xargs docker rm\n"
 
 print "You can run the new image with:\n "+" ".join(docker_run)
