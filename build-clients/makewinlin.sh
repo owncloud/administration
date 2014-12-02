@@ -79,18 +79,18 @@ fi
 function buildLinuxDependencies() {
     if [ ${DEPENDENCIES} -eq 1 ] ; then
 
-        #sudo zypper --gpg-auto-import-keys addrepo http://download.opensuse.org/repositories/isv:ownCloud:devel/openSUSE_13.2/isv:ownCloud:devel.repo
-        sudo zypper --gpg-auto-import-keys addrepo http://download.opensuse.org/repositories/isv:ownCloud:desktop/openSUSE_13.2/isv:ownCloud:desktop.repo
+        #sudo zypper ${ZYPPER_NON_INTERACTIVE} --gpg-auto-import-keys addrepo http://download.opensuse.org/repositories/isv:ownCloud:devel/openSUSE_13.2/isv:ownCloud:devel.repo
+        sudo zypper ${ZYPPER_NON_INTERACTIVE} --gpg-auto-import-keys addrepo http://download.opensuse.org/repositories/isv:ownCloud:desktop/openSUSE_13.2/isv:ownCloud:desktop.repo
 
-        sudo zypper --gpg-auto-import-keys addrepo http://download.opensuse.org/repositories/windows:/mingw:/win32/openSUSE_13.2/windows:mingw:win32.repo
-        sudo zypper --gpg-auto-import-keys addrepo http://download.opensuse.org/repositories/windows:/mingw/openSUSE_13.2/windows:mingw.repo
+        sudo zypper ${ZYPPER_NON_INTERACTIVE} --gpg-auto-import-keys addrepo http://download.opensuse.org/repositories/windows:/mingw:/win32/openSUSE_13.2/windows:mingw:win32.repo
+        sudo zypper ${ZYPPER_NON_INTERACTIVE} --gpg-auto-import-keys addrepo http://download.opensuse.org/repositories/windows:/mingw/openSUSE_13.2/windows:mingw.repo
 
         sudo zypper --gpg-auto-import-keys refresh
         sudo zypper -n install owncloud-client
         sudo zypper refresh
         sudo zypper -n --gpg-auto-import-keys source-install -d owncloud-client
 
-        sudo zypper install git cmake mingw32-cross-binutils \
+        sudo zypper ${ZYPPER_NON_INTERACTIVE} install git cmake mingw32-cross-binutils \
             mingw32-cross-gcc mingw32-cross-gcc-c++ mingw32-cross-pkg-config \
             mingw32-libneon-openssl-devel mingw32-sqlite-devel mingw32-libqt5-qmldevtools-devel \
             mingw32-libqt5-qtimageformats-devel mingw32-libqt5-qtbase-devel mingw32-libqt5-qtwinextras-devel \
@@ -105,7 +105,7 @@ function buildLinuxDependencies() {
         #
         # The following is not really needed.
         #
-        #sudo zypper -n install mingw32-cmocka-devel texlive-latex python-sphinx
+        #sudo zypper ${ZYPPER_NON_INTERACTIVE} -n install mingw32-cmocka-devel texlive-latex python-sphinx
 
         #
         # The following will work on openSUSE 12.2, 13.1 and 13.2 too.
