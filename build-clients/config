@@ -93,7 +93,8 @@ CHANGENAME=0
 # example: sparklePrivateKey="${CUR_DIR}/dsa_priv.pem"
 #
 # Enter URL for updates of the mac client; that file is called an appcast.
-# example: macUpdateURL="https://updates.owncloud.com/client/"
+# example: macUpdateURL="https://updates.owncloud.com/client/" or
+#          macUpdateURL="https://www.website.com/downloads/update.rss"
 #
 #================================================================================
 
