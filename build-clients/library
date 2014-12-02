@@ -458,7 +458,7 @@ function helpPage() {
 
     if [ ${OSLINUX} -eq 1 ] ; then
         echo $'\t'${bold}'-ni, --non-interactive'${normal}
-        echo $'\t\tEnable \'zypper --non-interactive\' mode.\n'
+        echo $'\t\tEnable \'zypper --non-interactive\' mode. Use combined with parameters \'-d\' and \'-do\'.\n'
 
     fi
 
