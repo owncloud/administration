@@ -334,6 +334,7 @@ if docker["fmt"] == "DEB":
   dockerfile+="RUN echo 'deb "+download["url_cred"]+"/"+target+"/ /' >> /etc/apt/sources.list.d/"+args.package+".list\n"
   dockerfile+="RUN apt-get -y update\n"
   dockerfile+="RUN apt-get -y install "+args.package+" || true\n"
+  dockerfile+="RUN echo 'apt-get install "+args.package+"' >> ~/.bash_history\n"
 else:
   raise ValueError("dockerfile generator not implemented for fmt="+docker["fmt"])
 if args.xauth:
@@ -348,6 +349,6 @@ if args.no_operation:
   print "You can use the above Dockerfile to create an image like this:\n docker build -t "+image_name+" -\n"
 else:
   run(["docker", "build", "-t", image_name, "-"], input=dockerfile, redirect_stdout=False, redirect_stderr=False)  
-  print "image created."
+  print "image created.\nIf you see errors in the above log, please remove intermediate docker images now."
 
 print "You can run the new image with:\n "+" ".join(docker_run)
