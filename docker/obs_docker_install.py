@@ -149,7 +149,7 @@ def guess_obs_api(prj, override=None):
       if override == obs:
         return obs
       o=obs_config['obs'][obs]
-      if o.has_key('aliases'):
+      if 'aliases' in o:
         for a in o['aliases']:
           if override == a:
             print "guess_obs_api: alias="+a+" -> "+obs
@@ -159,7 +159,7 @@ def guess_obs_api(prj, override=None):
   # actual guesswork
   for obs in obs_config['obs']:
     o=obs_config['obs'][obs]
-    if o.has_key('prj_re') and re.match(o['prj_re'], prj):
+    if 'prj_re' in o and re.match(o['prj_re'], prj):
       print "guess_obs_api: prj="+prj+" -> "+obs
       return obs
   raise ValueError("guess_obs_api failed for project='"+prj+"', try different project, -A, or update config in "+args.configfile)
@@ -250,7 +250,7 @@ def obs_download(config, item, prj_path):
 
   try:
     print "testing "+data['url']
-    if data.has_key('username') and data.has_key('password'):
+    if 'username' in data and 'password' in data:
       uo = urlopen_auth(data['url'], data['username'], data['password'])
     else:
       uo = urllib2.urlopen(urllib2.Request(data['url']))
@@ -382,15 +382,15 @@ dockerfile="FROM "+docker['from']+"\n"
 dockerfile+="ENV TERM ansi\n"
 
 wget_cmd="wget"
-if download.has_key("username"): wget_cmd+=" --user '"+download["username"]+"'"
-if download.has_key("password"): wget_cmd+=" --password '"+download["password"]+"'"
+if "username" in download: wget_cmd+=" --user '"+download["username"]+"'"
+if "password" in download: wget_cmd+=" --password '"+download["password"]+"'"
 wget_cmd+=" "+download["url"]
 if not re.search('/$', wget_cmd): wget_cmd+='/'
 
 if docker["fmt"] == "APT":
   dockerfile+="ENV DEBIAN_FRONTEND noninteractive\n"
   dockerfile+="RUN apt-get -q -y update\n"
-  if docker.has_key("pre") and len(docker["pre"]):
+  if "pre" in docker and len(docker["pre"]):
     dockerfile+="RUN apt-get -q -y install "+" ".join(docker["pre"])+"\n"
   dockerfile+="RUN "+wget_cmd+target+"/Release.key\n"
   dockerfile+="RUN apt-key add - < Release.key\n"
@@ -403,7 +403,7 @@ if docker["fmt"] == "APT":
 
 elif docker["fmt"] == "YUM":
   dockerfile+="RUN yum clean expire-cache\n" 
-  if docker.has_key("pre") and len(docker["pre"]):
+  if "pre" in docker and len(docker["pre"]):
     dockerfile+="RUN yum install -y "+" ".join(docker["pre"])+"\n"
   dockerfile+="RUN "+wget_cmd+target+'/'+args.project+".repo -O /etc/yum.repos.d/"+args.project+".repo\n"
   if args.extra_packages:
@@ -414,7 +414,7 @@ elif docker["fmt"] == "YUM":
 elif docker["fmt"] == "ZYPP":
   dockerfile+="RUN zypper --non-interactive addrepo "+download["url"]+target+"/"+args.project+".repo\n" 
   dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys refresh\n"
-  if docker.has_key("pre") and len(docker["pre"]):
+  if "pre" in docker and len(docker["pre"]):
     dockerfile+="RUN zypper --non-interactive install "+" ".join(docker["pre"])+"\n"
   if args.extra_packages:
     dockerfile+="RUN zypper --non-interactive install "+re.sub(',',' ',args.extra_packages)+"\n"
