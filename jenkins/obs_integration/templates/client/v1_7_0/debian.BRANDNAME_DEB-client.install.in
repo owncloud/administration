@@ -1,4 +1,4 @@
 usr/bin/[% shortname %]*
 usr/share/applications/[% shortname %].desktop
 usr/share/icons/hicolor
-etc/[% shortname %]/*
+usr/share/man
