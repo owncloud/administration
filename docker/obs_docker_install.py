@@ -388,7 +388,7 @@ wget_cmd+=" "+download["url"]
 if not re.search('/$', wget_cmd): wget_cmd+='/'
 
 if docker["fmt"] == "APT":
-  dockerfile+="ENV DEBIAN_FRONTEND=noninteractive\n"
+  dockerfile+="ENV DEBIAN_FRONTEND noninteractive\n"
   dockerfile+="RUN apt-get -q -y update\n"
   if docker.has_key("pre") and len(docker["pre"]):
     dockerfile+="RUN apt-get -q -y install "+" ".join(docker["pre"])+"\n"
