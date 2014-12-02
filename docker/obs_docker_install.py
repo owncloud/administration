@@ -8,6 +8,10 @@
 # V0.2 -- jw	support for extra-packages added, support for YUM, ZYPP added.
 #               support debian packages without release number
 # V0.3 -- jw	updated run() to capture exit code, fixed X11 connection via unix:0
+#               added --quiet option and run.verbose.
+#               added --exec command introducer with simple shell meta char recognition
+# V0.4 -- jw    added "map": to obs config, to handle strange download mirror layouts.
+#               added image_name sanitation.
 
 from argparse import ArgumentParser
 import json, sys, os, re, time
@@ -29,6 +33,10 @@ default_obs_config = {
 	    { 
 	      "public":   "http://download.opensuse.org/repositories/", 
 	    },
+	  "map":
+	    {
+	      "public": { "openSUSE:13.1": "/pub/opensuse/distribution/13.1/repo/oss" }
+	    }
 	},
     },
   "target":
@@ -43,7 +51,15 @@ default_obs_config = {
       "Debian_7.0":      { "fmt":"APT", "pre": ["wget","apt-transport-https"], "from":"debian:7" },
 
       "CentOS_7":        { "fmt":"YUM", "pre": ["wget"], "from":"centos:centos7" },
-      "CentOS_6":        { "fmt":"YUM", "pre": ["wget"], "from":"centos:centos6" },
+      "CentOS_6":        { "fmt":"YUM", "from":"""centos:centos6
+RUN yum install -y wget
+RUN wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+RUN rpm -ivh epel-release-6-8.noarch.rpm
+""" },
+      "CentOS_6_PHP54":  { "fmt":"YUM", "from":"""centos:centos6
+RUN yum install -y centos-release-SCL
+RUN yum install -y php54
+""" },
       "CentOS_CentOS-6": { "fmt":"YUM", "pre": ["wget"], "from":"centos:centos6" },
       "Fedora_20":       { "fmt":"YUM", "pre": ["wget"], "from":"fedora:20" },
       "openSUSE_13.2":   { "fmt":"ZYPP", "from":"opensuse:13.2" },
@@ -79,9 +95,9 @@ def run(args, input=None, redirect=None, redirect_stdout=True, redirect_stderr=T
   in_fd=None
   if input is not None:
     in_fd = subprocess.PIPE
-    in_redirect=" (<< '%s')" % input
+    if run.verbose > 1: in_redirect=" (<< '%s')" % input
 
-  print "+ %s%s" % (args, in_redirect)
+  if run.verbose: print "+ %s%s" % (args, in_redirect)
   p = subprocess.Popen(args, stdin=in_fd, stdout=redirect_stdout, stderr=redirect_stderr)
  
   (out,err) = p.communicate(input=input)
@@ -96,6 +112,7 @@ def run(args, input=None, redirect=None, redirect_stdout=True, redirect_stderr=T
   if err and out:  return out + "\nSTDERROR: " + err
   if err:          return "STDERROR: " + err
   return out
+run.verbose=2
 
 def urlopen_auth(url, username, password):
   request = urllib2.Request(url)
@@ -179,15 +196,28 @@ def obs_download(config, item, prj_path):
     Side-Effect:
       The resulting url_cred is tested, and a warning is printed, if it is not accessible.
   """
-  if not config.has_key('download'):
+  if not 'download' in config:
     raise ValueError("obs_download: cannot read download url from config")
-  if not config["download"].has_key(item):
+  if not item in config["download"]:
     raise ValueError("obs_download: has no item '"+item+"' -- check --download option.")
-
   url_cred=config["download"][item]
+
   if not prj_path is None:
-    if not re.search('/$', url_cred): url_cred += '/'
-    url_cred += re.sub(':',':/',prj_path)
+    if "map" in config and item in config["map"]: mapping=config["map"][item]
+    if mapping and prj_path in mapping:
+      prj_path = mapping[prj_path]
+      print "prj path mapping -> ", prj_path
+    else:  
+      prj_path = re.sub(':',':/',prj_path)
+
+    ## if our mapping or prj_path is a rooted path, strip 
+    ## path components from url_cred, if any.
+    if re.match('/',prj_path):
+      m=re.match('(.*://[^/]+)', url_cred)
+      if m: url_cred = m.group(1)
+      
+    if not re.search('/$', url_cred) and not re.match('/', prj_path): url_cred += '/'
+    url_cred += prj_path
   if not re.search('/$', url_cred): url_cred += '/'
   data = { "url_cred":url_cred }
 
@@ -249,6 +279,7 @@ ap.add_argument("-W", "--writeconfig", default=False, action="store_true", help=
 ap.add_argument("-A", "--obs-api", help="Identify the build service. Default: guessed from project name")
 ap.add_argument("-n", "--image-name", help="Specify the name of the generated docker image. Default: construct a name and print")
 ap.add_argument("-e", "--extra-packages", help="Comma separated list of packages to pre-install. Default: only per 'pre' in the config file")
+ap.add_argument("-q", "--quiet", default=False, action="store_true", help="Print less information while working. Default: babble a lot")
 ap.add_argument("-N", "--no-operation", default=False, action="store_true", help="Print docker commands to create an image only. Default: create an image")
 ap.add_argument("-R", "--rm", default=False, action="store_true", help="Remove intermediate docker containers after a successful build")
 ap.add_argument("--no-cache", default=False, action="store_true", help="Do not use cache when building the image. Default: use docker cache as available")
@@ -256,9 +287,11 @@ ap.add_argument("-X", "--xauth", default=False, action="store_true", help="Prepa
 ap.add_argument("project", metavar="PROJECT", nargs="?", help="obs project name. Alternate syntax to PROJ/PACK")
 ap.add_argument("package", metavar="PACKAGE",  nargs="?", help="obs package name, or PROJ/PACK")
 ap.add_argument("platform",metavar="PLATFORM", nargs="?", help="obs build target name. Alternate syntax to -p. Default: "+target)
+ap.add_argument("--run", "--exec", nargs="+", help="Execute a command (with parameters) via docker run. Default: build only and print exec instructions.")
 args = ap.parse_args() 	# --help is automatic
 
 if args.version: ap.exit(__VERSION__)
+if args.quiet: run.verbose=0
 
 if args.writeconfig:
   if os.path.exists(args.configfile):
@@ -318,7 +351,9 @@ download=obs_download(obs_config["obs"][obs_api], args.download, args.project)
 if args.image_name:
   image_name = args.image_name
 else:
-  image_name = args.package+'-'+version+'-'+release+'-'+docker['from']
+  image_name = args.package+'-'+version+'-'+release+'-'+target
+  # docker disallows upper case, and many special chars. Grrr.
+  image_name = re.sub('[^a-z0-9-_\.]', '-', image_name.lower())
 
 
 if args.xauth:
@@ -342,6 +377,7 @@ for vol in docker_volumes:
 docker_run.append(image_name)
 print "#+ " + " ".join(docker_run)
 
+## multi line docker commands are explicitly allowed in 'from'!
 dockerfile="FROM "+docker['from']+"\n"
 dockerfile+="ENV TERM ansi\n"
 
@@ -392,26 +428,36 @@ dockerfile+='RUN : "'+" ".join(docker_run)+'"'+"\n"
 dockerfile+="CMD /bin/bash\n"
 
 # print obs_api, download, image_name, target, docker 
-print dockerfile
 
 r=0
 docker_build=["docker", "build"]
 if args.rm: docker_build.append("--rm")
+if args.quiet: docker_build.append("-q")
 if args.no_cache: docker_build.append("--no-cache")
 docker_build.extend(["-t", image_name, "-"])
 
 if args.no_operation:
-  print "You can use the above Dockerfile to create an image like this:\n "+" ".join(docker_build)+"\n"
+  print dockerfile
+  print "\nYou can use the above Dockerfile to create an image like this:\n "+" ".join(docker_build)+"\n"
 else:
+  run.verbose += 1
   r=run(docker_build, input=dockerfile, redirect_stdout=False, redirect_stderr=False, return_code=True)  
-  if r:
-    print "Failed with non-zero exit code="+str(r)+". Check for errors in the above log.\n"
-  else:
-    print "Image successfully created. Check for warnings in the above log.\n"
+  run.verbose -= 1
+  if not args.quiet:
+    if r:
+      print "Failed with non-zero exit code="+str(r)+". Check for errors in the above log.\n"
+    else:
+      print "Image successfully created. Check for warnings in the above log.\n"
 
-if not args.rm and not r:
+if not args.rm and not r and not args.quiet:
   print "Please remove intermediate images with e.g."
   print " docker ps -a | grep Exited | awk '{ print $1 }' | xargs docker rm\n"
 
-if not r:
+if not r and not args.run:
   print "You can run the new image with:\n "+" ".join(docker_run)
+
+if args.run:
+  if re.search('[\s;&<>"]', args.run[0]): args.run=['/bin/bash', '-c', " ".join(args.run)]
+  r = run(docker_run+args.run, redirect_stderr=False, redirect_stdout=False, return_code=True)
+
+sys.exit(r)
