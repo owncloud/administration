@@ -12,13 +12,14 @@
 #               added --exec command introducer with simple shell meta char recognition
 # V0.4 -- jw    added "map": to obs config, to handle strange download mirror layouts.
 #               added image_name sanitation.
+# V0.5 -- jw    option --keep-going implemented. Proper use of r'\b...' strings.
 
 from argparse import ArgumentParser
 import json, sys, os, re, time
 import subprocess, urllib2, base64
 
 
-__VERSION__="0.3"
+__VERSION__="0.5"
 target="xUbuntu_14.04"
 
 default_obs_config = {
@@ -123,20 +124,20 @@ def urlopen_auth(url, username, password):
 
 def check_dependencies():
   docker_bin = run(["which", "docker"], redirect_stderr=False)
-  if not re.search("/docker", docker_bin, re.S):
+  if not re.search(r"/docker\b", docker_bin, re.S):
     print """docker not installed? Try:
  sudo zypper in docker
 """
     sys.exit(0)
   docker_pid = run(["pidof", "docker"], redirect_stderr=False)
-  if not re.search("\d\d+", docker_pid, re.S):
+  if not re.search(r"\b\d\d+\b", docker_pid, re.S):
     print """docker is not running? Try:
  sudo systemctl enable docker
  sudo systemctl start docker
 """
     sys.exit(0)
   docker_grp = run(["id", "-a"], redirect_stderr=False)
-  if not re.search("docker", docker_grp, re.S):
+  if not re.search(r"\bdocker\b", docker_grp, re.S):
     print """You are not in the docker group? Try:
  sudo usermod -a -G docker $USER; reboot"
 """
@@ -167,14 +168,14 @@ def guess_obs_api(prj, override=None):
 def obs_fetch_bin_version(api, prj, pkg, target):
   bin_seen = run(["osc", "-A"+api, "ls", "-b", args.project, args.package, target])
   # cernbox-client_1.7.0-0.jw20141127_amd64.deb
-  m = re.search('^\s*'+re.escape(args.package)+'_(\d+[^-\s]+)\-(\d+[^_\s]+)_.*?\.deb$', bin_seen, re.M)
+  m = re.search(r'^\s*'+re.escape(args.package)+r'_(\d+[^-\s]+)\-(\d+[^_\s]+)_.*?\.deb$', bin_seen, re.M)
   if m: return (m.group(1),m.group(2))
   # owncloud-client_1.7.0_i386.deb
-  m = re.search('^\s*'+re.escape(args.package)+'_(\d+[^_\s]+)_.*?\.deb$', bin_seen, re.M)
+  m = re.search(r'^\s*'+re.escape(args.package)+r'_(\d+[^_\s]+)_.*?\.deb$', bin_seen, re.M)
   if m: return (m.group(1),'')
 
   # cloudtirea-client-1.7.0-4.1.i686.rpm
-  m = re.search('^\s*'+re.escape(args.package)+'-(\d+[^-\s]+)\-([\w\.]+?)\.(x86_64|i\d86|noarch)\.rpm$', bin_seen, re.M)
+  m = re.search(r'^\s*'+re.escape(args.package)+r'-(\d+[^-\s]+)\-([\w\.]+?)\.(x86_64|i\d86|noarch)\.rpm$', bin_seen, re.M)
   if m: return (m.group(1),m.group(2))
   raise ValueError("package for "+target+" not seen in 'osc ls -b' output: \n"+ bin_seen)
 
@@ -203,6 +204,7 @@ def obs_download(config, item, prj_path):
   url_cred=config["download"][item]
 
   if not prj_path is None:
+    mapping=None
     if "map" in config and item in config["map"]: mapping=config["map"][item]
     if mapping and prj_path in mapping:
       prj_path = mapping[prj_path]
@@ -212,17 +214,17 @@ def obs_download(config, item, prj_path):
 
     ## if our mapping or prj_path is a rooted path, strip 
     ## path components from url_cred, if any.
-    if re.match('/',prj_path):
-      m=re.match('(.*://[^/]+)', url_cred)
+    if re.match(r'/',prj_path):
+      m=re.match(r'(.*://[^/]+)', url_cred)
       if m: url_cred = m.group(1)
       
-    if not re.search('/$', url_cred) and not re.match('/', prj_path): url_cred += '/'
+    if not re.search(r'/$', url_cred) and not re.match(r'/', prj_path): url_cred += '/'
     url_cred += prj_path
-  if not re.search('/$', url_cred): url_cred += '/'
+  if not re.search(r'/$', url_cred): url_cred += '/'
   data = { "url_cred":url_cred }
 
   # yet another fluffy url parser ahead
-  m=re.match('(\w+://)([^/]+)(/.*)', url_cred)
+  m=re.match(r'(\w+://)([^/]+)(/.*)', url_cred)
   if m:
     # https://
     url_proto = m.group(1)
@@ -230,13 +232,13 @@ def obs_download(config, item, prj_path):
     server_cred = m.group(2)
     # /path/where/...
     url_path = m.group(3)
-    m=re.match('(.*)@(.*)$', server_cred)
+    m=re.match(r'(.*)@(.*)$', server_cred)
     if m:
       # meself:pass1234
       cred = m.group(1)
       # obs.owncloud.com:8888
       server = m.group(2)
-      m=re.match('(.*):(.*)', cred)
+      m=re.match(r'(.*):(.*)', cred)
       if m:
         data['username'] = m.group(1)
 	data['password'] = m.group(2)
@@ -255,11 +257,15 @@ def obs_download(config, item, prj_path):
     else:
       uo = urllib2.urlopen(urllib2.Request(data['url']))
     text = uo.readlines()
-    # print data['url'], "=>", text
+    if not re.search(r'\b'+re.escape(target)+r'\b', str(text)):
+      raise ValueError("target="+target+" not seen at "+data['url'])
   except Exception as e:
-    print "WARNING: Cannot read "+data['url']+"\n"+str(e)
-    print "\nTry a different --download option or wait 10 sec..."
-    time.sleep(10)
+    if args.keep_going:
+      print "WARNING: Cannot read "+data['url']+"\n"+str(e)
+      print "\nTry a different --download option or wait 10 sec..."
+      time.sleep(10)
+    else:
+      raise e
 
   return data
 
@@ -280,6 +286,7 @@ ap.add_argument("-A", "--obs-api", help="Identify the build service. Default: gu
 ap.add_argument("-n", "--image-name", help="Specify the name of the generated docker image. Default: construct a name and print")
 ap.add_argument("-e", "--extra-packages", help="Comma separated list of packages to pre-install. Default: only per 'pre' in the config file")
 ap.add_argument("-q", "--quiet", default=False, action="store_true", help="Print less information while working. Default: babble a lot")
+ap.add_argument("-k", "--keep-going", default=False, action="store_true", help="Continue after errors. Default: abort on error")
 ap.add_argument("-N", "--no-operation", default=False, action="store_true", help="Print docker commands to create an image only. Default: create an image")
 ap.add_argument("-R", "--rm", default=False, action="store_true", help="Remove intermediate docker containers after a successful build")
 ap.add_argument("--no-cache", default=False, action="store_true", help="Do not use cache when building the image. Default: use docker cache as available")
@@ -314,7 +321,7 @@ if args.project is None:
   print "need project/package name"
   sys.exit(0)
 
-m = re.match('(.*)/(.*)', args.project)
+m = re.match(r'(.*)/(.*)', args.project)
 if m is None and args.package is None:
   print "need both, project and package"
   sys.exit(0)
@@ -341,10 +348,23 @@ except Exception as e:
 
 docker=docker_from_obs(target)
 if not args.no_operation:
-  check_dependencies()
+  if args.keep_going:
+    try:
+      check_dependencies()
+    except:
+      pass
+  else:
+    check_dependencies()
 
 obs_api=guess_obs_api(args.project, args.obs_api)
-version,release=obs_fetch_bin_version(obs_api, args.project, args.package, target)
+try:
+  version,release=obs_fetch_bin_version(obs_api, args.project, args.package, target)
+except Exception as e:
+  if args.keep_going:
+    print str(e)
+    version,release = '',''
+  else:
+    raise e
 
 download=obs_download(obs_config["obs"][obs_api], args.download, args.project)
 
@@ -385,41 +405,44 @@ wget_cmd="wget"
 if "username" in download: wget_cmd+=" --user '"+download["username"]+"'"
 if "password" in download: wget_cmd+=" --password '"+download["password"]+"'"
 wget_cmd+=" "+download["url"]
-if not re.search('/$', wget_cmd): wget_cmd+='/'
+if not re.search(r'/$', wget_cmd): wget_cmd+='/'
+
+d_endl="\n"
+if args.keep_going: d_endl = " || true\n"
 
 if docker["fmt"] == "APT":
   dockerfile+="ENV DEBIAN_FRONTEND noninteractive\n"
-  dockerfile+="RUN apt-get -q -y update\n"
+  dockerfile+="RUN apt-get -q -y update"+d_endl
   if "pre" in docker and len(docker["pre"]):
-    dockerfile+="RUN apt-get -q -y install "+" ".join(docker["pre"])+"\n"
-  dockerfile+="RUN "+wget_cmd+target+"/Release.key\n"
-  dockerfile+="RUN apt-key add - < Release.key\n"
-  dockerfile+="RUN echo 'deb "+download["url_cred"]+"/"+target+"/ /' >> /etc/apt/sources.list.d/"+args.package+".list\n"
-  dockerfile+="RUN apt-get -q -y update\n"
+    dockerfile+="RUN apt-get -q -y install "+" ".join(docker["pre"])+d_endl
+  dockerfile+="RUN "+wget_cmd+target+"/Release.key"+d_endl
+  dockerfile+="RUN apt-key add - < Release.key"+d_endl
+  dockerfile+="RUN echo 'deb "+download["url_cred"]+"/"+target+"/ /' >> /etc/apt/sources.list.d/"+args.package+".list"+d_endl
+  dockerfile+="RUN apt-get -q -y update"+d_endl
   if args.extra_packages:
-    dockerfile+="RUN apt-get -q -y install "+re.sub(',',' ',args.extra_packages)+"\n"
-  dockerfile+="RUN apt-get -q -y install "+args.package+" || true\n"
-  dockerfile+="RUN echo 'apt-get install "+args.package+"' >> ~/.bash_history\n"
+    dockerfile+="RUN apt-get -q -y install "+re.sub(',',' ',args.extra_packages)+d_endl
+  dockerfile+="RUN apt-get -q -y install "+args.package+d_endl
+  dockerfile+="RUN echo 'apt-get install "+args.package+"' >> ~/.bash_history"+d_endl
 
 elif docker["fmt"] == "YUM":
-  dockerfile+="RUN yum clean expire-cache\n" 
+  dockerfile+="RUN yum clean expire-cache"+d_endl
   if "pre" in docker and len(docker["pre"]):
-    dockerfile+="RUN yum install -y "+" ".join(docker["pre"])+"\n"
-  dockerfile+="RUN "+wget_cmd+target+'/'+args.project+".repo -O /etc/yum.repos.d/"+args.project+".repo\n"
+    dockerfile+="RUN yum install -y "+" ".join(docker["pre"])+d_endl
+  dockerfile+="RUN "+wget_cmd+target+'/'+args.project+".repo -O /etc/yum.repos.d/"+args.project+".repo"+d_endl
   if args.extra_packages:
-    dockerfile+="RUN yum install -y "+re.sub(',',' ',args.extra_packages)+"\n"
-  dockerfile+="RUN yum install -y "+args.package+" || true\n"
-  dockerfile+="RUN echo 'yum install -y "+args.package+"' >> ~/.bash_history\n"
+    dockerfile+="RUN yum install -y "+re.sub(',',' ',args.extra_packages)+d_endl
+  dockerfile+="RUN yum install -y "+args.package+d_endl
+  dockerfile+="RUN echo 'yum install -y "+args.package+"' >> ~/.bash_history"+d_endl
 
 elif docker["fmt"] == "ZYPP":
-  dockerfile+="RUN zypper --non-interactive addrepo "+download["url"]+target+"/"+args.project+".repo\n" 
-  dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys refresh\n"
+  dockerfile+="RUN zypper --non-interactive addrepo "+download["url"]+target+"/"+args.project+".repo"+d_endl
+  dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys refresh"+d_endl
   if "pre" in docker and len(docker["pre"]):
-    dockerfile+="RUN zypper --non-interactive install "+" ".join(docker["pre"])+"\n"
+    dockerfile+="RUN zypper --non-interactive install "+" ".join(docker["pre"])+d_endl
   if args.extra_packages:
-    dockerfile+="RUN zypper --non-interactive install "+re.sub(',',' ',args.extra_packages)+"\n"
-  dockerfile+="RUN zypper --non-interactive install "+args.package+" || true\n"
-  dockerfile+="RUN echo 'zypper install "+args.package+"' >> ~/.bash_history\n"
+    dockerfile+="RUN zypper --non-interactive install "+re.sub(',',' ',args.extra_packages)+d_endl
+  dockerfile+="RUN zypper --non-interactive install "+args.package+d_endl
+  dockerfile+="RUN echo 'zypper install "+args.package+"' >> ~/.bash_history"+d_endl
 
 else:
   raise ValueError("dockerfile generator not implemented for fmt="+docker["fmt"])
@@ -462,7 +485,7 @@ if not r and not args.run:
   print "You can run the new image with:\n "+" ".join(docker_run)
 
 if args.run:
-  if re.search('[\s;&<>"]', args.run[0]): args.run=['/bin/bash', '-c', " ".join(args.run)]
+  if re.search(r'[\s;&<>"]', args.run[0]): args.run=['/bin/bash', '-c', " ".join(args.run)]
   r = run(docker_run+args.run, redirect_stderr=False, redirect_stdout=False, return_code=True)
 
 sys.exit(r)
