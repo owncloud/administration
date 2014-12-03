@@ -16,7 +16,7 @@
 #               release number capture improved.
 #               option --print-image-name-only option added.
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import json, sys, os, re, time
 import subprocess, urllib2, base64
 
@@ -275,11 +275,21 @@ def obs_download_cfg(config, item, prj_path, urltest=True, verbose=True):
 
 ################################################################################
 
-ap = ArgumentParser(epilog="""Example:
+docker_cmd_clean_c=" docker ps -a  | grep Exited   | awk '{ print $1 }' | xargs docker rm"
+docker_cmd_clean_i=" docker images | grep '<none>' | awk '{ print $3 }' | xargs docker rmi\n"
+
+ap = ArgumentParser(
+  formatter_class=RawDescriptionHelpFormatter, 
+  epilog="""Example:
  """+sys.argv[0]+""" isv:ownCloud:desktop/owncloud-client CentOS_CentOS-6
 
-Version:
- """+__VERSION__, description="Create docker images for owncloud packages built with openSUSE Build Service (public or other instance).")
+Suggested cleanup:
+ """+docker_cmd_clean_c+"\n "+docker_cmd_clean_i+"""
+
+Version: """+__VERSION__, 
+  description="Create docker images for RPM and DEB packages built with openSUSE Build Service (public or other instance)."
+)
+
 ap.add_argument("-p", "--platform", dest="target", metavar="TARGET", help="obs build target name. Default: "+target)
 ap.add_argument("-f", "--base-image", "--from", metavar="IMG", help="docker base image to start with. Exclusive with specifying a -p platform name")
 ap.add_argument("-V", "--version", default=False, action="store_true", help="print version number and exit")
@@ -299,7 +309,7 @@ ap.add_argument("-X", "--xauth", default=False, action="store_true", help="Prepa
 ap.add_argument("project", metavar="PROJECT", nargs="?", help="obs project name. Alternate syntax to PROJ/PACK")
 ap.add_argument("package", metavar="PACKAGE",  nargs="?", help="obs package name, or PROJ/PACK")
 ap.add_argument("platform",metavar="PLATFORM", nargs="?", help="obs build target name. Alternate syntax to -p. Default: "+target)
-ap.add_argument("--run", "--exec", nargs="+", help="Execute a command (with parameters) via docker run. Default: build only and print exec instructions.")
+ap.add_argument("--run", "--exec", nargs="+", metavar="SHELLCMDARGS", help="Execute a command (with parameters) via docker run. Default: build only and print exec instructions.")
 args = ap.parse_args() 	# --help is automatic
 
 if args.version: ap.exit(__VERSION__)
@@ -494,12 +504,12 @@ else:
   if not args.quiet:
     if r:
       print "Failed with non-zero exit code="+str(r)+". Check for errors in the above log.\n"
+      args.run = False
     else:
       print "Image successfully created. Check for warnings in the above log.\n"
 
 if not args.rm and not r and not args.quiet:
-  print "Please remove intermediate images with e.g."
-  print " docker ps -a | grep Exited | awk '{ print $1 }' | xargs docker rm\n"
+  print "You may remove unused container/images with e.g.\n "+docker_cmd_clean_c+"\n "+docker_cmd_clean_i+"\n"
 
 if not r and not args.run:
   print "You can run the new image with:\n "+" ".join(docker_run)
