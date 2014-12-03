@@ -5,7 +5,7 @@ Build ownCloud desktop clients
 General
 -------
 These set of files have the purpose to build the desktop clients for ownCloud.  
-There are four files concerned. The building itself is done by ``makemac.sh`` for the OS X client and ``makewinlin.sh`` voor de Windows and Linux clients. Configuration can be done in ``config``, while some code used by both ``makemac.sh`` and ``makewinlin.sh`` is in ``library``.
+There are four files concerned. The building itself is done by ``makemac.sh`` for the OS X client and ``makewinlin.sh`` for the Windows and Linux clients. Configuration can be done in ``config``, while some code used by both ``makemac.sh`` and ``makewinlin.sh`` is in ``library``.
 
 The scripts can install all needed dependencies, (cross) compile the desktop clients and code sign the installer files. With the help of these scripts its quiet easy to theme the clients.
 
