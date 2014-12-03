@@ -176,6 +176,7 @@ function buildMirallAndPackage() {
 
     if [ ${CODESIGN} -eq 1 ] ; then
 		cd "${BUILD_DIR}"/install
+
         if [ -n "${macDeveloperIDApplication}" ] ; then
             for file in *.app
             do
@@ -187,11 +188,12 @@ function buildMirallAndPackage() {
 
 	    if [ -n "${macDeveloperIDInstaller}" ] ; then
 		    source "${BUILD_DIR}"/mirall-build/admin/osx/create_mac.sh "${BUILD_DIR}"/install "${BUILD_DIR}"/mirall-build "${macDeveloperIDInstaller}"
-		else
+        else
             echo $'\nThere is no Developer ID Installer entered in \"config\", so nothing is code signed.\n'
         fi
-	else
-		source "${BUILD_DIR}"/mirall-build/admin/osx/create_mac.sh "${BUILD_DIR}"/install "${BUILD_DIR}"/mirall-build
+
+    else
+        source "${BUILD_DIR}"/mirall-build/admin/osx/create_mac.sh "${BUILD_DIR}"/install "${BUILD_DIR}"/mirall-build
 	fi
 
     cd "${BUILD_DIR}"
@@ -214,7 +216,7 @@ function buildMirallAndPackage() {
 function signDMG() {
     if [ ${CODESIGN} -eq 1 ] ; then
         if [ -n "${macDeveloperIDInstaller}" ] ; then
-        	cd "${CUR_DIR}"/client
+            cd "${CUR_DIR}"/client
             for file in *.pkg
             do
         	    productsign --sign "${macDeveloperIDInstaller}" "${file}" "signed_${file}"
