@@ -13,6 +13,8 @@
 # V0.4 -- jw    added "map": to obs config, to handle strange download mirror layouts.
 #               added image_name sanitation.
 # V0.5 -- jw    option --keep-going implemented. Proper use of r'\b...' strings.
+#               release number capture improved.
+#               option --print-image-name-only option added.
 
 from argparse import ArgumentParser
 import json, sys, os, re, time
@@ -57,7 +59,7 @@ RUN yum install -y wget
 RUN wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
 RUN rpm -ivh epel-release-6-8.noarch.rpm
 """ },
-      "CentOS_6_PHP54":  { "fmt":"YUM", "from":"""centos:centos6
+      "CentOS_6_PHP54":  { "fmt":"YUM", "pre": ["wget"], "from":"""centos:centos6
 RUN yum install -y centos-release-SCL
 RUN yum install -y php54
 """ },
@@ -144,7 +146,7 @@ def check_dependencies():
     sys.exit(0)
 
 
-def guess_obs_api(prj, override=None):
+def guess_obs_api(prj, override=None, verbose=True):
   if override:
     for obs in obs_config['obs']:
       if override == obs:
@@ -161,21 +163,21 @@ def guess_obs_api(prj, override=None):
   for obs in obs_config['obs']:
     o=obs_config['obs'][obs]
     if 'prj_re' in o and re.match(o['prj_re'], prj):
-      print "guess_obs_api: prj="+prj+" -> "+obs
+      if verbose: print "guess_obs_api: prj="+prj+" -> "+obs
       return obs
   raise ValueError("guess_obs_api failed for project='"+prj+"', try different project, -A, or update config in "+args.configfile)
 
 def obs_fetch_bin_version(api, prj, pkg, target):
   bin_seen = run(["osc", "-A"+api, "ls", "-b", args.project, args.package, target])
   # cernbox-client_1.7.0-0.jw20141127_amd64.deb
-  m = re.search(r'^\s*'+re.escape(args.package)+r'_(\d+[^-\s]+)\-(\d+[^_\s]+)_.*?\.deb$', bin_seen, re.M)
+  m = re.search(r'^\s*'+re.escape(args.package)+r'_(\d+[^-\s]*)\-(\d+[^_\s]*)_.*?\.deb$', bin_seen, re.M)
   if m: return (m.group(1),m.group(2))
   # owncloud-client_1.7.0_i386.deb
-  m = re.search(r'^\s*'+re.escape(args.package)+r'_(\d+[^_\s]+)_.*?\.deb$', bin_seen, re.M)
+  m = re.search(r'^\s*'+re.escape(args.package)+r'_(\d+[^_\s]*)_.*?\.deb$', bin_seen, re.M)
   if m: return (m.group(1),'')
 
   # cloudtirea-client-1.7.0-4.1.i686.rpm
-  m = re.search(r'^\s*'+re.escape(args.package)+r'-(\d+[^-\s]+)\-([\w\.]+?)\.(x86_64|i\d86|noarch)\.rpm$', bin_seen, re.M)
+  m = re.search(r'^\s*'+re.escape(args.package)+r'-(\d+[^-\s]*)\-([\w\.]+?)\.(x86_64|i\d86|noarch)\.rpm$', bin_seen, re.M)
   if m: return (m.group(1),m.group(2))
   raise ValueError("package for "+target+" not seen in 'osc ls -b' output: \n"+ bin_seen)
 
@@ -187,7 +189,7 @@ def docker_from_obs(obs_target_name):
     return r
   raise ValueError("no docker base image known for '"+obs_target_name+"' - choose other obs target or update config in "+args.configfile)
 
-def obs_download(config, item, prj_path):
+def obs_download_cfg(config, item, prj_path, urltest=True, verbose=True):
   """
     prj_path is appended to url_cred, where all ':' are replaced with ':/'
     a '/' is asserted between url_cred and prj_path.
@@ -198,9 +200,9 @@ def obs_download(config, item, prj_path):
       The resulting url_cred is tested, and a warning is printed, if it is not accessible.
   """
   if not 'download' in config:
-    raise ValueError("obs_download: cannot read download url from config")
+    raise ValueError("obs_download_cfg: cannot read download url from config")
   if not item in config["download"]:
-    raise ValueError("obs_download: has no item '"+item+"' -- check --download option.")
+    raise ValueError("obs_download_cfg: has no item '"+item+"' -- check --download option.")
   url_cred=config["download"][item]
 
   if not prj_path is None:
@@ -208,7 +210,7 @@ def obs_download(config, item, prj_path):
     if "map" in config and item in config["map"]: mapping=config["map"][item]
     if mapping and prj_path in mapping:
       prj_path = mapping[prj_path]
-      print "prj path mapping -> ", prj_path
+      if verbose: print "prj path mapping -> ", prj_path
     else:  
       prj_path = re.sub(':',':/',prj_path)
 
@@ -250,8 +252,10 @@ def obs_download(config, item, prj_path):
   else:
     data['url'] = url_cred	# oops.
 
+  if not urltest: return data
+
   try:
-    print "testing "+data['url']
+    if verbose: print "testing "+data['url']
     if 'username' in data and 'password' in data:
       uo = urlopen_auth(data['url'], data['username'], data['password'])
     else:
@@ -277,13 +281,14 @@ ap = ArgumentParser(epilog="""Example:
 Version:
  """+__VERSION__, description="Create docker images for owncloud packages built with openSUSE Build Service (public or other instance).")
 ap.add_argument("-p", "--platform", dest="target", metavar="TARGET", help="obs build target name. Default: "+target)
-ap.add_argument("-f", "--from", metavar="IMG", help="docker base image to start with. Exclusive with specifying a -p platform name")
+ap.add_argument("-f", "--base-image", "--from", metavar="IMG", help="docker base image to start with. Exclusive with specifying a -p platform name")
 ap.add_argument("-V", "--version", default=False, action="store_true", help="print version number and exit")
 ap.add_argument("-d", "--download", default='public', metavar="SERVER", help='use a different download server. Try "internal" or a full url. Default: "public"')
 ap.add_argument("-c", "--configfile", default='obs_docker.json', metavar="FILE", help='specify different config file. Default: generate a default file if missing, so that you can edit')
 ap.add_argument("-W", "--writeconfig", default=False, action="store_true", help='Write a default config file and exit. Default: use existing config file')
 ap.add_argument("-A", "--obs-api", help="Identify the build service. Default: guessed from project name")
-ap.add_argument("-n", "--image-name", help="Specify the name of the generated docker image. Default: construct a name and print")
+ap.add_argument("-n", "--image-name", help="Specify the name for the docker image. Default: construct a name and print")
+ap.add_argument("-I", "--print-image-name-only", default=False, action="store_true", help="construct a name using 'osc -ls -b' end exit after printing")
 ap.add_argument("-e", "--extra-packages", help="Comma separated list of packages to pre-install. Default: only per 'pre' in the config file")
 ap.add_argument("-q", "--quiet", default=False, action="store_true", help="Print less information while working. Default: babble a lot")
 ap.add_argument("-k", "--keep-going", default=False, action="store_true", help="Continue after errors. Default: abort on error")
@@ -298,13 +303,16 @@ ap.add_argument("--run", "--exec", nargs="+", help="Execute a command (with para
 args = ap.parse_args() 	# --help is automatic
 
 if args.version: ap.exit(__VERSION__)
+if args.print_image_name_only: 
+  args.quiet=True
+  args.no_operation=True
 if args.quiet: run.verbose=0
 
 if args.writeconfig:
   if os.path.exists(args.configfile):
     print "Will not overwrite existing "+args.configfile
     print "Please use -c to choose a different name, or move the file away"
-    sys.exit(0)
+    sys.exit(1)
   cfp = open(args.configfile, "w")
   json.dump(default_obs_config, cfp, indent=4, sort_keys=True)
   cfp.write("\n")
@@ -315,16 +323,16 @@ if args.writeconfig:
 if not os.path.exists(args.configfile):
   print "Config file does not exist: "+args.configfile
   print "Use -W to generate the file, or use -c to choose different config file"
-  sys.exit()
+  sys.exit(1)
 
 if args.project is None:
   print "need project/package name"
-  sys.exit(0)
+  sys.exit(1)
 
 m = re.match(r'(.*)/(.*)', args.project)
 if m is None and args.package is None:
   print "need both, project and package"
-  sys.exit(0)
+  sys.exit(1)
 if m:
   args.platform = args.package
   args.package = m.group(2)
@@ -334,7 +342,7 @@ if args.target:   target=args.target
 if args.platform: target=args.platform
 if args.target and args.platform:
   print "specify either a build target platform with -p or as a third parameter. Not both"
-  sys.exit(0)
+  sys.exit(1)
 target = re.sub(':','_', target)	# just in case we get the project name instead of the build target name
 
 cfp = open(args.configfile)
@@ -347,6 +355,15 @@ except Exception as e:
   obs_config = default_obs_config
 
 docker=docker_from_obs(target)
+
+if args.base_image:
+  print "Default docker FROM "+docker['from']
+  print "Command line docker FROM "+args.base_image
+  if re.search(r'\n', docker['from']) and not re.search(r'\n', args.base_image):
+    print "WARNING: multiline FROM replaced with simple FROM!\n"
+    time.sleep(2)
+  docker['from'] = args.base_image
+
 if not args.no_operation:
   if args.keep_going:
     try:
@@ -356,7 +373,7 @@ if not args.no_operation:
   else:
     check_dependencies()
 
-obs_api=guess_obs_api(args.project, args.obs_api)
+obs_api=guess_obs_api(args.project, args.obs_api, not args.quiet)
 try:
   version,release=obs_fetch_bin_version(obs_api, args.project, args.package, target)
 except Exception as e:
@@ -366,7 +383,7 @@ except Exception as e:
   else:
     raise e
 
-download=obs_download(obs_config["obs"][obs_api], args.download, args.project)
+download=obs_download_cfg(obs_config["obs"][obs_api], args.download, args.project, verbose=not args.quiet, urltest=not args.no_operation)
 
 if args.image_name:
   image_name = args.image_name
@@ -375,6 +392,9 @@ else:
   # docker disallows upper case, and many special chars. Grrr.
   image_name = re.sub('[^a-z0-9-_\.]', '-', image_name.lower())
 
+if args.print_image_name_only:
+  print image_name
+  sys.exit(0)
 
 if args.xauth:
   xauthdir="/tmp/.docker"
