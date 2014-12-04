@@ -63,12 +63,12 @@ PATH=/usr/local/Cellar/qt5/5.3.2/bin:$PATH
 #================================================================================
 
 if ! source config ; then
-    echo $'\nThe file \"config\" is not available; we\'ll quit.\n'
+    echo $'\nThe file \"config\" is not available; the script will quit.\n'
     exit 1
 fi
 
 if ! source library ; then
-    echo $'\nThe file \"library\" is not available; we\'ll quit.\n'
+    echo $'\nThe file \"library\" is not available; the script will quit.\n'
     exit 1
 fi
 
@@ -146,7 +146,7 @@ function buildMacDependencies() {
 #
 #        NAME: buildMirallAndPackage
 # DESCRIPTION: Build and package.
-#              If finished copy DMG to the folder 'client'.
+#              If finished copy PKG and TBZ files to the folder 'client'.
 #
 #================================================================================
 
@@ -205,7 +205,7 @@ function buildMirallAndPackage() {
 
 #================================================================================
 #
-#        NAME: signDMG
+#        NAME: signPKG
 # DESCRIPTION: Code sign the PKG.
 #              Runs when CODESIGN=1 and macDeveloperIDInstaller exists
 #              and is longer than 0.
@@ -213,7 +213,7 @@ function buildMirallAndPackage() {
 #
 #================================================================================
 
-function signDMG() {
+function signPKG() {
     if [ ${CODESIGN} -eq 1 ] ; then
         if [ -n "${macDeveloperIDInstaller}" ] ; then
             cd "${CUR_DIR}"/client
@@ -231,14 +231,14 @@ function signDMG() {
 
 #================================================================================
 #
-#        NAME: checkSignDMGOnly
+#        NAME: checkSignPKGOnly
 # DESCRIPTION: If CODESIGN_ONLY=1 the script will stop after code signing.
 #
 #================================================================================
 
-function checkSignDMGOnly() {
+function checkSignPKGOnly() {
     if [ ${CODESIGN_ONLY} -eq 1 ] ; then
-        signDMG
+        signPKG
         exit 0
     fi
 }
@@ -303,7 +303,7 @@ function checkSparkleOnly() {
 #================================================================================
 
 checkHelp
-checkSignDMGOnly
+checkSignPKGOnly
 checkSparkleOnly
 buildMacDependencies
 makeBuildEnv

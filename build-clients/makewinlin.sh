@@ -12,6 +12,7 @@
 #                              [-le --local-environment]
 #                              [-lin, --linux]
 #                              [-nc, --no-customizations]
+#                              [-ni, --non-interactive]
 #                              [-gc, --garbageclean]
 #                              [-s, --sign]
 #                              [-so, --sign-only]
@@ -57,12 +58,12 @@ OSLINUX=1
 #================================================================================
 
 if ! source config ; then
-    echo $'\nThe file \"config\" is not available; we\'ll quit.\n'
+    echo $'\nThe file \"config\" is not available; the script will quit.\n'
     exit 1
 fi
 
 if ! source library ; then
-    echo $'\nThe file \"library\" is not available; we\'ll quit.\n'
+    echo $'\nThe file \"library\" is not available; the script will quit.\n'
     exit 1
 fi
 
@@ -183,7 +184,7 @@ function buildWindowsClient() {
 #
 #        NAME: buildLinuxClient
 # DESCRIPTION: Build and package Windows client.
-#              If finished copy files to folder client.
+#              If finished copy files to the folder client.
 #
 #================================================================================
 
@@ -226,7 +227,7 @@ function buildLinuxClient() {
 # DESCRIPTION: Code sign the EXE
 #              Runs when CODESIGN=1, pathCodeSignCertificate exists and
 #              is longer than 0 and the certificate is present at the given location.
-#              Furthermore, it is highly recommended to time stamp the EXE.
+#              Furthermore, it is highly recommended to timestamp the EXE.
 #
 #================================================================================
 
