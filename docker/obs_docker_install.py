@@ -54,7 +54,7 @@ default_obs_config = {
       "Debian_7.0":      { "fmt":"APT", "pre": ["wget","apt-transport-https"], "from":"debian:7" },
 
       "CentOS_7":        { "fmt":"YUM", "pre": ["wget"], "from":"centos:centos7" },
-      "CentOS_6":        { "fmt":"YUM", "from":"""centos:centos6
+      "CentOS_6":        { "fmt":"YUM", "pre": ["wget"], "from":"""centos:centos6
 RUN yum install -y wget
 RUN wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
 RUN rpm -ivh epel-release-6-8.noarch.rpm
@@ -65,8 +65,8 @@ RUN yum install -y php54
 """ },
       "CentOS_CentOS-6": { "fmt":"YUM", "pre": ["wget"], "from":"centos:centos6" },
       "Fedora_20":       { "fmt":"YUM", "pre": ["wget"], "from":"fedora:20" },
-      "openSUSE_13.2":   { "fmt":"ZYPP", "from":"opensuse:13.2" },
-      "openSUSE_13.1":   { "fmt":"ZYPP", "from":"opensuse:13.1" }
+      "openSUSE_13.2":   { "fmt":"ZYPP","pre": ["ca-certificates"], "from":"opensuse:13.2" },
+      "openSUSE_13.1":   { "fmt":"ZYPP","pre": ["ca-certificates"], "from":"opensuse:13.1" }
     }
 }
 
@@ -465,13 +465,13 @@ elif docker["fmt"] == "YUM":
   dockerfile+="RUN echo 'yum install -y "+args.package+"' >> ~/.bash_history"+d_endl
 
 elif docker["fmt"] == "ZYPP":
-  dockerfile+="RUN zypper --non-interactive addrepo "+download["url_cred"]+target+"/"+args.project+".repo"+d_endl
   dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys refresh"+d_endl
   if "pre" in docker and len(docker["pre"]):
-    dockerfile+="RUN zypper --non-interactive install "+" ".join(docker["pre"])+d_endl
+    dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+" ".join(docker["pre"])+d_endl
+  dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys addrepo "+download["url_cred"]+target+"/"+args.project+".repo"+d_endl
   if args.extra_packages:
-    dockerfile+="RUN zypper --non-interactive install "+re.sub(',',' ',args.extra_packages)+d_endl
-  dockerfile+="RUN zypper --non-interactive install "+args.package+d_endl
+    dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+re.sub(',',' ',args.extra_packages)+d_endl
+  dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+args.package+d_endl
   dockerfile+="RUN echo 'zypper install "+args.package+"' >> ~/.bash_history"+d_endl
 
 else:
