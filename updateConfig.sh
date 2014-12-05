@@ -10,18 +10,24 @@ fi
 # fetch documentation repo
 git clone -q git@github.com:owncloud/documentation.git /tmp/owncloud-documentation
 cd /tmp/owncloud-documentation
-git checkout -q -b config-update-$(date +%Y-%m-%d)
-cd $currentDir
 
-# download current version of config.sample.php
-curl -sS -o /tmp/config.sample.php https://raw.githubusercontent.com/owncloud/core/stable7/config/config.sample.php
+for branch in stable7 master
+do
+	git checkout -q $branch
+	cd $currentDir
 
-# use that to generate the documentation
-php convert.php --input-file=/tmp/config.sample.php --output-file=/tmp/owncloud-documentation/admin_manual/configuration/config_sample_php_parameters.rst
+	# download current version of config.sample.php
+	curl -sS -o /tmp/config.sample.php https://raw.githubusercontent.com/owncloud/core/$branch/config/config.sample.php
 
-cd /tmp/owncloud-documentation
-# invokes an output if something has changed
-git status -s
+	# use that to generate the documentation
+	php convert.php --input-file=/tmp/config.sample.php --output-file=/tmp/owncloud-documentation/admin_manual/configuration/config_sample_php_parameters.rst
 
-# cleanup
-rm -rf /tmp/config.sample.php
+	cd /tmp/owncloud-documentation
+	# invokes an output if something has changed
+	git status -s
+
+	git commit -qam 'generate documentation from config.sample.php'
+
+	# cleanup
+	rm -rf /tmp/config.sample.php
+done
