@@ -179,7 +179,7 @@ def obs_fetch_bin_version(api, prj, pkg, target):
   # cloudtirea-client-1.7.0-4.1.i686.rpm
   m = re.search(r'^\s*'+re.escape(args.package)+r'-(\d+[^-\s]*)\-([\w\.]+?)\.(x86_64|i\d86|noarch)\.rpm$', bin_seen, re.M)
   if m: return (m.group(1),m.group(2))
-  raise ValueError("package for "+target+" not seen in 'osc ls -b' output: \n"+ bin_seen)
+  raise ValueError("package for "+target+" not seen in 'osc -A"+api+" ls -b "+args.project+" "+args.package+" "+target+"' output: \n"+ bin_seen)
 
 
 def docker_from_obs(obs_target_name):
@@ -465,7 +465,7 @@ elif docker["fmt"] == "YUM":
   dockerfile+="RUN echo 'yum install -y "+args.package+"' >> ~/.bash_history"+d_endl
 
 elif docker["fmt"] == "ZYPP":
-  dockerfile+="RUN zypper --non-interactive addrepo "+download["url"]+target+"/"+args.project+".repo"+d_endl
+  dockerfile+="RUN zypper --non-interactive addrepo "+download["url_cred"]+target+"/"+args.project+".repo"+d_endl
   dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys refresh"+d_endl
   if "pre" in docker and len(docker["pre"]):
     dockerfile+="RUN zypper --non-interactive install "+" ".join(docker["pre"])+d_endl
