@@ -26,7 +26,7 @@ do
 	# invokes an output if something has changed
 	git status -s
 
-	git commit -qam 'generate documentation from config.sample.php'
+	git commit --allow-empty -qam 'generate documentation from config.sample.php'
 
 	# cleanup
 	rm -rf /tmp/config.sample.php
