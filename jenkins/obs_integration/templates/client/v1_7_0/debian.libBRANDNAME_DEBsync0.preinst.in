@@ -1,0 +1,16 @@
+#!/bin/sh
+set -e
+#
+# emulate apt-get -o Dpkg::Options::="--force-confmiss" install --reinstall 
+# Try to capture the new config file as it whisses by, to be picked up by postinst
+conf=[% sysconfdir %]/sync-exclude.lst
+if [ ! -s $conf ]; then 
+  ln -s none $conf.dpkg-tmp
+  ln -s none $conf.dpkg-new
+fi
+
+#DEBHELPER#
+exit 0
+
+
+
