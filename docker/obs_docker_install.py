@@ -15,13 +15,14 @@
 # V0.5 -- jw    option --keep-going implemented. Proper use of r'\b...' strings.
 #               release number capture improved.
 #               option --print-image-name-only option added.
+# V0.6 -- jw    env XDG_RUNTIME_DIR=/run/user/1000 added (with -X), HOME=/root added always.
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import json, sys, os, re, time
 import subprocess, urllib2, base64
 
 
-__VERSION__="0.5"
+__VERSION__="0.6"
 target="xUbuntu_14.04"
 
 default_obs_config = {
@@ -430,6 +431,7 @@ print "#+ " + " ".join(docker_run)
 ## multi line docker commands are explicitly allowed in 'from'!
 dockerfile="FROM "+docker['from']+"\n"
 dockerfile+="ENV TERM ansi\n"
+dockerfile+="ENV HOME /root\n"
 
 wget_cmd="wget"
 if "username" in download: wget_cmd+=" --user '"+download["username"]+"'"
@@ -477,9 +479,9 @@ elif docker["fmt"] == "ZYPP":
 else:
   raise ValueError("dockerfile generator not implemented for fmt="+docker["fmt"])
 
-
 if args.xauth:
   dockerfile+="ENV DISPLAY unix:0\n"
+  dockerfile+="ENV XDG_RUNTIME_DIR /run/user/1000\n"
   dockerfile+="ENV XAUTHORITY "+xauthfile+"\n"
   dockerfile+='RUN : "'+xa_cmd+'"'+"\n"
 dockerfile+='RUN : "'+" ".join(docker_run)+'"'+"\n"
