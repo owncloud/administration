@@ -17,6 +17,10 @@
 #               option --print-image-name-only option added.
 # V0.6 -- jw    env XDG_RUNTIME_DIR=/run/user/1000 added (with -X), HOME=/root added always.
 # V0.7 -- 2014-12-09, jw    ported to Ubuntu. docker is known there as docker.io
+# V0.8 --             jw    default selective on-cache on the final install command 
+#                           using a timestamp with refresh and install.
+#                           The --no-cache option is more expensive than expected. It 
+#                           disables both using the cache and filling the cache.
 #
 # FIXME: osc is only used once in obs_fetch_bin_version(), this is a hell of a dependency for just that.
 
@@ -25,7 +29,7 @@ import json, sys, os, re, time
 import subprocess, urllib2, base64
 
 
-__VERSION__="0.7"
+__VERSION__="0.8"
 target="xUbuntu_14.04"
 
 default_obs_config = {
@@ -473,6 +477,7 @@ if "password" in download: wget_cmd+=" --password '"+download["password"]+"'"
 wget_cmd+=" "+download["url"]
 if not re.search(r'/$', wget_cmd): wget_cmd+='/'
 
+now=time.strftime('%Y%m%d%H%M')
 d_endl="\n"
 if args.keep_going: d_endl = " || true\n"
 
@@ -487,7 +492,7 @@ if docker["fmt"] == "APT":
   dockerfile+="RUN apt-get -q -y update"+d_endl
   if args.extra_packages:
     dockerfile+="RUN apt-get -q -y install "+re.sub(',',' ',args.extra_packages)+d_endl
-  dockerfile+="RUN apt-get -q -y install "+args.package+d_endl
+  dockerfile+="RUN date="+now+" apt-get -q -y update && apt-get -q -y install "+args.package+d_endl
   dockerfile+="RUN echo 'apt-get install "+args.package+"' >> ~/.bash_history"+d_endl
 
 elif docker["fmt"] == "YUM":
@@ -497,7 +502,7 @@ elif docker["fmt"] == "YUM":
   dockerfile+="RUN "+wget_cmd+target+'/'+args.project+".repo -O /etc/yum.repos.d/"+args.project+".repo"+d_endl
   if args.extra_packages:
     dockerfile+="RUN yum install -y "+re.sub(',',' ',args.extra_packages)+d_endl
-  dockerfile+="RUN yum install -y "+args.package+d_endl
+  dockerfile+="RUN date="+now+" yum clean expore-cache && yum install -y "+args.package+d_endl
   dockerfile+="RUN echo 'yum install -y "+args.package+"' >> ~/.bash_history"+d_endl
 
 elif docker["fmt"] == "ZYPP":
@@ -507,7 +512,7 @@ elif docker["fmt"] == "ZYPP":
   dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys addrepo "+download["url_cred"]+target+"/"+args.project+".repo"+d_endl
   if args.extra_packages:
     dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+re.sub(',',' ',args.extra_packages)+d_endl
-  dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+args.package+d_endl
+  dockerfile+="RUN date="+now+" zypper --non-interactive --gpg-auto-import-keys refresh && zypper --non-interactive --gpg-auto-import-keys install "+args.package+d_endl
   dockerfile+="RUN echo 'zypper install "+args.package+"' >> ~/.bash_history"+d_endl
 
 else:
