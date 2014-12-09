@@ -16,13 +16,16 @@
 #               release number capture improved.
 #               option --print-image-name-only option added.
 # V0.6 -- jw    env XDG_RUNTIME_DIR=/run/user/1000 added (with -X), HOME=/root added always.
+# V0.7 -- 2014-12-09, jw    ported to Ubuntu. docker is known there as docker.io
+#
+# FIXME: osc is only used once in obs_fetch_bin_version(), this is a hell of a dependency for just that.
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import json, sys, os, re, time
 import subprocess, urllib2, base64
 
 
-__VERSION__="0.6"
+__VERSION__="0.7"
 target="xUbuntu_14.04"
 
 default_obs_config = {
@@ -129,20 +132,51 @@ def check_dependencies():
   docker_bin = run(["which", "docker"], redirect_stderr=False)
   if not re.search(r"/docker\b", docker_bin, re.S):
     print """docker not installed? Try:
+
+openSUSE:
  sudo zypper in docker
+
+Debian:
+ sudo apt-get install bridge-utils docker.io
+ # or for a newer version:
+ sudo sh -c "echo deb https://get.docker.com/ubuntu docker main > /etc/apt/sources.list.d/docker.list"
+ sudo apt-get update
+ sudo apt-get install lxc-docker
+
+Mint (as Debian, plus):
+ sudo apt-get install cgroup-lite apparmor
+  
 """
     sys.exit(0)
   docker_pid = run(["pidof", "docker"], redirect_stderr=False)
+  if docker_pid == "":
+    docker_pid = run(["pidof", "docker.io"], redirect_stderr=False)
   if not re.search(r"\b\d\d+\b", docker_pid, re.S):
     print """docker is not running? Try:
+
+openSUSE:
  sudo systemctl enable docker
  sudo systemctl start docker
+
+Debian
+ sudo service docker.io start
+ # or for the lxc-docker version
+ sudo service docker start
+ dmesg
+ # if you see respawn errors try: apt-get install cgroup-lite apparmor
+
 """
     sys.exit(0)
   docker_grp = run(["id", "-a"], redirect_stderr=False)
   if not re.search(r"\bdocker\b", docker_grp, re.S):
     print """You are not in the docker group? Try:
+
+openSUSE:
  sudo usermod -a -G docker $USER; reboot"
+
+Debian:
+ sudo groupadd docker
+ sudo gpasswd -a $USER docker; reboot
 """
     sys.exit(0)
 
@@ -169,7 +203,7 @@ def guess_obs_api(prj, override=None, verbose=True):
   raise ValueError("guess_obs_api failed for project='"+prj+"', try different project, -A, or update config in "+args.configfile)
 
 def obs_fetch_bin_version(api, prj, pkg, target):
-  bin_seen = run(["osc", "-A"+api, "ls", "-b", args.project, args.package, target])
+  bin_seen = run(["osc", "-A"+api, "ls", "-b", args.project, args.package, target], input="")
   # cernbox-client_1.7.0-0.jw20141127_amd64.deb
   m = re.search(r'^\s*'+re.escape(args.package)+r'_(\d+[^-\s]*)\-(\d+[^_\s]*)_.*?\.deb$', bin_seen, re.M)
   if m: return (m.group(1),m.group(2))
