@@ -5,6 +5,7 @@ set -e
 # Try to capture the new config file as it whisses by, to be picked up by postinst
 conf=/[% sysconfdir %]/sync-exclude.lst
 if [ ! -s $conf ]; then 
+  mkdir -p /[% sysconfdir %]
   ln -s none $conf.dpkg-tmp
   ln -s none $conf.dpkg-new
 fi
