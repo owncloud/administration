@@ -62,8 +62,8 @@ wget -q https://oss.oracle.com/el4/RPM-GPG-KEY-oracle -O- | sudo apt-key add -
 sudo apt-get --allow-unauthenticated update -qq
 
 # only download the package, to manually install afterwards
-sudo apt-get install -qq --force-yes -d oracle-xe-universal:i386
-sudo apt-get install -qq --force-yes libaio:i386
+travis_retry sudo apt-get install -qq --force-yes -d oracle-xe-universal:i386
+travis_retry sudo apt-get install -qq --force-yes libaio:i386
 
 # remove key + repo (to prevent failures on next updates)
 sudo apt-key del B38A8516
