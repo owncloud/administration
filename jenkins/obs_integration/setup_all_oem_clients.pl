@@ -51,7 +51,7 @@ use Config::IniFiles;	# Requires: perl-Config-IniFiles
 use Template;		# Requires: perl-Template-Toolkit
 
 
-my $build_token         = 'jw_'.strftime("%Y%m%d", localtime);
+my $build_token         = 'oc_'.strftime("%Y%m%d", localtime);
 my $source_tar          = shift;
 
 if (!defined $source_tar or $source_tar =~ m{^-})
