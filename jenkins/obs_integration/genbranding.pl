@@ -15,7 +15,7 @@
 #       - added OBS_INTEGRATION_PRODUCT to overwrite the default product openSUSE_13.1
 #       - added '--download-api-only' per default to avoid issues with download.o.c.
 #	- fixed the year in changelog entries.
-#	- Deriving the version number from the mirall tar ball filename, per default.
+#	- Deriving the version number from the client tar ball filename, per default.
 #	  We can remove the version => ... entries from package.cfg now.
 #
 # 2014-06-20 jw@owncloud.com, v1.2
@@ -51,14 +51,14 @@ use Data::Dumper;
 my $msg_def = "created by: $0 @ARGV";
 
 use strict;
-use vars qw($miralltar $themetar $templatedir $dir $opt_h $opt_o $opt_b $opt_c $opt_n $opt_f $opt_p $dest_prj $dest_prj_theme $opt_r $opt_P);
+use vars qw($clienttar $themetar $templatedir $dir $opt_h $opt_o $opt_b $opt_c $opt_n $opt_f $opt_p $dest_prj $dest_prj_theme $opt_r $opt_P);
 
 sub help() {
   print<<ENDHELP
 
-  genbranding - Generates a branding from mirall sources and a branding
+  genbranding - Generates a branding from client sources and a branding
 
-  Both the mirall and the branding tarball have to be passed ot this
+  Both the client and the branding tarball have to be passed ot this
   script. It combines both and creates a new branded source pack. It also
   creates packaging input files (spec-file and debian packaging files).
 
@@ -79,6 +79,7 @@ sub help() {
   -r "relid":	specify a build release identifier. This number will be part of the binary file names built by osc.
 
   Call example:
+  ./genbranding.pl client-1.7.1.tar.bz2 testpilotcloud.tar.bz2
   ./genbranding.pl mirall-1.5.3.tar.bz2 cern.tar.bz2
 
   Output will be in directory cern-client. 
@@ -108,19 +109,19 @@ sub getFileName( $ ) {
   return $tarname;
 }
 
-# Extracts the mirall tarball and puts the theme tarball the new dir
+# Extracts the client tarball and puts the theme tarball the new dir
 sub prepareTarBall($$$) {
     my ($argv0, $argv1, $prerelease) = @_;
     print "Preparing tarball...";
 
-    system("/bin/tar", ("xif", $miralltar, "--force-local") );
-    print "Extract mirall...\n";
-    my $mirall = getFileName( $argv0 );
+    system("/bin/tar", ("xif", $clienttar, "--force-local") );
+    print "Extract client...\n";
+    my $client = getFileName( $argv0 );
     my $theme = getFileName( $argv1 );
-    my $newname = $mirall;
-    $newname =~ s/mirall-/$theme-/;
+    my $newname = $client;
+    $newname =~ s/client-/$theme-/;
     $newname .= $prerelease if defined $prerelease;
-    move($mirall, $newname);
+    move($client, $newname);
     chdir($newname);
     print "Extracting theme...\n";
     my @args = ("--wildcards", "--force-local", "-xif", "$themetar", "*/mirall/*");
@@ -330,10 +331,10 @@ $dir = getcwd;
 # Not used currently
 # mkdir("packages") unless( -d "packages" );
 
-$miralltar = ($ARGV[0] =~ m{^/}) ? $ARGV[0] : $dir .'/'. $ARGV[0];
+$clienttar = ($ARGV[0] =~ m{^/}) ? $ARGV[0] : $dir .'/'. $ARGV[0];
 $themetar  = ($ARGV[1] =~ m{^/}) ? $ARGV[1] : $dir .'/'. $ARGV[1];
 $templatedir = $dir .'/'. "templates";
-print "Mirall Tarball: $miralltar\n";
+print "Client Tarball: $clienttar\n";
 print "Theme Tarball: $themetar\n";
 
 # if -o (osc mode) check if an oem directory exists
@@ -367,18 +368,18 @@ $substs->{themename} = $theme;
 $substs->{themename_deb} = lc $theme;	# debian packagin guide allows no upper case. (e.g. SURFdrive).
 $substs->{create_msg} = $create_msg || '' unless defined $substs->{create_msg};
 
-# Automatically derive version number from the mirall tarball.
+# Automatically derive version number from the client tarball.
 # It is used in the spec file to find the tar ball anyway, so this should be safe.
 unless( defined $substs->{version} )
   {
-    my $vers = getFileName($miralltar);
+    my $vers = getFileName($clienttar);
     if ($vers =~ m{-(\d[\d\.]*)$})
       {
         $vers = $1;
       }
     else
       {
-        die "\n\nOops: mirall filename $vers does not match {-(\\d[\\d\\.]\*)\$}.\n Cannot exctract version number from here.\n Please add 'version' to package.cfg in $themetar\n";
+        die "\n\nOops: client filename $vers does not match {-(\\d[\\d\\.]\*)\$}.\n Cannot exctract version number from here.\n Please add 'version' to package.cfg in $themetar\n";
       }
     $substs->{version} = $vers;
   }
@@ -440,7 +441,7 @@ if( $opt_o ) {
 	    # remove the previous tarball!
 	    # search for the old tarball
 	    if( $changed_file eq $dirName . ".tar.bz2" ) {
-	      my $oldTar = $dirName; # something like mirall-cernbox-1.6.0nightly20140505
+	      my $oldTar = $dirName; # something like client-cernbox-1.6.0nightly20140505
 	      $oldTar =~ s/(.+)-.*?$/$1/;   # remove the version	(aka chop at the last '-')
 
 	      opendir(my $dh, '.') || die "can't opendir '.': $!";

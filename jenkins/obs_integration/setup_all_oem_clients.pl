@@ -94,7 +94,7 @@ our $no_op = 0;
 my $skipahead = 0;	# 5 start with all tarballs there.
 
 my $customer_themes_git = 'git@github.com:owncloud/customer-themes.git';
-my $source_git          = 'https://github.com/owncloud/mirall.git';
+my $source_git          = 'https://github.com/owncloud/client.git';
 my $osc_cmd             = "osc -A$obs_api";
 my $genbranding         = "./genbranding.pl -c '-A$obs_api' -p '$container_project' -r '$build_token' -o -f";
 if ($ENV{'OSC_CMD'})
@@ -157,11 +157,11 @@ sub pull_VERSION_cmake
 
 # pull a branch from git, place it into destdir, packaged as a tar ball.
 # This also double-checks if the version in VERSION.cmake matches the name of the branch.
-sub fetch_mirall_from_branch
+sub fetch_client_from_branch
 {
   my ($giturl, $branch, $destdir) = @_;
 
-  my $gitsubdir = "$destdir/mirall_git";
+  my $gitsubdir = "$destdir/client_git";
   # CAUTION: keep in sync with
   # https://rotor.owncloud.com/view/mirall/job/mirall-source-master/configure
 
@@ -193,7 +193,7 @@ sub fetch_mirall_from_branch
       print "branch=$branch contains VERSION.cmake version=$version\n";
     }
 
-  my $pkgname = "mirall-${version}";
+  my $pkgname = "client-${version}";
   $source_tar = "$destdir/$pkgname.tar.bz2";
   run("cd $gitsubdir && git archive HEAD --prefix=$pkgname/ --format tar | bzip2 > $source_tar")
     unless $skipahead > 2;
@@ -204,7 +204,7 @@ sub fetch_mirall_from_branch
 print "source_tar=$source_tar\n";
 my $version = undef;
 my $prerelease = undef;
-($source_tar,$version,$prerelease) = fetch_mirall_from_branch($source_git, $source_tar, $tmp) 
+($source_tar,$version,$prerelease) = fetch_client_from_branch($source_git, $source_tar, $tmp) 
   if $source_tar =~ m{^v[\d\.]+};
 $source_tar = Cwd::abs_path($source_tar);	# we'll chdir() around. Take care.
 print "source_tar=$source_tar\n";
