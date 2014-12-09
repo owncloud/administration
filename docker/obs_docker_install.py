@@ -502,7 +502,7 @@ elif docker["fmt"] == "YUM":
   dockerfile+="RUN "+wget_cmd+target+'/'+args.project+".repo -O /etc/yum.repos.d/"+args.project+".repo"+d_endl
   if args.extra_packages:
     dockerfile+="RUN yum install -y "+re.sub(',',' ',args.extra_packages)+d_endl
-  dockerfile+="RUN date="+now+" yum clean expore-cache && yum install -y "+args.package+d_endl
+  dockerfile+="RUN date="+now+" yum clean expire-cache && yum install -y "+args.package+d_endl
   dockerfile+="RUN echo 'yum install -y "+args.package+"' >> ~/.bash_history"+d_endl
 
 elif docker["fmt"] == "ZYPP":
