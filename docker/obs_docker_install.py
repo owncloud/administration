@@ -21,6 +21,7 @@
 #                           using a timestamp with refresh and install.
 #                           The --no-cache option is more expensive than expected. It 
 #                           disables both using the cache and filling the cache.
+# V0.9 -- 2014-12-10, jw    Added changelog print out at end of installation.
 #
 # FIXME: osc is only used once in obs_fetch_bin_version(), this is a hell of a dependency for just that.
 
@@ -29,7 +30,7 @@ import json, sys, os, re, time
 import subprocess, urllib2, base64
 
 
-__VERSION__="0.8"
+__VERSION__="0.9"
 target="xUbuntu_14.04"
 
 default_obs_config = {
@@ -493,6 +494,7 @@ if docker["fmt"] == "APT":
   if args.extra_packages:
     dockerfile+="RUN apt-get -q -y install "+re.sub(',',' ',args.extra_packages)+d_endl
   dockerfile+="RUN date="+now+" apt-get -q -y update && apt-get -q -y install "+args.package+d_endl
+  dockerfile+="RUN zcat /usr/share/doc/"+args.package+"/changelog.Debian.gz  | head -20"+d_endl
   dockerfile+="RUN echo 'apt-get install "+args.package+"' >> ~/.bash_history"+d_endl
 
 elif docker["fmt"] == "YUM":
@@ -503,6 +505,7 @@ elif docker["fmt"] == "YUM":
   if args.extra_packages:
     dockerfile+="RUN yum install -y "+re.sub(',',' ',args.extra_packages)+d_endl
   dockerfile+="RUN date="+now+" yum clean expire-cache && yum install -y "+args.package+d_endl
+  dockerfile+="RUN rpm -q --changelog "+args.package+" | head -20"+d_endl
   dockerfile+="RUN echo 'yum install -y "+args.package+"' >> ~/.bash_history"+d_endl
 
 elif docker["fmt"] == "ZYPP":
@@ -513,6 +516,7 @@ elif docker["fmt"] == "ZYPP":
   if args.extra_packages:
     dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+re.sub(',',' ',args.extra_packages)+d_endl
   dockerfile+="RUN date="+now+" zypper --non-interactive --gpg-auto-import-keys refresh && zypper --non-interactive --gpg-auto-import-keys install "+args.package+d_endl
+  dockerfile+="RUN rpm -q --changelog "+args.package+" | head -20"+d_endl
   dockerfile+="RUN echo 'zypper install "+args.package+"' >> ~/.bash_history"+d_endl
 
 else:
