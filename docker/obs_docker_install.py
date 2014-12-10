@@ -16,13 +16,20 @@
 #               release number capture improved.
 #               option --print-image-name-only option added.
 # V0.6 -- jw    env XDG_RUNTIME_DIR=/run/user/1000 added (with -X), HOME=/root added always.
+# V0.7 -- 2014-12-09, jw    ported to Ubuntu. docker is known there as docker.io
+# V0.8 --             jw    default selective on-cache on the final install command 
+#                           using a timestamp with refresh and install.
+#                           The --no-cache option is more expensive than expected. It 
+#                           disables both using the cache and filling the cache.
+#
+# FIXME: osc is only used once in obs_fetch_bin_version(), this is a hell of a dependency for just that.
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import json, sys, os, re, time
 import subprocess, urllib2, base64
 
 
-__VERSION__="0.6"
+__VERSION__="0.8"
 target="xUbuntu_14.04"
 
 default_obs_config = {
@@ -129,20 +136,51 @@ def check_dependencies():
   docker_bin = run(["which", "docker"], redirect_stderr=False)
   if not re.search(r"/docker\b", docker_bin, re.S):
     print """docker not installed? Try:
+
+openSUSE:
  sudo zypper in docker
+
+Debian:
+ sudo apt-get install bridge-utils docker.io
+ # or for a newer version:
+ sudo sh -c "echo deb https://get.docker.com/ubuntu docker main > /etc/apt/sources.list.d/docker.list"
+ sudo apt-get update
+ sudo apt-get install lxc-docker
+
+Mint (as Debian, plus):
+ sudo apt-get install cgroup-lite apparmor
+  
 """
     sys.exit(0)
   docker_pid = run(["pidof", "docker"], redirect_stderr=False)
+  if docker_pid == "":
+    docker_pid = run(["pidof", "docker.io"], redirect_stderr=False)
   if not re.search(r"\b\d\d+\b", docker_pid, re.S):
     print """docker is not running? Try:
+
+openSUSE:
  sudo systemctl enable docker
  sudo systemctl start docker
+
+Debian
+ sudo service docker.io start
+ # or for the lxc-docker version
+ sudo service docker start
+ dmesg
+ # if you see respawn errors try: apt-get install cgroup-lite apparmor
+
 """
     sys.exit(0)
   docker_grp = run(["id", "-a"], redirect_stderr=False)
   if not re.search(r"\bdocker\b", docker_grp, re.S):
     print """You are not in the docker group? Try:
+
+openSUSE:
  sudo usermod -a -G docker $USER; reboot"
+
+Debian:
+ sudo groupadd docker
+ sudo gpasswd -a $USER docker; reboot
 """
     sys.exit(0)
 
@@ -169,7 +207,7 @@ def guess_obs_api(prj, override=None, verbose=True):
   raise ValueError("guess_obs_api failed for project='"+prj+"', try different project, -A, or update config in "+args.configfile)
 
 def obs_fetch_bin_version(api, prj, pkg, target):
-  bin_seen = run(["osc", "-A"+api, "ls", "-b", args.project, args.package, target])
+  bin_seen = run(["osc", "-A"+api, "ls", "-b", args.project, args.package, target], input="")
   # cernbox-client_1.7.0-0.jw20141127_amd64.deb
   m = re.search(r'^\s*'+re.escape(args.package)+r'_(\d+[^-\s]*)\-(\d+[^_\s]*)_.*?\.deb$', bin_seen, re.M)
   if m: return (m.group(1),m.group(2))
@@ -439,6 +477,7 @@ if "password" in download: wget_cmd+=" --password '"+download["password"]+"'"
 wget_cmd+=" "+download["url"]
 if not re.search(r'/$', wget_cmd): wget_cmd+='/'
 
+now=time.strftime('%Y%m%d%H%M')
 d_endl="\n"
 if args.keep_going: d_endl = " || true\n"
 
@@ -453,7 +492,7 @@ if docker["fmt"] == "APT":
   dockerfile+="RUN apt-get -q -y update"+d_endl
   if args.extra_packages:
     dockerfile+="RUN apt-get -q -y install "+re.sub(',',' ',args.extra_packages)+d_endl
-  dockerfile+="RUN apt-get -q -y install "+args.package+d_endl
+  dockerfile+="RUN date="+now+" apt-get -q -y update && apt-get -q -y install "+args.package+d_endl
   dockerfile+="RUN echo 'apt-get install "+args.package+"' >> ~/.bash_history"+d_endl
 
 elif docker["fmt"] == "YUM":
@@ -463,7 +502,7 @@ elif docker["fmt"] == "YUM":
   dockerfile+="RUN "+wget_cmd+target+'/'+args.project+".repo -O /etc/yum.repos.d/"+args.project+".repo"+d_endl
   if args.extra_packages:
     dockerfile+="RUN yum install -y "+re.sub(',',' ',args.extra_packages)+d_endl
-  dockerfile+="RUN yum install -y "+args.package+d_endl
+  dockerfile+="RUN date="+now+" yum clean expire-cache && yum install -y "+args.package+d_endl
   dockerfile+="RUN echo 'yum install -y "+args.package+"' >> ~/.bash_history"+d_endl
 
 elif docker["fmt"] == "ZYPP":
@@ -473,7 +512,7 @@ elif docker["fmt"] == "ZYPP":
   dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys addrepo "+download["url_cred"]+target+"/"+args.project+".repo"+d_endl
   if args.extra_packages:
     dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+re.sub(',',' ',args.extra_packages)+d_endl
-  dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+args.package+d_endl
+  dockerfile+="RUN date="+now+" zypper --non-interactive --gpg-auto-import-keys refresh && zypper --non-interactive --gpg-auto-import-keys install "+args.package+d_endl
   dockerfile+="RUN echo 'zypper install "+args.package+"' >> ~/.bash_history"+d_endl
 
 else:
