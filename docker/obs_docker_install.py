@@ -77,7 +77,7 @@ RUN yum install -y wget
 RUN wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
 RUN wget http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
 RUN rpm -ivh remi-release-6*.rpm epel-release-6*.rpm
-RUN yum --enablerepo=remi install php
+RUN yum --enablerepo=remi -y install php
 """ },
       "CentOS_CentOS-6": { "fmt":"YUM", "pre": ["wget"], "from":"centos:centos6" },
       "Fedora_20":       { "fmt":"YUM", "pre": ["wget"], "from":"fedora:20" },
