@@ -32,7 +32,7 @@ import json, sys, os, re, time
 import subprocess, urllib2, base64
 
 
-__VERSION__="0.9"
+__VERSION__="0.9a"
 target="xUbuntu_14.04"
 
 default_obs_config = {
