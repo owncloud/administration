@@ -21,7 +21,9 @@
 #                           using a timestamp with refresh and install.
 #                           The --no-cache option is more expensive than expected. It 
 #                           disables both using the cache and filling the cache.
-# V0.9 -- 2014-12-10, jw    Added changelog print out at end of installation.
+# V0.9  -- 2014-12-10, jw  Added changelog print out at end of installation.
+# V0.9a -- 2014-12-11, jw  Added informative -T -P options for printing configuration.
+#                          Fixed CentOS_6_PHP54 to really enable remi.
 #
 # FIXME: osc is only used once in obs_fetch_bin_version(), this is a hell of a dependency for just that.
 
@@ -73,11 +75,12 @@ RUN yum install -y centos-release-SCL
 RUN yum install -y php54
 """ },
       "CentOS_6_PHP54":  { "fmt":"YUM", "pre": ["wget"], "from":"""centos:centos6
-RUN yum install -y wget
+RUN yum install -y wget yum-utils
 RUN wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
 RUN wget http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
 RUN rpm -ivh remi-release-6*.rpm epel-release-6*.rpm
-RUN yum --enablerepo=remi -y install php
+RUN yum-config-manager --enable remi
+RUN yum -y install php
 """ },
       "CentOS_CentOS-6": { "fmt":"YUM", "pre": ["wget"], "from":"centos:centos6" },
       "Fedora_20":       { "fmt":"YUM", "pre": ["wget"], "from":"fedora:20" },
@@ -346,6 +349,8 @@ ap.add_argument("-W", "--writeconfig", default=False, action="store_true", help=
 ap.add_argument("-A", "--obs-api", help="Identify the build service. Default: guessed from project name")
 ap.add_argument("-n", "--image-name", help="Specify the name for the docker image. Default: construct a name and print")
 ap.add_argument("-I", "--print-image-name-only", default=False, action="store_true", help="construct a name using 'osc -ls -b' end exit after printing")
+ap.add_argument("-P", "--print-config-only", default=False, action="store_true", help="show the current project and target configuration and exit after printing")
+ap.add_argument("-T", "--list-targets-only", default=False, action="store_true", help="show a list of configured build target names and exit after printing")
 ap.add_argument("-e", "--extra-packages", help="Comma separated list of packages to pre-install. Default: only per 'pre' in the config file")
 ap.add_argument("-q", "--quiet", default=False, action="store_true", help="Print less information while working. Default: babble a lot")
 ap.add_argument("-k", "--keep-going", default=False, action="store_true", help="Continue after errors. Default: abort on error")
@@ -382,6 +387,32 @@ if not os.path.exists(args.configfile):
   print "Use -W to generate the file, or use -c to choose different config file"
   sys.exit(1)
 
+cfp = open(args.configfile)
+
+try:
+  obs_config = json.load(cfp)
+except Exception as e:
+  print "ERROR: loading "+args.configfile+" failed: ", e
+  print ""
+  obs_config = default_obs_config
+
+if args.print_config_only:
+  import pprint
+  if args.project:
+    pprint.pprint(obs_config['target'][args.project])
+  else:
+    pprint.pprint(obs_config)
+  sys.exit(0)
+
+if args.list_targets_only:
+  print "OBS platform          Docker base image"
+  print "---------------------------------------"
+  for t in obs_config['target']: 
+    xx = docker_from_obs(t)['from']
+    xx = re.sub("\n.*", "", xx)
+    print "%-20s  %s" % (t, xx)
+  sys.exit(0)
+
 if args.project is None:
   print "need project/package name"
   sys.exit(1)
@@ -401,15 +432,6 @@ if args.target and args.platform:
   print "specify either a build target platform with -p or as a third parameter. Not both"
   sys.exit(1)
 target = re.sub(':','_', target)	# just in case we get the project name instead of the build target name
-
-cfp = open(args.configfile)
-
-try:
-  obs_config = json.load(cfp)
-except Exception as e:
-  print "ERROR: loading "+args.configfile+" failed: ", e
-  print ""
-  obs_config = default_obs_config
 
 docker=docker_from_obs(target)
 
