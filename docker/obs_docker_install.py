@@ -24,6 +24,7 @@
 # V0.9  -- 2014-12-10, jw  Added changelog print out at end of installation.
 # V0.9a -- 2014-12-11, jw  Added informative -T -P options for printing configuration.
 #                          Fixed CentOS_6_PHP54 to really enable remi.
+#                          wget -nv non-verbose -- makes logfiles more readable.
 #
 # FIXME: osc is only used once in obs_fetch_bin_version(), this is a hell of a dependency for just that.
 
@@ -67,7 +68,7 @@ default_obs_config = {
       "CentOS_7":        { "fmt":"YUM", "pre": ["wget"], "from":"centos:centos7" },
       "CentOS_6":        { "fmt":"YUM", "pre": ["wget"], "from":"""centos:centos6
 RUN yum install -y wget
-RUN wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
 RUN rpm -ivh epel-release-6-8.noarch.rpm
 """ },
       "CentOS_6_PHP54@SCL":  { "fmt":"YUM", "pre": ["wget"], "from":"""centos:centos6
@@ -76,8 +77,8 @@ RUN yum install -y php54
 """ },
       "CentOS_6_PHP54":  { "fmt":"YUM", "pre": ["wget"], "from":"""centos:centos6
 RUN yum install -y wget yum-utils
-RUN wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-RUN wget http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
+RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+RUN wget -nv http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
 RUN rpm -ivh remi-release-6*.rpm epel-release-6*.rpm
 RUN yum-config-manager --enable remi
 RUN yum install -y php
@@ -501,7 +502,7 @@ dockerfile="FROM "+docker['from']+"\n"
 dockerfile+="ENV TERM ansi\n"
 dockerfile+="ENV HOME /root\n"
 
-wget_cmd="wget"
+wget_cmd="wget -nv"
 if "username" in download: wget_cmd+=" --user '"+download["username"]+"'"
 if "password" in download: wget_cmd+=" --password '"+download["password"]+"'"
 wget_cmd+=" "+download["url"]
