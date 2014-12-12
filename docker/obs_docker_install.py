@@ -25,6 +25,8 @@
 # V0.9a -- 2014-12-11, jw  Added informative -T -P options for printing configuration.
 #                          Fixed CentOS_6_PHP54 to really enable remi.
 #                          wget -nv non-verbose -- makes logfiles more readable.
+# V0.9b                jw  Added CentOS_6_PHP55 and CentOS_6_PHP56 via remi.
+#                          Pretty printing a target config with -P obstarget
 #
 # FIXME: osc is only used once in obs_fetch_bin_version(), this is a hell of a dependency for just that.
 
@@ -33,7 +35,7 @@ import json, sys, os, re, time
 import subprocess, urllib2, base64
 
 
-__VERSION__="0.9a"
+__VERSION__="0.9b"
 target="xUbuntu_14.04"
 
 default_obs_config = {
@@ -66,7 +68,7 @@ default_obs_config = {
       "Debian_7.0":      { "fmt":"APT", "pre": ["wget","apt-transport-https"], "from":"debian:7" },
 
       "CentOS_7":        { "fmt":"YUM", "pre": ["wget"], "from":"centos:centos7" },
-      "CentOS_6":        { "fmt":"YUM", "pre": ["wget"], "from":"""centos:centos6
+      "CentOS_6":        { "fmt":"YUM", "from":"""centos:centos6
 RUN yum install -y wget
 RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
 RUN rpm -ivh epel-release-6-8.noarch.rpm
@@ -75,7 +77,8 @@ RUN rpm -ivh epel-release-6-8.noarch.rpm
 RUN yum install -y centos-release-SCL
 RUN yum install -y php54
 """ },
-      "CentOS_6_PHP54":  { "fmt":"YUM", "pre": ["wget"], "from":"""centos:centos6
+
+      "CentOS_6_PHP54":  { "fmt":"YUM", "from":"""centos:centos6
 RUN yum install -y wget yum-utils
 RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
 RUN wget -nv http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
@@ -83,6 +86,25 @@ RUN rpm -ivh remi-release-6*.rpm epel-release-6*.rpm
 RUN yum-config-manager --enable remi
 RUN yum install -y php
 """ },
+
+      "CentOS_6_PHP55":  { "fmt":"YUM", "from":"""centos:centos6
+RUN yum install -y wget yum-utils
+RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+RUN wget -nv http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
+RUN rpm -ivh remi-release-6*.rpm epel-release-6*.rpm
+RUN yum-config-manager --enable remi-php55
+RUN yum install -y php
+""" },
+
+      "CentOS_6_PHP56":  { "fmt":"YUM", "from":"""centos:centos6
+RUN yum install -y wget yum-utils
+RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+RUN wget -nv http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
+RUN rpm -ivh remi-release-6*.rpm epel-release-6*.rpm
+RUN yum-config-manager --enable remi-php56
+RUN yum install -y php
+""" },
+
       "CentOS_CentOS-6": { "fmt":"YUM", "pre": ["wget"], "from":"centos:centos6" },
       "Fedora_20":       { "fmt":"YUM", "pre": ["wget"], "from":"fedora:20" },
       "openSUSE_13.2":   { "fmt":"ZYPP","pre": ["ca-certificates"], "from":"opensuse:13.2" },
@@ -350,7 +372,7 @@ ap.add_argument("-W", "--writeconfig", default=False, action="store_true", help=
 ap.add_argument("-A", "--obs-api", help="Identify the build service. Default: guessed from project name")
 ap.add_argument("-n", "--image-name", help="Specify the name for the docker image. Default: construct a name and print")
 ap.add_argument("-I", "--print-image-name-only", default=False, action="store_true", help="construct a name using 'osc -ls -b' end exit after printing")
-ap.add_argument("-P", "--print-config-only", default=False, action="store_true", help="show the current project and target configuration and exit after printing")
+ap.add_argument("-P", "--print-config-only", default=False, action="store_true", help="show the current project and target configuration and exit after printing. An optional target argument (see also -T) can be used to pretty print only one target configuration.")
 ap.add_argument("-T", "--list-targets-only", default=False, action="store_true", help="show a list of configured build target names and exit after printing")
 ap.add_argument("-e", "--extra-packages", help="Comma separated list of packages to pre-install. Default: only per 'pre' in the config file")
 ap.add_argument("-q", "--quiet", default=False, action="store_true", help="Print less information while working. Default: babble a lot")
@@ -400,7 +422,10 @@ except Exception as e:
 if args.print_config_only:
   import pprint
   if args.project:
-    pprint.pprint(obs_config['target'][args.project])
+    cfg=obs_config['target'][args.project]
+    print "FROM "+cfg['from']+"\n# ",
+    del(cfg['from'])
+    pprint.pprint(cfg)
   else:
     pprint.pprint(obs_config)
   sys.exit(0)
