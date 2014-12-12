@@ -1,7 +1,9 @@
 #!/usr/bin/python
 #
-# pull (recursive) listing from apache
+# (c) 2014 jw@owncloud.com
+# Distribute under GPLv2 or ask
 #
+# pull (recursive) listings from apache index pages
 
 import re,requests
 
