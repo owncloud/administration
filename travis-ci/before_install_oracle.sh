@@ -53,27 +53,12 @@ sudo apt-get update
 
 # Install the Oracle 10g dependant packages
 sudo apt-get install -qq --force-yes libc6:i386
-# travis needs the "apt-transport-https" to enable https transport
-sudo apt-get install -qq bc apt-transport-https
-
-# add Oracle repo + key (please note https is a must here, otherwise "apt-get update" fails for this repo with the "Undetermined error")
-sudo bash -c 'echo "deb https://oss.oracle.com/debian/ unstable main non-free" >/etc/apt/sources.list.d/oracle.list'
-wget -q https://oss.oracle.com/el4/RPM-GPG-KEY-oracle -O- | sudo apt-key add -
-sudo apt-get --allow-unauthenticated update -qq
-
-# only download the package, to manually install afterwards
-#sudo apt-get install -qq --force-yes -d oracle-xe-universal:i386
-sudo apt-get install -qq --force-yes libaio:i386
-
-# remove key + repo (to prevent failures on next updates)
-sudo apt-key del B38A8516
-sudo bash -c 'rm -rf /etc/apt/sources.list.d/oracle.list'
-sudo apt-get update -qq
-sudo apt-get autoremove -qq
+cd /tmp
+wget --tries=20 https://oss.oracle.com/debian/dists/unstable/main/binary-i386/libaio_0.3.104-1_i386.deb
+wget --tries=20 https://oss.oracle.com/debian/dists/unstable/non-free/binary-i386/oracle-xe-universal_10.2.0.1-1.1_i386.deb
+sudo dpkg -i --force-architecture /tmp/libaio_0.3.104-1_i386.deb
 
 # remove bc from the dependencies of the oracle-xe-universal package (to keep 64bit one installed)
-cd /tmp
-wget --tries=20 https://oss.oracle.com/debian/dists/unstable/non-free/binary-i386/oracle-xe-universal_10.2.0.1-1.1_i386.deb
 mkdir /tmp/oracle_unpack
 dpkg-deb -x oracle-xe-universal_10.2.0.1-1.1_i386.deb /tmp/oracle_unpack
 cd /tmp/oracle_unpack
