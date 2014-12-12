@@ -72,11 +72,12 @@ sudo apt-get update -qq
 sudo apt-get autoremove -qq
 
 # remove bc from the dependencies of the oracle-xe-universal package (to keep 64bit one installed)
+cd /tmp
 wget https://oss.oracle.com/debian/dists/unstable/non-free/binary-i386/oracle-xe-universal_10.2.0.1-1.1_i386.deb
 mkdir /tmp/oracle_unpack
 dpkg-deb -x oracle-xe-universal_10.2.0.1-1.1_i386.deb /tmp/oracle_unpack
 cd /tmp/oracle_unpack
-dpkg-deb --control /var/cache/apt/archives/oracle-xe-universal_10.2.0.1-1.1_i386.deb 
+dpkg-deb --control /tmp/oracle-xe-universal_10.2.0.1-1.1_i386.deb 
 sed -i "s/,\ bc//g" /tmp/oracle_unpack/DEBIAN/control
 mkdir /tmp/oracle_repack
 dpkg -b /tmp/oracle_unpack /tmp/oracle_repack/oracle-xe-universal_fixed_10.2.0.1-1.1_i386.deb
