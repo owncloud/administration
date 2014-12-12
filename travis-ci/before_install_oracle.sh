@@ -62,7 +62,7 @@ wget -q https://oss.oracle.com/el4/RPM-GPG-KEY-oracle -O- | sudo apt-key add -
 sudo apt-get --allow-unauthenticated update -qq
 
 # only download the package, to manually install afterwards
-#sudo apt-get install -qq --force-yes -d oracle-xe-universal:i386
+sudo apt-get install -qq --force-yes -d oracle-xe-universal:i386
 sudo apt-get install -qq --force-yes libaio:i386
 
 # remove key + repo (to prevent failures on next updates)
@@ -72,9 +72,8 @@ sudo apt-get update -qq
 sudo apt-get autoremove -qq
 
 # remove bc from the dependencies of the oracle-xe-universal package (to keep 64bit one installed)
-wget https://oss.oracle.com/debian/dists/unstable/non-free/binary-i386/oracle-xe-universal_10.2.0.1-1.1_i386.deb
 mkdir /tmp/oracle_unpack
-dpkg-deb -x oracle-xe-universal_10.2.0.1-1.1_i386.deb /tmp/oracle_unpack
+dpkg-deb -x /var/cache/apt/archives/oracle-xe-universal_10.2.0.1-1.1_i386.deb /tmp/oracle_unpack
 cd /tmp/oracle_unpack
 dpkg-deb --control /var/cache/apt/archives/oracle-xe-universal_10.2.0.1-1.1_i386.deb 
 sed -i "s/,\ bc//g" /tmp/oracle_unpack/DEBIAN/control
