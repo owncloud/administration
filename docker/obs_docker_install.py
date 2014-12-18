@@ -30,15 +30,16 @@
 # V0.9c                jw  Changlog printing needs a wildcard: to catch changelog.gz changelog.Debian.gz
 #			   continue wit builtin config after warnings about missing config file.
 #			   hint at available targets, when given target is not there.
+# V1.0		       jw  osc ls -b obsoleted with ListUrl()
 #
 # FIXME: osc is only used once in obs_fetch_bin_version(), this is a hell of a dependency for just that.
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import json, sys, os, re, time
-import subprocess, urllib2, base64
+import subprocess, urllib2, base64, requests
 
 
-__VERSION__="0.9c"
+__VERSION__="1.0"
 target="xUbuntu_14.04"
 
 default_obs_config = {
@@ -118,6 +119,55 @@ RUN yum install -y php
 docker_volumes=[]
 
 ################################################################################
+
+# import github/owncloud/administration/jenkins/obs_integration/ListUrl.py
+class ListUrl:
+
+  def _apache_index(self, url):
+    r = requests.get(url)
+    if r.status_code != 200:
+      raise ValueError(url+" status:"+str(r.status_code))
+    r.dirs = []
+    r.files = []
+    for l in r.content.split("\n"):
+      # '<img src="/icons/folder.png" alt="[DIR]" /> <a href="7.0/">7.0/</a>       03-Dec-2014 19:57    -   '
+      # ''<img src="/icons/tgz.png" alt="[   ]" /> <a href="owncloud_7.0.4-2.diff.gz">owncloud_7.0.4-2.diff.gz</a>                     09-Dec-2014 16:53  9.7K   <a href="owncloud_7.0.4-2.diff.gz.mirrorlist">Details</a>'
+      # 
+      m = re.search("<a\s+href=[\"']?([^>]+?)[\"']?>([^<]+?)[\"']?</a>\s*([^<]*)", l, re.I)
+      if m:
+	# ('owncloud_7.0.4-2.diff.gz', 'owncloud_7.0.4-2.diff.gz', '09-Dec-2014 16:53  9.7K   ')
+	m1,m2,m3 = m.groups()
+
+	if re.match("(/|\?|\w+://)", m1):	# skip absolute urls, query strings and foreign urls
+	  continue
+	if re.match("\.?\./?$", m1):	# skip . and ..
+	  continue
+
+	m3 = re.sub("[\s-]+$", "", m3)
+	if re.search("/$", m1):
+	  r.dirs.append([m1, m3])
+	else:
+	  r.files.append([m1, m3])
+    return r
+
+  def apache(self, url, pre=''):
+    if not url.endswith('/'): url += '/'	# directory!
+    l = self._apache_index(url)
+    r = []
+    for f in l.files: 
+      if self.callback: self.callback(url, pre, f[0], f[1])
+      r.append([pre+f[0], f[1]])
+    for d in l.dirs:
+      if self.callback: self.callback(url, pre, d[0], d[1])
+      r.append([pre+d[0], d[1]])
+      if self.recursive:
+        r.extend(self.apache(url+d[0], pre+d[0]))
+    return r
+
+  def __init__(self, callback=None, recursive=True):
+    self.callback=callback
+    self.recursive=recursive
+
 
 # Keep in sync with internal_tar2obs.py obs_docker_install.py
 def run(args, input=None, redirect=None, redirect_stdout=True, redirect_stderr=True, return_tuple=False, return_code=False, tee=False):
@@ -245,10 +295,18 @@ def guess_obs_api(prj, override=None, verbose=True):
 
 def obs_fetch_bin_version(api, download_item, prj, pkg, target):
   cfg = obs_download_cfg(obs_config['obs'][api], download_item, prj, urltest=False, verbose=False)
-  download_url = cfg['url_cred']+'/'target
+  lu = ListUrl()
+  bin_seen = ''
+  try:
+    downloads = lu.apache(cfg['url_cred']+'/'+target)
+    for line in downloads:
+      bin_seen += re.sub(".*/", "", line[0]) + "\n"
+  except:
+    pass
 
-  # FIXME: obsolete this osc dependency.
-  bin_seen = run(["osc", "-A"+api, "ls", "-b", args.project, args.package, target], input="")
+  # osc ls -b obsoleted by the above ListUrl()
+  # bin_seen = run(["osc", "-A"+api, "ls", "-b", args.project, args.package, target], input="")
+
   # cernbox-client_1.7.0-0.jw20141127_amd64.deb
   m = re.search(r'^\s*'+re.escape(args.package)+r'_(\d+[^-\s]*)\-(\d+[^_\s]*)_.*?\.deb$', bin_seen, re.M)
   if m: return (m.group(1),m.group(2))
@@ -259,8 +317,11 @@ def obs_fetch_bin_version(api, download_item, prj, pkg, target):
   # cloudtirea-client-1.7.0-4.1.i686.rpm
   m = re.search(r'^\s*'+re.escape(args.package)+r'-(\d+[^-\s]*)\-([\w\.]+?)\.(x86_64|i\d86|noarch)\.rpm$', bin_seen, re.M)
   if m: return (m.group(1),m.group(2))
-  print("package for "+target+" not seen in 'osc -A"+api+" ls -b "+args.project+" "+args.package+" "+target+"' output: \n"+ bin_seen)
-  print "Check what is available:", cfg['url_cred']
+  print("package for "+target+" not seen in "+cfg['url']+'/'+target+" :\n"+ bin_seen)
+  print "Try one of these:"
+  lu.recursive = False
+  for target in lu.apache(cfg['url_cred']):
+    print re.sub("/$","", target[0]),
   sys.exit(22)
 
 
@@ -381,7 +442,7 @@ ap.add_argument("-c", "--configfile", default='obs_docker.json', metavar="FILE",
 ap.add_argument("-W", "--writeconfig", default=False, action="store_true", help='Write a default config file and exit. Default: use existing config file')
 ap.add_argument("-A", "--obs-api", help="Identify the build service. Default: guessed from project name")
 ap.add_argument("-n", "--image-name", help="Specify the name for the docker image. Default: construct a name and print")
-ap.add_argument("-I", "--print-image-name-only", default=False, action="store_true", help="construct a name using 'osc -ls -b' end exit after printing")
+ap.add_argument("-I", "--print-image-name-only", default=False, action="store_true", help="construct a name and exit after printing")
 ap.add_argument("-P", "--print-config-only", default=False, action="store_true", help="show the current project and target configuration and exit after printing. An optional target argument (see also -T) can be used to pretty print only one target configuration.")
 ap.add_argument("-T", "--list-targets-only", default=False, action="store_true", help="show a list of configured build target names and exit after printing")
 ap.add_argument("-e", "--extra-packages", help="Comma separated list of packages to pre-install. Default: only per 'pre' in the config file")

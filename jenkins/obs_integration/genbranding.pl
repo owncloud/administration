@@ -367,6 +367,7 @@ my $substs = getSubsts($dirName);
 $substs->{themename} = $theme;
 $substs->{themename_deb} = lc $theme;	# debian packagin guide allows no upper case. (e.g. SURFdrive).
 $substs->{create_msg} = $create_msg || '' unless defined $substs->{create_msg};
+$substs->{summary} = "The $theme client";	# prevent shdbox to die with empty summary.
 
 # Automatically derive version number from the client tarball.
 # It is used in the spec file to find the tar ball anyway, so this should be safe.
