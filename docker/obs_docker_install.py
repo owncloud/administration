@@ -27,6 +27,9 @@
 #                          wget -nv non-verbose -- makes logfiles more readable.
 # V0.9b                jw  Added CentOS_6_PHP55 and CentOS_6_PHP56 via remi.
 #                          Pretty printing a target config with -P obstarget
+# V0.9c                jw  Changlog printing needs a wildcard: to catch changelog.gz changelog.Debian.gz
+#			   continue wit builtin config after warnings about missing config file.
+#			   hint at available targets, when given target is not there.
 #
 # FIXME: osc is only used once in obs_fetch_bin_version(), this is a hell of a dependency for just that.
 
@@ -35,7 +38,7 @@ import json, sys, os, re, time
 import subprocess, urllib2, base64
 
 
-__VERSION__="0.9b"
+__VERSION__="0.9c"
 target="xUbuntu_14.04"
 
 default_obs_config = {
@@ -240,7 +243,11 @@ def guess_obs_api(prj, override=None, verbose=True):
       return obs
   raise ValueError("guess_obs_api failed for project='"+prj+"', try different project, -A, or update config in "+args.configfile)
 
-def obs_fetch_bin_version(api, prj, pkg, target):
+def obs_fetch_bin_version(api, download_item, prj, pkg, target):
+  cfg = obs_download_cfg(obs_config['obs'][api], download_item, prj, urltest=False, verbose=False)
+  download_url = cfg['url_cred']+'/'target
+
+  # FIXME: obsolete this osc dependency.
   bin_seen = run(["osc", "-A"+api, "ls", "-b", args.project, args.package, target], input="")
   # cernbox-client_1.7.0-0.jw20141127_amd64.deb
   m = re.search(r'^\s*'+re.escape(args.package)+r'_(\d+[^-\s]*)\-(\d+[^_\s]*)_.*?\.deb$', bin_seen, re.M)
@@ -252,7 +259,9 @@ def obs_fetch_bin_version(api, prj, pkg, target):
   # cloudtirea-client-1.7.0-4.1.i686.rpm
   m = re.search(r'^\s*'+re.escape(args.package)+r'-(\d+[^-\s]*)\-([\w\.]+?)\.(x86_64|i\d86|noarch)\.rpm$', bin_seen, re.M)
   if m: return (m.group(1),m.group(2))
-  raise ValueError("package for "+target+" not seen in 'osc -A"+api+" ls -b "+args.project+" "+args.package+" "+target+"' output: \n"+ bin_seen)
+  print("package for "+target+" not seen in 'osc -A"+api+" ls -b "+args.project+" "+args.package+" "+target+"' output: \n"+ bin_seen)
+  print "Check what is available:", cfg['url_cred']
+  sys.exit(22)
 
 
 def docker_from_obs(obs_target_name):
@@ -262,25 +271,26 @@ def docker_from_obs(obs_target_name):
     return r
   raise ValueError("no docker base image known for '"+obs_target_name+"' - choose other obs target or update config in "+args.configfile)
 
-def obs_download_cfg(config, item, prj_path, urltest=True, verbose=True):
+def obs_download_cfg(config, download_item, prj_path, urltest=True, verbose=True):
   """
     prj_path is appended to url_cred, where all ':' are replaced with ':/'
     a '/' is asserted between url_cred and prj_path.
     url_cred is guaranteed to end in '/'
     url, username, password, are derived from url_cred.
+    download_item: public, internal, ...
 
     Side-Effect:
       The resulting url_cred is tested, and a warning is printed, if it is not accessible.
   """
   if not 'download' in config:
     raise ValueError("obs_download_cfg: cannot read download url from config")
-  if not item in config["download"]:
-    raise ValueError("obs_download_cfg: has no item '"+item+"' -- check --download option.")
-  url_cred=config["download"][item]
+  if not download_item in config["download"]:
+    raise ValueError("obs_download_cfg: has no item '"+download_item+"' -- check --download option.")
+  url_cred=config["download"][download_item]
 
   if not prj_path is None:
     mapping=None
-    if "map" in config and item in config["map"]: mapping=config["map"][item]
+    if "map" in config and download_item in config["map"]: mapping=config["map"][download_item]
     if mapping and prj_path in mapping:
       prj_path = mapping[prj_path]
       if verbose: print "prj path mapping -> ", prj_path
@@ -408,16 +418,18 @@ if args.writeconfig:
 if not os.path.exists(args.configfile):
   print "Config file does not exist: "+args.configfile
   print "Use -W to generate the file, or use -c to choose different config file"
-  sys.exit(1)
 
-cfp = open(args.configfile)
-
-try:
-  obs_config = json.load(cfp)
-except Exception as e:
-  print "ERROR: loading "+args.configfile+" failed: ", e
-  print ""
+  # either exit here, or be nice and use the builtin defaults.
+  # sys.exit(1)
   obs_config = default_obs_config
+else:
+  try:
+    cfp = open(args.configfile)
+    obs_config = json.load(cfp)
+  except Exception as e:
+    print "ERROR: loading "+args.configfile+" failed: ", e
+    print ""
+    obs_config = default_obs_config
 
 if args.print_config_only:
   import pprint
@@ -459,6 +471,16 @@ if args.target and args.platform:
   sys.exit(1)
 target = re.sub(':','_', target)	# just in case we get the project name instead of the build target name
 
+obs_api=guess_obs_api(args.project, args.obs_api, not args.quiet)
+try:
+  version,release=obs_fetch_bin_version(obs_api, args.download, args.project, args.package, target)
+except Exception as e:
+  if args.keep_going:
+    print str(e)
+    version,release = '',''
+  else:
+    raise e
+
 docker=docker_from_obs(target)
 
 if args.base_image:
@@ -477,16 +499,6 @@ if not args.no_operation:
       pass
   else:
     check_dependencies()
-
-obs_api=guess_obs_api(args.project, args.obs_api, not args.quiet)
-try:
-  version,release=obs_fetch_bin_version(obs_api, args.project, args.package, target)
-except Exception as e:
-  if args.keep_going:
-    print str(e)
-    version,release = '',''
-  else:
-    raise e
 
 download=obs_download_cfg(obs_config["obs"][obs_api], args.download, args.project, verbose=not args.quiet, urltest=not args.no_operation)
 
@@ -549,7 +561,7 @@ if docker["fmt"] == "APT":
   if args.extra_packages:
     dockerfile+="RUN apt-get -q -y install "+re.sub(',',' ',args.extra_packages)+d_endl
   dockerfile+="RUN date="+now+" apt-get -q -y update && apt-get -q -y install "+args.package+d_endl
-  dockerfile+="RUN zcat /usr/share/doc/"+args.package+"/changelog.Debian.gz  | head -20"+d_endl
+  dockerfile+="RUN zcat /usr/share/doc/"+args.package+"/changelog*.gz  | head -20"+d_endl
   dockerfile+="RUN echo 'apt-get install "+args.package+"' >> ~/.bash_history"+d_endl
 
 elif docker["fmt"] == "YUM":
