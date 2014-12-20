@@ -53,6 +53,7 @@ default_obs_config = {
 	  "download": 
 	    { 
 	      "public":   "http://download.opensuse.org/repositories/", 
+	      "api":      "https://[OBS_USER]:[OBS_PASS]@api.opensuse.org/build/[OBS_PROJ]/[OBS_TARGET]/[OBS_ARCH]/[OBS_PACK]"
 	    },
 	  "map":
 	    {
