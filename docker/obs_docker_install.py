@@ -672,7 +672,7 @@ if args.no_operation:
   print "\nYou can use the above Dockerfile to create an image like this:\n "+" ".join(docker_build)+"\n"
 else:
   run.verbose += 1
-  r=run(docker_build, input=dockerfile, redirect_stdout=False, redirect_stderr=False, return_code=True)  
+  r=run(docker_build, input="\n"+dockerfile, redirect_stdout=False, redirect_stderr=False, return_code=True)  
   run.verbose -= 1
   if not args.quiet:
     if r:
