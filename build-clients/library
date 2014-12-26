@@ -203,6 +203,8 @@ function buildCustomizations() {
         #   theme.qrc. If you changed file names in /replacements/mytheme/theme/
         #   black, colored and white you have to do that in theme.qrc also.
         #   OEM.cmake and OEM_linux.cmake have hints what you can change.
+        # - In /replacements/mytheme/admin/osx/ replace the background file for
+        #   the Mac installer (default: installer-background.png).
         # - In /replacements/mytheme/mytheme.h you can specify your own an URL for
         #   a help page and an URL for updating.
         #
@@ -457,14 +459,14 @@ function helpPage() {
     if [ ${OSLINUX} -eq 1 ] ; then
         echo $'\t\tThe executable (EXE) in the folder \"client\" will be code signed.\n'
     else
-        echo $'\t\tThe executable (DMG) in the folder \"client\" will be code signed.\n'
+        echo $'\t\tThe executable (PKG) in the folder \"client\" will be code signed.\n'
     fi
 
     echo $'\t'${bold}'-so, --sign-only'${normal}
     if [ ${OSLINUX} -eq 1 ] ; then
         echo $'\t\tThe script will stop after code signing the executable (EXE) in the folder \"client\".\n'
     else
-        echo $'\t\tThe script will stop after code signing the executable (DMG) in the folder \"client\".\n'
+        echo $'\t\tThe script will stop after code signing the executable (PKG) in the folder \"client\".\n'
     fi
 
     if [ ${OSLINUX} -eq 0 ] ; then
