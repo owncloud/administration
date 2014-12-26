@@ -254,15 +254,6 @@ function buildCustomizations() {
         cp ./replacements/mirall/src/mirall/socketapi.cpp ./buildenv/mirall/src/mirall/
     fi
 
-    #------------------------------------------------------------------------
-    # TEMPORARY FIX FOR https://github.com/owncloud/mirall/issues/2491
-    #
-    #------------------------------------------------------------------------
-
-    if [ -f ./replacements/mirall/cmake/modules/AddAppIconMacro.cmake ] ; then
-        cp ./replacements/mirall/cmake/modules/AddAppIconMacro.cmake ./buildenv/mirall/cmake/modules/
-    fi
-
     cd "${BUILD_DIR}"
 }
 
