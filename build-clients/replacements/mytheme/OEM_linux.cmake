@@ -14,5 +14,8 @@ set( THEME_CLASS            "MyTheme" )
 set( APPLICATION_REV_DOMAIN "com.owncloud.desktopclient" )
 #set( WIN_SETUP_BITMAP_PATH  "${CMAKE_SOURCE_DIR}/admin/win/nsi" )
 set( WIN_SETUP_BITMAP_PATH  "${OEM_THEME_DIR}/installer" )
+
+set( MAC_INSTALLER_BACKGROUND_FILE "${OEM_THEME_DIR}/admin/osx/installer-background.png" CACHE STRING "The MacOSX installer background image")
+
 set( THEME_INCLUDE          "${OEM_THEME_DIR}/mytheme.h" )
 # set( APPLICATION_LICENSE  "${OEM_THEME_DIR}/license.txt )
