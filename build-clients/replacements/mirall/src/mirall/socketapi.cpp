@@ -94,6 +94,11 @@ SocketApi::SocketApi(QObject* parent)
         runtimeDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
 #else
         runtimeDir = QFile::decodeName(qgetenv("XDG_RUNTIME_DIR"));
+        if (runtimeDir.isEmpty()) {
+            runtimeDir = QDir::tempPath() + QLatin1String("/runtime-")
+                + QString::fromLocal8Bit(qgetenv("USER"));
+            QDir().mkdir(runtimeDir);
+        }
 #endif
         socketPath = runtimeDir + "/" + Theme::instance()->appName() + "/socket";
     } else {
@@ -344,7 +349,12 @@ void SocketApi::broadcastMessage( const QString& verb, const QString& path, cons
     }
     if( !path.isEmpty() ) {
         msg.append(QLatin1Char(':'));
-        msg.append(QDir::toNativeSeparators(path));
+        QFileInfo fi(path);
+        auto canon = fi.canonicalFilePath();
+        if (canon.isEmpty()) { // just in case the file do not exist
+            fi = fi.absoluteFilePath();
+        }
+        msg.append(QDir::toNativeSeparators(canon));
     }
 
     // sendMessage already has a debug output
@@ -417,7 +427,7 @@ SqlQuery* SocketApi::getSqlQuery( Folder *folder )
     if( fi.exists() ) {
         SqlDatabase *db = new SqlDatabase;
 
-        if( db && db->open(dbFileName) ) {
+        if( db && db->openReadOnly(dbFileName) ) {
             _openDbs.insert(folder, db);
 
             SqlQuery *query = new SqlQuery(*db);
@@ -430,6 +440,8 @@ SqlQuery* SocketApi::getSqlQuery( Folder *folder )
             }
             _dbQueries.insert( folder, query);
             return query;
+        } else {
+            qDebug() << "Unable to open db" << dbFileName;
         }
     } else {
         qDebug() << Q_FUNC_INFO << "Journal to query does not yet exist.";
