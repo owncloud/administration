@@ -115,4 +115,7 @@ macUpdateURL=""
 #================================================================================
 
 # version 1.7.0 (2014-11-06)
-mirallhash="17a4299f74f4db7fc82f4b90f1e501c81288697b"
+#mirallhash="17a4299f74f4db7fc82f4b90f1e501c81288697b"
+
+# version 1.7.1 (2014-12-18)
+mirallhash="9cbe8bf5779abad0c2b5669d32d2adda504eb24b"
