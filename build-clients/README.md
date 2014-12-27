@@ -1,7 +1,6 @@
 Build ownCloud desktop clients
 ==============================
 
-
 General
 -------
 These set of files have the purpose to build the desktop clients for ownCloud.  
@@ -10,7 +9,7 @@ There are four files concerned. The building itself is done by ``makemac.sh`` fo
 The scripts can install all needed dependencies, (cross) compile the desktop clients and code sign the installer files. With the help of these scripts its quiet easy to theme the clients.
 
 ``makemac.sh`` should run on OSX 10.9, Mavericks that is.  
-IT PRODUCES A CLIENT WITH AN ERROR WHEN BUILD ON YOSEMITE. This will be fixed in future releases of Mirall.
+IT PRODUCES A CLIENT WITH AN ERROR WHEN BUILD ON YOSEMITE. This will be fixed in future releases of the client.
 ``makewinlin.sh`` should run on OpenSUSE 13.2 64 bit.  
 The scripts are supposed to run on fresh build systems. Using virtual machines would be pretty handy and convenient.
 
