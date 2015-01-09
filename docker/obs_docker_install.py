@@ -31,6 +31,8 @@
 #			   continue wit builtin config after warnings about missing config file.
 #			   hint at available targets, when given target is not there.
 # V1.0		       jw  osc ls -b obsoleted with ListUrl()
+# V1.1	-- 2015-01-08, jw  default verbosity back to normal run.verbose=1.
+#			   fixed centos-7 to require epel (for qtwebkit)
 #
 # FIXME: osc is only used once in obs_fetch_bin_version(), this is a hell of a dependency for just that.
 
@@ -39,7 +41,7 @@ import json, sys, os, re, time
 import subprocess, urllib2, base64, requests
 
 
-__VERSION__="1.0"
+__VERSION__="1.1"
 target="xUbuntu_14.04"
 
 default_obs_config = {
@@ -72,11 +74,15 @@ default_obs_config = {
       "Debian_6.0":      { "fmt":"APT", "pre": ["wget","apt-transport-https"], "from":"debian:6.0" },
       "Debian_7.0":      { "fmt":"APT", "pre": ["wget","apt-transport-https"], "from":"debian:7" },
 
-      "CentOS_7":        { "fmt":"YUM", "pre": ["wget"], "from":"centos:centos7" },
+      "CentOS_7":        { "fmt":"YUM", "from":"""centos:centos7
+RUN yum install -y wget
+RUN wget -nv http://dl.fedoraproject.org/pub/epel/7/x86_64/epel-release-7-5.noarch.rpm
+RUN rpm -ivh epel-release-7*.noarch.rpm
+""" },
       "CentOS_6":        { "fmt":"YUM", "from":"""centos:centos6
 RUN yum install -y wget
 RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-RUN rpm -ivh epel-release-6-8.noarch.rpm
+RUN rpm -ivh epel-release-6*.noarch.rpm
 """ },
       "CentOS_6_PHP54@SCL":  { "fmt":"YUM", "pre": ["wget"], "from":"""centos:centos6
 RUN yum install -y centos-release-SCL
@@ -211,7 +217,7 @@ def run(args, input=None, redirect=None, redirect_stdout=True, redirect_stderr=T
   if err and out:  return out + "\nSTDERROR: " + err
   if err:          return "STDERROR: " + err
   return out
-run.verbose=2
+run.verbose=1
 
 def urlopen_auth(url, username, password):
   request = urllib2.Request(url)
@@ -221,6 +227,7 @@ def urlopen_auth(url, username, password):
 
 
 def check_dependencies():
+  run.verbose -= 1
   docker_bin = run(["which", "docker"], redirect_stderr=False)
   if not re.search(r"/docker\b", docker_bin, re.S):
     print """docker not installed? Try:
@@ -271,6 +278,7 @@ Debian:
  sudo gpasswd -a $USER docker; reboot
 """
     sys.exit(0)
+  run.verbose += 1
 
 
 def guess_obs_api(prj, override=None, verbose=True):
@@ -400,7 +408,7 @@ def obs_download_cfg(config, download_item, prj_path, urltest=True, verbose=True
   if not urltest: return data
 
   try:
-    if verbose: print "testing "+data['url']
+    if verbose: print "testing "+data['url']+" ..."
     if 'username' in data and 'password' in data:
       uo = urlopen_auth(data['url'], data['username'], data['password'])
     else:
@@ -408,6 +416,7 @@ def obs_download_cfg(config, download_item, prj_path, urltest=True, verbose=True
     text = uo.readlines()
     if not re.search(r'\b'+re.escape(target)+r'\b', str(text)):
       raise ValueError("target="+target+" not seen at "+data['url'])
+    if verbose: print " ... %d bytes read, containing '%s', good." % (len(str(text)), target)
   except Exception as e:
     if args.keep_going:
       print "WARNING: Cannot read "+data['url']+"\n"+str(e)
