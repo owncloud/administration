@@ -76,7 +76,7 @@ default_obs_config = {
 
       "CentOS_7":        { "fmt":"YUM", "from":"""centos:centos7
 RUN yum install -y wget
-RUN wget -nv http://dl.fedoraproject.org/pub/epel/7/x86_64/epel-release-7-5.noarch.rpm
+RUN wget -nv http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
 RUN rpm -ivh epel-release-7*.noarch.rpm
 """ },
       "CentOS_6":        { "fmt":"YUM", "from":"""centos:centos6
