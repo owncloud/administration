@@ -1,6 +1,6 @@
-#!/usr/bin/env python2
+#!/usr/bin/python
 #
-# (c) 2014 jw@owncloud.com
+# (c) 2014,2015 jw@owncloud.com
 # Distribute under GPLv2 or ask.
 #
 # obs_docker_install.py -- prepare a docker image with owncloud packages
@@ -33,15 +33,22 @@
 # V1.0                 jw  osc ls -b obsoleted with ListUrl()
 # V1.1  -- 2015-01-08, jw  default verbosity back to normal run.verbose=1.
 #                          fixed centos-7 to require epel (for qtwebkit)
+# V1.2  -- 2015-01-12, jw  ported to python3.
 #
 # FIXME: osc is only used once in obs_fetch_bin_version(), this is a hell of a dependency for just that.
 
+from __future__ import print_function
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import json, sys, os, re, time
-import subprocess, urllib2, base64, requests
+import subprocess, base64, requests
+
+try:
+  import urllib.request as urllib2	# python3
+except ImportError:
+  import urllib2			# python2
 
 
-__VERSION__="1.1"
+__VERSION__="1.2"
 target="xUbuntu_14.04"
 
 default_obs_config = {
@@ -131,12 +138,17 @@ docker_volumes=[]
 class ListUrl:
 
   def _apache_index(self, url):
-    r = requests.get(url)
+    verify='/etc/ssl/ca-bundle.pem'
+    if not os.path.exists(verify): verify='/etc/ssl/certs/ca-certificates.crt'	# seen in https://urllib3.readthedocs.org/en/latest/security.html
+    if not os.path.exists(verify): verify=True
+
+    r = requests.get(url, verify=verify) 	# default verify=True fails on python3@openSUSE-13.1 with DEFAULT_CA_BUNDLE_PATH=/etc/ssl/cersts/ EISDIR
+
     if r.status_code != 200:
       raise ValueError(url+" status:"+str(r.status_code))
     r.dirs = []
     r.files = []
-    for l in r.content.split("\n"):
+    for l in r.content.decode().splitlines():
       # '<img src="/icons/folder.png" alt="[DIR]" /> <a href="7.0/">7.0/</a>       03-Dec-2014 19:57    -   '
       # ''<img src="/icons/tgz.png" alt="[   ]" /> <a href="owncloud_7.0.4-2.diff.gz">owncloud_7.0.4-2.diff.gz</a>                     09-Dec-2014 16:53  9.7K   <a href="owncloud_7.0.4-2.diff.gz.mirrorlist">Details</a>'
       #
@@ -201,8 +213,9 @@ def run(args, input=None, redirect=None, redirect_stdout=True, redirect_stderr=T
   if input is not None:
     in_fd = subprocess.PIPE
     if run.verbose > 1: in_redirect=" (<< '%s')" % input
+    input = input.encode()		# bytes needed for python3
 
-  if run.verbose: print "+ %s%s" % (args, in_redirect)
+  if run.verbose: print("+ %s%s" % (args, in_redirect))
   p = subprocess.Popen(args, stdin=in_fd, stdout=redirect_stdout, stderr=redirect_stderr)
 
   (out,err) = p.communicate(input=input)
@@ -221,7 +234,9 @@ run.verbose=1
 
 def urlopen_auth(url, username, password):
   request = urllib2.Request(url)
-  base64string = base64.encodestring('%s:%s' % (username, password)).replace('\n', '')
+  txt = '%s:%s' % (username, password)
+  base64string = base64.encodestring(txt.encode())		# encode() needed for python3
+  base64string = base64string.decode().replace('\n', '')	# decode() needed for python3
   request.add_header("Authorization", "Basic %s" % base64string)
   return urllib2.urlopen(request)
 
@@ -229,8 +244,8 @@ def urlopen_auth(url, username, password):
 def check_dependencies():
   run.verbose -= 1
   docker_bin = run(["which", "docker"], redirect_stderr=False)
-  if not re.search(r"/docker\b", docker_bin, re.S):
-    print """docker not installed? Try:
+  if not re.search(r"/docker\b", docker_bin.decode(), re.S):		# decode() needed for python3
+    print("""docker not installed? Try:
 
 openSUSE:
  sudo zypper in docker
@@ -245,13 +260,13 @@ Debian:
 Mint (as Debian, plus):
  sudo apt-get install cgroup-lite apparmor
 
-"""
+""")
     sys.exit(0)
   docker_pid = run(["pidof", "docker"], redirect_stderr=False)
   if docker_pid == "":
     docker_pid = run(["pidof", "docker.io"], redirect_stderr=False)
-  if not re.search(r"\b\d\d+\b", docker_pid, re.S):
-    print """docker is not running? Try:
+  if not re.search(r"\b\d\d+\b", docker_pid.decode(), re.S):
+    print("""docker is not running? Try:
 
 openSUSE:
  sudo systemctl enable docker
@@ -264,11 +279,11 @@ Debian
  dmesg
  # if you see respawn errors try: apt-get install cgroup-lite apparmor
 
-"""
+""")
     sys.exit(0)
   docker_grp = run(["id", "-a"], redirect_stderr=False)
-  if not re.search(r"\bdocker\b", docker_grp, re.S):
-    print """You are not in the docker group? Try:
+  if not re.search(r"\bdocker\b", docker_grp.decode(), re.S):
+    print("""You are not in the docker group? Try:
 
 openSUSE:
  sudo usermod -a -G docker $USER; reboot"
@@ -276,7 +291,7 @@ openSUSE:
 Debian:
  sudo groupadd docker
  sudo gpasswd -a $USER docker; reboot
-"""
+""")
     sys.exit(0)
   run.verbose += 1
 
@@ -290,15 +305,15 @@ def guess_obs_api(prj, override=None, verbose=True):
       if 'aliases' in o:
         for a in o['aliases']:
           if override == a:
-            print "guess_obs_api: alias="+a+" -> "+obs
+            print("guess_obs_api: alias="+a+" -> "+obs)
             return obs
-    print "Warning: obs_api="+override+" not found in "+args.configfile
+    print("Warning: obs_api="+override+" not found in "+args.configfile)
     return override     # not found.
   # actual guesswork
   for obs in obs_config['obs']:
     o=obs_config['obs'][obs]
     if 'prj_re' in o and re.match(o['prj_re'], prj):
-      if verbose: print "guess_obs_api: prj="+prj+" -> "+obs
+      if verbose: print("guess_obs_api: prj="+prj+" -> "+obs)
       return obs
   raise ValueError("guess_obs_api failed for project='"+prj+"', try different project, -A, or update config in "+args.configfile)
 
@@ -327,10 +342,10 @@ def obs_fetch_bin_version(api, download_item, prj, pkg, target):
   m = re.search(r'^\s*'+re.escape(args.package)+r'-(\d+[^-\s]*)\-([\w\.]+?)\.(x86_64|i\d86|noarch)\.rpm$', bin_seen, re.M)
   if m: return (m.group(1),m.group(2))
   print("package for "+target+" not seen in "+cfg['url']+'/'+target+" :\n"+ bin_seen)
-  print "Try one of these:"
+  print("Try one of these:")
   lu.recursive = False
   for target in lu.apache(cfg['url_cred']):
-    print re.sub("/$","", target[0]),
+    print(re.sub("/$","", target[0]),end='')
   sys.exit(22)
 
 
@@ -363,7 +378,7 @@ def obs_download_cfg(config, download_item, prj_path, urltest=True, verbose=True
     if "map" in config and download_item in config["map"]: mapping=config["map"][download_item]
     if mapping and prj_path in mapping:
       prj_path = mapping[prj_path]
-      if verbose: print "prj path mapping -> ", prj_path
+      if verbose: print("prj path mapping -> ", prj_path)
     else:
       prj_path = re.sub(':',':/',prj_path)
 
@@ -408,7 +423,7 @@ def obs_download_cfg(config, download_item, prj_path, urltest=True, verbose=True
   if not urltest: return data
 
   try:
-    if verbose: print "testing "+data['url']+" ..."
+    if verbose: print("testing "+data['url']+" ...")
     if 'username' in data and 'password' in data:
       uo = urlopen_auth(data['url'], data['username'], data['password'])
     else:
@@ -416,11 +431,11 @@ def obs_download_cfg(config, download_item, prj_path, urltest=True, verbose=True
     text = uo.readlines()
     if not re.search(r'\b'+re.escape(target)+r'\b', str(text)):
       raise ValueError("target="+target+" not seen at "+data['url'])
-    if verbose: print " ... %d bytes read, containing '%s', good." % (len(str(text)), target)
+    if verbose: print(" ... %d bytes read, containing '%s', good." % (len(str(text)), target))
   except Exception as e:
     if args.keep_going:
-      print "WARNING: Cannot read "+data['url']+"\n"+str(e)
-      print "\nTry a different --download option or wait 10 sec..."
+      print("WARNING: Cannot read "+data['url']+"\n"+str(e))
+      print("\nTry a different --download option or wait 10 sec...")
       time.sleep(10)
     else:
       raise e
@@ -476,19 +491,19 @@ if args.quiet: run.verbose=0
 
 if args.writeconfig:
   if os.path.exists(args.configfile):
-    print "Will not overwrite existing "+args.configfile
-    print "Please use -c to choose a different name, or move the file away"
+    print("Will not overwrite existing "+args.configfile)
+    print("Please use -c to choose a different name, or move the file away")
     sys.exit(1)
   cfp = open(args.configfile, "w")
   json.dump(default_obs_config, cfp, indent=4, sort_keys=True)
   cfp.write("\n")
   cfp.close()
-  print "default config written to " + args.configfile
+  print("default config written to " + args.configfile)
   sys.exit(0)
 
 if not os.path.exists(args.configfile):
-  print "Config file does not exist: "+args.configfile
-  print "Use -W to generate the file, or use -c to choose different config file"
+  print("Config file does not exist: "+args.configfile)
+  print("Use -W to generate the file, or use -c to choose different config file")
 
   # either exit here, or be nice and use the builtin defaults.
   # sys.exit(1)
@@ -498,15 +513,15 @@ else:
     cfp = open(args.configfile)
     obs_config = json.load(cfp)
   except Exception as e:
-    print "ERROR: loading "+args.configfile+" failed: ", e
-    print ""
+    print("ERROR: loading "+args.configfile+" failed: ", e)
+    print("")
     obs_config = default_obs_config
 
 if args.print_config_only:
   import pprint
   if args.project:
     cfg=obs_config['target'][args.project]
-    print "FROM "+cfg['from']+"\n# ",
+    print("FROM "+cfg['from']+"\n# ",end='')
     del(cfg['from'])
     pprint.pprint(cfg)
   else:
@@ -514,21 +529,21 @@ if args.print_config_only:
   sys.exit(0)
 
 if args.list_targets_only:
-  print "OBS platform          Docker base image"
-  print "---------------------------------------"
+  print("OBS platform          Docker base image")
+  print("---------------------------------------")
   for t in obs_config['target']:
     xx = docker_from_obs(t)['from']
     xx = re.sub("\n.*", "", xx)
-    print "%-20s  %s" % (t, xx)
+    print("%-20s  %s" % (t, xx))
   sys.exit(0)
 
 if args.project is None:
-  print "need project/package name"
+  print("need project/package name")
   sys.exit(1)
 
 m = re.match(r'(.*)/(.*)', args.project)
 if m is None and args.package is None:
-  print "need both, project and package"
+  print("need both, project and package")
   sys.exit(1)
 if m:
   args.platform = args.package
@@ -538,7 +553,7 @@ if m:
 if args.target:   target=args.target
 if args.platform: target=args.platform
 if args.target and args.platform:
-  print "specify either a build target platform with -p or as a third parameter. Not both"
+  print("specify either a build target platform with -p or as a third parameter. Not both")
   sys.exit(1)
 target = re.sub(':','_', target)        # just in case we get the project name instead of the build target name
 
@@ -547,7 +562,7 @@ try:
   version,release=obs_fetch_bin_version(obs_api, args.download, args.project, args.package, target)
 except Exception as e:
   if args.keep_going:
-    print str(e)
+    print(str(e))
     version,release = '',''
   else:
     raise e
@@ -555,10 +570,10 @@ except Exception as e:
 docker=docker_from_obs(target)
 
 if args.base_image:
-  print "Default docker FROM "+docker['from']
-  print "Command line docker FROM "+args.base_image
+  print("Default docker FROM "+docker['from'])
+  print("Command line docker FROM "+args.base_image)
   if re.search(r'\n', docker['from']) and not re.search(r'\n', args.base_image):
-    print "WARNING: multiline FROM replaced with simple FROM!\n"
+    print("WARNING: multiline FROM replaced with simple FROM!\n")
     time.sleep(2)
   docker['from'] = args.base_image
 
@@ -581,7 +596,7 @@ else:
   image_name = re.sub('[^a-z0-9-_\.]', '-', image_name.lower())
 
 if args.print_image_name_only:
-  print image_name
+  print(image_name)
   sys.exit(0)
 
 if args.xauth:
@@ -594,7 +609,7 @@ if args.xauth:
     open(xauthfile, "w").write("")                              # touch $xauthfile
     run(["chgrp", "docker", xauthfile], redirect_stderr=False)
     run(["sh", "-c", xa_cmd], redirect_stderr=False)
-    os.chmod(xauthfile, 0660)                           # chmod 660 $xauthfile
+    os.chmod(xauthfile, 0o660)                           # chmod 660 $xauthfile
   xsock="/tmp/.X11-unix"
   docker_volumes.append(xsock+':'+xsock)
   docker_volumes.append(xauthfile+':'+xauthfile)
@@ -603,7 +618,7 @@ docker_run=["docker","run","-ti"]
 for vol in docker_volumes:
   docker_run.extend(["-v", vol])
 docker_run.append(image_name)
-print "#+ " + " ".join(docker_run)
+print("#+ " + " ".join(docker_run))
 
 ## multi line docker commands are explicitly allowed in 'from'!
 dockerfile="FROM "+docker['from']+"\n"
@@ -668,7 +683,7 @@ if args.xauth:
 dockerfile+='RUN : "'+" ".join(docker_run)+'"'+"\n"
 dockerfile+="CMD /bin/bash\n"
 
-# print obs_api, download, image_name, target, docker
+# print(obs_api, download, image_name, target, docker)
 
 r=0
 docker_build=["docker", "build"]
@@ -678,24 +693,24 @@ if args.no_cache: docker_build.append("--no-cache")
 docker_build.extend(["-t", image_name, "-"])
 
 if args.no_operation:
-  print dockerfile
-  print "\nYou can use the above Dockerfile to create an image like this:\n "+" ".join(docker_build)+"\n"
+  print(dockerfile)
+  print("\nYou can use the above Dockerfile to create an image like this:\n "+" ".join(docker_build)+"\n")
 else:
   run.verbose += 1
   r=run(docker_build, input="\n"+dockerfile, redirect_stdout=False, redirect_stderr=False, return_code=True)
   run.verbose -= 1
   if not args.quiet:
     if r:
-      print "Failed with non-zero exit code="+str(r)+". Check for errors in the above log.\n"
+      print("Failed with non-zero exit code="+str(r)+". Check for errors in the above log.\n")
       args.run = False
     else:
-      print "Image successfully created. Check for warnings in the above log.\n"
+      print("Image successfully created. Check for warnings in the above log.\n")
 
 if not args.rm and not r and not args.quiet:
-  print "You may remove unused container/images with e.g.\n "+docker_cmd_clean_c+"\n "+docker_cmd_clean_i+"\n"
+  print("You may remove unused container/images with e.g.\n "+docker_cmd_clean_c+"\n "+docker_cmd_clean_i+"\n")
 
 if not r and not args.run:
-  print "You can run the new image with:\n "+" ".join(docker_run)
+  print("You can run the new image with:\n "+" ".join(docker_run))
 
 if args.run:
   if re.search(r'[\s;&<>"]', args.run[0]): args.run=['/bin/bash', '-c', " ".join(args.run)]
