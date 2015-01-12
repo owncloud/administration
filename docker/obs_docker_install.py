@@ -1,13 +1,13 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 # (c) 2014 jw@owncloud.com
 # Distribute under GPLv2 or ask.
 #
 # obs_docker_install.py -- prepare a docker image with owncloud packages
-# V0.1 -- jw	initial draught, with APT only.
-# V0.2 -- jw	support for extra-packages added, support for YUM, ZYPP added.
+# V0.1 -- jw    initial draught, with APT only.
+# V0.2 -- jw    support for extra-packages added, support for YUM, ZYPP added.
 #               support debian packages without release number
-# V0.3 -- jw	updated run() to capture exit code, fixed X11 connection via unix:0
+# V0.3 -- jw    updated run() to capture exit code, fixed X11 connection via unix:0
 #               added --quiet option and run.verbose.
 #               added --exec command introducer with simple shell meta char recognition
 # V0.4 -- jw    added "map": to obs config, to handle strange download mirror layouts.
@@ -17,9 +17,9 @@
 #               option --print-image-name-only option added.
 # V0.6 -- jw    env XDG_RUNTIME_DIR=/run/user/1000 added (with -X), HOME=/root added always.
 # V0.7 -- 2014-12-09, jw    ported to Ubuntu. docker is known there as docker.io
-# V0.8 --             jw    default selective on-cache on the final install command 
+# V0.8 --             jw    default selective on-cache on the final install command
 #                           using a timestamp with refresh and install.
-#                           The --no-cache option is more expensive than expected. It 
+#                           The --no-cache option is more expensive than expected. It
 #                           disables both using the cache and filling the cache.
 # V0.9  -- 2014-12-10, jw  Added changelog print out at end of installation.
 # V0.9a -- 2014-12-11, jw  Added informative -T -P options for printing configuration.
@@ -28,11 +28,11 @@
 # V0.9b                jw  Added CentOS_6_PHP55 and CentOS_6_PHP56 via remi.
 #                          Pretty printing a target config with -P obstarget
 # V0.9c                jw  Changlog printing needs a wildcard: to catch changelog.gz changelog.Debian.gz
-#			   continue wit builtin config after warnings about missing config file.
-#			   hint at available targets, when given target is not there.
-# V1.0		       jw  osc ls -b obsoleted with ListUrl()
-# V1.1	-- 2015-01-08, jw  default verbosity back to normal run.verbose=1.
-#			   fixed centos-7 to require epel (for qtwebkit)
+#                          continue wit builtin config after warnings about missing config file.
+#                          hint at available targets, when given target is not there.
+# V1.0                 jw  osc ls -b obsoleted with ListUrl()
+# V1.1  -- 2015-01-08, jw  default verbosity back to normal run.verbose=1.
+#                          fixed centos-7 to require epel (for qtwebkit)
 #
 # FIXME: osc is only used once in obs_fetch_bin_version(), this is a hell of a dependency for just that.
 
@@ -49,19 +49,19 @@ default_obs_config = {
   "obs":
     {
       "https://api.opensuse.org":
-	{
-	  "aliases": ["obs"],
-	  "prj_re": "^(isv:ownCloud:|home:jnweiger)",
-	  "download": 
-	    { 
-	      "public":   "http://download.opensuse.org/repositories/", 
-	      "api":      "https://[OBS_USER]:[OBS_PASS]@api.opensuse.org/build/[OBS_PROJ]/[OBS_TARGET]/[OBS_ARCH]/[OBS_PACK]"
-	    },
-	  "map":
-	    {
-	      "public": { "openSUSE:13.1": "/pub/opensuse/distribution/13.1/repo/oss" }
-	    }
-	},
+        {
+          "aliases": ["obs"],
+          "prj_re": "^(isv:ownCloud:|home:jnweiger)",
+          "download":
+            {
+              "public":   "http://download.opensuse.org/repositories/",
+              "api":      "https://[OBS_USER]:[OBS_PASS]@api.opensuse.org/build/[OBS_PROJ]/[OBS_TARGET]/[OBS_ARCH]/[OBS_PACK]"
+            },
+          "map":
+            {
+              "public": { "openSUSE:13.1": "/pub/opensuse/distribution/13.1/repo/oss" }
+            }
+        },
     },
   "target":
     {
@@ -139,29 +139,29 @@ class ListUrl:
     for l in r.content.split("\n"):
       # '<img src="/icons/folder.png" alt="[DIR]" /> <a href="7.0/">7.0/</a>       03-Dec-2014 19:57    -   '
       # ''<img src="/icons/tgz.png" alt="[   ]" /> <a href="owncloud_7.0.4-2.diff.gz">owncloud_7.0.4-2.diff.gz</a>                     09-Dec-2014 16:53  9.7K   <a href="owncloud_7.0.4-2.diff.gz.mirrorlist">Details</a>'
-      # 
+      #
       m = re.search("<a\s+href=[\"']?([^>]+?)[\"']?>([^<]+?)[\"']?</a>\s*([^<]*)", l, re.I)
       if m:
-	# ('owncloud_7.0.4-2.diff.gz', 'owncloud_7.0.4-2.diff.gz', '09-Dec-2014 16:53  9.7K   ')
-	m1,m2,m3 = m.groups()
+        # ('owncloud_7.0.4-2.diff.gz', 'owncloud_7.0.4-2.diff.gz', '09-Dec-2014 16:53  9.7K   ')
+        m1,m2,m3 = m.groups()
 
-	if re.match("(/|\?|\w+://)", m1):	# skip absolute urls, query strings and foreign urls
-	  continue
-	if re.match("\.?\./?$", m1):	# skip . and ..
-	  continue
+        if re.match("(/|\?|\w+://)", m1):       # skip absolute urls, query strings and foreign urls
+          continue
+        if re.match("\.?\./?$", m1):    # skip . and ..
+          continue
 
-	m3 = re.sub("[\s-]+$", "", m3)
-	if re.search("/$", m1):
-	  r.dirs.append([m1, m3])
-	else:
-	  r.files.append([m1, m3])
+        m3 = re.sub("[\s-]+$", "", m3)
+        if re.search("/$", m1):
+          r.dirs.append([m1, m3])
+        else:
+          r.files.append([m1, m3])
     return r
 
   def apache(self, url, pre=''):
-    if not url.endswith('/'): url += '/'	# directory!
+    if not url.endswith('/'): url += '/'        # directory!
     l = self._apache_index(url)
     r = []
-    for f in l.files: 
+    for f in l.files:
       if self.callback: self.callback(url, pre, f[0], f[1])
       r.append([pre+f[0], f[1]])
     for d in l.dirs:
@@ -204,7 +204,7 @@ def run(args, input=None, redirect=None, redirect_stdout=True, redirect_stderr=T
 
   if run.verbose: print "+ %s%s" % (args, in_redirect)
   p = subprocess.Popen(args, stdin=in_fd, stdout=redirect_stdout, stderr=redirect_stderr)
- 
+
   (out,err) = p.communicate(input=input)
 
   if tee:
@@ -244,7 +244,7 @@ Debian:
 
 Mint (as Debian, plus):
  sudo apt-get install cgroup-lite apparmor
-  
+
 """
     sys.exit(0)
   docker_pid = run(["pidof", "docker"], redirect_stderr=False)
@@ -291,9 +291,9 @@ def guess_obs_api(prj, override=None, verbose=True):
         for a in o['aliases']:
           if override == a:
             print "guess_obs_api: alias="+a+" -> "+obs
-	    return obs
+            return obs
     print "Warning: obs_api="+override+" not found in "+args.configfile
-    return override	# not found.
+    return override     # not found.
   # actual guesswork
   for obs in obs_config['obs']:
     o=obs_config['obs'][obs]
@@ -364,15 +364,15 @@ def obs_download_cfg(config, download_item, prj_path, urltest=True, verbose=True
     if mapping and prj_path in mapping:
       prj_path = mapping[prj_path]
       if verbose: print "prj path mapping -> ", prj_path
-    else:  
+    else:
       prj_path = re.sub(':',':/',prj_path)
 
-    ## if our mapping or prj_path is a rooted path, strip 
+    ## if our mapping or prj_path is a rooted path, strip
     ## path components from url_cred, if any.
     if re.match(r'/',prj_path):
       m=re.match(r'(.*://[^/]+)', url_cred)
       if m: url_cred = m.group(1)
-      
+
     if not re.search(r'/$', url_cred) and not re.match(r'/', prj_path): url_cred += '/'
     url_cred += prj_path
   if not re.search(r'/$', url_cred): url_cred += '/'
@@ -396,14 +396,14 @@ def obs_download_cfg(config, download_item, prj_path, urltest=True, verbose=True
       m=re.match(r'(.*):(.*)', cred)
       if m:
         data['username'] = m.group(1)
-	data['password'] = m.group(2)
+        data['password'] = m.group(2)
       else:
         data['username'] = cred
       data['url'] = url_proto + server + url_path
     else:
       data['url'] = url_proto + server_cred + url_path
   else:
-    data['url'] = url_cred	# oops.
+    data['url'] = url_cred      # oops.
 
   if not urltest: return data
 
@@ -433,14 +433,14 @@ docker_cmd_clean_c=" docker ps -a  | grep Exited   | awk '{ print $1 }' | xargs 
 docker_cmd_clean_i=" docker images | grep '<none>' | awk '{ print $3 }' | xargs docker rmi\n"
 
 ap = ArgumentParser(
-  formatter_class=RawDescriptionHelpFormatter, 
+  formatter_class=RawDescriptionHelpFormatter,
   epilog="""Example:
  """+sys.argv[0]+""" isv:ownCloud:desktop/owncloud-client CentOS_CentOS-6
 
 Suggested cleanup:
  """+docker_cmd_clean_c+"\n "+docker_cmd_clean_i+"""
 
-Version: """+__VERSION__, 
+Version: """+__VERSION__,
   description="Create docker images for RPM and DEB packages built with openSUSE Build Service (public or other instance)."
 )
 
@@ -466,10 +466,10 @@ ap.add_argument("project", metavar="PROJECT", nargs="?", help="obs project name.
 ap.add_argument("package", metavar="PACKAGE",  nargs="?", help="obs package name, or PROJ/PACK")
 ap.add_argument("platform",metavar="PLATFORM", nargs="?", help="obs build target name. Alternate syntax to -p. Default: "+target)
 ap.add_argument("--run", "--exec", nargs="+", metavar="SHELLCMDARGS", help="Execute a command (with parameters) via docker run. Default: build only and print exec instructions.")
-args = ap.parse_args() 	# --help is automatic
+args = ap.parse_args()  # --help is automatic
 
 if args.version: ap.exit(__VERSION__)
-if args.print_image_name_only: 
+if args.print_image_name_only:
   args.quiet=True
   args.no_operation=True
 if args.quiet: run.verbose=0
@@ -516,7 +516,7 @@ if args.print_config_only:
 if args.list_targets_only:
   print "OBS platform          Docker base image"
   print "---------------------------------------"
-  for t in obs_config['target']: 
+  for t in obs_config['target']:
     xx = docker_from_obs(t)['from']
     xx = re.sub("\n.*", "", xx)
     print "%-20s  %s" % (t, xx)
@@ -540,7 +540,7 @@ if args.platform: target=args.platform
 if args.target and args.platform:
   print "specify either a build target platform with -p or as a third parameter. Not both"
   sys.exit(1)
-target = re.sub(':','_', target)	# just in case we get the project name instead of the build target name
+target = re.sub(':','_', target)        # just in case we get the project name instead of the build target name
 
 obs_api=guess_obs_api(args.project, args.obs_api, not args.quiet)
 try:
@@ -590,11 +590,11 @@ if args.xauth:
   xa_cmd="xauth nlist :0 | sed -e 's/^0100/ffff/' | xauth -f '"+xauthfile+"' nmerge -"
   if not args.no_operation:
     run(["rm", "-rf", xauthdir])
-    if not os.path.isdir(xauthdir): os.makedirs(xauthdir)	# mkdir -p $xauthdir
-    open(xauthfile, "w").write("")				# touch $xauthfile
+    if not os.path.isdir(xauthdir): os.makedirs(xauthdir)       # mkdir -p $xauthdir
+    open(xauthfile, "w").write("")                              # touch $xauthfile
     run(["chgrp", "docker", xauthfile], redirect_stderr=False)
     run(["sh", "-c", xa_cmd], redirect_stderr=False)
-    os.chmod(xauthfile, 0660)				# chmod 660 $xauthfile
+    os.chmod(xauthfile, 0660)                           # chmod 660 $xauthfile
   xsock="/tmp/.X11-unix"
   docker_volumes.append(xsock+':'+xsock)
   docker_volumes.append(xauthfile+':'+xauthfile)
@@ -668,7 +668,7 @@ if args.xauth:
 dockerfile+='RUN : "'+" ".join(docker_run)+'"'+"\n"
 dockerfile+="CMD /bin/bash\n"
 
-# print obs_api, download, image_name, target, docker 
+# print obs_api, download, image_name, target, docker
 
 r=0
 docker_build=["docker", "build"]
@@ -682,7 +682,7 @@ if args.no_operation:
   print "\nYou can use the above Dockerfile to create an image like this:\n "+" ".join(docker_build)+"\n"
 else:
   run.verbose += 1
-  r=run(docker_build, input="\n"+dockerfile, redirect_stdout=False, redirect_stderr=False, return_code=True)  
+  r=run(docker_build, input="\n"+dockerfile, redirect_stdout=False, redirect_stderr=False, return_code=True)
   run.verbose -= 1
   if not args.quiet:
     if r:
