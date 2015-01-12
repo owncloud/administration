@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 # (c) 2014 jw@owncloud.com
 # Distribute under GPLv2 or ask.
