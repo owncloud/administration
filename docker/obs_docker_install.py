@@ -34,8 +34,9 @@
 # V1.1  -- 2015-01-08, jw  default verbosity back to normal run.verbose=1.
 #                          fixed centos-7 to require epel (for qtwebkit)
 # V1.2  -- 2015-01-12, jw  ported to python3.
+# V1.3  --                 Adding basic fonts, when running with -X. Message 'package for' improved.
 #
-# FIXME: osc is only used once in obs_fetch_bin_version(), this is a hell of a dependency for just that.
+# FIXME: yum install returns success, if one package out of many was installed.
 
 from __future__ import print_function
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
@@ -125,6 +126,7 @@ RUN yum install -y php
 
       "CentOS_CentOS-6": { "fmt":"YUM", "pre": ["wget"], "from":"centos:centos6" },
       "Fedora_20":       { "fmt":"YUM", "pre": ["wget"], "from":"fedora:20" },
+      "Fedora_21":       { "fmt":"YUM", "pre": ["wget"], "from":"fedora:21" },
       "openSUSE_13.2":   { "fmt":"ZYPP","pre": ["ca-certificates"], "from":"opensuse:13.2" },
       "openSUSE_13.1":   { "fmt":"ZYPP","pre": ["ca-certificates"], "from":"opensuse:13.1" }
     }
@@ -341,7 +343,7 @@ def obs_fetch_bin_version(api, download_item, prj, pkg, target):
   # cloudtirea-client-1.7.0-4.1.i686.rpm
   m = re.search(r'^\s*'+re.escape(args.package)+r'-(\d+[^-\s]*)\-([\w\.]+?)\.(x86_64|i\d86|noarch)\.rpm$', bin_seen, re.M)
   if m: return (m.group(1),m.group(2))
-  print("package for "+target+" not seen in "+cfg['url']+'/'+target+" :\n"+ bin_seen)
+  print("package "+args.package"+ for "+target+" not seen in "+cfg['url']+'/'+target+" :\n"+ bin_seen)
   print("Try one of these:")
   lu.recursive = False
   for target in lu.apache(cfg['url_cred']):
@@ -489,6 +491,9 @@ if args.print_image_name_only:
   args.no_operation=True
 if args.quiet: run.verbose=0
 
+extra_packages = []
+if args.extra_packages: extra_packages = re.split(r"[\s,]", args.extra_packages)
+
 if args.writeconfig:
   if os.path.exists(args.configfile):
     print("Will not overwrite existing "+args.configfile)
@@ -614,6 +619,12 @@ if args.xauth:
   docker_volumes.append(xsock+':'+xsock)
   docker_volumes.append(xauthfile+':'+xauthfile)
 
+  # add basic fonts, so that a GUI becomes readable.
+  if re.search(r'suse', target, re.I): 			extra_packages.extend(['xorg-x11-fonts-core'])
+  if re.search(r'centos|rhel|fedora', target, re.I): 	extra_packages.extend(['gnu-free-sans-fonts'])
+  if re.search(r'ubuntu|debian', target, re.I):		extra_packages.extend(['fonts-dejavu-core'])
+
+
 docker_run=["docker","run","-ti"]
 for vol in docker_volumes:
   docker_run.extend(["-v", vol])
@@ -644,8 +655,8 @@ if docker["fmt"] == "APT":
   dockerfile+="RUN apt-key add - < Release.key"+d_endl
   dockerfile+="RUN echo 'deb "+download["url_cred"]+"/"+target+"/ /' >> /etc/apt/sources.list.d/"+args.package+".list"+d_endl
   dockerfile+="RUN apt-get -q -y update"+d_endl
-  if args.extra_packages:
-    dockerfile+="RUN apt-get -q -y install "+re.sub(',',' ',args.extra_packages)+d_endl
+  if extra_packages:
+    dockerfile+="RUN apt-get -q -y install "+' '.join(extra_packages)+d_endl
   dockerfile+="RUN date="+now+" apt-get -q -y update && apt-get -q -y install "+args.package+d_endl
   dockerfile+="RUN zcat /usr/share/doc/"+args.package+"/changelog*.gz  | head -20"+d_endl
   dockerfile+="RUN echo 'apt-get install "+args.package+"' >> ~/.bash_history"+d_endl
@@ -655,8 +666,8 @@ elif docker["fmt"] == "YUM":
   if "pre" in docker and len(docker["pre"]):
     dockerfile+="RUN yum install -y "+" ".join(docker["pre"])+d_endl
   dockerfile+="RUN "+wget_cmd+target+'/'+args.project+".repo -O /etc/yum.repos.d/"+args.project+".repo"+d_endl
-  if args.extra_packages:
-    dockerfile+="RUN yum install -y "+re.sub(',',' ',args.extra_packages)+d_endl
+  if extra_packages:
+    dockerfile+="RUN yum install -y "+' '.join(extra_packages)+d_endl
   dockerfile+="RUN date="+now+" yum clean expire-cache && yum install -y "+args.package+d_endl
   dockerfile+="RUN rpm -q --changelog "+args.package+" | head -20"+d_endl
   dockerfile+="RUN echo 'yum install -y "+args.package+"' >> ~/.bash_history"+d_endl
@@ -666,8 +677,8 @@ elif docker["fmt"] == "ZYPP":
   if "pre" in docker and len(docker["pre"]):
     dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+" ".join(docker["pre"])+d_endl
   dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys addrepo "+download["url_cred"]+target+"/"+args.project+".repo"+d_endl
-  if args.extra_packages:
-    dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+re.sub(',',' ',args.extra_packages)+d_endl
+  if extra_packages:
+    dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+" ".join(extra_packages)+d_endl
   dockerfile+="RUN date="+now+" zypper --non-interactive --gpg-auto-import-keys refresh && zypper --non-interactive --gpg-auto-import-keys install "+args.package+d_endl
   dockerfile+="RUN rpm -q --changelog "+args.package+" | head -20"+d_endl
   dockerfile+="RUN echo 'zypper install "+args.package+"' >> ~/.bash_history"+d_endl
