@@ -110,6 +110,18 @@ function buildMacDependencies() {
         brew tap kwillems/owncloud
         brew install $(brew deps mirall)
 
+        #
+        # Downgrade to Qt 5.3.2 from Qt 5.4 or higher,
+        # because the client 1.7.0 uses Qt 5.3.2.
+        #
+        if [ ! -d /usr/local/Cellar/qt5/5.3.2/ ] ; then
+            brew uninstall qt5
+            cd $( brew --prefix )
+            git checkout 840913d Library/Formula/qt5.rb
+            brew install qt5
+            brew pin qt5
+        fi
+
         brew install iniparser
         brew install qtkeychain
 
