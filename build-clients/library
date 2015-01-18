@@ -346,7 +346,7 @@ function checkHelp() {
 #================================================================================
 
 function makeBuildEnv () {
-    mkdir -p client
+    mkdir -p "client"
 
     if [ ${LOCALBUILD} -eq 0 ] ; then
         if [ -d "${BUILD_DIR}" ] ; then
