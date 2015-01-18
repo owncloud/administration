@@ -82,12 +82,14 @@ fi
 #
 #================================================================================
 
-if [ ! -f /usr/local/bin/packagesutil ] || [ ! -f /usr/local/bin/packagesbuild ] ; then
-	echo
-	echo 'You have to install "Packages", see "http://s.sudre.free.fr/Software/Packages/about.html".'
-	echo
-	exit 1
-fi
+function checkPackages() {
+    if [ ! -f /usr/local/bin/packagesutil ] || [ ! -f /usr/local/bin/packagesbuild ] ; then
+    	echo
+    	echo 'You have to install "Packages", see "http://s.sudre.free.fr/Software/Packages/about.html".'
+    	echo
+    	exit 1
+    fi
+}
 
 
 
@@ -315,6 +317,7 @@ function checkSparkleOnly() {
 #================================================================================
 
 checkHelp
+checkPackages
 checkSignPKGOnly
 checkSparkleOnly
 buildMacDependencies
