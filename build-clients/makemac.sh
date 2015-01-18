@@ -210,7 +210,16 @@ function buildMirallAndPackage() {
         source "${BUILD_DIR}"/mirall-build/admin/osx/create_mac.sh "${BUILD_DIR}"/install "${BUILD_DIR}"/mirall-build
 	fi
 
+    #
+    # Make sure folder "client" exists.
+    #
+    cd "${CUR_DIR}"
+    if [ ! -d "client" ] ; then
+        mkdir -p "client"
+    fi
+
     cd "${BUILD_DIR}"
+
     cp "${BUILD_DIR}"/install/*.pkg "${CUR_DIR}"/client
     cp "${BUILD_DIR}"/install/*.pkg.tbz "${CUR_DIR}"/client
 }
