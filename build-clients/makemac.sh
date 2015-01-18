@@ -50,7 +50,7 @@
 CUR_DIR=$PWD
 BUILD_DIR="${CUR_DIR}/buildenv"
 OSLINUX=0
-PATH=/usr/local/Cellar/qt5/5.3.2/bin:$PATH
+PATH="/usr/local/Cellar/qt5/5.3.2/bin:/usr/local/Cellar/openssl/1.0.1l/bin:$PATH"
 
 
 
@@ -71,6 +71,7 @@ if ! source library ; then
     echo $'\nThe file \"library\" is not available; the script will quit.\n'
     exit 1
 fi
+
 
 
 #================================================================================
@@ -131,6 +132,7 @@ function buildMacDependencies() {
         # If --force is passed, Homebrew will allow keg-only formulae to be linked.
         #
         brew link neon --force
+        brew link openssl --force
 
         #
         # The following is not really needed.
