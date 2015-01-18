@@ -339,13 +339,14 @@ function checkHelp() {
 #================================================================================
 
 function makeBuildEnv () {
+    mkdir -p client
+
     if [ ${LOCALBUILD} -eq 0 ] ; then
         if [ -d "${BUILD_DIR}" ] ; then
             echo $'\nDirectory '\"${BUILD_DIR}\"$' already excists and will be removed.\n'
             rm -rf "${BUILD_DIR}"
         fi
 
-        mkdir client
         mkdir -p "${BUILD_DIR}"
         cd "${BUILD_DIR}"
     fi
