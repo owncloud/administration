@@ -346,13 +346,14 @@ function checkHelp() {
 #================================================================================
 
 function makeBuildEnv () {
+    mkdir -p client
+
     if [ ${LOCALBUILD} -eq 0 ] ; then
         if [ -d "${BUILD_DIR}" ] ; then
             echo $'\nDirectory '\"${BUILD_DIR}\"$' already excists and will be removed.\n'
             rm -rf "${BUILD_DIR}"
         fi
 
-        mkdir client
         mkdir -p "${BUILD_DIR}"
         cd "${BUILD_DIR}"
     fi
@@ -466,14 +467,14 @@ function helpPage() {
     if [ ${OSLINUX} -eq 1 ] ; then
         echo $'\t\tThe executable (EXE) in the folder \"client\" will be code signed.\n'
     else
-        echo $'\t\tThe executable (DMG) in the folder \"client\" will be code signed.\n'
+        echo $'\t\tThe executable (PKG) in the folder \"client\" will be code signed.\n'
     fi
 
     echo $'\t'${bold}'-so, --sign-only'${normal}
     if [ ${OSLINUX} -eq 1 ] ; then
         echo $'\t\tThe script will stop after code signing the executable (EXE) in the folder \"client\".\n'
     else
-        echo $'\t\tThe script will stop after code signing the executable (DMG) in the folder \"client\".\n'
+        echo $'\t\tThe script will stop after code signing the executable (PKG) in the folder \"client\".\n'
     fi
 
     if [ ${OSLINUX} -eq 0 ] ; then
