@@ -76,7 +76,7 @@ fi
 
 #================================================================================
 #
-#        NAME: code section
+#        NAME: checkPackages
 # DESCRIPTION: Simple check if 'Packages' is installed.
 #              If packagesutil and/or packagesbuild are not present the script
 #              assumes Packages is not installed.
