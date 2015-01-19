@@ -35,12 +35,13 @@
 #                          fixed centos-7 to require epel (for qtwebkit)
 # V1.2  -- 2015-01-12, jw  ported to python3.
 # V1.3  --                 Adding basic fonts, when running with -X. Message 'package for' improved.
+# V1.4  -- 2015-01-19, jw  added --ssh-key option. Non trivial part: make sshd happy on all platforms.
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
 from __future__ import print_function
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
-import json, sys, os, re, time
+import json, sys, os, re, time, tempfile
 import subprocess, base64, requests
 
 try:
@@ -49,7 +50,7 @@ except ImportError:
   import urllib2			# python2
 
 
-__VERSION__="1.2"
+__VERSION__="1.4"
 target="xUbuntu_14.04"
 
 default_obs_config = {
@@ -343,11 +344,12 @@ def obs_fetch_bin_version(api, download_item, prj, pkg, target):
   # cloudtirea-client-1.7.0-4.1.i686.rpm
   m = re.search(r'^\s*'+re.escape(args.package)+r'-(\d+[^-\s]*)\-([\w\.]+?)\.(x86_64|i\d86|noarch)\.rpm$', bin_seen, re.M)
   if m: return (m.group(1),m.group(2))
-  print("package "+args.package"+ for "+target+" not seen in "+cfg['url']+'/'+target+" :\n"+ bin_seen)
+  print("package "+args.package+" for "+target+" not seen in "+cfg['url']+'/'+target+" :\n"+ bin_seen)
   print("Try one of these:")
   lu.recursive = False
   for target in lu.apache(cfg['url_cred']):
-    print(re.sub("/$","", target[0]),end='')
+    print(re.sub("/$","", target[0]),end=' ')
+  print("")
   sys.exit(22)
 
 
@@ -479,6 +481,7 @@ ap.add_argument("-N", "--no-operation", default=False, action="store_true", help
 ap.add_argument("-R", "--rm", default=False, action="store_true", help="Remove intermediate docker containers after a successful build")
 ap.add_argument("--no-cache", default=False, action="store_true", help="Do not use cache when building the image. Default: use docker cache as available")
 ap.add_argument("-X", "--xauth", default=False, action="store_true", help="Prepare a docker image that can connect to your X-Server.")
+ap.add_argument("-S", "--ssh-key", help="Import an ssh-key (e.g. ~/.ssh/id_dsa.pub) and run with sshd.")
 ap.add_argument("project", metavar="PROJECT", nargs="?", help="obs project name. Alternate syntax to PROJ/PACK")
 ap.add_argument("package", metavar="PACKAGE",  nargs="?", help="obs package name, or PROJ/PACK")
 ap.add_argument("platform",metavar="PLATFORM", nargs="?", help="obs build target name. Alternate syntax to -p. Default: "+target)
@@ -491,6 +494,10 @@ if args.print_image_name_only:
   args.no_operation=True
 if args.quiet: run.verbose=0
 
+
+context_dir = tempfile.mkdtemp(prefix="obs_docker_install_context_")
+docker_cmd_cmd="/bin/bash"
+extra_docker_cmd = []
 extra_packages = []
 if args.extra_packages: extra_packages = re.split(r"[\s,]", args.extra_packages)
 
@@ -624,6 +631,25 @@ if args.xauth:
   if re.search(r'centos|rhel|fedora', target, re.I): 	extra_packages.extend(['gnu-free-sans-fonts'])
   if re.search(r'ubuntu|debian', target, re.I):		extra_packages.extend(['fonts-dejavu-core'])
 
+if args.ssh_key:
+  if args.ssh_key.endswith(".pub"):
+    if not args.no_operation: run(["cp", args.ssh_key, context_dir+'/authorized_keys'])
+    extra_docker_cmd.extend(['RUN mkdir /root/.ssh', 'ADD authorized_keys /root/.ssh/authorized_keys'])
+    # tested with centos:
+    extra_docker_cmd.extend(["RUN sed '/pam_loginuid.so/s/^/#/g' -i /etc/pam.d/*"])
+  else:
+    print("ssh-key '"+args.ssh_key+"' does not end in '.pub' is not a plain file. Ignored.");
+  # add ssh server
+  if re.search(r'suse', target, re.I):
+    extra_packages.extend(['openssh'])
+    docker_cmd_cmd='service sshd start ; ip a | grep global ; exec /bin/bash'
+  if re.search(r'centos|rhel|fedora', target, re.I):
+    extra_packages.extend(['openssh-server'])
+    docker_cmd_cmd='service sshd start ; ip a | grep global ; exec /bin/bash'
+  if re.search(r'ubuntu|debian', target, re.I):
+    extra_packages.extend(['openssh-server'])
+    docker_cmd_cmd='mkdir -p /var/run/sshd; /usr/sbin/sshd; ip a | grep global ; exec /bin/bash'
+
 
 docker_run=["docker","run","-ti"]
 for vol in docker_volumes:
@@ -643,6 +669,7 @@ wget_cmd+=" "+download["url"]
 if not re.search(r'/$', wget_cmd): wget_cmd+='/'
 
 now=time.strftime('%Y%m%d%H%M')
+start_time=time.time()
 d_endl="\n"
 if args.keep_going: d_endl = " || true\n"
 
@@ -655,8 +682,8 @@ if docker["fmt"] == "APT":
   dockerfile+="RUN apt-key add - < Release.key"+d_endl
   dockerfile+="RUN echo 'deb "+download["url_cred"]+"/"+target+"/ /' >> /etc/apt/sources.list.d/"+args.package+".list"+d_endl
   dockerfile+="RUN apt-get -q -y update"+d_endl
-  if extra_packages:
-    dockerfile+="RUN apt-get -q -y install "+' '.join(extra_packages)+d_endl
+  if extra_packages: 	dockerfile+="RUN apt-get -q -y install "+' '.join(extra_packages)+d_endl
+  if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
   dockerfile+="RUN date="+now+" apt-get -q -y update && apt-get -q -y install "+args.package+d_endl
   dockerfile+="RUN zcat /usr/share/doc/"+args.package+"/changelog*.gz  | head -20"+d_endl
   dockerfile+="RUN echo 'apt-get install "+args.package+"' >> ~/.bash_history"+d_endl
@@ -666,8 +693,8 @@ elif docker["fmt"] == "YUM":
   if "pre" in docker and len(docker["pre"]):
     dockerfile+="RUN yum install -y "+" ".join(docker["pre"])+d_endl
   dockerfile+="RUN "+wget_cmd+target+'/'+args.project+".repo -O /etc/yum.repos.d/"+args.project+".repo"+d_endl
-  if extra_packages:
-    dockerfile+="RUN yum install -y "+' '.join(extra_packages)+d_endl
+  if extra_packages:	dockerfile+="RUN yum install -y "+' '.join(extra_packages)+d_endl
+  if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
   dockerfile+="RUN date="+now+" yum clean expire-cache && yum install -y "+args.package+d_endl
   dockerfile+="RUN rpm -q --changelog "+args.package+" | head -20"+d_endl
   dockerfile+="RUN echo 'yum install -y "+args.package+"' >> ~/.bash_history"+d_endl
@@ -677,8 +704,8 @@ elif docker["fmt"] == "ZYPP":
   if "pre" in docker and len(docker["pre"]):
     dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+" ".join(docker["pre"])+d_endl
   dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys addrepo "+download["url_cred"]+target+"/"+args.project+".repo"+d_endl
-  if extra_packages:
-    dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+" ".join(extra_packages)+d_endl
+  if extra_packages:	dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+" ".join(extra_packages)+d_endl
+  if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
   dockerfile+="RUN date="+now+" zypper --non-interactive --gpg-auto-import-keys refresh && zypper --non-interactive --gpg-auto-import-keys install "+args.package+d_endl
   dockerfile+="RUN rpm -q --changelog "+args.package+" | head -20"+d_endl
   dockerfile+="RUN echo 'zypper install "+args.package+"' >> ~/.bash_history"+d_endl
@@ -692,7 +719,8 @@ if args.xauth:
   dockerfile+="ENV XAUTHORITY "+xauthfile+"\n"
   dockerfile+='RUN : "'+xa_cmd+'"'+"\n"
 dockerfile+='RUN : "'+" ".join(docker_run)+'"'+"\n"
-dockerfile+="CMD /bin/bash\n"
+dockerfile+='CMD '+docker_cmd_cmd+"\n"
+
 
 # print(obs_api, download, image_name, target, docker)
 
@@ -701,21 +729,28 @@ docker_build=["docker", "build"]
 if args.rm: docker_build.append("--rm")
 if args.quiet: docker_build.append("-q")
 if args.no_cache: docker_build.append("--no-cache")
-docker_build.extend(["-t", image_name, "-"])
+docker_build.extend(["-t", image_name, context_dir])
 
 if args.no_operation:
   print(dockerfile)
   print("\nYou can use the above Dockerfile to create an image like this:\n "+" ".join(docker_build)+"\n")
 else:
+  fd=open(context_dir+"/Dockerfile", "w")
+  fd.write(dockerfile)
+  fd.close()
   run.verbose += 1
-  r=run(docker_build, input="\n"+dockerfile, redirect_stdout=False, redirect_stderr=False, return_code=True)
+  print(dockerfile)
+  # using stdin would silently disable ADD instructions.
+  r=run(docker_build, redirect_stdout=False, redirect_stderr=False, return_code=True)
   run.verbose -= 1
+  run(['echo', 'rm', '-rf', context_dir])
   if not args.quiet:
     if r:
       print("Failed with non-zero exit code="+str(r)+". Check for errors in the above log.\n")
       args.run = False
     else:
       print("Image successfully created. Check for warnings in the above log.\n")
+print(time.strftime("build time: %H:%M:%S", time.gmtime(time.time()-start_time)))
 
 if not args.rm and not r and not args.quiet:
   print("You may remove unused container/images with e.g.\n "+docker_cmd_clean_c+"\n "+docker_cmd_clean_i+"\n")
