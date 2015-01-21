@@ -10,6 +10,7 @@
 # 2014-08-15, jw, more parameters for obs and template change.
 # 2014-10-09, jw, support for trailing slash at project name. 
 #                 See setup_all_oem_client.pl for the semantics.
+# 2015-01-19, jw, return failure, when osc copypac fails.
 #
 use Data::Dumper;
 sub list_obs_pkg;
@@ -57,7 +58,7 @@ for my $pkg (@src_pkgs)
       }
     my $cmd = "osc -A$obs_api copypac $src_prj $pkg $dest_prj";
     print STDERR "+ $cmd\n";
-    system($cmd);
+    system($cmd) and exit(1);
   }
 
 
