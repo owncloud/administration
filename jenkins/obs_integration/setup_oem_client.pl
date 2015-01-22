@@ -11,6 +11,7 @@
 # 2014-10-09, jw, support for trailing slash at project name. 
 #                 See setup_all_oem_client.pl for the semantics.
 # 2015-01-19, jw, return failure, when osc copypac fails.
+# 2015-01-22, jw, honor env OSC_CMD -- needed for rotor publish-oem-client-linux
 #
 use Data::Dumper;
 sub list_obs_pkg;
@@ -19,6 +20,7 @@ my @src_pkgs = qw{ neon libqt4 cmake libqt4 libqt4-sql-plugins qtwebkit qtkeycha
 my $src_prj = 'desktop';
 my $dest_prj_prefix = 'oem:';
 my $obs_api = 'https://s2.owncloud.com';
+my $osc_cmd = $ENV{'OSC_CMD'} || 'osc';
 
 my $client_name = $ARGV[0];
 die qq{
@@ -56,7 +58,7 @@ for my $pkg (@src_pkgs)
         print STDERR "exists: $dest_prj $pkg\n";
 	next;
       }
-    my $cmd = "osc -A$obs_api copypac $src_prj $pkg $dest_prj";
+    my $cmd = "$osc_cmd -A$obs_api copypac $src_prj $pkg $dest_prj";
     print STDERR "+ $cmd\n";
     system($cmd) and exit(1);
   }
@@ -67,7 +69,7 @@ exit(0);
 sub list_obs_pkg()
 {
   my ($api, $prj) = @_;
-  my $cmd = "osc -A$api ls $prj";
+  my $cmd = "$osc_cmd -A$api ls $prj";
   open(my $ifd, "$cmd 2>/dev/null|") or die "list_obs_pkg: cannot read from '$cmd'";
   my @pkgs = <$ifd>;
   chomp @pkgs;
