@@ -36,6 +36,7 @@
 # 2014-10-09, jw, V1.7
 #       - support for trailing slash with -p proj_name/ added. 
 #         Semantics see setup_all_oem_client.pl
+# 2015-01-22, jw, V1.7a accept also /syncclient/package.cfg instead of /mirall/package.cfg
 
 use Getopt::Std;
 use Config::IniFiles;
@@ -65,6 +66,7 @@ sub help() {
   This script reads the following input files
   - OEM.cmake from the branding tarball
   - a file mirall/package.cfg from the branding dir.
+    or a file syncclient/package.cfg from the branding dir.
   - templates for the packaging files from the local templates directory
 
   Options:
@@ -124,7 +126,7 @@ sub prepareTarBall($$$) {
     move($client, $newname);
     chdir($newname);
     print "Extracting theme...\n";
-    my @args = ("--wildcards", "--force-local", "-xif", "$themetar", "*/mirall/*");
+    my @args = ("--wildcards", "--force-local", "-xif", "$themetar", "*/mirall/*", "*/syncclient/*");
     system("/bin/tar", @args);
     chdir("..");
 
@@ -274,7 +276,7 @@ sub getSubsts( $ )
     my $cfgFile;
 
     find( { wanted => sub {
-	if( $_ =~ /mirall\/package.cfg/ ) {
+	if( $_ =~ /(syncclient|mirall)\/package.cfg/ ) {
 	    print "Substs from $File::Find::name\n";
 	    $cfgFile = $File::Find::name;
           } 

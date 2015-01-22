@@ -31,7 +31,7 @@ Default template project: $src_prj
 
 } unless $client_name;
 
-if ($ARGV[1])
+if ($ARGV[1] and ($ARGV[1] ne $dest_prj_prefix))
   {
     $dest_prj_prefix = $ARGV[1];
     warn "submitting package $client_name to nonstandard project prefix '$dest_prj_prefix'\n";

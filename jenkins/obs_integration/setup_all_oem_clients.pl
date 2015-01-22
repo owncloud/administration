@@ -38,7 +38,7 @@
 # 2014-09-03, jw, template named in create_msg, so that the changelogs (at least) refers to the relevant changelog.
 # 2014-09-09, jw, dragged in OSC_CMD to infuse additional osc parameters. Needed for jenkins mirall-linux-oem job
 # 2014-10-09, jw, trailing slash after project name means: no automatic subproject please.
-#
+# 2015-01-22, jw, accept /syncclient/package.cfg instead of /mirall/package.cfg (seen with testpilotclient)
 
 use Data::Dumper;
 use File::Path;
@@ -76,7 +76,7 @@ If you specify the projectname with a trialing slash, it is taken as the
 };
   }
 
-my $container_project   = shift || 'oem';	#'home:jw:oem';
+my $container_project   = shift || 'oem';	#'home:jw:oem';	'ownbrander';
 
 my $client_filter	= shift || "";
 my @client_filter	= split(/[,\|\s]/, $client_filter);
@@ -93,7 +93,7 @@ our $verbose = 1;
 our $no_op = 0;
 my $skipahead = 0;	# 5 start with all tarballs there.
 
-my $customer_themes_git = 'git@github.com:owncloud/customer-themes.git';
+my $customer_themes_git = $ENV{CUSTOMER_THEMES_GIT} || 'git@github.com:owncloud/customer-themes.git';
 my $source_git          = 'https://github.com/owncloud/client.git';
 my $osc_cmd             = "osc -A$obs_api";
 my $genbranding         = "./genbranding.pl -c '-A$obs_api' -p '$container_project' -r '$build_token' -o -f";
@@ -223,7 +223,8 @@ closedir(DIR);
 my @candidates = ();
 for my $dir (sort @d)
   {
-    next unless -d "$tmp_t/$dir/mirall";
+    print "crawl $tmp_t/$dir\n";
+    next unless -d "$tmp_t/$dir/mirall" or -d "$tmp_t/$dir/syncclient";
     next if @client_filter and not $client_filter{$dir};
     #  - generate the branding tar ball
     # CAUTION: keep in sync with jenkins jobs customer_themes
@@ -231,7 +232,7 @@ for my $dir (sort @d)
     chdir($tmp_t);
     run("tar cjf ../$dir.tar.bz2 ./$dir")
       unless $skipahead > 4;
-    push @candidates, $dir if -f "$tmp_t/$dir/mirall/package.cfg";
+    push @candidates, $dir if -f "$tmp_t/$dir/mirall/package.cfg" or -f "$tmp_t/$dir/syncclient/package.cfg";
   }
 
 print Dumper \@candidates;
@@ -389,6 +390,7 @@ for my $branding (@candidates)
 if (@client_filter and scalar(keys %client_filter))
   {
     print "ERROR: branding not found: unused filter terms: ", Dumper \%client_filter;
+    print "\tAvailable candidates: @candidates\n";
     print "Check your spelling!\n";
     exit(0);
   }
