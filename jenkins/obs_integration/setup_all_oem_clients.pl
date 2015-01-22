@@ -223,7 +223,6 @@ closedir(DIR);
 my @candidates = ();
 for my $dir (sort @d)
   {
-    print "crawl $tmp_t/$dir\n";
     next unless -d "$tmp_t/$dir/mirall" or -d "$tmp_t/$dir/syncclient";
     next if @client_filter and not $client_filter{$dir};
     #  - generate the branding tar ball
