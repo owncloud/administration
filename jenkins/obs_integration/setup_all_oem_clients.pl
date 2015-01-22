@@ -110,7 +110,7 @@ unless ($ENV{CREATE_TOP} || obs_prj_exists($osc_cmd, $container_project))
     print "container_project $container_project does not exist.\n";
     print "Check your command line: version container pkgfilter ...\n";
     print "If you want to creat it, run again with 'env CREATE_TOP=1 ...'\n";
-    exit(0);
+    exit(1);
   }
 
 print "osc_cmd='$osc_cmd';\ngenbranding='$genbranding';\n";
@@ -391,7 +391,7 @@ if (@client_filter and scalar(keys %client_filter))
     print "ERROR: branding not found: unused filter terms: ", Dumper \%client_filter;
     print "\tAvailable candidates: @candidates\n";
     print "Check your spelling!\n";
-    exit(0);
+    exit(1);
   }
 
 if ($skipahead)
