@@ -46,10 +46,14 @@ fi
 wget https://raw.githubusercontent.com/owncloud/administration/master/travis-ci/custom.ini
 
 # for hhvm
-cat ./custom.ini > /etc/hhvm/php.ini
+if [ $(phpenv version-name) = 'hhvm' ]; then
+  cat ./custom.ini > /etc/hhvm/php.ini
+fi
 
 # all other
-phpenv config-add custom.ini
+if [ $(phpenv version-name) != 'hhvm' ]; then
+  phpenv config-add custom.ini
+fi
 
 
 #
