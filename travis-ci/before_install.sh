@@ -49,7 +49,6 @@ echo  $(phpenv version-name)
 
 # for hhvm
 if [ $(phpenv version-name) = 'hhvm' ]; then
-hhvm.server.always_populate_raw_post_data = -1
   echo "hhvm.server.always_populate_raw_post_data = -1" >> /etc/hhvm/php.ini
   echo "always_populate_raw_post_data = -1" >> /etc/hhvm/php.ini
   phpenv rehash
