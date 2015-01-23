@@ -45,10 +45,9 @@ fi
 #
 wget https://raw.githubusercontent.com/owncloud/administration/master/travis-ci/custom.ini
 
-echo  $(phpenv version-name)
-
 # for hhvm
 if [ $(phpenv version-name) = 'hhvm' ]; then
+  echo  $(phpenv version-name)
   echo "hhvm.server.always_populate_raw_post_data = -1" >> /etc/hhvm/php.ini
   echo "always_populate_raw_post_data = -1" >> /etc/hhvm/php.ini
   phpenv rehash
