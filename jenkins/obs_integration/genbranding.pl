@@ -9,8 +9,8 @@
 # Requires: perl-Template-Toolkit
 #
 # 2014-06-12 jw@owncloud.com, v1.1
-#	- added  OBS_INTEGRATION_VERBOSE, OBS_INTEGRATION_OSC for 
-#	  debugging and more flexibility when calling osc. Suggested usage: 
+#	- added  OBS_INTEGRATION_VERBOSE, OBS_INTEGRATION_OSC for
+#	  debugging and more flexibility when calling osc. Suggested usage:
 #	  env OBS_INTEGRATION_OSC='osc -Ahttps://s2.owncloud.com' ./genbranding.pl ...
 #       - added OBS_INTEGRATION_PRODUCT to overwrite the default product openSUSE_13.1
 #       - added '--download-api-only' per default to avoid issues with download.o.c.
@@ -19,7 +19,7 @@
 #	  We can remove the version => ... entries from package.cfg now.
 #
 # 2014-06-20 jw@owncloud.com, v1.2
-#       - option -p destproj added. Default: 'oem:*' Now I can test in home:jw:oem:* 
+#       - option -p destproj added. Default: 'oem:*' Now I can test in home:jw:oem:*
 #         without messing with killing official builds.
 #       - option -r relid added. Default '<CI_CNT>.<B_CNT>'
 #
@@ -34,7 +34,7 @@
 # 2014-09-15, jw, V1.6
 #       - support for upper [% themename_deb %] and [% executable %].
 # 2014-10-09, jw, V1.7
-#       - support for trailing slash with -p proj_name/ added. 
+#       - support for trailing slash with -p proj_name/ added.
 #         Semantics see setup_all_oem_client.pl
 # 2015-01-22, jw, V1.7a accept also /syncclient/package.cfg instead of /mirall/package.cfg
 
@@ -82,9 +82,9 @@ sub help() {
 
   Call example:
   ./genbranding.pl client-1.7.1.tar.bz2 testpilotcloud.tar.bz2
-  ./genbranding.pl mirall-1.5.3.tar.bz2 cern.tar.bz2
+  ./genbranding.pl owncloudclient-1.5.3.tar.bz2 cern.tar.bz2
 
-  Output will be in directory cern-client. 
+  Output will be in directory cern-client.
   Build directory (with -b) will be oem:cern-client.
 
   Options:
@@ -123,9 +123,11 @@ sub prepareTarBall($$$) {
     my $newname = $client;
     $newname =~ s/client-/$theme-/;
     $newname .= $prerelease if defined $prerelease;
+
     move($client, $newname);
     chdir($newname);
     print "Extracting theme...\n";
+
     my @args = ("--wildcards", "--force-local", "-xif", "$themetar", "*/mirall/*", "*/syncclient/*");
     system("/bin/tar", @args);
     chdir("..");
@@ -158,13 +160,12 @@ sub createClientFromTemplate($) {
     $versdir =~ s{\.}{_}g;
     print "versdir=$clienttemplatedir/$versdir\n";
     my $dh;
-    unless (opendir($dh, "$clienttemplatedir/$versdir"))
-      {
+    unless (opendir($dh, "$clienttemplatedir/$versdir")) {
         opendir DIR, $clienttemplatedir;
         my @have_vdirs = grep { -d "$clienttemplatedir/$_" and /^v/ } readdir DIR;
         closedir DIR;
 	my $have_vdirs = join(' ', sort @have_vdirs);
-        die qq{$0: missing a $versdir subdirectory in $clienttemplatedir/. 
+        die qq{$0: missing a $versdir subdirectory in $clienttemplatedir/.
 There we expect to find all the templates for this $substs->{version} version.
 All we have is: $have_vdirs
 
@@ -175,7 +176,7 @@ Please do the following steps (or similar):
  # Chosse a v... dir that is similar.
  \$ cp v.../* $versdir;
  # Peek at nightly or testing obs projects to see what needs merging here.
- # Edit/add files as needed. Ha! 
+ # Edit/add files as needed. Ha!
  \$ vi $versdir/*
  \$ git add $versdir/*
  \$ git commit -a
@@ -210,7 +211,7 @@ Please do the following steps (or similar):
      return cwd();
 }
 
-# Create the final themed tarball 
+# Create the final themed tarball
 sub createTar($$)
 {
     my ($clientdir, $newname) = @_;
@@ -232,18 +233,18 @@ sub createTar($$)
     print " success: Created $tarName\n";
 }
 
-# open the OEM.cmake 
-sub readOEMcmake( $ ) 
+# open the OEM.cmake
+sub readOEMcmake( $ )
 {
     my ($file) = @_;
     my %substs;
 
     print "Reading OEM cmake file: $file\n";
-    
+
     die("Could not open <$file>\n") unless open( OEM, "$file" );
     my @lines = <OEM>;
     close OEM;
-    
+
     foreach my $l (@lines) {
 	if( $l =~ /^\s*set\(\s*(\S+)\s*"(\S+)"\s*\)/i ) {
 	    my $key = $1;
@@ -270,7 +271,7 @@ sub readOEMcmake( $ )
     return %substs;
 }
 
-sub getSubsts( $ ) 
+sub getSubsts( $ )
 {
     my ($subsDir) = @_;
     my $cfgFile;
@@ -279,11 +280,11 @@ sub getSubsts( $ )
 	if( $_ =~ /(syncclient|mirall)\/package.cfg/ ) {
 	    print "Substs from $File::Find::name\n";
 	    $cfgFile = $File::Find::name;
-          } 
+          }
         },
 	no_chdir => 1 }, "$subsDir");
 
-    die("Please provide a mirall/package.cfg file in the custom dir!\n") unless( $cfgFile );
+    die("Please provide a syncclient/package.cfg file in the custom dir!\n") unless( $cfgFile );
 
     print "Reading substs from $cfgFile\n";
     my %substs;
@@ -304,7 +305,7 @@ sub getSubsts( $ )
 	$substs{$k} = $s2{$k};
     }
 
-    # calculate some subst values, such as 
+    # calculate some subst values, such as
     $substs{tarball} = $subsDir unless( $substs{tarball} );
     $substs{pkgdescription_debian} = debianDesc( $substs{pkgdescription} );
     $substs{sysconfdir} = "/etc/". $substs{shortname} unless( $substs{sysconfdir} );
@@ -376,14 +377,12 @@ $substs->{summary} = "The $theme client";	# prevent shdbox to die with empty sum
 unless( defined $substs->{version} )
   {
     my $vers = getFileName($clienttar);
-    if ($vers =~ m{-(\d[\d\.]*)$})
-      {
+    if ($vers =~ m{-(\d[\d\.nightly]*)$}) {
         $vers = $1;
-      }
-    else
-      {
+        $vers =~ s/nightly.*$//;
+    } else {
         die "\n\nOops: client filename $vers does not match {-(\\d[\\d\\.]\*)\$}.\n Cannot exctract version number from here.\n Please add 'version' to package.cfg in $themetar\n";
-      }
+    }
     $substs->{version} = $vers;
   }
 
@@ -495,7 +494,7 @@ if( $opt_o ) {
 	doOSC(@osc);
       }
     }
-    
+
     my $change = "  Automatically generated branding added. Version=$substs->{version}";
        $change .= ", release_id=$opt_r" if defined $opt_r;
        $change .= "\n  $create_msg"  if length $create_msg;
