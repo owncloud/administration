@@ -43,8 +43,10 @@ fi
 #
 # copy custom php.ini settings
 #
-wget https://raw.githubusercontent.com/owncloud/administration/master/travis-ci/custom.ini
-phpenv config-add custom.ini
+if [ '$TRAVIS_PHP_VERSION' != 'hhvm' ]; then
+  wget https://raw.githubusercontent.com/owncloud/administration/master/travis-ci/custom.ini
+  phpenv config-add custom.ini
+fi
 
 #
 # copy install script
