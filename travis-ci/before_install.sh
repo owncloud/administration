@@ -40,6 +40,9 @@ if [ "$DB" == "oracle" ] ; then
   bash ./before_install_oracle.sh
 fi
 
+# FIXME: Debug Echo
+echo $(phpenv version-name)
+
 #
 # copy custom php.ini settings
 #
