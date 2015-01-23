@@ -43,7 +43,7 @@ fi
 #
 # copy custom php.ini settings
 #
-if [ '$TRAVIS_PHP_VERSION' != 'hhvm' ]; then
+if [ $(phpenv version-name) != 'hhvm' ]; then
   wget https://raw.githubusercontent.com/owncloud/administration/master/travis-ci/custom.ini
   phpenv config-add custom.ini
 fi
