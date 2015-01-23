@@ -41,6 +41,12 @@ if [ "$DB" == "oracle" ] ; then
 fi
 
 #
+# copy custom php.ini settings
+#
+wget https://raw.githubusercontent.com/owncloud/administration/master/travis-ci/custom.ini
+phpenv config-add custom.ini
+
+#
 # copy install script
 #
 cd ../core
