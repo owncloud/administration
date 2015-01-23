@@ -40,18 +40,15 @@ if [ "$DB" == "oracle" ] ; then
   bash ./before_install_oracle.sh
 fi
 
-# FIXME: Debug Echo
-echo $(phpenv version-name)
-
 #
 # copy custom php.ini settings
 #
+wget https://raw.githubusercontent.com/owncloud/administration/master/travis-ci/custom.ini
 
 # for hhvm
 cat ./custom.ini > /etc/hhvm/php.ini
 
 # all other
-wget https://raw.githubusercontent.com/owncloud/administration/master/travis-ci/custom.ini
 phpenv config-add custom.ini
 
 
