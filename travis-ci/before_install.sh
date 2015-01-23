@@ -46,10 +46,14 @@ echo $(phpenv version-name)
 #
 # copy custom php.ini settings
 #
-if [ $(phpenv version-name) != 'hhvm' ]; then
-  wget https://raw.githubusercontent.com/owncloud/administration/master/travis-ci/custom.ini
-  phpenv config-add custom.ini
-fi
+
+# for hhvm
+cat ./custom.ini > /etc/hhvm/php.ini
+
+# all other
+wget https://raw.githubusercontent.com/owncloud/administration/master/travis-ci/custom.ini
+phpenv config-add custom.ini
+
 
 #
 # copy install script
