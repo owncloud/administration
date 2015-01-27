@@ -2,12 +2,14 @@ Source: [% themename_deb %]-client
 Section: devel
 Priority: optional
 Maintainer: [% maintainer_person %]
-Build-Depends: debhelper (>= 9), cmake, libqt4-dev (>= 4.7), libqtwebkit-dev (>= 2.2.0), qtkeychain-dev, libneon27-dev, libsqlite3-dev, python-sphinx | python3-sphinx
+Build-Depends: debhelper (>= 9), cmake, libqt4-dev (>= 4.7), libqtwebkit-dev (>= 2.2.0), qtkeychain-dev, libqtkeychain0 (>= 0.3), libneon27-dev, libsqlite3-dev, python-sphinx | python3-sphinx
+Build-Conflicts: libqtkeychain0 (= 0.20140128)
 Standards-Version: 3.9.5
 
 Package: [% themename_deb %]-client
 Architecture: any
 Multi-Arch: same
+Conflicts: libqtkeychain0 (= 0.20140128)
 Depends: ${misc:Depends}, ${shlibs:Depends}, lib[% themename_deb %]sync0 (= ${binary:Version}), [% themename_deb %]-client-l10n, libqt4-sql-sqlite 
 Description: [% pkgdescription_debian %]
 Package: [% themename_deb %]-client-doc
