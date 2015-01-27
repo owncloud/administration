@@ -41,6 +41,15 @@ if [ "$DB" == "oracle" ] ; then
 fi
 
 #
+# copy custom php.ini settings
+#
+wget https://raw.githubusercontent.com/owncloud/administration/master/travis-ci/custom.ini
+if [ $(phpenv version-name) != 'hhvm' ]; then
+  phpenv config-add custom.ini
+fi
+
+
+#
 # copy install script
 #
 cd ../core
