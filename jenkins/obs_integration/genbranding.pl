@@ -135,19 +135,14 @@ sub prepareTarball($$) {
         move($client, $newname);
     }
     chdir($newname);
-<<<<<<< HEAD
+
     print "Extracting theme...\n";
 
     my @args = ("--wildcards", "--force-local", "-xif", "$themetar", "*/mirall/*", "*/syncclient/*");
-=======
     print "Create branded tarball in $newname\n";
 
     # Do try to extract both directory names mirall and syncclient because
     # at one point of time we were forced to rename mirall -> client
-    my @args = ("--wildcards", "--force-local", "-xif", "$themetar", "*/mirall/*");
-    system("/bin/tar", @args);
-    @args = ("--wildcards", "--force-local", "-xif", "$themetar", "*/syncclient/*");
->>>>>>> Adopt genbranding to 1.8.0 client build.
     system("/bin/tar", @args);
     chdir("..");
 
@@ -314,11 +309,7 @@ sub getSubsts( $ )
     my $oem_sub_dir;
 
     find( { wanted => sub {
-<<<<<<< HEAD
-	if( $_ =~ /(syncclient|mirall)\/package.cfg/ ) {
-=======
 	if( $_ =~ /(mirall|syncclient)\/package.cfg/ ) {
->>>>>>> Adopt genbranding to 1.8.0 client build.
 	    print "Substs from $File::Find::name\n";
 	    $cfgFile = $File::Find::name;
 	    $oem_sub_dir = $1;
