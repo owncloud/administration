@@ -31,7 +31,7 @@
 ##
 ## Caution: do not change the names of the following three defines.
 ## prerelease, base_version, tar_version are the interface into buildpackage.pl
-## used in rotor.o.c job mirall-linux-master
+## used in rotor.o.c job owncloud-client-linux
 ## define prerelease as %nil, if this is not a prerelease.
 %define prerelease [% prerelease %]
 %define base_version [% version %]
@@ -59,13 +59,11 @@ License:        GPL-2.0+
 Summary:        [% summary %]
 Url:            [% projecturl %]
 Group:          Productivity/Networking/Other
-Source0:        [% themename %]-%{tar_version}.tar.bz2
+Source0:        [% tarball %].tar.bz2
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 Source1:        [% shortname %].sh
 Patch1:         autostart_use_wrapper.diff
 %endif
-
-%define is_version_1_7_x 0%(expr match %version 1.7)
 
 %if (0%{?rhel_version} && 0%{?rhel_version}<700) || (0%{?centos_version} && 0%{?centos_version}<700) || 0%{?suse_version} == 1110
 %if 0%{?suse_version} == 1110
@@ -82,7 +80,7 @@ Patch1:         autostart_use_wrapper.diff
 %else
 %define opt_hack 0
 %define qtprefix %{nil}
-%define cmake_args -DCMAKE_INSTALL_SYSCONFDIR=%{_sysconfdir} -DSYSCONF_INSTALL_DIR=%{_sysconfdir}
+%define cmake_args -DCMAKE_INSTALL_SYSCONFDIR=%{_sysconfdir} -DSYSCONF_INSTALL_DIR=[% sysconfdir %]
 %endif
 
 # default to have no docs. Cannot be built with old distros.
@@ -143,11 +141,9 @@ Requires:       %{qtprefix}libqt4-sql
 Requires:       %{qtprefix}libqt4-sql-sqlite
 Requires:       oc-neon
 %endif
-%if %is_version_1_7_x
 %if 0%{?fedora_version} > 20 || 0%{?centos_version} > 700 || 0%{?suse_version} || 0%{?rhel_version} > 600
 # Fedora-19 and -20, CentOS-6, CentOS-7 don't have Suggests.
 Suggests:	%{name}-nautilus
-%endif
 %endif
 
 %if 0%{?suse_version}
@@ -204,7 +200,6 @@ Requires: lib[% shortname %]sync0 = %{version}
 %description -n lib[% shortname %]sync-devel
 Development files for the [% displayname %] sync library.
 
-%if %is_version_1_7_x
 %package -n %{name}-nautilus
 Summary:        Nautilus overlay icons
 Group:          Productivity/Networking/Other
@@ -219,10 +214,9 @@ Requires:       %{name}%{?_isa} = %{version}-%{release}
 %description -n %{name}-nautilus
 This package provides overlay icons to visualize the sync state
 in the nautilus file manager.
-%endif
 
 %prep
-%setup -q -n [% themename %]-%{tar_version}
+%setup -q -n [% tarball %]
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 # autostart_use_wrapper.diff
 %patch1 -p1
@@ -245,13 +239,11 @@ cmake .. -DWITH_DOC=TRUE \
   -DCMAKE_SKIP_RPATH=OFF \
   -DCMAKE_BUILD_TYPE=RelWithDebInfo \
   -DCMAKE_INSTALL_PREFIX=%{_prefix} \
-  -DCMAKE_DOC_INSTALL_PATH=%{_docdir}/ocsync \
-  -DSYSCONF_INSTALL_DIR=%{_sysconfdir} \
 %if %{_lib} == lib64
   -DLIB_SUFFIX=64 \
 %endif
 %if "%{name}" != "owncloud-client"
-  -DOEM_THEME_DIR=$PWD/../[% themename %]/mirall \
+  -DOEM_THEME_DIR=$PWD/../[% themename %]/[% oem_sub_dir %] \
 %endif
   %cmake_args
 
@@ -274,8 +266,8 @@ pushd build
 if [ %{have_doc} != 0 ];
 then
   mkdir -p ${RPM_BUILD_ROOT}%{_docdir}/%{name}
-  mv ${RPM_BUILD_ROOT}/usr/share/doc/mirall/* ${RPM_BUILD_ROOT}%{_docdir}/%{name}
-  rmdir ${RPM_BUILD_ROOT}/usr/share/doc/mirall
+  mv ${RPM_BUILD_ROOT}/usr/share/doc/client/* ${RPM_BUILD_ROOT}%{_docdir}/%{name}
+  rmdir ${RPM_BUILD_ROOT}/usr/share/doc/client
   rm ${RPM_BUILD_ROOT}%{_docdir}/%{name}/html/unthemed/.buildinfo
   mv ${RPM_BUILD_ROOT}%{_docdir}/%{name}/html/unthemed/* ${RPM_BUILD_ROOT}%{_docdir}/%{name}/html/
   rmdir ${RPM_BUILD_ROOT}%{_docdir}/%{name}/html/unthemed
@@ -389,13 +381,11 @@ fi
 %{_includedir}/[% shortname %]sync/
 %{_includedir}/httpbf.h
 
-%if %is_version_1_7_x
 %files -n %{name}-nautilus
 %defattr(-,root,root,-)
 # Fedora also has *.pyc and *.pyo files here.
 %{_datadir}/nautilus-python/extensions/syncstate.py*
 %dir %{_datadir}/nautilus-python/extensions
 %dir %{_datadir}/nautilus-python
-%endif
 
 %changelog

@@ -52,7 +52,7 @@ use Data::Dumper;
 my $msg_def = "created by: $0 @ARGV";
 
 use strict;
-use vars qw($clienttar $themetar $templatedir $dir $opt_h $opt_o $opt_b $opt_c $opt_n $opt_f $opt_p $dest_prj $dest_prj_theme $opt_r $opt_P);
+use vars qw($clienttar $themetar $templatedir $dir $opt_h $opt_o $opt_b $opt_c $opt_n $opt_f $opt_p $dest_prj $dest_prj_theme $opt_r);
 
 sub help() {
   print<<ENDHELP
@@ -77,7 +77,6 @@ sub help() {
   -n:           don't recreate the tarball, use an existing one.
   -f:           force upload, upload even if nothing changed.
   -p "project":	obs (p)roject used for -o and -b. Default: '$dest_prj'
-  -P "prerel":	switch to (P)rerelease mode: e.g. alpha, beta, rc, nightly, ... Default none.
   -r "relid":	specify a build release identifier. This number will be part of the binary file names built by osc.
 
   Call example:
@@ -112,23 +111,43 @@ sub getFileName( $ ) {
 }
 
 # Extracts the client tarball and puts the theme tarball the new dir
-sub prepareTarBall($$$) {
-    my ($argv0, $argv1, $prerelease) = @_;
+sub prepareTarball($$) {
+    my ($argv0, $argv1) = @_;
     print "Preparing tarball...";
 
     system("/bin/tar", ("xif", $clienttar, "--force-local") );
     print "Extract client...\n";
     my $client = getFileName( $argv0 );
-    my $theme = getFileName( $argv1 );
-    my $newname = $client;
-    $newname =~ s/client-/$theme-/;
-    $newname .= $prerelease if defined $prerelease;
+    my $theme  = getFileName( $argv1 );
 
-    move($client, $newname);
+    # client is owncloudclient-1.8.0pre1
+    # theme is cernbox => cernbox-client-1.8.0pre1
+
+    my $newname = $client;
+    if( $client =~ /ownCloud/i ) {
+        print "Creating the original ownCloud package tarball!\n";
+        $newname = lc $client; # all small letters
+    } else {
+        $newname =~ s/^owncloud/$theme-/i; # note that we add a - here.
+    }
+
+    if( $newname ne $client ) {
+        move($client, $newname);
+    }
     chdir($newname);
+<<<<<<< HEAD
     print "Extracting theme...\n";
 
     my @args = ("--wildcards", "--force-local", "-xif", "$themetar", "*/mirall/*", "*/syncclient/*");
+=======
+    print "Create branded tarball in $newname\n";
+
+    # Do try to extract both directory names mirall and syncclient because
+    # at one point of time we were forced to rename mirall -> client
+    my @args = ("--wildcards", "--force-local", "-xif", "$themetar", "*/mirall/*");
+    system("/bin/tar", @args);
+    @args = ("--wildcards", "--force-local", "-xif", "$themetar", "*/syncclient/*");
+>>>>>>> Adopt genbranding to 1.8.0 client build.
     system("/bin/tar", @args);
     chdir("..");
 
@@ -138,7 +157,7 @@ sub prepareTarBall($$$) {
 
 # read all files from the template directory and replace the contents
 # of the .in files with values from the substition hash ref.
-sub createClientFromTemplate($) {
+sub createPackageMetaFromTemplate($) {
     my ($substs) = @_;
 
     print "Create client from template\n";
@@ -148,6 +167,7 @@ sub createClientFromTemplate($) {
 
     my $clienttemplatedir = "$templatedir/client";
     my $theme = getFileName( $ARGV[1] );
+
     my $targetDir = "$theme-client";
 
     if( $opt_o ) {
@@ -199,12 +219,12 @@ Please do the following steps (or similar):
         $target =~ s/SHORTNAME/$substs->{shortname}/;
 
         if($source =~ /\.in$/) {
+            print "process $clienttemplatedir/$versdir/$source to $targetDir/$target\n";
             $target =~ s/\.in$//;
             $tt->process("$clienttemplatedir/$versdir/$source", $substs, "$targetDir/$target") or die $tt->error();
-            print "process $clienttemplatedir/$versdir/$source ...\n";
         } else {
-            copy("$clienttemplatedir/$versdir/$source", "$targetDir/$target");
             print "copy $clienttemplatedir/$versdir/$source ...\n";
+            copy("$clienttemplatedir/$versdir/$source", "$targetDir/$target");
         }
      }
 
@@ -227,6 +247,17 @@ sub createTar($$)
     die( "Can not find directory to tar: $newname\n" ) unless( -d $newname );
 
     print "Creating tar $tarName from $newname, in cwd $cwd\n";
+
+    # check to create a backup file
+    if( -e $tarName ) {
+      my $bakname = $tarName . ".bak";
+      unlink( $bakname ) if( -e $bakname );
+      move( $tarName, $bakname );
+      unlink( $tarName );
+    }
+
+    # remove the package.cfg in the target tarball.
+
     my @args = ("cjfi", $tarName, $newname, "--force-local") ;
     system("/bin/tar", @args);
     rmtree("$newname");
@@ -254,6 +285,11 @@ sub readOEMcmake( $ )
 	}
     }
 
+    unless( $substs{APPLICATION_SHORTNAME} ) {
+      # needed to have a shortname for the packaging templates
+      $substs{APPLICATION_SHORTNAME} = lc $substs{APPLICATION_NAME};
+    }
+
     if( $substs{APPLICATION_SHORTNAME} ) {
 	$substs{shortname} = $substs{APPLICATION_SHORTNAME};
 	$substs{displayname} = $substs{APPLICATION_SHORTNAME};
@@ -275,11 +311,17 @@ sub getSubsts( $ )
 {
     my ($subsDir) = @_;
     my $cfgFile;
+    my $oem_sub_dir;
 
     find( { wanted => sub {
+<<<<<<< HEAD
 	if( $_ =~ /(syncclient|mirall)\/package.cfg/ ) {
+=======
+	if( $_ =~ /(mirall|syncclient)\/package.cfg/ ) {
+>>>>>>> Adopt genbranding to 1.8.0 client build.
 	    print "Substs from $File::Find::name\n";
 	    $cfgFile = $File::Find::name;
+	    $oem_sub_dir = $1;
           }
         },
 	no_chdir => 1 }, "$subsDir");
@@ -288,9 +330,14 @@ sub getSubsts( $ )
 
     print "Reading substs from $cfgFile\n";
     my %substs;
+    $substs{'oem_sub_dir'} = $oem_sub_dir;
 
     my $oemFile = $cfgFile;
     $oemFile =~ s/package\.cfg/OEM.cmake/;
+
+    unless( -e $oemFile ) {
+      $oemFile = "$subsDir/OWNCLOUD.cmake";
+    }
     %substs = readOEMcmake( $oemFile );
 
     # read the file package.cfg from the tarball and also remove it there evtl.
@@ -300,6 +347,9 @@ sub getSubsts( $ )
     } else {
 	die "ERROR: Could not read package config file $cfgFile!\n";
     }
+
+    # now remove the cfg file as we do not need it later
+    unlink $cfgFile;
 
     foreach my $k ( keys %s2 ) {
 	$substs{$k} = $s2{$k};
@@ -319,11 +369,17 @@ sub getSubsts( $ )
 
 # main here.
 $dest_prj = 'oem';
-getopts('fnbohc:p:r:P:');
+getopts('fnbohc:p:r:');
 $dest_prj = $opt_p if defined $opt_p;
 $dest_prj =~ s{:$}{};
 
 my $create_msg = $ENV{OBS_INTEGRATION_MSG} || $msg_def;
+
+# The tarball of the "raw" onwcloud client tarball is owncloudclient-<version>.tar.bz2
+# The branding tarball is <brandingname>.tar.bz2
+# The name of the resulting tarball is <branding>-client-<version>.tar.bz2
+# If the branding is ownCloud.tar.bz2, the tarball name stays owncloudclient-<version>.tar.bz2
+
 
 help() if( $opt_h );
 help() unless( defined $ARGV[0] && defined $ARGV[1] );
@@ -342,6 +398,7 @@ print "Theme Tarball: $themetar\n";
 
 # if -o (osc mode) check if an oem directory exists
 my $theme = getFileName( $ARGV[1] );
+
 $dest_prj_theme = "$dest_prj:$theme";
 $dest_prj_theme = $dest_prj if $dest_prj =~ m{/$};
 $dest_prj_theme =~ s{/$}{};
@@ -363,7 +420,7 @@ if( $opt_o ) {
     }
 }
 
-my $dirName = prepareTarBall($ARGV[0], $ARGV[1], $opt_P);
+my $dirName = prepareTarball($ARGV[0], $ARGV[1]);
 
 # returns hash reference
 my $substs = getSubsts($dirName);
@@ -377,28 +434,25 @@ $substs->{summary} = "The $theme client";	# prevent shdbox to die with empty sum
 unless( defined $substs->{version} )
   {
     my $vers = getFileName($clienttar);
-    if ($vers =~ m{-(\d[\d\.nightly]*)$}) {
+    my $prerel;
+
+    if( $vers =~ /(\d+\.\d+\.\d+)(\w+\d+)$/ ) {
         $vers = $1;
-        $vers =~ s/nightly.*$//;
+        $prerel = $2;
+        $substs->{version_deb} = $vers . '~' . $prerel;
+    } elsif( $vers =~ /(\d+\.\d+\.\d+)/ ) {
+        $vers = $1;
+        $prerel = '%nil';
+        $substs->{version_deb} = $vers;
     } else {
         die "\n\nOops: client filename $vers does not match {-(\\d[\\d\\.]\*)\$}.\n Cannot exctract version number from here.\n Please add 'version' to package.cfg in $themetar\n";
     }
     $substs->{version} = $vers;
+    $substs->{prerelease} = $prerel;
   }
 
 unless (defined $substs->{buildrelease} )
   {
-    if (defined $opt_P)
-      {
-        $substs->{prerelease} = $opt_P;
-	$substs->{version_deb} = $substs->{version} . '~' . $opt_P;
-      }
-    else
-      {
-        $substs->{prerelease} = '%nil';		# this is how the specfile switches off ~ versions.
-	$substs->{version_deb} = $substs->{version};
-      }
-
     if (defined $opt_r)
       {
         $substs->{buildrelease} = "<CI_CNT>.<B_CNT>.$opt_r";
@@ -412,7 +466,7 @@ unless (defined $substs->{buildrelease} )
       }
   }
 
-createClientFromTemplate( $substs );
+createPackageMetaFromTemplate( $substs);
 
 my $clientdir = ".";
 
