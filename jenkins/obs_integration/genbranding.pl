@@ -124,11 +124,11 @@ sub prepareTarball($$) {
     # theme is cernbox => cernbox-client-1.8.0pre1
 
     my $newname = $client;
-    if( $client =~ /ownCloud/i ) {
+    if( $theme =~ /ownCloud/i ) {
         print "Creating the original ownCloud package tarball!\n";
         $newname = lc $client; # all small letters
     } else {
-        $newname =~ s/^owncloud/$theme-/i; # note that we add a - here.
+        $newname =~ s/^owncloud/$theme/i; # note that we add a - here.
     }
 
     if( $newname ne $client ) {
