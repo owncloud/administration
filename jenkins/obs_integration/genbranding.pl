@@ -110,6 +110,14 @@ sub getFileName( $ ) {
   return $tarname;
 }
 
+sub buildOwnCloudTheme( $ ) 
+{
+   my( $theme ) = @_;
+   
+   return 1 if( $theme eq 'ownCloud' );
+   return 0;
+}
+
 # Extracts the client tarball and puts the theme tarball the new dir
 sub prepareTarball($$) {
     my ($argv0, $argv1) = @_;
@@ -124,7 +132,7 @@ sub prepareTarball($$) {
     # theme is cernbox => cernbox-client-1.8.0pre1
 
     my $newname = $client;
-    if( $theme =~ /ownCloud/i ) {
+    if( buildOwnCloudTheme($theme) ) {
         print "Creating the original ownCloud package tarball!\n";
         $newname = lc $client; # all small letters
     } else {
@@ -390,15 +398,22 @@ print "Theme Tarball: $themetar\n";
 # if -o (osc mode) check if an oem directory exists
 my $theme = getFileName( $ARGV[1] );
 
-$dest_prj_theme = "$dest_prj:$theme";
-$dest_prj_theme = $dest_prj if $dest_prj =~ m{/$};
-$dest_prj_theme =~ s{/$}{};
+my $packName = "$theme-client";
+
+if( buildOwnCloudTheme($theme) ) {
+    $dest_prj_theme = $dest_prj;
+    $packName = 'owncloud-client'; # historical reason, not ownCloud-client
+} else {
+    $dest_prj_theme = "$dest_prj:$theme";
+    $dest_prj_theme = $dest_prj if $dest_prj =~ m{/$};
+    $dest_prj_theme =~ s{/$}{}; # Remove trailing slash
+}
 
 if( $opt_o ) {
     unless( -d "./$dest_prj_theme" && -d "./$dest_prj_theme/.osc" ) {
-	print "Checking out package $dest_prj_theme/$theme-client\n";
+	print "Checking out package $dest_prj_theme/$packName\n";
 	my $cwd = Cwd::getcwd;
-	checkoutPackage( "$dest_prj_theme", "$theme-client", $opt_c );
+	checkoutPackage( "$dest_prj_theme", "$packName", $opt_c );
 	# chdir('../..'); # checkoutPackage chdirs into the package checkout, if the checkout succeeds.
 	chdir($cwd);
     } else {
@@ -463,7 +478,7 @@ my $clientdir = ".";
 
 
 if( $opt_o ) {
-    $clientdir = "$dest_prj_theme/$theme-client";
+    $clientdir = "$dest_prj_theme/$packName";
 }
 createTar($clientdir, $dirName);
 
@@ -531,7 +546,7 @@ if( $changeCnt == 0 && ! $opt_f && $opt_o ) {
 if( $opt_o ) {
     chdir( $clientdir );
     # create and osc add changelog files if they do not exist yet.
-    foreach my $f ( ('debian.changelog', "$theme-client.changes") ) {
+    foreach my $f ( ('debian.changelog', "$packName.changes") ) {
       unless( -e $f ) {
 	system( "touch $f" );
 	my @osc = oscParams($opt_c);
@@ -544,8 +559,11 @@ if( $opt_o ) {
        $change .= ", release_id=$opt_r" if defined $opt_r;
        $change .= "\n  $create_msg"  if length $create_msg;
        $change .= "\n";
-    addDebChangelog(  "$substs->{themename_deb}-client", $change, $substs->{version_deb} );
-    addSpecChangelog( "$substs->{themename}-client", $change );
+    
+    # FIXME: themename_deb
+    my $debpackname = lc $packName;
+    addDebChangelog(  $debpackname, $change, $substs->{version_deb} );
+    addSpecChangelog( $packName, $change );
     chdir( "../.." );
 }
 
@@ -555,7 +573,7 @@ if( $opt_b ) {
     my @osc = oscParams($opt_c);
     my $product = $ENV{OBS_INTEGRATION_PRODUCT} || 'openSUSE_13.1';
     my $arch =    $ENV{OBS_INTEGRATION_ARCH}    || 'x86_64';
-    push @osc, ('build', '--no-service', '--clean', '--download-api-only', '--local-package', $product, $arch, "$theme-client.spec");
+    push @osc, ('build', '--no-service', '--clean', '--download-api-only', '--local-package', $product, $arch, "$packName.spec");
     print "+ osc " . join( " ", @osc ) . "\n";
     chdir( $clientdir );
     $buildOk = doOSC( @osc );
