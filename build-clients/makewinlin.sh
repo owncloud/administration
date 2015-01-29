@@ -98,7 +98,7 @@ function buildLinuxDependencies() {
             mingw32-libqt5-qtsvg-devel mingw32-libqt5-qtsensors-devel mingw32-libqt5-qtserialport-devel \
             mingw32-libqt5-qtxmlpatterns-devel mingw32-libqt5-qtmultimedia-devel mingw32-qt5keychain-devel \
             mingw32-cross-libqt5-qmake kdewin-png2ico mingw32-cross-nsis \
-            mingw32-libqt5-qtimageformats mingw32-libqt5-qtsvg mingw32-libqt5-qtwebkit \
+            mingw32-libqt5-qtimageformats mingw32-libqt5-qtsvg mingw32-libqt5-qtwebkit mingw32-libqt5-qtwebkit-devel \
             mingw32-libqt5-qttools mingw32-libqt5-qttranslations mingw32-cross-libqt5-qttools \
             mingw32-angleproject-devel mingw32-qt5keychain mingw32-libneon-openssl mingw32-libwinpthread1 \
             osslsigncode mingw32-qtkeychain \
