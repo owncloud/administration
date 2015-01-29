@@ -160,8 +160,8 @@ sub prepareTarball($$) {
 
 # read all files from the template directory and replace the contents
 # of the .in files with values from the substition hash ref.
-sub createPackageMetaFromTemplate($) {
-    my ($substs) = @_;
+sub createPackageMetaFromTemplate($$) {
+    my ($substs, $packName) = @_;
 
     print "Create client from template\n";
     foreach my $log( keys %$substs ) {
@@ -174,7 +174,7 @@ sub createPackageMetaFromTemplate($) {
     my $targetDir = "$theme-client";
 
     if( $opt_o ) {
-	$targetDir = "$dest_prj_theme/$targetDir";
+	$targetDir = "$dest_prj_theme/$packName";
     } else {
 	mkdir("$theme-client");
     }
@@ -218,7 +218,12 @@ Please do the following steps (or similar):
     foreach my $source (@tmpl_files) {
         my $target = $source;
         $target =~ s/BRANDNAME_DEB/$substs->{themename_deb}/;	# longer subst first. We have no delimiters.
-        $target =~ s/BRANDNAME/$substs->{themename}/;
+        if( buildOwnCloudTheme($theme) ) {
+            # for owncloud we need the lowercase variant.
+	    $target =~ s/BRANDNAME/$substs->{themename_deb}/;
+	} else {
+	    $target =~ s/BRANDNAME/$substs->{themename}/;
+	}
         $target =~ s/SHORTNAME/$substs->{shortname}/;
 
         if($source =~ /\.in$/) {
@@ -420,7 +425,7 @@ if( $opt_o ) {
 	# Update the checkout
 	my @osc = oscParams($opt_c);
 	push @osc, 'up';
-	chdir( "$dest_prj_theme");
+	chdir( "$dest_prj_theme/$packName");
 	doOSC( @osc );
 	chdir( '..' );
     }
@@ -472,7 +477,7 @@ unless (defined $substs->{buildrelease} )
       }
   }
 
-createPackageMetaFromTemplate( $substs);
+createPackageMetaFromTemplate( $substs, $packName );
 
 my $clientdir = ".";
 
