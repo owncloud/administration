@@ -36,8 +36,11 @@
 # V1.2  -- 2015-01-12, jw  ported to python3.
 # V1.3  --                 Adding basic fonts, when running with -X. Message 'package for' improved.
 # V1.4  -- 2015-01-19, jw  added --ssh-key option. Non trivial part: make sshd happy on all platforms.
+# V1.5  -- 2015-01-30, jw  Diagnostics hint at --download and --config, if no binaries is found.
 #
 # FIXME: yum install returns success, if one package out of many was installed.
+
+__VERSION__="1.5"
 
 from __future__ import print_function
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
@@ -50,8 +53,7 @@ except ImportError:
   import urllib2			# python2
 
 
-__VERSION__="1.4"
-target="xUbuntu_14.04"
+target="xUbuntu_14.04"		# default value
 
 default_obs_config = {
   "_comment": "Written by "+sys.argv[0]+" -- edit also the builtin template",
@@ -320,6 +322,13 @@ def guess_obs_api(prj, override=None, verbose=True):
       return obs
   raise ValueError("guess_obs_api failed for project='"+prj+"', try different project, -A, or update config in "+args.configfile)
 
+
+def printable_url(url):
+  """ remove credentials from url, so that it can be safely printed 
+      not used much, we maintain both, url_cred and url."""
+  return re.sub("://([^/]*?)@", "://********@", url);
+
+
 def obs_fetch_bin_version(api, download_item, prj, pkg, target):
   cfg = obs_download_cfg(obs_config['obs'][api], download_item, prj, urltest=False, verbose=False)
   lu = ListUrl()
@@ -347,7 +356,15 @@ def obs_fetch_bin_version(api, download_item, prj, pkg, target):
   print("package "+args.package+" for "+target+" not seen in "+cfg['url']+'/'+target+" :\n"+ bin_seen)
   print("Try one of these:")
   lu.recursive = False
-  for target in lu.apache(cfg['url_cred']):
+  try:
+    all_seen = lu.apache(cfg['url_cred'])
+  except:
+    all_seen = ()
+
+  if not len(all_seen):
+    print("Oops, Nothing here at "+cfg['url']+" --\n Try different --download option or different --config file?")
+
+  for target in all_seen:
     print(re.sub("/$","", target[0]),end=' ')
   print("")
   sys.exit(22)
