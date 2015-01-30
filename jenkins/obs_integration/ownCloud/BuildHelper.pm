@@ -64,7 +64,7 @@ sub debianDesc( $ )  {
     my ($desc) = @_;
 
     # replace empty lines by a .
-    $desc =~ s/\n\s*\n/\n.\n/s;
+    $desc =~ s/\n\s*\n/\n.\n/smg;
 
     # add space at the beginning of a line
     $desc =~ s/^(.)/ $1/mg;
