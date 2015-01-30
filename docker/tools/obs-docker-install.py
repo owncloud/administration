@@ -40,12 +40,14 @@
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
+from __future__ import print_function	# must appear at beginning of file.
+
 __VERSION__="1.5"
 
-from __future__ import print_function
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import json, sys, os, re, time, tempfile
 import subprocess, base64, requests
+
 
 try:
   import urllib.request as urllib2	# python3
