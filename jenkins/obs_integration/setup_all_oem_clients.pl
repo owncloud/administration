@@ -415,3 +415,6 @@ for my $branding (@candidates)
 
 print "To check for build progress and publish the packages, try (repeatedly) the following command:\n";
 print "\n internal/collect_all_oem_clients.pl -f ".join(',',@candidates)." -r $build_token\n";
+
+print "FIXME: If $build_token is not part of the version number seen in the client.dsc version number. Try to call collect_all_oem_clients.pl with out -r.\n";
+print "FIXME: investigate, why that can happen. Seen in job/publish-oem-client-linux/42/console output.\n";

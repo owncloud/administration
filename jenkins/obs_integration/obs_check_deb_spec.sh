@@ -1,6 +1,7 @@
 #! /bin/sh
 #
-# check_package.sh -- test consistency of the owncloud server package
+# obs_check_deb_spec.sh -- test consistency of the owncloud server package
+# This script is maintained at https://github.com/owncloud/administration/blob/master/jenkins/obs_integration/obs_check_deb_spec.sh
 #
 # The top part is owncloud specific apps handling.
 # The remainder should be generic consistency test.
@@ -41,9 +42,9 @@ for app in $(ls $tar_top/apps); do
   fi
 
   app_pkg=$(echo $pkgname-app-$app | tr _ -)
-  if [ ! -f debian.$app_pkg.install ]; then
+  if [ ! -f $srcdir/debian.$app_pkg.install ]; then
     echo "TODO: Please add file debian.$app_pkg.install (auto-created)"
-    echo "apps/$app/* /usr/share/owncloud/apps/$app/" > debian.$app_pkg.install
+    echo "apps/$app/* /usr/share/owncloud/apps/$app/" > $srcdir/debian.$app_pkg.install
     deb_error=1
   fi
 done
@@ -60,7 +61,7 @@ while read a b c; do
     sub_pkg=$(echo $pkgname-$b | tr _ -)
   fi
 
-  if [ ! -f debian.$sub_pkg.install ]; then
+  if [ ! -f $srcdir/debian.$sub_pkg.install ]; then
     echo "TODO: Please add file debian.$sub_pkg.install (missing, $sub_pkg seen in $specfile)"
     deb_error=1
   fi
@@ -91,7 +92,7 @@ fi
 cat $debian_control > /tmp/_$$_control
 while read a sub_pkg; do
   test "$a" = 'Package:' || continue
-  if [ ! -f debian.$sub_pkg.install ]; then
+  if [ ! -f $srcdir/debian.$sub_pkg.install ]; then
     echo "TODO: Please add file debian.$sub_pkg.install (missing, $sub_pkg seen in $debian_control)"
     deb_error=1
   fi
