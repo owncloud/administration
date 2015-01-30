@@ -603,5 +603,5 @@ if( $opt_o ) {
     chdir( "../.." );
 }
 
+print "buildOk=$buildOk\n";
 print " Finished!\n\n";
-
