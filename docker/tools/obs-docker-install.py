@@ -37,12 +37,13 @@
 # V1.3  --                 Adding basic fonts, when running with -X. Message 'package for' improved.
 # V1.4  -- 2015-01-19, jw  added --ssh-key option. Non trivial part: make sshd happy on all platforms.
 # V1.5  -- 2015-01-30, jw  Diagnostics hint at --download and --config, if no binaries is found.
+# V1.6                     yum install can switch to --gpgcheck, to survive internal s2 downloads.
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="1.5"
+__VERSION__="1.6"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import json, sys, os, re, time, tempfile
@@ -88,45 +89,45 @@ default_obs_config = {
       "Debian_7.0":      { "fmt":"APT", "pre": ["wget","apt-transport-https"], "from":"debian:7" },
 
       "CentOS_7":        { "fmt":"YUM", "from":"""centos:centos7
-RUN yum install -y wget
+RUN yum install -y --nogpgcheck wget
 RUN wget -nv http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
 RUN rpm -ivh epel-release-7*.noarch.rpm
 """ },
       "CentOS_6":        { "fmt":"YUM", "from":"""centos:centos6
-RUN yum install -y wget
+RUN yum install -y --nogpgcheck wget
 RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
 RUN rpm -ivh epel-release-6*.noarch.rpm
 """ },
       "CentOS_6_PHP54@SCL":  { "fmt":"YUM", "pre": ["wget"], "from":"""centos:centos6
-RUN yum install -y centos-release-SCL
-RUN yum install -y php54
+RUN yum install -y --nogpgcheck centos-release-SCL
+RUN yum install -y --nogpgcheck php54
 """ },
 
       "CentOS_6_PHP54":  { "fmt":"YUM", "from":"""centos:centos6
-RUN yum install -y wget yum-utils
+RUN yum install -y --nogpgcheck wget yum-utils
 RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
 RUN wget -nv http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
 RUN rpm -ivh remi-release-6*.rpm epel-release-6*.rpm
 RUN yum-config-manager --enable remi
-RUN yum install -y php
+RUN yum install -y --nogpgcheck php
 """ },
 
       "CentOS_6_PHP55":  { "fmt":"YUM", "from":"""centos:centos6
-RUN yum install -y wget yum-utils
+RUN yum install -y --nogpgcheck wget yum-utils
 RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
 RUN wget -nv http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
 RUN rpm -ivh remi-release-6*.rpm epel-release-6*.rpm
 RUN yum-config-manager --enable remi-php55
-RUN yum install -y php
+RUN yum install -y --nogpgcheck php
 """ },
 
       "CentOS_6_PHP56":  { "fmt":"YUM", "from":"""centos:centos6
-RUN yum install -y wget yum-utils
+RUN yum install -y --nogpgcheck wget yum-utils
 RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
 RUN wget -nv http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
 RUN rpm -ivh remi-release-6*.rpm epel-release-6*.rpm
 RUN yum-config-manager --enable remi-php56
-RUN yum install -y php
+RUN yum install -y --nogpgcheck php
 """ },
 
       "CentOS_CentOS-6": { "fmt":"YUM", "pre": ["wget"], "from":"centos:centos6" },
@@ -499,6 +500,7 @@ ap.add_argument("-k", "--keep-going", default=False, action="store_true", help="
 ap.add_argument("-N", "--no-operation", default=False, action="store_true", help="Print docker commands to create an image only. Default: create an image")
 ap.add_argument("-R", "--rm", default=False, action="store_true", help="Remove intermediate docker containers after a successful build")
 ap.add_argument("--no-cache", default=False, action="store_true", help="Do not use cache when building the image. Default: use docker cache as available")
+ap.add_argument("--nogpgcheck", default=False, action="store_true", help="Ignore broken or missing keys. Default: yum check, zypper auto-import")
 ap.add_argument("-X", "--xauth", default=False, action="store_true", help="Prepare a docker image that can connect to your X-Server.")
 ap.add_argument("-S", "--ssh-key", help="Import an ssh-key (e.g. ~/.ssh/id_dsa.pub) and run with sshd.")
 ap.add_argument("project", metavar="PROJECT", nargs="?", help="obs project name. Alternate syntax to PROJ/PACK")
@@ -693,6 +695,7 @@ d_endl="\n"
 if args.keep_going: d_endl = " || true\n"
 
 if docker["fmt"] == "APT":
+  if args.nogpgcheck: print("Option nogpgcheck not implemented for APT")
   dockerfile+="ENV DEBIAN_FRONTEND noninteractive\n"
   dockerfile+="RUN apt-get -q -y update"+d_endl
   if "pre" in docker and len(docker["pre"]):
@@ -708,17 +711,20 @@ if docker["fmt"] == "APT":
   dockerfile+="RUN echo 'apt-get install "+args.package+"' >> ~/.bash_history"+d_endl
 
 elif docker["fmt"] == "YUM":
+  yum_install = 'yum install -y'
+  if args.nogpgcheck: yum_install += ' --nogpgcheck'
   dockerfile+="RUN yum clean expire-cache"+d_endl
   if "pre" in docker and len(docker["pre"]):
-    dockerfile+="RUN yum install -y "+" ".join(docker["pre"])+d_endl
+    dockerfile+="RUN "+yum_install+" "+" ".join(docker["pre"])+d_endl
   dockerfile+="RUN "+wget_cmd+target+'/'+args.project+".repo -O /etc/yum.repos.d/"+args.project+".repo"+d_endl
-  if extra_packages:	dockerfile+="RUN yum install -y "+' '.join(extra_packages)+d_endl
+  if extra_packages:	dockerfile+="RUN "+yum_install+" "+" ".join(extra_packages)+d_endl
   if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
-  dockerfile+="RUN date="+now+" yum clean expire-cache && yum install -y "+args.package+d_endl
+  dockerfile+="RUN date="+now+" yum clean expire-cache && "+yum_install+" "+args.package+d_endl
   dockerfile+="RUN rpm -q --changelog "+args.package+" | head -20"+d_endl
-  dockerfile+="RUN echo 'yum install -y "+args.package+"' >> ~/.bash_history"+d_endl
+  dockerfile+="RUN echo '"+yum_install+" "+args.package+"' >> ~/.bash_history"+d_endl
 
 elif docker["fmt"] == "ZYPP":
+  if args.nogpgcheck: print("Option nogpgcheck not implemented for ZYPP")
   dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys refresh"+d_endl
   if "pre" in docker and len(docker["pre"]):
     dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+" ".join(docker["pre"])+d_endl
