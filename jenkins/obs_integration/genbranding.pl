@@ -110,10 +110,10 @@ sub getFileName( $ ) {
   return $tarname;
 }
 
-sub buildOwnCloudTheme( $ ) 
+sub buildOwnCloudTheme( $ )
 {
    my( $theme ) = @_;
-   
+
    return 1 if( $theme eq 'ownCloud' );
    return 0;
 }
@@ -564,7 +564,7 @@ if( $opt_o ) {
        $change .= ", release_id=$opt_r" if defined $opt_r;
        $change .= "\n  $create_msg"  if length $create_msg;
        $change .= "\n";
-    
+
     # FIXME: themename_deb
     my $debpackname = lc $packName;
     addDebChangelog(  $debpackname, $change, $substs->{version_deb} );

@@ -34,7 +34,7 @@ use vars qw( @ISA @EXPORT @EXPORT_OK $d %config);
                   addSpecChangelog patchAFile oscParams debianDesc oscChangedFiles);
 
 # Read values from a config file in Windows Ini format.
-# paramters: 
+# paramters:
 # 1. full path of the config file
 # 2. Name of the section
 # 3. Default value
@@ -144,7 +144,7 @@ sub checkoutPackage( $$;$ ) {
 
 # Returns the value of a tag from a spec-file
 # The first parameter is the path to a spec file with or without
-# the extension .spec. The second parameter is the name of the 
+# the extension .spec. The second parameter is the name of the
 # tag to return.
 sub getFromSpecfile( $$ ) {
   my ($pack, $tag) = @_;
@@ -182,7 +182,7 @@ sub addDebChangelog( $$$ ) {
 
   my $changesfile = "debian.changelog";
   my @changes;
-  
+
   if( open( CHANGES, "<$changesfile" ) ) {
     @changes = <CHANGES>;
     close CHANGES;
@@ -218,7 +218,7 @@ sub addSpecChangelog( $$ ) {
   my $changesfile = "$pack.changes";
 
   my @changes;
-  
+
   if( open( CHANGES, "<$changesfile" ) ) {
     @changes = <CHANGES>;
     close CHANGES;
@@ -244,12 +244,12 @@ sub addSpecChangelog( $$ ) {
 
 #
 # patch a file with values from a hash reference
-# Parameter: 
+# Parameter:
 # 1. Filename of the file
 # 2. Hash reference with values to patch
 #    The keys of the hash are appended automatically with a colon
 #    ie. "name" => "Klaas" sets the tag name: to Klaas
-# Return Value: 
+# Return Value:
 #   The number of successful substitutions done.
 #
 sub patchAFile( $$ ) {
@@ -271,7 +271,7 @@ sub patchAFile( $$ ) {
       foreach my $key ( keys %$rep ) {
         # no substitution, if the line contains a macro expansion
         last if $s =~ /[^%]%\{/;	# }
-	
+
 	# replace key: value
         if( $s =~ /^$key:/ ) {
           $s = "$key: " . $rep->{$key} . "\n";
