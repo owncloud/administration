@@ -38,12 +38,14 @@
 # V1.4  -- 2015-01-19, jw  added --ssh-key option. Non trivial part: make sshd happy on all platforms.
 # V1.5  -- 2015-01-30, jw  Diagnostics hint at --download and --config, if no binaries is found.
 # V1.6                     yum install can switch to --gpgcheck, to survive internal s2 downloads.
+# V1.7                     Improved handling of debian file names in obs_fetch_bin_version()
+#                          Added flush() before run() hoping that helps with mangled buffers.
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="1.6"
+__VERSION__="1.7"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import json, sys, os, re, time, tempfile
@@ -202,6 +204,10 @@ def run(args, input=None, redirect=None, redirect_stdout=True, redirect_stderr=T
      make the subprocess monster usable
   """
 
+  # be prepared. I have seen overwritten lines in the log when subprocess docker build errors out.
+  sys.stdout.flush()	
+  sys.stderr.flush()
+
   if redirect is not None:
     redirect_stderr = redirect
     redirect_stdout = redirect
@@ -239,6 +245,7 @@ def run(args, input=None, redirect=None, redirect_stdout=True, redirect_stderr=T
   if err:          return "STDERROR: " + err
   return out
 run.verbose=1
+
 
 def urlopen_auth(url, username, password):
   request = urllib2.Request(url)
@@ -346,11 +353,13 @@ def obs_fetch_bin_version(api, download_item, prj, pkg, target):
   # osc ls -b obsoleted by the above ListUrl()
   # bin_seen = run(["osc", "-A"+api, "ls", "-b", args.project, args.package, target], input="")
 
+  deb_pkg_name=re.sub('_','-',args.package)
+  # obs-docker-install_1.0-20141218_amd64.deb
   # cernbox-client_1.7.0-0.jw20141127_amd64.deb
-  m = re.search(r'^\s*'+re.escape(args.package)+r'_(\d+[^-\s]*)\-(\d+[^_\s]*)_.*?\.deb$', bin_seen, re.M)
+  m = re.search(r'^\s*'+re.escape(deb_pkg_name)+r'_(\d+[^-\s]*)\-(\d+[^_\s]*)_.*?\.deb$', bin_seen, re.M)
   if m: return (m.group(1),m.group(2))
   # owncloud-client_1.7.0_i386.deb
-  m = re.search(r'^\s*'+re.escape(args.package)+r'_(\d+[^_\s]*)_.*?\.deb$', bin_seen, re.M)
+  m = re.search(r'^\s*'+re.escape(deb_pkg_name)+r'_(\d+[^_\s]*)_.*?\.deb$', bin_seen, re.M)
   if m: return (m.group(1),'')
 
   # cloudtirea-client-1.7.0-4.1.i686.rpm
@@ -502,7 +511,7 @@ ap.add_argument("-R", "--rm", default=False, action="store_true", help="Remove i
 ap.add_argument("--no-cache", default=False, action="store_true", help="Do not use cache when building the image. Default: use docker cache as available")
 ap.add_argument("--nogpgcheck", default=False, action="store_true", help="Ignore broken or missing keys. Default: yum check, zypper auto-import")
 ap.add_argument("-X", "--xauth", default=False, action="store_true", help="Prepare a docker image that can connect to your X-Server.")
-ap.add_argument("-S", "--ssh-key", help="Import an ssh-key (e.g. ~/.ssh/id_dsa.pub) and run with sshd.")
+ap.add_argument("-S", "--ssh-key", help="Import an ssh-key (e.g. ~/.ssh/id_dsa.pub) and start an ssh server with the default docker run CMD.")
 ap.add_argument("project", metavar="PROJECT", nargs="?", help="obs project name. Alternate syntax to PROJ/PACK")
 ap.add_argument("package", metavar="PACKAGE",  nargs="?", help="obs package name, or PROJ/PACK")
 ap.add_argument("platform",metavar="PLATFORM", nargs="?", help="obs build target name. Alternate syntax to -p. Default: "+target)
