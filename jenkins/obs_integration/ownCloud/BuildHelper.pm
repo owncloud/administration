@@ -89,11 +89,7 @@ sub oscChangedFiles($)
     print "Status command: $cmd\n";
     my $res = `$cmd`;
 
-    system('pwd');
-    system('ls -al');
-    system('du -a ..');
-    
-    print "RES: $res\n";
+    die("osc command failed: $res\n") unless( $? == 0 );
 
     my %r;
     my @ll = split( /\n/, $res );
