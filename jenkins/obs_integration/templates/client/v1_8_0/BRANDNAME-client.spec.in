@@ -95,6 +95,7 @@ BuildRequires:  qt4 qt4-devel >= 4.7
 BuildRequires:  inetd desktop-file-utils
 BuildRequires:  qtwebkit >= 2.2
 BuildRequires:  qtwebkit-devel >= 2.2
+BuildRequires:  openssl-devel
 %endif
 
 %if 0%{?suse_version}
