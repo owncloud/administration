@@ -40,12 +40,13 @@
 # V1.6                     yum install can switch to --gpgcheck, to survive internal s2 downloads.
 # V1.7                     Improved handling of debian file names in obs_fetch_bin_version()
 #                          Added flush() before run() hoping that helps with mangled buffers.
+# V1.8  -- 2015-02-03, jw  wget always with -O, needed for upgrade tests
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="1.7"
+__VERSION__="1.8"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import json, sys, os, re, time, tempfile
@@ -92,13 +93,13 @@ default_obs_config = {
 
       "CentOS_7":        { "fmt":"YUM", "from":"""centos:centos7
 RUN yum install -y --nogpgcheck wget
-RUN wget -nv http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
-RUN rpm -ivh epel-release-7*.noarch.rpm
+RUN wget -nv http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm -O epel-7.rpm
+RUN rpm -ivh epel-7.rpm
 """ },
       "CentOS_6":        { "fmt":"YUM", "from":"""centos:centos6
 RUN yum install -y --nogpgcheck wget
-RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-RUN rpm -ivh epel-release-6*.noarch.rpm
+RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm -O epel-6.rpm
+RUN rpm -ivh epel-6.rpm
 """ },
       "CentOS_6_PHP54@SCL":  { "fmt":"YUM", "pre": ["wget"], "from":"""centos:centos6
 RUN yum install -y --nogpgcheck centos-release-SCL
@@ -107,27 +108,27 @@ RUN yum install -y --nogpgcheck php54
 
       "CentOS_6_PHP54":  { "fmt":"YUM", "from":"""centos:centos6
 RUN yum install -y --nogpgcheck wget yum-utils
-RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-RUN wget -nv http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
-RUN rpm -ivh remi-release-6*.rpm epel-release-6*.rpm
+RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm -O epel-6.rpm
+RUN wget -nv http://rpms.famillecollet.com/enterprise/remi-release-6.rpm -O remi-6.rpm
+RUN rpm -ivh remi-6.rpm epel-6.rpm
 RUN yum-config-manager --enable remi
 RUN yum install -y --nogpgcheck php
 """ },
 
       "CentOS_6_PHP55":  { "fmt":"YUM", "from":"""centos:centos6
 RUN yum install -y --nogpgcheck wget yum-utils
-RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-RUN wget -nv http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
-RUN rpm -ivh remi-release-6*.rpm epel-release-6*.rpm
+RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm -O epel-6.rpm
+RUN wget -nv http://rpms.famillecollet.com/enterprise/remi-release-6.rpm -O remi-6.rpm
+RUN rpm -ivh remi-6.rpm epel-6.rpm
 RUN yum-config-manager --enable remi-php55
 RUN yum install -y --nogpgcheck php
 """ },
 
       "CentOS_6_PHP56":  { "fmt":"YUM", "from":"""centos:centos6
 RUN yum install -y --nogpgcheck wget yum-utils
-RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-RUN wget -nv http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
-RUN rpm -ivh remi-release-6*.rpm epel-release-6*.rpm
+RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm -O epel-6.rpm
+RUN wget -nv http://rpms.famillecollet.com/enterprise/remi-release-6.rpm -O remi-6.rpm
+RUN rpm -ivh remi-6.rpm epel-6.rpm
 RUN yum-config-manager --enable remi-php56
 RUN yum install -y --nogpgcheck php
 """ },
@@ -709,7 +710,7 @@ if docker["fmt"] == "APT":
   dockerfile+="RUN apt-get -q -y update"+d_endl
   if "pre" in docker and len(docker["pre"]):
     dockerfile+="RUN apt-get -q -y install "+" ".join(docker["pre"])+d_endl
-  dockerfile+="RUN "+wget_cmd+target+"/Release.key"+d_endl
+  dockerfile+="RUN "+wget_cmd+target+"/Release.key -O Release.key"+d_endl
   dockerfile+="RUN apt-key add - < Release.key"+d_endl
   dockerfile+="RUN echo 'deb "+download["url_cred"]+"/"+target+"/ /' >> /etc/apt/sources.list.d/"+args.package+".list"+d_endl
   dockerfile+="RUN apt-get -q -y update"+d_endl
