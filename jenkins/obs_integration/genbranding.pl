@@ -415,20 +415,18 @@ if( buildOwnCloudTheme($theme) ) {
 }
 
 if( $opt_o ) {
+    my $cwd = Cwd::getcwd;
     unless( -d "./$dest_prj_theme" && -d "./$dest_prj_theme/.osc" ) {
 	print "Checking out package $dest_prj_theme/$packName\n";
-	my $cwd = Cwd::getcwd;
 	checkoutPackage( "$dest_prj_theme", "$packName", $opt_c );
-	# chdir('../..'); # checkoutPackage chdirs into the package checkout, if the checkout succeeds.
-	chdir($cwd);
     } else {
 	# Update the checkout
 	my @osc = oscParams($opt_c);
 	push @osc, 'up';
 	chdir( "$dest_prj_theme/$packName");
 	doOSC( @osc );
-	chdir( '..' );
     }
+    chdir($cwd);
 }
 
 my $dirName = prepareTarball($ARGV[0], $ARGV[1]);

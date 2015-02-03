@@ -83,12 +83,13 @@ sub oscChangedFiles($)
 
     my @osc = oscParams($params);
     push @osc, ('status');
-
     unshift(@osc, "/usr/bin/osc");
 
     my $cmd = join ( ' ', @osc );
     print "Status command: $cmd\n";
     my $res = `$cmd`;
+
+    die("osc command failed: $res\n") unless( $? == 0 );
 
     my %r;
     my @ll = split( /\n/, $res );
