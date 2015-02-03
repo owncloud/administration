@@ -77,8 +77,6 @@ Patch1:         autostart_use_wrapper.diff
 # cernbox/CentOS6 produces /opt/etc/ownCloud/cernbox/ if CMAKE_INSTALL_SYSCONFDIR=/opt/etc/ownCloud
 # Must be all in one line:
 %define cmake_args -DCMAKE_INCLUDE_PATH=%{_prefix}/include -DCMAKE_LIBRARY_PATH=%{_prefix}/%{_lib} -DNEON_INCLUDE_DIRS=/opt/neon-0.30.0/include/ -DNEON_LIBRARIES=/opt/neon-0.30.0/%{_lib}/libneon.so.27 -DSYSCONF_INSTALL_DIR=/opt/etc -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE
-# add a config path for neon in opt
-export PKG_CONFIG_PATH=/opt/neon-0.30.0/%{_lib}/pkgconfig
 %else
 %define opt_hack 0
 %define qtprefix %{nil}
@@ -230,6 +228,10 @@ sed -i -e 's/OVERRIDE=override/OVERRIDE=/' cmake/modules/QtVersionAbstraction.cm
 %endif
 
 %build
+%if %opt_hack
+export PKG_CONFIG_PATH=/opt/neon-0.30.0/%{_lib}/pkgconfig
+export PATH=/opt/neon-0.30.0/bin:$PATH
+%endif
 export LD_LIBRARY_PATH=%{_prefix}/%{_lib}
 export PATH=%{_prefix}/bin:$PATH
 
