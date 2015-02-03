@@ -89,6 +89,10 @@ sub oscChangedFiles($)
     print "Status command: $cmd\n";
     my $res = `$cmd`;
 
+    system('pwd');
+    system('ls -al');
+    system('du -a ..');
+    
     print "RES: $res\n";
 
     my %r;
