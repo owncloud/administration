@@ -493,6 +493,7 @@ my $changeCnt = 0;
 
 if( $opt_o ) {
     chdir( $clientdir );
+    print "==== oscChangedFiles: Clientdir: $clientdir\n";
     my %changes = oscChangedFiles($opt_c);
 
     foreach my $changed_file (keys %changes) {
