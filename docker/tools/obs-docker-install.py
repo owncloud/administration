@@ -41,12 +41,13 @@
 # V1.7                     Improved handling of debian file names in obs_fetch_bin_version()
 #                          Added flush() before run() hoping that helps with mangled buffers.
 # V1.8  -- 2015-02-03, jw  wget always with -O, needed for upgrade tests
+# V1.9  -- 2015-02-04, jw  --dockerfile added. simplified output of -N
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="1.8"
+__VERSION__="1.9"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import json, sys, os, re, time, tempfile
@@ -507,7 +508,8 @@ ap.add_argument("-T", "--list-targets-only", default=False, action="store_true",
 ap.add_argument("-e", "--extra-packages", help="Comma separated list of packages to pre-install. Default: only per 'pre' in the config file")
 ap.add_argument("-q", "--quiet", default=False, action="store_true", help="Print less information while working. Default: babble a lot")
 ap.add_argument("-k", "--keep-going", default=False, action="store_true", help="Continue after errors. Default: abort on error")
-ap.add_argument("-N", "--no-operation", default=False, action="store_true", help="Print docker commands to create an image only. Default: create an image")
+ap.add_argument("-N", "--no-operation", default=False, action="store_true", help="Print docker commands and instructions to create an image only. Default: create an image")
+ap.add_argument("-D", "--dockerfile", default=False, action="store_true", help="Output dockerfile to stdout. Default: create an image")
 ap.add_argument("-R", "--rm", default=False, action="store_true", help="Remove intermediate docker containers after a successful build")
 ap.add_argument("--no-cache", default=False, action="store_true", help="Do not use cache when building the image. Default: use docker cache as available")
 ap.add_argument("--nogpgcheck", default=False, action="store_true", help="Ignore broken or missing keys. Default: yum check, zypper auto-import")
@@ -520,7 +522,7 @@ ap.add_argument("--run", "--exec", nargs="+", metavar="SHELLCMDARGS", help="Exec
 args = ap.parse_args()  # --help is automatic
 
 if args.version: ap.exit(__VERSION__)
-if args.print_image_name_only:
+if args.print_image_name_only or args.dockerfile:
   args.quiet=True
   args.no_operation=True
 if args.quiet: run.verbose=0
@@ -756,6 +758,10 @@ if args.xauth:
 dockerfile+='RUN : "'+" ".join(docker_run)+'"'+"\n"
 dockerfile+='CMD '+docker_cmd_cmd+"\n"
 
+if args.dockerfile:
+  run(['rm', '-rf', context_dir])
+  print(dockerfile)
+  sys.exit(0)
 
 # print(obs_api, download, image_name, target, docker)
 
@@ -766,8 +772,11 @@ if args.quiet: docker_build.append("-q")
 if args.no_cache: docker_build.append("--no-cache")
 docker_build.extend(["-t", image_name, context_dir])
 
+
 if args.no_operation:
+  run(['rm', '-rf', context_dir])
   print(dockerfile)
+  docker_build[-1] = 'Dockerfile'
   print("\nYou can use the above Dockerfile to create an image like this:\n "+" ".join(docker_build)+"\n")
 else:
   fd=open(context_dir+"/Dockerfile", "w")
@@ -778,7 +787,7 @@ else:
   # using stdin would silently disable ADD instructions.
   r=run(docker_build, redirect_stdout=False, redirect_stderr=False, return_code=True)
   run.verbose -= 1
-  run(['echo', 'rm', '-rf', context_dir])
+  run(['rm', '-rf', context_dir])
   if not args.quiet:
     if r:
       print("Failed with non-zero exit code="+str(r)+". Check for errors in the above log.\n")
