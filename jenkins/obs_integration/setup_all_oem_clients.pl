@@ -39,6 +39,7 @@
 # 2014-09-09, jw, dragged in OSC_CMD to infuse additional osc parameters. Needed for jenkins mirall-linux-oem job
 # 2014-10-09, jw, trailing slash after project name means: no automatic subproject please.
 # 2015-01-22, jw, accept /syncclient/package.cfg instead of /mirall/package.cfg (seen with testpilotclient)
+# 2015-02-03, jw, option -P got removed from genbranding. We prepare the client tar ball with the prerelease tag now.
 
 use Data::Dumper;
 use File::Path;
@@ -172,7 +173,6 @@ sub fetch_client_from_branch
   # v1.6.2-themefix is a valid branch name.
   my ($version,$prerelease) = ($1,$2) if $branch =~ m{^v([\d\.]+)([abr-]\w+)?$}i;
   $prerelease =~ s{^-}{} if defined $prerelease;
-  $genbranding .= " -P '$prerelease'" if defined $prerelease;
 
   my $v_git = pull_VERSION_cmake("$gitsubdir/VERSION.cmake");
   if (defined $version)
@@ -193,7 +193,9 @@ sub fetch_client_from_branch
       print "branch=$branch contains VERSION.cmake version=$version\n";
     }
 
-  my $pkgname = "client-${version}";
+  # no - or ~ before prerelease, the specfile template constructs tarversion without 
+  # any delimiter between version and prerelease.
+  my $pkgname = "client-${version}${prerelease}";
   $source_tar = "$destdir/$pkgname.tar.bz2";
   run("cd $gitsubdir && git archive HEAD --prefix=$pkgname/ --format tar | bzip2 > $source_tar")
     unless $skipahead > 2;

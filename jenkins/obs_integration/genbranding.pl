@@ -136,6 +136,7 @@ sub prepareTarball($$) {
         print "Creating the original ownCloud package tarball!\n";
         $newname = lc $client; # all small letters
     } else {
+        $newname =~ s/^client/$theme-client/i; # seen when called from setup_all_oem_clients.pl
         $newname =~ s/^owncloud/$theme/i; # note that we add a - here.
     }
 
@@ -146,12 +147,15 @@ sub prepareTarball($$) {
 
     print "Extracting theme...\n";
 
-    my @args = ("--wildcards", "--force-local", "-xif", "$themetar", "*/mirall/*", "*/syncclient/*");
+    my @args = ("--wildcards", "--force-local", "-xif", "$themetar");
     print "Create branded tarball in $newname\n";
 
     # Do try to extract both directory names mirall and syncclient because
     # at one point of time we were forced to rename mirall -> client
-    system("/bin/tar", @args);
+    my $r1 = system("/bin/tar", @args, "*/mirall/*");
+    my $r2 = system("/bin/tar", @args, "*/syncclient/*");
+    die "Error: tar @args ... : $@ $!"       if $r1 and $r2;
+    warn "One tar error is expected above.\n" if $r1  or $r2;
     chdir("..");
 
     print " success: $newname\n";
@@ -445,6 +449,8 @@ unless( defined $substs->{version} )
     my $vers = getFileName($clienttar);
     my $prerel;
 
+    print "parsing version from '$vers' ...\n";
+
     if( $vers =~ /(\d+\.\d+\.\d+)(\w+\d+)$/ ) {
         $vers = $1;
         $prerel = $2;
@@ -456,6 +462,8 @@ unless( defined $substs->{version} )
     } else {
         die "\n\nOops: client filename $vers does not match {-(\\d[\\d\\.]\*)\$}.\n Cannot exctract version number from here.\n Please add 'version' to package.cfg in $themetar\n";
     }
+    print " ... version='$vers' prerelease='$prerel'\n";
+    sleep 3;
     $substs->{version} = $vers;
     $substs->{prerelease} = $prerel;
   }
