@@ -136,7 +136,7 @@ sub prepareTarball($$) {
         print "Creating the original ownCloud package tarball!\n";
         $newname = lc $client; # all small letters
     } else {
-        $newname =~ s/^client/$theme-client/i; # seen when called from setup_all_oem_clients.pl
+        $newname =~ s/^client/$theme/i; # note: no -client suffix. works with setup_all_oem_clients.pl
         $newname =~ s/^owncloud/$theme/i; # note that we add a - here.
     }
 
