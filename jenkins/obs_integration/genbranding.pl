@@ -152,9 +152,9 @@ sub prepareTarball($$) {
 
     # Do try to extract both directory names mirall and syncclient because
     # at one point of time we were forced to rename mirall -> client
-    my $r1 = system("/bin/tar", @args, "*/mirall/*");
-    my $r2 = system("/bin/tar", @args, "*/syncclient/*");
-    die "Error: tar @args ... : $@ $!"       if $r1 and $r2;
+    my $r1 = system("/bin/tar", @args, '*/mirall/*');
+    my $r2 = system("/bin/tar", @args, '*/syncclient/*');
+    die "Error: tar @args ... : $@ $!"        if $r1 and $r2;
     warn "One tar error is expected above.\n" if $r1  or $r2;
     chdir("..");
 
@@ -463,7 +463,6 @@ unless( defined $substs->{version} )
         die "\n\nOops: client filename $vers does not match {-(\\d[\\d\\.]\*)\$}.\n Cannot exctract version number from here.\n Please add 'version' to package.cfg in $themetar\n";
     }
     print " ... version='$vers' prerelease='$prerel'\n";
-    sleep 3;
     $substs->{version} = $vers;
     $substs->{prerelease} = $prerel;
   }
