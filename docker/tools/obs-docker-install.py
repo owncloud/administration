@@ -42,12 +42,13 @@
 #                          Added flush() before run() hoping that helps with mangled buffers.
 # V1.8  -- 2015-02-03, jw  wget always with -O, needed for upgrade tests
 # V1.9  -- 2015-02-04, jw  --dockerfile added. simplified output of -N
+# V2.0  -- 2015-02-08, jw  can now handle @suffixes in target names. Example CentOS_6@SCL-PHP54
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="1.9"
+__VERSION__="2.0"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import json, sys, os, re, time, tempfile
@@ -102,7 +103,7 @@ RUN yum install -y --nogpgcheck wget
 RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm -O epel-6.rpm
 RUN rpm -ivh epel-6.rpm
 """ },
-      "CentOS_6_PHP54@SCL":  { "fmt":"YUM", "pre": ["wget"], "from":"""centos:centos6
+      "CentOS_6@SCL-PHP54":  { "fmt":"YUM", "pre": ["wget"], "from":"""centos:centos6
 RUN yum install -y --nogpgcheck centos-release-SCL
 RUN yum install -y --nogpgcheck php54
 """ },
@@ -342,7 +343,7 @@ def printable_url(url):
 
 
 def obs_fetch_bin_version(api, download_item, prj, pkg, target):
-  cfg = obs_download_cfg(obs_config['obs'][api], download_item, prj, urltest=False, verbose=False)
+  cfg = obs_download_cfg(obs_config['obs'][api], download_item, prj, urltest_target=None, verbose=False)
   lu = ListUrl()
   bin_seen = ''
   try:
@@ -391,13 +392,14 @@ def docker_from_obs(obs_target_name):
     return r
   raise ValueError("no docker base image known for '"+obs_target_name+"' - choose other obs target or update config in "+args.configfile)
 
-def obs_download_cfg(config, download_item, prj_path, urltest=True, verbose=True):
+def obs_download_cfg(config, download_item, prj_path, urltest_target=None, verbose=True):
   """
     prj_path is appended to url_cred, where all ':' are replaced with ':/'
     a '/' is asserted between url_cred and prj_path.
     url_cred is guaranteed to end in '/'
     url, username, password, are derived from url_cred.
     download_item: public, internal, ...
+    urltest_target can be none, or an obs_target to test with the download url.
 
     Side-Effect:
       The resulting url_cred is tested, and a warning is printed, if it is not accessible.
@@ -455,7 +457,7 @@ def obs_download_cfg(config, download_item, prj_path, urltest=True, verbose=True
   else:
     data['url'] = url_cred      # oops.
 
-  if not urltest: return data
+  if urltest_target is None: return data
 
   try:
     if verbose: print("testing "+data['url']+" ...")
@@ -464,9 +466,9 @@ def obs_download_cfg(config, download_item, prj_path, urltest=True, verbose=True
     else:
       uo = urllib2.urlopen(urllib2.Request(data['url']))
     text = uo.readlines()
-    if not re.search(r'\b'+re.escape(target)+r'\b', str(text)):
-      raise ValueError("target="+target+" not seen at "+data['url'])
-    if verbose: print(" ... %d bytes read, containing '%s', good." % (len(str(text)), target))
+    if not re.search(r'\b'+re.escape(urltest_target)+r'\b', str(text)):
+      raise ValueError("urltest_target="+urltest_target+" not seen at "+data['url'])
+    if verbose: print(" ... %d bytes read, containing '%s', good." % (len(str(text)), urltest_target))
   except Exception as e:
     if args.keep_going:
       print("WARNING: Cannot read "+data['url']+"\n"+str(e))
@@ -498,7 +500,7 @@ ap.add_argument("-p", "--platform", dest="target", metavar="TARGET", help="obs b
 ap.add_argument("-f", "--base-image", "--from", metavar="IMG", help="docker base image to start with. Exclusive with specifying a -p platform name")
 ap.add_argument("-V", "--version", default=False, action="store_true", help="print version number and exit")
 ap.add_argument("-d", "--download", default='public', metavar="SERVER", help='use a different download server. Try "internal" or a full url. Default: "public"')
-ap.add_argument("-c", "--configfile", default='obs_docker.json', metavar="FILE", help='specify different config file. Default: generate a default file if missing, so that you can edit')
+ap.add_argument("-c", "--configfile", default='obs-docker.json', metavar="FILE", help='specify different config file. Default: generate a default file if missing, so that you can edit')
 ap.add_argument("-W", "--writeconfig", default=False, action="store_true", help='Write a default config file and exit. Default: use existing config file')
 ap.add_argument("-A", "--obs-api", help="Identify the build service. Default: guessed from project name")
 ap.add_argument("-n", "--image-name", help="Specify the name for the docker image. Default: construct a name and print")
@@ -601,10 +603,11 @@ if args.target and args.platform:
   print("specify either a build target platform with -p or as a third parameter. Not both")
   sys.exit(1)
 target = re.sub(':','_', target)        # just in case we get the project name instead of the build target name
+obs_target = re.sub("@.*$", "", target)	# strip away @SCL or similar suffix.
 
 obs_api=guess_obs_api(args.project, args.obs_api, not args.quiet)
 try:
-  version,release=obs_fetch_bin_version(obs_api, args.download, args.project, args.package, target)
+  version,release=obs_fetch_bin_version(obs_api, args.download, args.project, args.package, obs_target)
 except Exception as e:
   if args.keep_going:
     print(str(e))
@@ -631,7 +634,8 @@ if not args.no_operation:
   else:
     check_dependencies()
 
-download=obs_download_cfg(obs_config["obs"][obs_api], args.download, args.project, verbose=not args.quiet, urltest=not args.no_operation)
+# Do you know the ternary operator in python? Here is one:
+download=obs_download_cfg(obs_config["obs"][obs_api], args.download, args.project, verbose=not args.quiet, urltest_target=None if args.no_operation else obs_target)
 
 if args.image_name:
   image_name = args.image_name
@@ -660,9 +664,9 @@ if args.xauth:
   docker_volumes.append(xauthfile+':'+xauthfile)
 
   # add basic fonts, so that a GUI becomes readable.
-  if re.search(r'suse', target, re.I): 			extra_packages.extend(['xorg-x11-fonts-core'])
-  if re.search(r'centos|rhel|fedora', target, re.I): 	extra_packages.extend(['gnu-free-sans-fonts'])
-  if re.search(r'ubuntu|debian', target, re.I):		extra_packages.extend(['fonts-dejavu-core'])
+  if re.search(r'suse', obs_target, re.I): 			extra_packages.extend(['xorg-x11-fonts-core'])
+  if re.search(r'centos|rhel|fedora', obs_target, re.I): 	extra_packages.extend(['gnu-free-sans-fonts'])
+  if re.search(r'ubuntu|debian', obs_target, re.I):		extra_packages.extend(['fonts-dejavu-core'])
 
 if args.ssh_key:
   if args.ssh_key.endswith(".pub"):
@@ -673,13 +677,13 @@ if args.ssh_key:
   else:
     print("ssh-key '"+args.ssh_key+"' does not end in '.pub' is not a plain file. Ignored.");
   # add ssh server
-  if re.search(r'suse', target, re.I):
+  if re.search(r'suse', obs_target, re.I):
     extra_packages.extend(['openssh'])
     docker_cmd_cmd='service sshd start ; ip a | grep global ; exec /bin/bash'
-  if re.search(r'centos|rhel|fedora', target, re.I):
+  if re.search(r'centos|rhel|fedora', obs_target, re.I):
     extra_packages.extend(['openssh-server'])
     docker_cmd_cmd='service sshd start ; ip a | grep global ; exec /bin/bash'
-  if re.search(r'ubuntu|debian', target, re.I):
+  if re.search(r'ubuntu|debian', obs_target, re.I):
     extra_packages.extend(['openssh-server'])
     docker_cmd_cmd='mkdir -p /var/run/sshd; /usr/sbin/sshd; ip a | grep global ; exec /bin/bash'
 
@@ -712,9 +716,9 @@ if docker["fmt"] == "APT":
   dockerfile+="RUN apt-get -q -y update"+d_endl
   if "pre" in docker and len(docker["pre"]):
     dockerfile+="RUN apt-get -q -y install "+" ".join(docker["pre"])+d_endl
-  dockerfile+="RUN "+wget_cmd+target+"/Release.key -O Release.key"+d_endl
+  dockerfile+="RUN "+wget_cmd+obs_target+"/Release.key -O Release.key"+d_endl
   dockerfile+="RUN apt-key add - < Release.key"+d_endl
-  dockerfile+="RUN echo 'deb "+download["url_cred"]+"/"+target+"/ /' >> /etc/apt/sources.list.d/"+args.package+".list"+d_endl
+  dockerfile+="RUN echo 'deb "+download["url_cred"]+"/"+obs_target+"/ /' >> /etc/apt/sources.list.d/"+args.package+".list"+d_endl
   dockerfile+="RUN apt-get -q -y update"+d_endl
   if extra_packages: 	dockerfile+="RUN apt-get -q -y install "+' '.join(extra_packages)+d_endl
   if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
@@ -728,7 +732,7 @@ elif docker["fmt"] == "YUM":
   dockerfile+="RUN yum clean expire-cache"+d_endl
   if "pre" in docker and len(docker["pre"]):
     dockerfile+="RUN "+yum_install+" "+" ".join(docker["pre"])+d_endl
-  dockerfile+="RUN "+wget_cmd+target+'/'+args.project+".repo -O /etc/yum.repos.d/"+args.project+".repo"+d_endl
+  dockerfile+="RUN "+wget_cmd+obs_target+'/'+args.project+".repo -O /etc/yum.repos.d/"+args.project+".repo"+d_endl
   if extra_packages:	dockerfile+="RUN "+yum_install+" "+" ".join(extra_packages)+d_endl
   if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
   dockerfile+="RUN date="+now+" yum clean expire-cache && "+yum_install+" "+args.package+d_endl
@@ -740,7 +744,7 @@ elif docker["fmt"] == "ZYPP":
   dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys refresh"+d_endl
   if "pre" in docker and len(docker["pre"]):
     dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+" ".join(docker["pre"])+d_endl
-  dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys addrepo "+download["url_cred"]+target+"/"+args.project+".repo"+d_endl
+  dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys addrepo "+download["url_cred"]+obs_target+"/"+args.project+".repo"+d_endl
   if extra_packages:	dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+" ".join(extra_packages)+d_endl
   if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
   dockerfile+="RUN date="+now+" zypper --non-interactive --gpg-auto-import-keys refresh && zypper --non-interactive --gpg-auto-import-keys install "+args.package+d_endl
