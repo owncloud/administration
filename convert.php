@@ -32,6 +32,28 @@
 
 require 'vendor/autoload.php';
 
+function escapeRST($string) {
+	# just replace all \ by \\ if there is no code block present
+	if(strpos($string, '``') === false) {
+		return str_replace('\\', '\\\\', $string);
+	}
+
+	$parts = explode('``', $string);
+	foreach ($parts as $key => &$part) {
+		# just even parts are outside of the code block
+		# example:
+		#
+		# 	Test code: ``$my = $code + 5;`` shows that ...
+		#
+		# The code part has the id 1 and is an odd number
+		if($key%2 == 0) {
+			str_replace('\\', '\\\\', $part);
+		}
+	}
+
+	return implode('``', $parts);
+}
+
 // tag which invokes to copy a config description to the current position
 $COPY_TAG = 'see';
 // file which should be parsed
@@ -182,7 +204,7 @@ foreach ($blocks as $block) {
 		}
 		$RSTRepresentation .= "\n";
 		// print description
-		$RSTRepresentation .= $phpdoc->getText();
+		$RSTRepresentation .= escapeRST($phpdoc->getText());
 		// empty line
 		$RSTRepresentation .= "\n";
 
