@@ -80,7 +80,7 @@ Patch1:         autostart_use_wrapper.diff
 %else
 %define opt_hack 0
 %define qtprefix %{nil}
-%define cmake_args -DCMAKE_INSTALL_SYSCONFDIR=%{_sysconfdir} -DSYSCONF_INSTALL_DIR=[% sysconfdir %]
+%define cmake_args -DSYSCONF_INSTALL_DIR=%{_sysconfdir}
 %endif
 
 # default to have no docs. Cannot be built with old distros.
