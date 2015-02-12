@@ -303,7 +303,7 @@ install -m 755 %{SOURCE1} $RPM_BUILD_ROOT/usr/bin/[% APPLICATION_EXECUTABLE %]
 %endif
 
 %if %{?suse_version:1}0
-%suse_update_desktop_file -n [% shortname %]
+%suse_update_desktop_file -n [% APPLICATION_EXECUTABLE %]
 %endif
 
 %check
