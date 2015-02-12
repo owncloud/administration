@@ -61,7 +61,7 @@ Url:            [% projecturl %]
 Group:          Productivity/Networking/Other
 Source0:        [% tarball %].tar.bz2
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
-Source1:        [% shortname %].sh
+Source1:        [% APPLICATION_EXECUTABLE %].sh
 Patch1:         autostart_use_wrapper.diff
 %endif
 
@@ -156,11 +156,11 @@ Requires: 	%{qtprefix}qt4-sqlite
 %endif
 
 Requires: %{name}-l10n
-Requires: lib[% shortname %]sync0 = %{version}
+Requires: lib[% APPLICATION_EXECUTABLE %]sync0 = %{version}
 
 Obsoletes: libocsync0
 Obsoletes: libocsync-devel
-Obsoletes: libocsync-plugin-[% shortname %]
+Obsoletes: libocsync-plugin-[% APPLICATION_EXECUTABLE %]
 Obsoletes: libocsync-devel-doc
 Obsoletes: libocsync-doc
 
@@ -185,20 +185,20 @@ Requires: %{name}%{?_isa} = %{version}-%{release}
 %description -n %{name}-l10n
 Localisation files for the [% displayname %] desktop application.
 
-%package -n lib[% shortname %]sync0
+%package -n lib[% APPLICATION_EXECUTABLE %]sync0
 Requires:       %{qtprefix}libqtkeychain0 >= 0.3
 Summary:        The [% displayname %] sync library
 Group:          Development/Libraries/C and C++
 
-%description -n lib[% shortname %]sync0
+%description -n lib[% APPLICATION_EXECUTABLE %]sync0
 The [% displayname %] sync library.
 
-%package -n lib[% shortname %]sync-devel
+%package -n lib[% APPLICATION_EXECUTABLE %]sync-devel
 Summary:        Development files for the [% displayname %] sync library
 Group:          Development/Libraries/C and C++
-Requires: lib[% shortname %]sync0 = %{version}
+Requires: lib[% APPLICATION_EXECUTABLE %]sync0 = %{version}
 
-%description -n lib[% shortname %]sync-devel
+%description -n lib[% APPLICATION_EXECUTABLE %]sync-devel
 Development files for the [% displayname %] sync library.
 
 %package -n %{name}-nautilus
@@ -259,7 +259,7 @@ then
   mv conf.py doc/
 fi
 
-env LD_RUN_PATH=%{_libdir}/[% shortname %] make %{?_smp_mflags} VERBOSE=1
+env LD_RUN_PATH=%{_libdir}/[% APPLICATION_EXECUTABLE %] make %{?_smp_mflags} VERBOSE=1
 
 make doc
 popd
@@ -281,21 +281,21 @@ popd
 
 if [ -d ${RPM_BUILD_ROOT}%{_mandir}/man1 ]; then
 %if "%{name}" != "owncloud-client"
-  mv ${RPM_BUILD_ROOT}%{_mandir}/man1/{owncloud.1,[% shortname %].1}
-  mv ${RPM_BUILD_ROOT}%{_mandir}/man1/{owncloudcmd.1,[% shortname %]cmd.1}
+  mv ${RPM_BUILD_ROOT}%{_mandir}/man1/{owncloud.1,[% APPLICATION_EXECUTABLE %].1}
+  mv ${RPM_BUILD_ROOT}%{_mandir}/man1/{owncloudcmd.1,[% APPLICATION_EXECUTABLE %]cmd.1}
 %endif
   gzip ${RPM_BUILD_ROOT}%{_mandir}/man1/*.1
 fi
 
 %define extdir ${RPM_BUILD_ROOT}%{_datadir}/nautilus-python/extensions
-test -f %{extdir}/ownCloud.py  && mv %{extdir}/ownCloud.py  %{extdir}/[% shortname %].py  || true
-test -f %{extdir}/ownCloud.pyo && mv %{extdir}/ownCloud.pyo %{extdir}/[% shortname %].pyo || true
-test -f %{extdir}/ownCloud.pyc && mv %{extdir}/ownCloud.pyc %{extdir}/[% shortname %].pyc || true
+test -f %{extdir}/ownCloud.py  && mv %{extdir}/ownCloud.py  %{extdir}/[% APPLICATION_EXECUTABLE %].py  || true
+test -f %{extdir}/ownCloud.pyo && mv %{extdir}/ownCloud.pyo %{extdir}/[% APPLICATION_EXECUTABLE %].pyo || true
+test -f %{extdir}/ownCloud.pyc && mv %{extdir}/ownCloud.pyc %{extdir}/[% APPLICATION_EXECUTABLE %].pyc || true
 
 %if %opt_hack
 mkdir -p $RPM_BUILD_ROOT/usr/share/applications/
-cat $RPM_BUILD_ROOT%{_datadir}/applications/[% APPLICATION_EXECUTABLE %].desktop |sed "s,Exec=.*,Exec=/usr/bin/[% shortname %]," > $RPM_BUILD_ROOT/usr/share/applications/[% APPLICATION_EXECUTABLE %].desktop
-# rm $RPM_BUILD_ROOT%{_datadir}/applications/[% shortname %].desktop
+cat $RPM_BUILD_ROOT%{_datadir}/applications/[% APPLICATION_EXECUTABLE %].desktop |sed "s,Exec=.*,Exec=/usr/bin/[% APPLICATION_EXECUTABLE %]," > $RPM_BUILD_ROOT/usr/share/applications/[% APPLICATION_EXECUTABLE %].desktop
+# rm $RPM_BUILD_ROOT%{_datadir}/applications/[% APPLICATION_EXECUTABLE %].desktop
 mkdir -p $RPM_BUILD_ROOT/usr/share/icons/hicolor
 mv $RPM_BUILD_ROOT%{_datadir}/icons/hicolor/* $RPM_BUILD_ROOT/usr/share/icons/hicolor
 mkdir -p $RPM_BUILD_ROOT/usr/bin
@@ -328,20 +328,20 @@ fi
 /usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %endif
 
-%post -n lib[% shortname %]sync0
+%post -n lib[% APPLICATION_EXECUTABLE %]sync0
 /sbin/ldconfig
 
-%postun -n lib[% shortname %]sync0
+%postun -n lib[% APPLICATION_EXECUTABLE %]sync0
 /sbin/ldconfig
 
 %files
 %defattr(-,root,root,-)
-%{_bindir}/[% APPLCICATION_EXECUTABLE %]
-%{_bindir}/[% APPLCICATION_EXECUTABLE %]cmd
-%{_datadir}/applications/[% shortname %].desktop
+%{_bindir}/[% APPLICATION_EXECUTABLE %]
+%{_bindir}/[% APPLICATION_EXECUTABLE %]cmd
+%{_datadir}/applications/[% APPLICATION_EXECUTABLE %].desktop
 %{_datadir}/icons/hicolor
 %if 0%{have_doc}
-%{_mandir}/man1/[% shortname %]*
+%{_mandir}/man1/[% APPLICATION_EXECUTABLE %]*
 %endif
 
 %if 0%{?suse_version} == 1110
@@ -352,9 +352,9 @@ fi
 
 %if %opt_hack
 /usr/share/icons/hicolor
-/usr/share/applications/[% shortname %].desktop
-/usr/bin/[% shortname %]
-%config /opt/etc/[% shortname %]
+/usr/share/applications/[% APPLICATION_EXECUTABLE %].desktop
+/usr/bin/[% APPLICATION_EXECUTABLE %]
+%config /opt/etc/[% APPLICATION_EXECUTABLE %]
 %dir /opt/etc
 %else
 %config /etc/[% shortname %]
@@ -370,20 +370,20 @@ fi
 
 %files -n %{name}-l10n
 %defattr(-,root,root,-)
-%{_datadir}/[% shortname %]
+%{_datadir}/[% APPLICATION_EXECUTABLE %]
 
-%files -n lib[% shortname %]sync0
+%files -n lib[% APPLICATION_EXECUTABLE %]sync0
 %defattr(-,root,root,-)
-%{_libdir}/lib[% shortname %]sync.so.*
-%{_libdir}/[% shortname %]/libocsync.so.*
-%dir %{_libdir}/[% shortname %]
+%{_libdir}/lib[% APPLICATION_EXECUTABLE %]sync.so.*
+%{_libdir}/[% APPLICATION_EXECUTABLE %]/libocsync.so.*
+%dir %{_libdir}/[% APPLICATION_EXECUTABLE %]
 
-%files -n lib[% shortname %]sync-devel
+%files -n lib[% APPLICATION_EXECUTABLE %]sync-devel
 %defattr(-,root,root,-)
-%{_libdir}/lib[% shortname %]sync.so
+%{_libdir}/lib[% APPLICATION_EXECUTABLE %]sync.so
 %{_libdir}/libhttpbf.a
-%{_libdir}/[% shortname %]/libocsync.so
-%{_includedir}/[% shortname %]sync/
+%{_libdir}/[% APPLICATION_EXECUTABLE %]/libocsync.so
+%{_includedir}/[% APPLICATION_EXECUTABLE %]sync/
 %{_includedir}/httpbf.h
 
 %files -n %{name}-nautilus
