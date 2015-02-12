@@ -7,7 +7,7 @@ index 9ad786f..9b97786 100644
             << QLatin1String("Name=") << guiName << endl
             << QLatin1String("GenericName=") << QLatin1String("File Synchronizer") << endl
 -           << QLatin1String("Exec=") << QCoreApplication::applicationFilePath() << endl
-+           << QLatin1String("Exec=") << "/usr/bin/[% shortname %]" << endl
++           << QLatin1String("Exec=") << "/usr/bin/[% APPLICATION_EXECUTABLE %]" << endl
             << QLatin1String("Terminal=") << "false" << endl
             << QLatin1String("Icon=") << appName.toLower() << endl // always use lowercase for icons
             << QLatin1String("Categories=") << QLatin1String("Network") << endl

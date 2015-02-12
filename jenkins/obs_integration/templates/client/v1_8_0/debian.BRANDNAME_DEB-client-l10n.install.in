@@ -1,1 +1,1 @@
-usr/share/[% shortname %]/i18n
+usr/share/[% APPLICATION_EXECUTABLE %]/i18n

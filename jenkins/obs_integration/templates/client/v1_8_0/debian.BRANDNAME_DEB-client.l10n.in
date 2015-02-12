@@ -1,1 +1,1 @@
-debian/tmp/usr/share/[% shortname %]-client/i18n/*qm
+debian/tmp/usr/share/[% APPLICATION_EXECUTABLE %]-client/i18n/*qm
