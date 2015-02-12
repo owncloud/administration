@@ -299,7 +299,7 @@ sub readOEMcmake( $ )
 
     unless( $substs{APPLICATION_SHORTNAME} ) {
       # needed to have a shortname for the packaging templates
-      $substs{APPLICATION_SHORTNAME} = lc $substs{APPLICATION_NAME};
+      $substs{APPLICATION_SHORTNAME} = $substs{APPLICATION_NAME};
     }
 
     if( $substs{APPLICATION_SHORTNAME} ) {
