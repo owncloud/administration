@@ -354,7 +354,7 @@ fi
 /usr/share/icons/hicolor
 /usr/share/applications/[% APPLICATION_EXECUTABLE %].desktop
 /usr/bin/[% APPLICATION_EXECUTABLE %]
-%config /opt/etc/[% APPLICATION_EXECUTABLE %]
+%config /opt/etc/[% shortname %]
 %dir /opt/etc
 %else
 %config /etc/[% shortname %]
