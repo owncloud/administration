@@ -36,7 +36,7 @@
 %define prerelease [% prerelease %]
 %define base_version [% version %]
 %define tar_version %{base_version}%{prerelease}
-Name:           [% shortname %]-client
+Name:           [% APPLICATION_EXECUTABLE %]-client
 
 %if 0%{?centos_version} == 600 || 0%{?rhel_version} == 600 || 0%{?fedora_version} || "%{prerelease}" == ""
 # For beta and rc versions we use the ~ notation, as documented in
