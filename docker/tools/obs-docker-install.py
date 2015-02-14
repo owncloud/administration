@@ -43,12 +43,13 @@
 # V1.8  -- 2015-02-03, jw  wget always with -O, needed for upgrade tests
 # V1.9  -- 2015-02-04, jw  --dockerfile added. simplified output of -N
 # V2.0  -- 2015-02-08, jw  can now handle @suffixes in target names. Example CentOS_6@SCL-PHP54
+# V2.1  -- 2015-02-14, jw  Option --cleanup added. cleanup commands improved.
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="2.0"
+__VERSION__="2.1"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import json, sys, os, re, time, tempfile
@@ -481,8 +482,8 @@ def obs_download_cfg(config, download_item, prj_path, urltest_target=None, verbo
 
 ################################################################################
 
-docker_cmd_clean_c=" docker ps -a  | grep Exited   | awk '{ print $1 }' | xargs docker rm"
-docker_cmd_clean_i=" docker images | grep '<none>' | awk '{ print $3 }' | xargs docker rmi\n"
+docker_cmd_clean_c=" docker ps -a  | grep Exited   | awk '{ print $1 }' | xargs -r docker rm"
+docker_cmd_clean_i=" docker images | grep '<none>' | awk '{ print $3 }' | xargs -r docker rmi"
 
 ap = ArgumentParser(
   formatter_class=RawDescriptionHelpFormatter,
@@ -516,6 +517,7 @@ ap.add_argument("-R", "--rm", default=False, action="store_true", help="Remove i
 ap.add_argument("--no-cache", default=False, action="store_true", help="Do not use cache when building the image. Default: use docker cache as available")
 ap.add_argument("--nogpgcheck", default=False, action="store_true", help="Ignore broken or missing keys. Default: yum check, zypper auto-import")
 ap.add_argument("-X", "--xauth", default=False, action="store_true", help="Prepare a docker image that can connect to your X-Server.")
+ap.add_argument("-C", "--cleanup", default=False, action="store_true", help="Run suggested docker cleanup.")
 ap.add_argument("-S", "--ssh-key", help="Import an ssh-key (e.g. ~/.ssh/id_dsa.pub) and start an ssh server with the default docker run CMD.")
 ap.add_argument("project", metavar="PROJECT", nargs="?", help="obs project name. Alternate syntax to PROJ/PACK")
 ap.add_argument("package", metavar="PACKAGE",  nargs="?", help="obs package name, or PROJ/PACK")
@@ -535,6 +537,12 @@ docker_cmd_cmd="/bin/bash"
 extra_docker_cmd = []
 extra_packages = []
 if args.extra_packages: extra_packages = re.split(r"[\s,]", args.extra_packages)
+
+if args.cleanup:
+  run.verbose = 2
+  run(['sh', '-c', docker_cmd_clean_c], redirect=False)
+  run(['sh', '-c', docker_cmd_clean_i], redirect=False)
+  sys.exit(0)
 
 if args.writeconfig:
   if os.path.exists(args.configfile):
