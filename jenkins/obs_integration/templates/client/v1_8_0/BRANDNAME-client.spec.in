@@ -90,12 +90,12 @@ Patch1:         autostart_use_wrapper.diff
 # If Qt5 is available, we use it. Also, if the Qt-Version is 5.4 or higher
 # no neon is needed any more!
 %define use_qt5 0
-%define require_neon 0
+%define require_neon 1
 %if 0%{?suse_version} > 1310
   %define use_qt5 1
 %if 0%{?suse_version} > 1320
   # Qt version is smaller 5.4 that means we still need neon
-  %define require_neon 1
+  %define require_neon 0
 %endif
 %endif
 
