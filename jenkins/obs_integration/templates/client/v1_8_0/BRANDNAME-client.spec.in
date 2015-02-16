@@ -86,33 +86,83 @@ Patch1:         autostart_use_wrapper.diff
 # default to have no docs. Cannot be built with old distros.
 %define have_doc 0
 
+# prepare stuff for qt5
+# If Qt5 is available, we use it. Also, if the Qt-Version is 5.4 or higher
+# no neon is needed any more!
+%define use_qt5 0
+%define require_neon 0
+%if 0%{?suse_version} >= 1310
+  %define use_qt5 1
+%if 0%{?suse_version} > 1320
+  # Qt version is smaller 5.4 that means we still need neon
+  %define require_neon 1
+%endif
+%endif
+
 ######################################################################### BuildRequires only below here.
 
 BuildRequires:  cmake >= 2.8.11
 BuildRequires:  gcc gcc-c++
+%if %use_qt5
+BuildRequires:  libqt5keychain-devel libqt5keychain0
+%else
 BuildRequires:  %{qtprefix}libqtkeychain-devel
+%endif
 
 # This is for all modern Fedora and CentOS 7
 # These ship Qt in a decent version and do not need the opt-hack
 %if 0%{?fedora_version} || 0%{?centos_version} == 700 || 0%{?rhel_version} == 700
+
+%if %use_qt5
+# not yet here.
+%else # no qt5
 BuildRequires:  qt4 qt4-devel >= 4.7
-BuildRequires:  inetd desktop-file-utils
 BuildRequires:  qtwebkit >= 2.2
 BuildRequires:  qtwebkit-devel >= 2.2
+%endif
+
 BuildRequires:  openssl-devel
+BuildRequires:  inetd desktop-file-utils
+%else
+# This is for all SUSE and RHEL6 and CentOS 6
+%if %use_qt5
+
+BuildRequires:  libQt5Core-devel
+BuildRequires:  libQt5Gui-devel
+BuildRequires:  libQt5Network-devel
+BuildRequires:  libQt5WebKitWidgets-devel
+BuildRequires:  libQt5Xml-devel
+BuildRequires:  libQt5PrintSupport-devel
+BuildRequires:  libQt5DBus-devel
+BuildRequires:  libqt5-linguist-devel
+
+%else # no qt5
+
+BuildRequires:  %{qtprefix}libqt4-devel >= 4.7
+BuildRequires:  %{qtprefix}libQtWebKit-devel
+BuildRequires:  %{qtprefix}libQtWebKit4
+
+%endif
+
 %endif
 
 # SUSE specific stuff
 %if 0%{?suse_version}
+%if %require_neon
 BuildRequires:  libneon-devel
+%endif
+
 BuildRequires:  update-desktop-files
+BuildRequires:  libopenssl-devel
 %endif
 
 # The opt-hack to use the packages installed in /opt on CentOS
 %if %opt_hack
 BuildRequires:  oc-neon-devel
 %else
+%if %require_neon
 BuildRequires:  neon-devel
+%endif
 %define have_doc 1
 %endif
 
@@ -127,15 +177,6 @@ BuildRequires:  libneon-devel
 BuildRequires:  update-desktop-files
 %endif
 
-# This is for all SUSE and RHEL6 and CentOS 6
-%if 0%{?suse_version} || (0%{?rhel_version} && 0%{?rhel_version} < 700) || (0%{?centos_version} && 0%{?centos_version} < 700)
-BuildRequires:  %{qtprefix}libqt4-devel >= 4.7
-BuildRequires:  %{qtprefix}libQtWebKit-devel
-BuildRequires:  %{qtprefix}libQtWebKit4
-%else
-# This is all Fedora versions and RHEL and CentOS>6
-BuildRequires:  libqt4-devel >= 4.7
-%endif
 
 ######################################################################### Requires only below here.
 
@@ -172,6 +213,11 @@ Obsoletes: libocsync-plugin-[% APPLICATION_EXECUTABLE %]
 Obsoletes: libocsync-devel-doc
 Obsoletes: libocsync-doc
 
+# Obsolete the experimental Qt5 packages if this is the unbranded client.
+%if "%{name}" == "owncloud-client"
+Obsoletes: libowncloudqt5sync0 libowncloudqt5sync-devel owncloud-client-qt5 owncloud-client-qt5-doc owncloud-client-qt5-l10n
+%endif
+
 ######################################################################### Package Descriptions start here.
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -196,7 +242,11 @@ Requires: %{name}%{?_isa} = %{version}-%{release}
 Localisation files for the [% displayname %] desktop application.
 
 %package -n lib[% APPLICATION_EXECUTABLE %]sync0
+%if %use_qt5
+Requires:       libqt5keychain0
+%else
 Requires:       %{qtprefix}libqtkeychain0 >= 0.3
+%endif
 Summary:        The [% displayname %] sync library
 Group:          Development/Libraries/C and C++
 
