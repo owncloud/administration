@@ -86,10 +86,14 @@ Patch1:         autostart_use_wrapper.diff
 # default to have no docs. Cannot be built with old distros.
 %define have_doc 0
 
+######################################################################### BuildRequires only below here.
+
 BuildRequires:  cmake >= 2.8.11
 BuildRequires:  gcc gcc-c++
 BuildRequires:  %{qtprefix}libqtkeychain-devel
 
+# This is for all modern Fedora and CentOS 7
+# These ship Qt in a decent version and do not need the opt-hack
 %if 0%{?fedora_version} || 0%{?centos_version} == 700 || 0%{?rhel_version} == 700
 BuildRequires:  qt4 qt4-devel >= 4.7
 BuildRequires:  inetd desktop-file-utils
@@ -98,15 +102,13 @@ BuildRequires:  qtwebkit-devel >= 2.2
 BuildRequires:  openssl-devel
 %endif
 
+# SUSE specific stuff
 %if 0%{?suse_version}
 BuildRequires:  libneon-devel
 BuildRequires:  update-desktop-files
 %endif
 
-%if 0%{?fedora_version}
-BuildRequires:  python-sphinx
-%endif
-
+# The opt-hack to use the packages installed in /opt on CentOS
 %if %opt_hack
 BuildRequires:  oc-neon-devel
 %else
@@ -114,6 +116,7 @@ BuildRequires:  neon-devel
 %define have_doc 1
 %endif
 
+# Version independant package name mapping between suse and fedora/centos
 %if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
 BuildRequires:  sqlite-devel
 BuildRequires:  inetd desktop-file-utils
@@ -124,14 +127,17 @@ BuildRequires:  libneon-devel
 BuildRequires:  update-desktop-files
 %endif
 
+# This is for all SUSE and RHEL6 and CentOS 6
 %if 0%{?suse_version} || (0%{?rhel_version} && 0%{?rhel_version} < 700) || (0%{?centos_version} && 0%{?centos_version} < 700)
 BuildRequires:  %{qtprefix}libqt4-devel >= 4.7
 BuildRequires:  %{qtprefix}libQtWebKit-devel
 BuildRequires:  %{qtprefix}libQtWebKit4
 %else
-## what platform is this??
+# This is all Fedora versions and RHEL and CentOS>6
 BuildRequires:  libqt4-devel >= 4.7
 %endif
+
+######################################################################### Requires only below here.
 
 %if %opt_hack
 Requires:       %{qtprefix}libqt4-x11
@@ -158,11 +164,15 @@ Requires: 	%{qtprefix}qt4-sqlite
 Requires: %{name}-l10n
 Requires: lib[% APPLICATION_EXECUTABLE %]sync0 = %{version}
 
+######################################################################### Obsoletes only below here.
+
 Obsoletes: libocsync0
 Obsoletes: libocsync-devel
 Obsoletes: libocsync-plugin-[% APPLICATION_EXECUTABLE %]
 Obsoletes: libocsync-devel-doc
 Obsoletes: libocsync-doc
+
+######################################################################### Package Descriptions start here.
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
