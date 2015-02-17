@@ -215,14 +215,24 @@ sub make_dummy_package_cfg
      {
        # set( APPLICATION_NAME "DataBird" )
        chomp $line;
-       warn "$line\n";
        if ($line =~ m{^set.*?(\w+)\s+"([^"]*)"})
          {
 	   $set{$1} = $2;
 	 }
      }
    close IN;
-   die Dumper "make_dummy_package_cfg not impl.", \%set;
+   warn Dumper "make_dummy_package_cfg using:", \%set;
+   open OUT, ">$cfgfile" or die "make_dummy_package_cfg: cannot write $cfgfile: $!\n";
+   print OUT qq{\
+       summary => "The $set{APPLICATION_NAME} Client - file sync and share client",
+       pkgdescription => "The $set{APPLICATION_NAME} Client provides file sync to desktop clients.",
+       pkgdescription_debian => "The $set{APPLICATION_NAME} Client provides file sync to desktop clients.",
+       sysconfdir => "etc/$set{APPLICATION_SHORTNAME}",  # etc/ownCloud, but lowercase for all OEMs..., without a leading slash
+       maintainer => "ownCloud Inc.",
+       maintainer_person => "Juergen Weigert <jw+jenkins\@owncloud.com>",
+       desktopdescription => "$set{APPLICATION_NAME} desktop sync client",
+};
+   close OUT or die "make_dummy_package_cfg: could not write $cfgfile: $!\n";
 }
 
 
