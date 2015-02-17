@@ -195,11 +195,33 @@ sub fetch_client_from_branch
 
   # no - or ~ before prerelease, the specfile template constructs tarversion without 
   # any delimiter between version and prerelease.
-  my $pkgname = "client-${version}${prerelease}";
+  my $pkgname = "client-${version}"; $pkgname .= $prerelease if defined $prerelease;
   $source_tar = "$destdir/$pkgname.tar.bz2";
   run("cd $gitsubdir && git archive HEAD --prefix=$pkgname/ --format tar | bzip2 > $source_tar")
     unless $skipahead > 2;
   return ($source_tar, $version, $prerelease);
+}
+
+sub make_dummy_package_cfg
+{
+   my ($dir) = @_;
+   my $cmakefile = "$dir/OEM.cmake";
+   my $cfgfile = "$dir/package.cfg";
+
+   my %set;
+
+   open IN, "<$cmakefile" or die "make_dummy_package_cfg: cannot read $cmakefile: $!\n";
+   while (defined(my $line = <IN>))
+     {
+       # set( APPLICATION_NAME "DataBird" )
+       chomp $line;
+       if ($line =~ m{^set\b\W+(\w+)\S+"([^"]*)"})
+         {
+	   $set{$1} = $2;
+	 }
+     }
+   close IN;
+   die Dumper "make_dummy_package_cfg not impl.", \%set;
 }
 
 
@@ -225,7 +247,9 @@ closedir(DIR);
 my @candidates = ();
 for my $dir (sort @d)
   {
-    next unless -d "$tmp_t/$dir/mirall" or -d "$tmp_t/$dir/syncclient";
+    my $linuxdir = 'syncclient';
+    $linuxdir = 'mirall' unless -d "$tmp_t/$dir/$linuxdir";
+    next unless -d "$tmp_t/$dir/$linuxdir";
     next if @client_filter and not $client_filter{$dir};
     #  - generate the branding tar ball
     # CAUTION: keep in sync with jenkins jobs customer_themes
@@ -233,7 +257,14 @@ for my $dir (sort @d)
     chdir($tmp_t);
     run("tar cjf ../$dir.tar.bz2 ./$dir")
       unless $skipahead > 4;
-    push @candidates, $dir if -f "$tmp_t/$dir/mirall/package.cfg" or -f "$tmp_t/$dir/syncclient/package.cfg";
+
+    if ( @client_filter and -f "$tmp_t/$dir/$linuxdir/OEM.cmake" and not -f "$tmp_t/$dir/$linuxdir/package.cfg")
+      {
+        # we asked for this via a filter, the OEM.cmake is there, but no package.cfg
+        make_dummy_package_cfg("$tmp_t/$dir/$linuxdir");
+      }
+
+    push @candidates, $dir if -f "$tmp_t/$dir/$linuxdir/package.cfg";
   }
 
 print Dumper \@candidates;
