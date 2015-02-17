@@ -40,6 +40,7 @@
 # 2014-10-09, jw, trailing slash after project name means: no automatic subproject please.
 # 2015-01-22, jw, accept /syncclient/package.cfg instead of /mirall/package.cfg (seen with testpilotclient)
 # 2015-02-03, jw, option -P got removed from genbranding. We prepare the client tar ball with the prerelease tag now.
+# 2015-02-15, jw, added make_dummy_package_cfg() using OEM.cmake -- it does not get any better.
 
 use Data::Dumper;
 use File::Path;
@@ -265,15 +266,16 @@ for my $dir (sort @d)
     #  - generate the branding tar ball
     # CAUTION: keep in sync with jenkins jobs customer_themes
     # https://rotor.owncloud.com/view/mirall/job/customer-themes/configure
-    chdir($tmp_t);
-    run("tar cjf ../$dir.tar.bz2 ./$dir")
-      unless $skipahead > 4;
 
     if ( @client_filter and -f "$tmp_t/$dir/$linuxdir/OEM.cmake" and not -f "$tmp_t/$dir/$linuxdir/package.cfg")
       {
         # we asked for this via a filter, the OEM.cmake is there, but no package.cfg
         make_dummy_package_cfg("$tmp_t/$dir/$linuxdir");
       }
+
+    chdir($tmp_t);
+    run("tar cjf ../$dir.tar.bz2 ./$dir")
+      unless $skipahead > 4;
 
     push @candidates, $dir if -f "$tmp_t/$dir/$linuxdir/package.cfg";
   }
