@@ -92,7 +92,7 @@ my $create_msg 		= $ENV{OBS_INTEGRATION_MSG} || "created by: $0 @ARGV; template=
 my $TMPDIR_TEMPL = '_oem_XXXXX';
 our $verbose = 1;
 our $no_op = 0;
-my $skipahead = 0;	# 5 start with all tarballs there.
+my $skipahead = 0;	# 4 = all checkouts done. 5 = all tarballs created.
 
 my $customer_themes_git = $ENV{CUSTOMER_THEMES_GIT} || 'git@github.com:owncloud/customer-themes.git';
 my $source_git          = 'https://github.com/owncloud/client.git';
@@ -215,7 +215,8 @@ sub make_dummy_package_cfg
      {
        # set( APPLICATION_NAME "DataBird" )
        chomp $line;
-       if ($line =~ m{^set\b\W+(\w+)\S+"([^"]*)"})
+       warn "$line\n";
+       if ($line =~ m{^set.*?(\w+)\s+"([^"]*)"})
          {
 	   $set{$1} = $2;
 	 }
