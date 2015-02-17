@@ -93,7 +93,7 @@ Patch1:         autostart_use_wrapper.diff
 %define require_neon 1
 %if 0%{?suse_version} > 1310 || 0%{?fedora_version} > 20
   %define use_qt5 1
-%if 0%{?suse_version} > 1320 || 0%{?fedora_version} > 20
+%if 0%{?suse_version} > 1320 || 0%{?fedora_version} > 21
   # Qt version is smaller 5.4 that means we still need neon
   %define require_neon 0
 %endif
