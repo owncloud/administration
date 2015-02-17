@@ -91,9 +91,9 @@ Patch1:         autostart_use_wrapper.diff
 # no neon is needed any more!
 %define use_qt5 0
 %define require_neon 1
-%if 0%{?suse_version} > 1310
+%if 0%{?suse_version} > 1310 || 0%{?fedora_version} > 20
   %define use_qt5 1
-%if 0%{?suse_version} > 1320
+%if 0%{?suse_version} > 1320 || 0%{?fedora_version} > 20
   # Qt version is smaller 5.4 that means we still need neon
   %define require_neon 0
 %endif
@@ -114,7 +114,16 @@ BuildRequires:  %{qtprefix}libqtkeychain-devel
 %if 0%{?fedora_version} || 0%{?centos_version} == 700 || 0%{?rhel_version} == 700
 
 %if %use_qt5
-# not yet here.
+
+BuildRequires:  qt5-qtbase
+BuildRequires:  qt5-qtbase-gui
+# BuildRequires:  libQt5Network-devel
+BuildRequires:  qt5-qtwebkit-devel
+BuildRequires:  qt5-qtxmlpatterns-devel
+# BuildRequires:  libQt5PrintSupport-devel
+# BuildRequires:  libQt5DBus-devel
+BuildRequires:  qt5-qttools
+
 %else # no qt5
 BuildRequires:  qt4 qt4-devel >= 4.7
 BuildRequires:  qtwebkit >= 2.2
