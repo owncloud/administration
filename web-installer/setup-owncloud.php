@@ -4,6 +4,8 @@
  *
  * @author Frank Karlitschek
  * @copyright 2012 Frank Karlitschek frank@owncloud.org
+ * @author Lukas Reschke
+ * @copyright 2013-2014 Lukas Reschke lukas@owncloud.com
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU AFFERO GENERAL PUBLIC LICENSE
@@ -32,42 +34,82 @@ ini_set('display_errors', 1);
 @set_time_limit(0);
  
 /**
- * @brief Setup class with a few helper functions
+ * Setup class with a few helper functions
  *
  */ 
 class oc_setup {
 
+	private static $requirements = array(
+		'classes' => array(
+			'ZipArchive' => 'zip',
+			'DOMDocument' => 'dom',
+		),
+		'functions' => array(
+			'xml_parser_create' => 'libxml',
+			'mb_detect_encoding' => 'mb multibyte',
+			'ctype_digit' => 'ctype',
+			'json_encode' => 'JSON',
+			'gd_info' => 'GD',
+			'gzencode' => 'zlib',
+			'iconv' => 'iconv',
+			'simplexml_load_string' => 'SimpleXML'
+		),
+		'defined' => array(
+			'PDO::ATTR_DRIVER_NAME' => 'PDO'
+		)
+	);
  
 	/**
-	* @brief Checks if all the ownCloud dependencies are installed
+	* Checks if all the ownCloud dependencies are installed
 	* @return string with error messages
 	*/ 
 	static public function checkdependencies() {
-		$error='';
-		
-		// do we have PHP 5.3.2 or newer?
-                if(version_compare(PHP_VERSION, '5.3.2', '<')) {
-			$error.='PHP 5.3.2 is required. Please ask your server administrator to update PHP to version 5.3.2 or higher. PHP 5.2 is no longer supported by ownCloud and the PHP community.';
-		}
-		
-		// do we have the zip module?
-		if(!class_exists('ZipArchive')){
-			$error.='PHP module zip not installed. Please ask your server administrator to install the module.';
+		$error = '';
+		$missingDependencies = array();;
+
+		// do we have PHP 5.3.3 or newer?
+		if(version_compare(PHP_VERSION, '5.3.3', '<')) {
+			$error.='PHP 5.3.3 is required. Please ask your server administrator to update PHP to version 5.3.3 or higher.<br/>';
 		}
 
-		// do we have the curl module?
-		if(!function_exists('curl_exec')){
-			$error.='PHP module curl not installed. Please ask your server administrator to install the module.';
+		foreach(self::$requirements as $type => $requirements) {
+			foreach($requirements as $requirement => $module) {
+				if($type === 'classes') {
+					if(!class_exists($requirement)){
+						$missingDependencies[] = array($module);
+					}
+				}
+				if($type === 'functions') {
+					if(!function_exists($requirement)){
+						$missingDependencies[] = array($module);
+					}
+				}
+				if($type === 'defined') {
+					if(!defined($requirement)){
+						$missingDependencies[] = array($module);
+					}
+				}
+			}
 		}
-		
+
+		if(!empty($missingDependencies)) {
+			$error .= 'The following PHP modules are required to use ownCloud:<br/>';
+		}
+		foreach($missingDependencies as $missingDependency) {
+			$error .= '<li>'.$missingDependency[0].'</li>';
+		}
+		if(!empty($missingDependencies)) {
+			$error .= '</ul><p style="text-align:center">Please contact your server administrator to install the missing modules.</p>';
+		}
+
 		// do we have write permission?
 		if(!is_writable('.')) {
-			$error.='Can\'t write to the current directory. Please fix this by giving the webserver user write access to the directory.';
+			$error.='Can\'t write to the current directory. Please fix this by giving the webserver user write access to the directory.<br/>';
 		}
 
 		// is safe_mode enabled?
 		if(ini_get('safe_mode')) {
-			$error.='PHP Safe Mode is enabled. ownCloud requires that it is disabled to work properly.';
+			$error.='PHP Safe Mode is enabled. ownCloud requires that it is disabled to work properly.<br/>';
 		}
 		
 		return($error);
@@ -75,7 +117,7 @@ class oc_setup {
 
 
 	/**
-	* @brief Check the cURL version
+	* Check the cURL version
 	* @return bool status of CURLOPT_CERTINFO implementation
 	*/ 
 	static public function iscertinfoavailable(){
@@ -86,17 +128,23 @@ class oc_setup {
 
  
 	/**
-	* @brief Performs the ownCloud install. 
+	* Performs the ownCloud install.
 	* @return string with error messages
 	*/ 
 	static public function install() {	
 		$error='';
-		
+		$directory = $_GET['directory'];
+
+		// Test if folder already exists
+		if(file_exists('./'.$directory.'/status.php')) {
+			return 'The selected folder seems to already contain a ownCloud installation. - You cannot use this script to update existing installations.';
+		}
+
 		// downloading latest release
 		if (!file_exists('oc.zip')) {
 			$error.=oc_setup::getfile('https://download.owncloud.org/download/community/owncloud-latest.zip','oc.zip');
 		}
-		
+
 		// unpacking into owncloud folder
 		$zip = new ZipArchive;
 		$res = $zip->open('oc.zip');
@@ -113,7 +161,7 @@ class oc_setup {
 				}
 				rmdir($owncloud_tmp_dir.'/owncloud');
 			} else {
-				rename($owncloud_tmp_dir.'/owncloud', './'.$_GET['directory']);
+				rename($owncloud_tmp_dir.'/owncloud', './'.$directory);
 			}
 			// Delete the tmp folder
 			rmdir($owncloud_tmp_dir);
@@ -129,9 +177,9 @@ class oc_setup {
 
 	 
 	/**
-	* @brief Downloads a file and stores it in the local filesystem
-	* @param url $url
-	* @param path $path	
+	* Downloads a file and stores it in the local filesystem
+	* @param string $url
+	* @param string$path
 	* @return string with error messages
 	*/ 
 	static public function getfile($url,$path) {
@@ -160,7 +208,7 @@ class oc_setup {
  
   
 	/**
-	* @brief Shows the html header of the setup page
+	* Shows the html header of the setup page
 	*/ 
 	static public function showheader(){
 		echo('
@@ -171,6 +219,14 @@ class oc_setup {
 				<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 				<link rel="icon" type="image/png" href="http://owncloud.org/setupwizard/favicon.png" />
 				<link rel="stylesheet" href="http://owncloud.org/setupwizard/styles.css" type="text/css" media="screen" />
+				<style type="text/css">
+				body {
+					text-align:center;
+					font-size:13px;
+					color:#666;
+					font-weight:bold;
+				}
+				</style>
 			</head>
 
 			<body id="body-login">
@@ -179,7 +235,7 @@ class oc_setup {
 
  
 	/**
-	* @brief Shows the html footer of the setup page
+	* Shows the html footer of the setup page
 	*/ 
 	static public function showfooter(){
 		echo('
@@ -191,10 +247,10 @@ class oc_setup {
 	
 	 
 	/**
-	* @brief Shows the html content part of the setup page
-	* @param title $title	
-	* @param content $content
-	* @param nextpage $nextpage
+	* Shows the html content part of the setup page
+	* @param string $title
+	* @param string $content
+	* @param string $nextpage
 	*/ 
 	static public function showcontent($title,$content,$nextpage=''){
 		echo('
@@ -227,7 +283,7 @@ class oc_setup {
 
 
 	/**
-	* @brief Shows the wecome screen of the setup wizard
+	* Shows the welcome screen of the setup wizard
 	*/ 
 	static public function showwelcome(){
 		$txt='Welcome to the ownCloud Setup Wizard.<br />This wizard will check the ownCloud dependencies, download the newest version of ownCloud and install it in a few simple steps.';
@@ -236,7 +292,7 @@ class oc_setup {
 
 
 	/**
-	* @brief Shows the check dependencies screen
+	* Shows the check dependencies screen
 	*/ 
 	static public function showcheckdependencies(){
 		$error=oc_setup::checkdependencies();
@@ -251,9 +307,9 @@ class oc_setup {
 
 
 	/**
-	* @brief Shows the install screen
+	* Shows the install screen
 	*/ 
-	static public function showinstall(){
+	static public function showinstall() {
 		$error=oc_setup::install();
 	
 		if($error=='') {
@@ -267,7 +323,7 @@ class oc_setup {
 
 
 	/**
-	* @brief Shows the redirect screen
+	* Shows the redirect screen
 	*/ 
 	static public function showredirect(){
 		// delete own file
@@ -295,6 +351,3 @@ else  echo('Internal error. Please try again.');
 
 // show the footer
 oc_setup::showfooter();
-
-
-?>
