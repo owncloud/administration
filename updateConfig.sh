@@ -16,6 +16,10 @@ do
 	git checkout -q $branch
 	cd $currentDir
 
+	if [[ $branch == 'master' ]]; then
+		branch=stable8
+	fi
+
 	# download current version of config.sample.php
 	curl -sS -o /tmp/config.sample.php https://raw.githubusercontent.com/owncloud/core/$branch/config/config.sample.php
 
