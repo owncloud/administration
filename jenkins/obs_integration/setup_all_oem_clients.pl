@@ -61,8 +61,8 @@ if (!defined $source_tar or $source_tar =~ m{^-})
     die qq{
 Usage: $0 v1.6.2 [home:jw:oem[/] [filterbranding,... [api [tmpl]]]]
 
-       $0 v1.7.0-alpha1 isv:ownCloud:oem testpilotcloud https://api.opensuse.org isv:ownCloud:community:nightly
-       $0 v1.6.4-rc1 isv:ownCloud:oem:community:testing:1.6/ testpilotcloud https://api.opensuse.org isv:ownCloud:desktop
+       $0 v1.7.1 isv:ownCloud:oem testpilotcloud https://api.opensuse.org isv:ownCloud:community:nightly
+       $0 v1.8.0-beta1a isv:ownCloud:community:testing testpilotcloud https://api.opensuse.org isv:ownCloud:desktop
 
 ... or similar.
 
