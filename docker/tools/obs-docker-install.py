@@ -45,12 +45,13 @@
 # V2.0  -- 2015-02-08, jw  can now handle @suffixes in target names. Example CentOS_6@SCL-PHP54
 # V2.1  -- 2015-02-14, jw  Option --cleanup added. cleanup commands improved.
 # V2.2  -- 2015-02-18, jw  fixed --dockerfile to never include any extras.
+# V2.3  -- 2015-02-21, jw  docker group is not needed when running as root.
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="2.2"
+__VERSION__="2.3"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import json, sys, os, re, time, tempfile
@@ -301,9 +302,12 @@ Debian
 
 """)
     sys.exit(0)
-  docker_grp = run(["id", "-a"], redirect_stderr=False)
-  if not re.search(r"\bdocker\b", docker_grp.decode(), re.S):
-    print("""You are not in the docker group? Try:
+
+  if os.getuid():
+    # assert we run as root or have the docker group.
+    docker_grp = run(["id", "-a"], redirect_stderr=False)
+    if not re.search(r"\bdocker\b", docker_grp.decode(), re.S):
+      print("""You are not in the docker group? Try:
 
 openSUSE:
  sudo usermod -a -G docker $USER; reboot"
@@ -312,7 +316,8 @@ Debian:
  sudo groupadd docker
  sudo gpasswd -a $USER docker; reboot
 """)
-    sys.exit(0)
+      sys.exit(0)
+
   run.verbose += 1
 
 
