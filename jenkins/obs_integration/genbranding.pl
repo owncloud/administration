@@ -289,12 +289,15 @@ sub readOEMcmake( $ )
     close OEM;
 
     foreach my $l (@lines) {
-	if( $l =~ /^\s*set\(\s*(\S+)\s*"(\S+)"\s*\)/i ) {
+        chop $l;
+	if( $l =~ /^\s*set\(\s*(\S+)\s*"*(.+?)"*\s*\)\s*$/i ) {
 	    my $key = $1;
 	    my $val = $2;
 	    print "  * found <$key> => $val\n";
 	    $substs{$key} = $val;
-	}
+	} else {
+            print "  * OEM.cmake PARSE error: $l\n";
+        }
     }
 
     unless( $substs{APPLICATION_SHORTNAME} ) {
@@ -371,6 +374,19 @@ sub getSubsts( $ )
     $substs{maintainer_person} = "ownCloud packages <packages\@owncloud.com>" unless( $substs{maintainer_person} );
     $substs{desktopdescription} = $substs{displayname} . " desktop sync client" unless( $substs{desktopdescription} );
 
+    # try to substitute variables
+    foreach my $key (keys %substs) {
+        my $value = $substs{$key};
+        if( $value =~ /^\$\{(.+)\}$/ ) {
+            if( exists $substs{$1} ) {
+                my $newVal = $substs{$1};
+                $substs{$key} = $newVal;
+                print " * Substituted $key = $value => $newVal\n";
+            } else {
+                print " * Could not substitute $value\n";
+            }
+        }
+    }
     return \%substs;
 }
 
