@@ -46,12 +46,14 @@
 # V2.1  -- 2015-02-14, jw  Option --cleanup added. cleanup commands improved.
 # V2.2  -- 2015-02-18, jw  fixed --dockerfile to never include any extras.
 # V2.3  -- 2015-02-21, jw  docker group is not needed when running as root.
+# V2.4  -- 2015-02-24, jw  renamed 'pre' to 'inst', as this installs packages.
+#                          Defined 'pre' as prefix docker file snippet.
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="2.3"
+__VERSION__="2.4"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import json, sys, os, re, time, tempfile
@@ -87,31 +89,31 @@ default_obs_config = {
     },
   "target":
     {
-      "xUbuntu_14.10":   { "fmt":"APT", "pre": ["wget","apt-transport-https"], "from":"ubuntu:14.10" },
-      "xUbuntu_14.04":   { "fmt":"APT", "pre": ["wget","apt-transport-https"], "from":"ubuntu:14.04" },
-      "xUbuntu_13.10":   { "fmt":"APT", "pre": ["wget","apt-transport-https"], "from":"ubuntu:13.10" },
-      "xUbuntu_13.04":   { "fmt":"APT", "pre": ["wget","apt-transport-https"], "from":"ubuntu:13.04" },
-      "xUbuntu_12.10":   { "fmt":"APT", "pre": ["wget","apt-transport-https"], "from":"ubuntu:12.10" },
-      "xUbuntu_12.04":   { "fmt":"APT", "pre": ["wget","apt-transport-https"], "from":"ubuntu:12.04" },
-      "Debian_6.0":      { "fmt":"APT", "pre": ["wget","apt-transport-https"], "from":"debian:6.0" },
-      "Debian_7.0":      { "fmt":"APT", "pre": ["wget","apt-transport-https"], "from":"debian:7" },
+      "xUbuntu_14.10":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:14.10" },
+      "xUbuntu_14.04":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:14.04" },
+      "xUbuntu_13.10":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:13.10" },
+      "xUbuntu_13.04":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:13.04" },
+      "xUbuntu_12.10":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:12.10" },
+      "xUbuntu_12.04":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:12.04" },
+      "Debian_6.0":      { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"debian:6.0" },
+      "Debian_7.0":      { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"debian:7" },
 
-      "CentOS_7":        { "fmt":"YUM", "from":"""centos:centos7
+      "CentOS_7":        { "fmt":"YUM", "from":"centos:centos7", "pre":"""
 RUN yum install -y --nogpgcheck wget
 RUN wget -nv http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm -O epel-7.rpm
 RUN rpm -ivh epel-7.rpm
 """ },
-      "CentOS_6":        { "fmt":"YUM", "from":"""centos:centos6
+      "CentOS_6":        { "fmt":"YUM", "from":"centos:centos6", "pre":"""
 RUN yum install -y --nogpgcheck wget
 RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm -O epel-6.rpm
 RUN rpm -ivh epel-6.rpm
 """ },
-      "CentOS_6@SCL-PHP54":  { "fmt":"YUM", "pre": ["wget"], "from":"""centos:centos6
+      "CentOS_6@SCL-PHP54":  { "fmt":"YUM", "inst": ["wget"], "from":"centos:centos6", "pre":"""
 RUN yum install -y --nogpgcheck centos-release-SCL
 RUN yum install -y --nogpgcheck php54
 """ },
 
-      "CentOS_6_PHP54":  { "fmt":"YUM", "from":"""centos:centos6
+      "CentOS_6_PHP54":  { "fmt":"YUM", "from":"centos:centos6", "pre":"""
 RUN yum install -y --nogpgcheck wget yum-utils
 RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm -O epel-6.rpm
 RUN wget -nv http://rpms.famillecollet.com/enterprise/remi-release-6.rpm -O remi-6.rpm
@@ -120,7 +122,7 @@ RUN yum-config-manager --enable remi
 RUN yum install -y --nogpgcheck php
 """ },
 
-      "CentOS_6_PHP55":  { "fmt":"YUM", "from":"""centos:centos6
+      "CentOS_6_PHP55":  { "fmt":"YUM", "from":"centos:centos6", "pre":"""
 RUN yum install -y --nogpgcheck wget yum-utils
 RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm -O epel-6.rpm
 RUN wget -nv http://rpms.famillecollet.com/enterprise/remi-release-6.rpm -O remi-6.rpm
@@ -129,7 +131,7 @@ RUN yum-config-manager --enable remi-php55
 RUN yum install -y --nogpgcheck php
 """ },
 
-      "CentOS_6_PHP56":  { "fmt":"YUM", "from":"""centos:centos6
+      "CentOS_6_PHP56":  { "fmt":"YUM", "from":"centos:centos6", "pre":"""
 RUN yum install -y --nogpgcheck wget yum-utils
 RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm -O epel-6.rpm
 RUN wget -nv http://rpms.famillecollet.com/enterprise/remi-release-6.rpm -O remi-6.rpm
@@ -138,11 +140,11 @@ RUN yum-config-manager --enable remi-php56
 RUN yum install -y --nogpgcheck php
 """ },
 
-      "CentOS_CentOS-6": { "fmt":"YUM", "pre": ["wget"], "from":"centos:centos6" },
-      "Fedora_20":       { "fmt":"YUM", "pre": ["wget"], "from":"fedora:20" },
-      "Fedora_21":       { "fmt":"YUM", "pre": ["wget"], "from":"fedora:21" },
-      "openSUSE_13.2":   { "fmt":"ZYPP","pre": ["ca-certificates"], "from":"opensuse:13.2" },
-      "openSUSE_13.1":   { "fmt":"ZYPP","pre": ["ca-certificates"], "from":"opensuse:13.1" }
+      "CentOS_CentOS-6": { "fmt":"YUM", "inst": ["wget"], "from":"centos:centos6" },
+      "Fedora_20":       { "fmt":"YUM", "inst": ["wget"], "from":"fedora:20" },
+      "Fedora_21":       { "fmt":"YUM", "inst": ["wget"], "from":"fedora:21", "pre":"RUN localedef -i en_US -f UTF-8 en_US.UTF-8" },
+      "openSUSE_13.2":   { "fmt":"ZYPP","inst": ["ca-certificates"], "from":"opensuse:13.2" },
+      "openSUSE_13.1":   { "fmt":"ZYPP","inst": ["ca-certificates"], "from":"opensuse:13.1" }
     }
 }
 
@@ -515,7 +517,7 @@ ap.add_argument("-n", "--image-name", help="Specify the name for the docker imag
 ap.add_argument("-I", "--print-image-name-only", default=False, action="store_true", help="construct a name and exit after printing")
 ap.add_argument("-P", "--print-config-only", default=False, action="store_true", help="show the current project and target configuration and exit after printing. An optional target argument (see also -T) can be used to pretty print only one target configuration.")
 ap.add_argument("-T", "--list-targets-only", default=False, action="store_true", help="show a list of configured build target names and exit after printing")
-ap.add_argument("-e", "--extra-packages", help="Comma separated list of packages to pre-install. Default: only per 'pre' in the config file")
+ap.add_argument("-e", "--extra-packages", help="Comma separated list of packages to pre-install. Default: only per 'inst' in the config file")
 ap.add_argument("-q", "--quiet", default=False, action="store_true", help="Print less information while working. Default: babble a lot")
 ap.add_argument("-k", "--keep-going", default=False, action="store_true", help="Continue after errors. Default: abort on error")
 ap.add_argument("-N", "--no-operation", default=False, action="store_true", help="Print docker commands and instructions to create an image only. Default: create an image")
@@ -596,7 +598,7 @@ if args.list_targets_only:
   print("---------------------------------------")
   for t in obs_config['target']:
     xx = docker_from_obs(t)['from']
-    xx = re.sub("\n.*", "", xx)
+    xx = re.sub("\n.*", "", xx)		# should be empty anyway, since we use 'pre' now.
     print("%-20s  %s" % (t, xx))
   sys.exit(0)
 
@@ -713,8 +715,12 @@ if args.dockerfile:
 else:
   print("#+ " + " ".join(docker_run))
 
-## multi line docker commands are explicitly allowed in 'from'!
+## multi line docker commands are no longer supported in 'from', use 'pre'!
 dockerfile="FROM "+docker['from']+"\n"
+if 'pre' in docker:
+  dockerfile+=docker['pre']
+  if not re.search(r'\n$', dockerfile):
+    dockerfile+="\n"
 dockerfile+="ENV TERM ansi\n"
 dockerfile+="ENV HOME /root\n"
 
@@ -733,8 +739,8 @@ if docker["fmt"] == "APT":
   if args.nogpgcheck: print("Option nogpgcheck not implemented for APT")
   dockerfile+="ENV DEBIAN_FRONTEND noninteractive\n"
   dockerfile+="RUN apt-get -q -y update"+d_endl
-  if "pre" in docker and len(docker["pre"]):
-    dockerfile+="RUN apt-get -q -y install "+" ".join(docker["pre"])+d_endl
+  if "inst" in docker and len(docker["inst"]):
+    dockerfile+="RUN apt-get -q -y install "+" ".join(docker["inst"])+d_endl
   dockerfile+="RUN "+wget_cmd+obs_target+"/Release.key -O Release.key"+d_endl
   dockerfile+="RUN apt-key add - < Release.key"+d_endl
   dockerfile+="RUN echo 'deb "+download["url_cred"]+"/"+obs_target+"/ /' >> /etc/apt/sources.list.d/"+args.package+".list"+d_endl
@@ -749,8 +755,8 @@ elif docker["fmt"] == "YUM":
   yum_install = 'yum install -y'
   if args.nogpgcheck: yum_install += ' --nogpgcheck'
   dockerfile+="RUN yum clean expire-cache"+d_endl
-  if "pre" in docker and len(docker["pre"]):
-    dockerfile+="RUN "+yum_install+" "+" ".join(docker["pre"])+d_endl
+  if "inst" in docker and len(docker["inst"]):
+    dockerfile+="RUN "+yum_install+" "+" ".join(docker["inst"])+d_endl
   dockerfile+="RUN "+wget_cmd+obs_target+'/'+args.project+".repo -O /etc/yum.repos.d/"+args.project+".repo"+d_endl
   if extra_packages:	dockerfile+="RUN "+yum_install+" "+" ".join(extra_packages)+d_endl
   if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
@@ -761,8 +767,8 @@ elif docker["fmt"] == "YUM":
 elif docker["fmt"] == "ZYPP":
   if args.nogpgcheck: print("Option nogpgcheck not implemented for ZYPP")
   dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys refresh"+d_endl
-  if "pre" in docker and len(docker["pre"]):
-    dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+" ".join(docker["pre"])+d_endl
+  if "inst" in docker and len(docker["inst"]):
+    dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+" ".join(docker["inst"])+d_endl
   dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys addrepo "+download["url_cred"]+obs_target+"/"+args.project+".repo"+d_endl
   if extra_packages:	dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+" ".join(extra_packages)+d_endl
   if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
