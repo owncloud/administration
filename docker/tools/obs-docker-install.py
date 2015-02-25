@@ -48,6 +48,7 @@
 # V2.3  -- 2015-02-21, jw  docker group is not needed when running as root.
 # V2.4  -- 2015-02-24, jw  renamed 'pre' to 'inst', as this installs packages.
 #                          Defined 'pre' as prefix docker file snippet.
+#                          - added a 12.3 base image. (officially EOL)
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
@@ -145,6 +146,7 @@ RUN yum install -y --nogpgcheck php
       "Fedora_21":       { "fmt":"YUM", "inst": ["wget"], "from":"fedora:21", "pre":"RUN localedef -i en_US -f UTF-8 en_US.UTF-8" },
       "openSUSE_13.2":   { "fmt":"ZYPP","inst": ["ca-certificates"], "from":"opensuse:13.2" },
       "openSUSE_13.1":   { "fmt":"ZYPP","inst": ["ca-certificates"], "from":"opensuse:13.1" }
+      "openSUSE_12.3":   { "fmt":"ZYPP","inst": ["ca-certificates"], "from":"flavio/opensuse-12-3" }
     }
 }
 
