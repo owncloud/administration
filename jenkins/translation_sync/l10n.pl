@@ -192,6 +192,25 @@ elsif( $task eq 'write' ){
 		chdir( $whereami );
 	}
 }
+elsif( $task eq 'clean' ){
+	print "Mode: clean\n";
+	foreach my $file ( @files ){
+		next if -d $file;
+		next if $file eq ".gitkeep";
+		next if $file eq "no-php";
+
+		if ((substr $file, -5) eq ".json" && ! -e "$whereami/" . (substr $file, 0, -5) . "/$app.po") {
+			print "Language " . (substr $file, 0, -5) . " not above 75\%, deleting $file\n";
+			unlink "$file";
+		} elsif ((substr $file, -3) eq ".js" && ! -e "$whereami/" . (substr $file, 0, -3) . "/$app.po") {
+			print "Language " . (substr $file, 0, -3) . " not above 75\%, deleting $file\n";
+			unlink "$file";
+		} elsif ((substr $file, -4) eq ".php" && ! -e "$whereami/" . (substr $file, 0, -4) . "/$app.po") {
+			print "Language " . (substr $file, 0, -4) . " not above 75\%, deleting $file\n";
+			unlink "$file";
+		}
+	}
+}
 else{
 	print "unknown task!\n";
 }

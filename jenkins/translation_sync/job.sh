@@ -52,7 +52,10 @@ cd l10n/
 perl l10n.pl $APPNAME read 
 tx -d push -s 
 tx -d pull -a --minimum-perc=75
+# update translations that have 75% or more translated
 perl l10n.pl $APPNAME write 
+# remove the remaining translatinos
+perl l10n.pl $APPNAME clean
 find . -name \*.po -type f -delete
 find . -name \*.pot -type f -delete
 cd ..
