@@ -23,8 +23,13 @@ do
 	# download current version of config.sample.php
 	curl -sS -o /tmp/config.sample.php https://raw.githubusercontent.com/owncloud/core/$branch/config/config.sample.php
 
-	# use that to generate the documentation
-	php convert.php --input-file=/tmp/config.sample.php --output-file=/tmp/owncloud-documentation/admin_manual/configuration/config_sample_php_parameters.rst
+	if [[ $branch == 'stable8' ]]; then
+		# use that to generate the documentation
+		php convert.php --input-file=/tmp/config.sample.php --output-file=/tmp/owncloud-documentation/admin_manual/configuration_server/config_sample_php_parameters.rst
+	else
+		# use that to generate the documentation
+		php convert.php --input-file=/tmp/config.sample.php --output-file=/tmp/owncloud-documentation/admin_manual/configuration/config_sample_php_parameters.rst
+	fi
 
 	cd /tmp/owncloud-documentation
 	# invokes an output if something has changed
