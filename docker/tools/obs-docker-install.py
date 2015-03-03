@@ -146,7 +146,7 @@ RUN yum install -y --nogpgcheck php
       "Fedora_20":       { "fmt":"YUM", "inst": ["wget"], "from":"fedora:20" },
       "Fedora_21":       { "fmt":"YUM", "inst": ["wget"], "from":"fedora:21", "pre":"RUN localedef -i en_US -f UTF-8 en_US.UTF-8" },
       "openSUSE_13.2":   { "fmt":"ZYPP","inst": ["ca-certificates"], "from":"opensuse:13.2" },
-      "openSUSE_13.1":   { "fmt":"ZYPP","inst": ["ca-certificates"], "from":"opensuse:13.1" }
+      "openSUSE_13.1":   { "fmt":"ZYPP","inst": ["ca-certificates"], "from":"opensuse:13.1" },
       "openSUSE_12.3":   { "fmt":"ZYPP","inst": ["ca-certificates"], "from":"flavio/opensuse-12-3" }
     }
 }
