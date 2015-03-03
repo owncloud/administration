@@ -49,12 +49,13 @@
 # V2.4  -- 2015-02-24, jw  renamed 'pre' to 'inst', as this installs packages.
 #                          Defined 'pre' as prefix docker file snippet.
 #                          - added a 12.3 base image. (officially EOL)
+# V2.5  -- 2015-03-01, jw  rpm --import ... repodata/repomd.xml.key added for YUM.
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="2.4"
+__VERSION__="2.5"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import json, sys, os, re, time, tempfile
@@ -759,6 +760,7 @@ elif docker["fmt"] == "YUM":
   dockerfile+="RUN yum clean expire-cache"+d_endl
   if "inst" in docker and len(docker["inst"]):
     dockerfile+="RUN "+yum_install+" "+" ".join(docker["inst"])+d_endl
+  dockerfile+="RUN rpm --import "+download["url_cred"]+"/"+obs_target+"/repodata/repomd.xml.key"+d_endl
   dockerfile+="RUN "+wget_cmd+obs_target+'/'+args.project+".repo -O /etc/yum.repos.d/"+args.project+".repo"+d_endl
   if extra_packages:	dockerfile+="RUN "+yum_install+" "+" ".join(extra_packages)+d_endl
   if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
