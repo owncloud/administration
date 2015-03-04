@@ -1,6 +1,7 @@
 #!/bin/bash
+#
+# requires: docker.io
 
-set -x
 
 usage()
 {
@@ -68,6 +69,10 @@ then
 	zip "$outputPath/$imageName.tar.zip" "$outputPath/$imageName.tar"
 	rm "$outputPath/$imageName.tar"
 else 
+	echo ""
+	echo "Choose one of these below if ID is not existing: "
+	echo ""
+	docker images
 	rm "$outputPath/$imageName.tar"
 	exit 1
 fi
