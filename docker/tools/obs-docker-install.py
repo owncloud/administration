@@ -50,12 +50,13 @@
 #                          Defined 'pre' as prefix docker file snippet.
 #                          - added a 12.3 base image. (officially EOL)
 # V2.5  -- 2015-03-01, jw  rpm --import ... repodata/repomd.xml.key added for YUM.
+# V2.6  -- 2015-03-04, jw  also accept Ubuntu* without leading x.
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="2.5"
+__VERSION__="2.6"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import json, sys, os, re, time, tempfile
@@ -68,7 +69,7 @@ except ImportError:
   import urllib2			# python2
 
 
-target="xUbuntu_14.04"		# default value
+target="Ubuntu_14.04"		# default value
 
 default_obs_config = {
   "_comment": "Written by "+sys.argv[0]+" -- edit also the builtin template",
@@ -91,12 +92,21 @@ default_obs_config = {
     },
   "target":
     {
+
       "xUbuntu_14.10":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:14.10" },
       "xUbuntu_14.04":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:14.04" },
       "xUbuntu_13.10":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:13.10" },
       "xUbuntu_13.04":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:13.04" },
       "xUbuntu_12.10":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:12.10" },
       "xUbuntu_12.04":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:12.04" },
+
+      "Ubuntu_14.10":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:14.10" },
+      "Ubuntu_14.04":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:14.04" },
+      "Ubuntu_13.10":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:13.10" },
+      "Ubuntu_13.04":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:13.04" },
+      "Ubuntu_12.10":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:12.10" },
+      "Ubuntu_12.04":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:12.04" },
+
       "Debian_6.0":      { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"debian:6.0" },
       "Debian_7.0":      { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"debian:7" },
 
