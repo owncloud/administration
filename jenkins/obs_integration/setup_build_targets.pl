@@ -39,12 +39,14 @@ my $configured_repos = list_obs_repos($obs_proj);
 my $repo_aliases = mk_repo_aliases(keys %{$configured_repos->{32}},
 				   keys %{$configured_repos->{64}});
 
-# print repo_alias($repo_aliases, 'xubuntu-14.04');
+# print Dumper expand_alias_wild($repo_aliases, ['xubuntu-14.04');
 
 unless ($ARGV[1])
   {
      print Dumper \@existing_pkg;
      print Dumper $configured_repos;
+     print Dumper $repo_aliases;
+     print Dumper expand_alias_wild($repo_aliases, ['centos*', 'xubuntu-14.04']);
      exit 0;
   }
 
@@ -106,26 +108,53 @@ sub mk_repo_aliases
     {
       $a{lc $n} = $n;
 
-      # CAUTION: keep in sync with repo_alias
+      # CAUTION: keep in sync with expand_alias_wild
       my $n_ = $n;
       $n_ =~ s{[-:]}{_}g;
 
       $a{lc $n_} = $n;
     }
+
+  # hack to allow obsoleting the x in front of Ubuntu some day.
+  for my $n (keys %a)
+    {
+      $a{'x'.$n} = $a{$n} if $n =~ m{^ubuntu} and not exists $a{'x'.$n};
+    }
   return \%a;
 }
 
-sub repo_alias
+sub expand_alias_wild
 {
-  my ($alias_mapping, $name) = @_;
+  my ($alias_mapping, $names) = @_;
+  my %exp;
+  for my $name (@$names)
+    {
+      my $there = 0;
+      # CAUTION: keep in sync with mk_repo_aliases
+      $name = lc $name;
+      $name =~ s{[-:]}{_}g;
 
-  # CAUTION: keep in sync with mk_repo_aliases
-  $name = lc $name;
-  $name =~ s{[-:]}{_}g;
-  return $alias_mapping->{$name} if exists $alias_mapping->{$name};
-
-  # FIXME: deprecate this logic when the xUbuntu* names are extinct.
-  $name =~ s{^x}{};	# ubuntu names are sometimes with or without x.
-  return $alias_mapping->{$name} if exists $alias_mapping->{$name};
-  return $alias_mapping->{'x'.$name} || undef;
+      if (exists $alias_mapping->{$name})
+        {
+          $exp{$alias_mapping->{$name}} = 1;
+          $there = 1;
+          next;
+        }
+      $name =~ s{\?}{.}g; $name =~ s{\*}{.*}g;	# glob 2 re
+      for $k (keys %$alias_mapping)
+        {
+          if ($k =~ m{^$name$})
+            {
+              $exp{$alias_mapping->{$k}} = 1;
+              $there = 1;
+            }
+        }
+      unless ($there)
+        {
+          my %have = map { $_ => 1 } values %$alias_mapping;
+          my $have = join ' ', sort keys %have;
+          die "Error: Build target '$name' not found. Please try one of these:\n $have\n";
+        }
+    }
+  return [sort keys %exp];
 }
