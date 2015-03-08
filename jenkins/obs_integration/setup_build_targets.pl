@@ -6,21 +6,20 @@
 # Used by ownbrander, motivated by ownbrander#225
 #
 # v0.1, 2015-03-08, jw, initial draught.
-# 
+# v0.2, 2015-03-08, jw, option parser, done, obs meta pkg parser done, meta pkg setter todo.
 
 use Data::Dumper;
 use XML::Simple;
 
-my $version = '0.1';
+my $version = '0.2';
 my $verbose = 1;
 my $obs_api = $ENV{'OBS_API'} || 'https://s2.owncloud.com';
 my $osc_cmd = $ENV{'OSC_CMD'} || 'osc';
 
 my $obs_proj = $ARGV[0];
 die qq{
-Usage: $0 OBS_PROJ [set32 'list,of,target,names']
-       $0 OBS_PROJ [set64 'list,of,target,names']
-       $0 OBS_PROJ [set 'list,of,target,names']
+Usage: $0 OBS_PROJ [set32='list,of,target,names' set64='list,of,target,names']
+       $0 OBS_PROJ [set='list,of,target,names']
 
 When no command is given, the current setup is listed.
 
@@ -39,17 +38,86 @@ my $configured_repos = list_obs_repos($obs_proj);
 my $repo_aliases = mk_repo_aliases(keys %{$configured_repos->{32}},
 				   keys %{$configured_repos->{64}});
 
-# print Dumper expand_alias_wild($repo_aliases, ['xubuntu-14.04');
+# print Dumper expand_alias_wild($repo_aliases, ['centos*', 'xubuntu-14.04']);
 
 unless ($ARGV[1])
   {
-     print Dumper \@existing_pkg;
-     print Dumper $configured_repos;
-     print Dumper $repo_aliases;
-     print Dumper expand_alias_wild($repo_aliases, ['centos*', 'xubuntu-14.04']);
-     exit 0;
+    for my $pkg (@existing_pkg)
+      {
+        my $targets = list_enabled_targets($obs_proj, $pkg);
+        if ($targets->{'ena'})
+          {
+	    printf "%20s: enabled=%s\n", $pkg, join(',', @{$targets->{ena}});
+          }
+        elsif ($targets->{'dis'})
+          {
+	    printf "%20s: disabled=%s\n", $pkg, join(',', @{$targets->{dis}});
+          }
+	else
+	  {
+	    printf "%20s: default\n", $pkg;
+	  }
+      }
+    exit 0;
   }
 
+my $set32;
+my $set64;
+
+while ($ARGV[1])
+  {
+    if ($ARGV[1] =~ m{^set64(=.*)?$})
+      {
+        shift @ARGV;
+	$set64=$1;
+	if (defined $set64)
+          {
+	    $set64 =~ s{^=}{};
+	  }
+	else
+	  {
+	    $set64 = $ARGV[1];
+	    shift @ARGV;
+	  }
+	$set64 = [ split(/[,\s]+/, $set64) ];
+      }
+    elsif ($ARGV[1] =~ m{^set32(=.*)?$})
+      {
+        shift @ARGV;
+	$set32=$1;
+	if (defined $set32)
+          {
+	    $set32 =~ s{^=}{};
+	  }
+	else
+	  {
+	    $set32 = $ARGV[1];
+	    shift @ARGV;
+	  }
+	$set32 = [ split(/[,\s]+/, $set32) ];
+      }
+    elsif ($ARGV[1] =~ m{^set(=.*)?$})
+      {
+        shift @ARGV;
+	$set32=$1;
+	if (defined $set32)
+          {
+	    $set32 =~ s{^=}{};
+	  }
+	else
+	  {
+	    $set32 = $ARGV[1];
+	    shift @ARGV;
+	  }
+	$set64 = $set32 = [ split(/[,\s]+/, $set32) ];
+      }
+    else
+      {
+        die "unknown command: $ARGV[1]\n";
+      }
+  }
+
+die Dumper [ $set32, $set64 ];
 
 exit(0);
 ######################################################################################
@@ -63,6 +131,30 @@ sub list_obs_pkg
   my @pkgs = <$ifd>;
   chomp @pkgs;
   return @pkgs;
+}
+
+sub list_enabled_targets
+{
+  my ($obs_proj, $pkg) = @_;
+  my $cmd = "$osc_cmd -A$obs_api meta pkg $obs_proj $pkg";
+  print "+ $cmd\n" if $verbose > 1;
+  open(my $ifd, "$cmd 2>/dev/null|") or die "list_enabled_targets: cannot read from '$cmd'";
+  my $xml = XML::Simple::XMLin($ifd, ForceArray => 1);
+  my $ena = $xml->{'build'}[0]{'enable'}  || [];
+  my $dis = $xml->{'build'}[0]{'disable'} || [];
+
+  my $l;
+
+  for my $r (@$ena)
+    {
+      push @{$l->{'ena'}}, $r->{'repository'} if $r->{'repository'};
+    }
+
+  for my $r (@$dis)
+    {
+      push @{$l->{'dis'}}, $r->{'repository'} if $r->{'repository'};
+    }
+  return $l;
 }
 
 sub list_obs_repos
