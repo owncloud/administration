@@ -5,13 +5,14 @@
 # setup_build_targets.pl controls which linux clients are built in obs.
 # Used by ownbrander, motivated by ownbrander#225
 #
-# v0.1, 2015-03-08, jw, initial draught.
+# v0.1, 2015-03-06, jw, initial draught.
 # v0.2, 2015-03-08, jw, option parser, done, obs meta pkg parser done, meta pkg setter todo.
+# v0.3, 2015-03-09, jw, meta pkg setter done. wipebinaries option added.
 
 use Data::Dumper;
 use XML::Simple;
 
-my $version = '0.2';
+my $version = '0.3';
 my $verbose = 1;
 my $obs_api = $ENV{'OBS_API'} || 'https://s2.owncloud.com';
 my $osc_cmd = $ENV{'OSC_CMD'} || 'osc';
@@ -21,14 +22,20 @@ die qq{
 Usage: $0 OBS_PROJ [set32='list,of,target,names' set64='list,of,target,names']
        $0 OBS_PROJ [set='list,of,target,names']
 
-When no command is given, the current setup is listed.
+CAUTION: This command affects all packages in the given project. 
+When no command is given, the current setup is listed (using target/arch 
+syntax per package).
 
-The command set32 defines the list of 32bit build targets, for packages in the named project.
-The command set64 defines the list of 32bit build targets, and the set command defines both.
+The command set32 enables a comma separated list of 32bit build targets.
+The command set64 enables a comma separated list of 64bit build targets, 
+and the set command enables one list for both.
 
-Missing targets are enabled, excessive targets are removed. 
-Targets listed with set* commands must be configured repositories in OBS_PROJ. Lower case 
-spelling is accepted. Characters _, :, - are considered equal.
+The project must have the needed targets pre-configured in its meta prj xml.
+Wildcards (shell globbing style) are supported. E.g. 'set=*' enables all 
+packages to build for all targets that are currently configured in the project.
+
+Targets listed with set* commands must be configured repositories in OBS_PROJ.
+Lower case spelling is accepted. Characters _, :, - are considered equal.
 
 } unless $obs_proj;
 
@@ -117,7 +124,26 @@ while ($ARGV[1])
       }
   }
 
-die Dumper [ $set32, $set64 ];
+$set32 = expand_alias_wild($repo_aliases, $set32);
+$set64 = expand_alias_wild($repo_aliases, $set64);
+# die Dumper [ $set32, $set64 ];
+print "set32: @$set32\n" if $verbose;
+print "set64: @$set64\n" if $verbose;
+
+for my $pkg (@existing_pkg)
+  {
+    print "$pkg ... ";
+    set_enabled($obs_proj, $pkg, $set32, $set64);
+    
+    unless ($ENV{NO_WIPEBINARIES})
+      {
+        my $cmd = "$osc_cmd -A$obs_api wipebinaries --all $obs_proj $pkg";
+        print STDERR "+ $cmd\n" if $verbose > 2;
+        print "wipe ... ";
+        system $cmd;
+      }
+  }
+
 
 exit(0);
 ######################################################################################
@@ -126,18 +152,54 @@ sub list_obs_pkg
 {
   my ($prj) = @_;
   my $cmd = "$osc_cmd -A$obs_api ls $prj";
-  print "+ $cmd\n" if $verbose;
+  print STDERR "+ $cmd\n" if $verbose > 1;
   open(my $ifd, "$cmd 2>/dev/null|") or die "list_obs_pkg: cannot read from '$cmd'";
   my @pkgs = <$ifd>;
   chomp @pkgs;
   return @pkgs;
 }
 
+sub set_enabled
+{
+  my ($obs_proj, $pkg, $set32, $set64) = @_;
+  my $cmd = "$osc_cmd -A$obs_api meta pkg $obs_proj $pkg";
+  print STDERR "+ $cmd\n" if $verbose > 2;
+  # read the meta pkg xml
+  open(my $ifd, "$cmd 2>/dev/null|") or die "set_enabled: cannot read from '$cmd'";
+  my $meta_pkg_xml = join('', <$ifd>);
+  close($ifd);
+
+  # remove build container from meta pkg
+  $meta_pkg_xml =~ s{[ \t]*<build/>([ \t]*\n)?}{};
+  $meta_pkg_xml =~ s{[ \t]*<build\b.*</build>([ \t]*\n)?}{}s;
+
+  # create a new build xml structure like this: All disabled, except for explicit enable
+  #   <build>
+  #     <disable/>
+  #     <enable arch="i586" repository="Fedora_20"/>
+  #     <enable arch="x86_64" repository="ScientificLinux_6"/>
+  #   </build>
+  my $build = "  <build>\n    <disable/>\n";
+  for my $repo (@$set32) { $build .= qq{    <enable arch="i586"   repository="$repo"/>\n}; }
+  for my $repo (@$set64) { $build .= qq{    <enable arch="x86_64" repository="$repo"/>\n}; }
+  $build .= "  </build>\n";
+
+  # merge the new build structure into the meta pkg
+  $meta_pkg_xml =~ s{(</package>)}{$build$1};
+  
+  # write back the new build structure
+  $cmd = "$osc_cmd -A$obs_api meta pkg -F - $obs_proj $pkg";
+  print STDERR "+ $cmd\n" if $verbose > 2;
+  open($ifd, "|$cmd") or die "set_enabled: cannot write to '$cmd'";
+  print $ifd $meta_pkg_xml;
+  close($ifd) or die "set_enabled: could not write to '$cmd'";
+}
+
 sub list_enabled_targets
 {
   my ($obs_proj, $pkg) = @_;
   my $cmd = "$osc_cmd -A$obs_api meta pkg $obs_proj $pkg";
-  print "+ $cmd\n" if $verbose > 1;
+  print STDERR "+ $cmd\n" if $verbose > 2;
   open(my $ifd, "$cmd 2>/dev/null|") or die "list_enabled_targets: cannot read from '$cmd'";
   my $xml = XML::Simple::XMLin($ifd, ForceArray => 1);
   my $ena = $xml->{'build'}[0]{'enable'}  || [];
@@ -147,12 +209,16 @@ sub list_enabled_targets
 
   for my $r (@$ena)
     {
-      push @{$l->{'ena'}}, $r->{'repository'} if $r->{'repository'};
+      my $t = $r->{'repository'};
+      $t .= "/$r->{'arch'}" if $t and $r->{'arch'};
+      push @{$l->{'ena'}}, $t if $t;
     }
 
   for my $r (@$dis)
     {
-      push @{$l->{'dis'}}, $r->{'repository'} if $r->{'repository'};
+      my $t = $r->{'repository'};
+      $t .= "/$r->{'arch'}" if $t and $r->{'arch'};
+      push @{$l->{'dis'}}, $t if $t;
     }
   return $l;
 }
@@ -173,7 +239,7 @@ sub list_obs_repos
 
   my ($prj) = @_;
   my $cmd = "$osc_cmd -A$obs_api meta prj $prj";
-  print "+ $cmd\n" if $verbose;
+  print STDERR "+ $cmd\n" if $verbose > 1;
   open(my $ifd, "$cmd 2>/dev/null|") or die "configured_repos: cannot read from '$cmd'";
   my $xml = XML::Simple::XMLin($ifd, ForceArray => 1);
   my $repo = {'32' => {}, '64' => {}};	# assert keys present, to keep mk_repo_aliases happy.
@@ -245,7 +311,7 @@ sub expand_alias_wild
         {
           my %have = map { $_ => 1 } values %$alias_mapping;
           my $have = join ' ', sort keys %have;
-          die "Error: Build target '$name' not found. Please try one of these:\n $have\n";
+          die "Error: Build target '$name' not found. Please try one of these:\n $have\n\nOr configure '$name' using 'osc -A$obs_api meta prj -e $obs_proj'\n";
         }
     }
   return [sort keys %exp];
