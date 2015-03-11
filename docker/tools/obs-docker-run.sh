@@ -7,7 +7,7 @@ ubuntuStart()
 service apache2 start 
 service mysql start
 sleep 1
-/usr/bin/mysqladmin -u root "" root
+/usr/bin/mysqladmin -u root password root
 }
 
 debianStart()
@@ -15,7 +15,7 @@ debianStart()
 service apache2 start 
 service mysql start
 sleep 1
-/usr/bin/mysqladmin -u root "" root
+/usr/bin/mysqladmin -u root password root
 }
 
 fedoraStart()
@@ -26,7 +26,7 @@ chown -R mysql:mysql /var/lib/mysql
 chown -R mysql:mysql /var/log/mariadb/
 service mariadb start 
 sleep 1
-/usr/bin/mysqladmin -u root "" root
+/usr/bin/mysqladmin -u root password root
 }
 
 opensuseStart()
@@ -36,7 +36,7 @@ mysql_install_db
 chown -R mysql:mysql /var/lib/mysql
 mysqld_safe &
 sleep 1
-/usr/bin/mysqladmin -u root "" root
+/usr/bin/mysqladmin -u root password root
 }
 
 centosStart6()
@@ -51,7 +51,7 @@ mysql_install_db
 chown -R mysql:mysql /var/lib/mysql
 service mariadb start
 sleep 1
-/usr/bin/mysqladmin -u root "" root
+/usr/bin/mysqladmin -u root password root
 }
 
 StartOwnCloudServer()
@@ -76,6 +76,9 @@ fi
 
 
 case "$distribution" in 
+"Ubuntu"*" 12.04"* )
+	ubuntuStart
+	;;
 "Ubuntu"*" 14.04"* )
 	ubuntuStart
 	;;
@@ -118,7 +121,7 @@ usage()
 	echo "		-p <port>	specifies port, default is 8888" >&2
 	echo "		-h		show this help message and exit" >&2
 	echo "" >&2
-	echo "	Supports these images: Ubuntu 14.10, Ubuntu 14.04" >&2
+	echo "	Supports these images: Ubuntu 12.04, Ubuntu 14.04, Ubuntu 14.10, Debian 7, Fedora 20, Fedora 21, openSUSE 13.1, openSUSE 13.2, CentOS 6, Centos 7" >&2
 	echo "" >&2
 	exit 1
 }
@@ -134,6 +137,7 @@ while getopts ":hei:p:" opt; do
       	;;
     e) 
 	StartOwnCloudServer
+	/bin/bash
 	exit 0
 	;;
     h)
@@ -166,7 +170,9 @@ if [ -z "$imageName" ]
 then usage
 fi
 
-echo "Port: $port"
+
+echo "Running Server will soon be at \"localhost:$port\""
+echo "Database user: \"root\", Database password: \"root\""
 docker run -p $port:80 -v $PWD:/docker -ti $imageName /bin/bash /docker/obs-docker-run.sh -e
 exit
 
