@@ -152,9 +152,10 @@ sub pull_VERSION_cmake
       $min = $1 if $line =~ m{MIRALL_VERSION_MINOR\s+(\d+)};
       $pat = $1 if $line =~ m{MIRALL_VERSION_PATCH\s+(\d+)};
       $so  = $1 if $line =~ m{MIRALL_SOVERSION\s+(\d+)};
+      $pr  = $1 if $line =~ m{MIRALL_VERSION_SUFFIX\s+\"(\w+)};
     }
   close $fd;
-  return "$maj.$min.$pat";
+  return ("$maj.$min.$pat", "$pr");
 }
 
 # pull a branch from git, place it into destdir, packaged as a tar ball.
@@ -173,9 +174,12 @@ sub fetch_client_from_branch
   # v1.7.0-alpha1
   # v1.6.2-themefix is a valid branch name.
   my ($version,$prerelease) = ($1,$2) if $branch =~ m{^v([\d\.]+)([abr-]\w+)?$}i;
-  $prerelease =~ s{^-}{} if defined $prerelease;
+  #a git tag does not necessarily qualify the prerelease name
+  #$prerelease =~ s{^-}{} if defined $prerelease;
 
-  my $v_git = pull_VERSION_cmake("$gitsubdir/VERSION.cmake");
+  my ($v_git, $pr_git) = pull_VERSION_cmake("$gitsubdir/VERSION.cmake");
+  $prerelease = $pr_git;
+
   if (defined $version)
     {
       if ($v_git ne $version)
