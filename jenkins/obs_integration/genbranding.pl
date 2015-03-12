@@ -340,8 +340,6 @@ sub getSubsts( $ )
     die("Please provide a syncclient/package.cfg file in the custom dir!\n") unless( $cfgFile );
 
     print "Reading substs from $cfgFile\n";
-    my %substs;
-    $substs{'oem_sub_dir'} = $oem_sub_dir;
 
     my $oemFile = $cfgFile;
     $oemFile =~ s/package\.cfg/OEM.cmake/;
@@ -349,7 +347,8 @@ sub getSubsts( $ )
     unless( -e $oemFile ) {
       $oemFile = "$subsDir/OWNCLOUD.cmake";
     }
-    %substs = readOEMcmake( $oemFile );
+    my %substs = readOEMcmake( $oemFile );
+    $substs{'oem_sub_dir'} = $oem_sub_dir;
 
     # read the file package.cfg from the tarball and also remove it there evtl.
     my %s2;
