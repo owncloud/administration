@@ -51,12 +51,13 @@
 #                          - added a 12.3 base image. (officially EOL)
 # V2.5  -- 2015-03-01, jw  rpm --import ... repodata/repomd.xml.key added for YUM.
 # V2.6  -- 2015-03-04, jw  also accept Ubuntu* without leading x.
+# V2.7  -- 2015-03-16, jw  added docker_on_aufs() to help workaround aufs-specific issues.
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="2.6"
+__VERSION__="2.7"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import json, sys, os, re, time, tempfile
@@ -364,6 +365,17 @@ def printable_url(url):
   return re.sub("://([^/]*?)@", "://********@", url);
 
 
+def docker_on_aufs():
+  """ return true if docker is running with the Storage Backend aufs.
+      AUFS has issues with setting filesystem capabilities, and thus
+      e.g. httpd cannot be installed on a Fedora system inside docker.
+  """
+  docker_info = run("docker info", redirect_stdout=True)
+  if (re.match('^Storage Driver:\s+aufs\s*$', docker_info, re.M)
+    return True
+  return False
+
+
 def obs_fetch_bin_version(api, download_item, prj, pkg, target):
   cfg = obs_download_cfg(obs_config['obs'][api], download_item, prj, urltest_target=None, verbose=False)
   lu = ListUrl()
@@ -413,6 +425,7 @@ def docker_from_obs(obs_target_name):
     r['obs'] = obs_target_name
     return r
   raise ValueError("no docker base image known for '"+obs_target_name+"' - choose other obs target or update config in "+args.configfile)
+
 
 def obs_download_cfg(config, download_item, prj_path, urltest_target=None, verbose=True):
   """
