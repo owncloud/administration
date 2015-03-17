@@ -402,8 +402,9 @@ def docker_on_aufs():
       AUFS has issues with setting filesystem capabilities, and thus
       e.g. httpd cannot be installed on a Fedora system inside docker.
   """
-  docker_info = run("docker", "info", redirect_stdout=True)
-  if (re.match('^Storage Driver:\s+aufs\s*$', docker_info, re.M)):
+  docker_info = run(["docker", "info"], redirect_stdout=True)
+  # Storage Driver: aufs
+  if (re.search('^Storage\s+Driver:\s*aufs\s*$', docker_info, re.M)):
     return True
   return False
 
@@ -814,6 +815,7 @@ if docker["fmt"] == "APT":
   dockerfile+="RUN zcat /usr/share/doc/"+args.package+"/changelog*.gz  | head -20"+d_endl
   dockerfile+="RUN echo 'apt-get install "+args.package+"' >> ~/.bash_history"+d_endl
 
+
 elif docker["fmt"] == "YUM":
   yum_install = 'yum install -y'
   if args.nogpgcheck: yum_install += ' --nogpgcheck'
@@ -825,15 +827,6 @@ elif docker["fmt"] == "YUM":
     dockerfile+=docker['aufs']
     if not re.search(r'\n$', dockerfile): dockerfile+="\n"
   
-  dockerfile+="RUN "+wget_cmd+obs_target+"/Release.key -O Release.key"+d_endl
-  dockerfile+="RUN apt-key add - < Release.key"+d_endl
-  dockerfile+="RUN echo 'deb "+download["url_cred"]+"/"+obs_target+"/ /' >> /etc/apt/sources.list.d/"+args.package+".list"+d_endl
-  dockerfile+="RUN apt-get -q -y update"+d_endl
-  if extra_packages: 	dockerfile+="RUN apt-get -q -y install "+' '.join(extra_packages)+d_endl
-  if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
-  dockerfile+="RUN date="+now+" apt-get -q -y update && apt-get -q -y install "+args.package+d_endl
-  dockerfile+="RUN zcat /usr/share/doc/"+args.package+"/changelog*.gz  | head -20"+d_endl
-  dockerfile+="RUN echo 'apt-get install "+args.package+"' >> ~/.bash_history"+d_endl
   dockerfile+="RUN rpm --import "+download["url_cred"]+"/"+obs_target+"/repodata/repomd.xml.key"+d_endl
   dockerfile+="RUN "+wget_cmd+obs_target+'/'+args.project+".repo -O /etc/yum.repos.d/"+args.project+".repo"+d_endl
   if extra_packages:	dockerfile+="RUN "+yum_install+" "+" ".join(extra_packages)+d_endl
@@ -852,15 +845,6 @@ elif docker["fmt"] == "ZYPP":
     dockerfile+=docker['aufs']
     if not re.search(r'\n$', dockerfile): dockerfile+="\n"
   
-  dockerfile+="RUN "+wget_cmd+obs_target+"/Release.key -O Release.key"+d_endl
-  dockerfile+="RUN apt-key add - < Release.key"+d_endl
-  dockerfile+="RUN echo 'deb "+download["url_cred"]+"/"+obs_target+"/ /' >> /etc/apt/sources.list.d/"+args.package+".list"+d_endl
-  dockerfile+="RUN apt-get -q -y update"+d_endl
-  if extra_packages: 	dockerfile+="RUN apt-get -q -y install "+' '.join(extra_packages)+d_endl
-  if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
-  dockerfile+="RUN date="+now+" apt-get -q -y update && apt-get -q -y install "+args.package+d_endl
-  dockerfile+="RUN zcat /usr/share/doc/"+args.package+"/changelog*.gz  | head -20"+d_endl
-  dockerfile+="RUN echo 'apt-get install "+args.package+"' >> ~/.bash_history"+d_endl
   dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys addrepo "+download["url_cred"]+obs_target+"/"+args.project+".repo"+d_endl
   if extra_packages:	dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+" ".join(extra_packages)+d_endl
   if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
