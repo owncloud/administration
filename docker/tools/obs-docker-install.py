@@ -117,7 +117,7 @@ RUN wget -nv http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.no
 RUN rpm -ivh epel-7.rpm
 """, "aufs":"""
 RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_7/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
-RUN yum install -y -nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
+RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
 """},
       "CentOS_6":        { "fmt":"YUM", "from":"centos:centos6", "pre":"""
 RUN yum install -y --nogpgcheck wget
@@ -125,14 +125,14 @@ RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noar
 RUN rpm -ivh epel-6.rpm
 """, "aufs":"""
 RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
-RUN yum install -y -nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
+RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
 """ },
       "CentOS_6@SCL-PHP54":  { "fmt":"YUM", "inst": ["wget"], "from":"centos:centos6", "pre":"""
 RUN yum install -y --nogpgcheck centos-release-SCL
 RUN yum install -y --nogpgcheck php54
 """, "aufs":"""
 RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
-RUN yum install -y -nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
+RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
 """ },
 
       "CentOS_6_PHP54":  { "fmt":"YUM", "from":"centos:centos6", "pre":"""
@@ -144,7 +144,7 @@ RUN yum-config-manager --enable remi
 RUN yum install -y --nogpgcheck php
 """, "aufs":"""
 RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
-RUN yum install -y -nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
+RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
 """ },
 
       "CentOS_6_PHP55":  { "fmt":"YUM", "from":"centos:centos6", "pre":"""
@@ -157,7 +157,7 @@ RUN yum install -y --nogpgcheck php
 """, "aufs":"""
 RUN rpm --import http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/repodata/repomd.xml.key
 RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
-RUN yum install -y -nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
+RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
 """ },
 
       "CentOS_6_PHP56":  { "fmt":"YUM", "from":"centos:centos6", "pre":"""
@@ -170,23 +170,23 @@ RUN yum install -y --nogpgcheck php
 """, "aufs":"""
 RUN rpm --import http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/repodata/repomd.xml.key
 RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
-RUN yum install -y -nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
+RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
 """ },
 
       "CentOS_CentOS-6": { "fmt":"YUM", "inst": ["wget"], "from":"centos:centos6", "aufs":"""
 RUN rpm --import http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/repodata/repomd.xml.key
 RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
-RUN yum install -y -nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
+RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
 """ },
       "Fedora_20":       { "fmt":"YUM", "inst": ["wget"], "from":"fedora:20", "aufs":"""
 RUN rpm --import http://download.opensuse.org/repositories/isv:/ownCloud:/devel/Fedora_20/repodata/repomd.xml.key
 RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/Fedora_20/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
-RUN yum install -y -nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
+RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
 """ },
       "Fedora_21":       { "fmt":"YUM", "inst": ["wget"], "from":"fedora:21", "pre":"RUN localedef -i en_US -f UTF-8 en_US.UTF-8", "aufs":"""
 RUN rpm --import http://download.opensuse.org/repositories/isv:/ownCloud:/devel/Fedora_21/repodata/repomd.xml.key
 RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/Fedora_21/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
-RUN yum install -y -nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
+RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
 """ },
       "openSUSE_13.2":   { "fmt":"ZYPP","inst": ["ca-certificates"], "from":"opensuse:13.2" },
       "openSUSE_13.1":   { "fmt":"ZYPP","inst": ["ca-certificates"], "from":"opensuse:13.1" },
