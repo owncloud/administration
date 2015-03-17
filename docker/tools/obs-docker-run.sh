@@ -173,6 +173,7 @@ fi
 
 echo "Running Server will soon be at \"localhost:$port\""
 echo "Database user: \"root\", Database password: \"root\""
+#-d
 docker run -p $port:80 -v $PWD:/docker -ti $imageName /bin/bash /docker/obs-docker-run.sh -e
 exit
 
