@@ -37,6 +37,7 @@
 #       - support for trailing slash with -p proj_name/ added.
 #         Semantics see setup_all_oem_client.pl
 # 2015-01-22, jw, V1.7a accept also /syncclient/package.cfg instead of /mirall/package.cfg
+# 2015-03-18, jw, V1.8 better errror checking against malformed tar-files. Version number added to create message.
 
 use Getopt::Std;
 use Config::IniFiles;
@@ -49,7 +50,8 @@ use Cwd;
 use Template;
 use Data::Dumper;
 
-my $msg_def = "created by: $0 @ARGV";
+my $version = '1.8';
+my $msg_def = "created by: $0 (V$version) @ARGV";
 
 use strict;
 use vars qw($clienttar $themetar $templatedir $dir $opt_h $opt_o $opt_b $opt_c $opt_n $opt_f $opt_p $dest_prj $dest_prj_theme $opt_r);

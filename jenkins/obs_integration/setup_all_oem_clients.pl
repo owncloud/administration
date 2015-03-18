@@ -41,7 +41,8 @@
 # 2015-01-22, jw, accept /syncclient/package.cfg instead of /mirall/package.cfg (seen with testpilotclient)
 # 2015-02-03, jw, option -P got removed from genbranding. We prepare the client tar ball with the prerelease tag now.
 # 2015-02-15, jw, added make_dummy_package_cfg() using OEM.cmake -- it does not get any better.
-# 2015-03-18, jw, moved subroutines at the end.
+# 2015-03-18, jw, moved subroutines at the end. Allow both, client and branding to be provided as tar-files, instead
+#                 as git-branch and branding name in cusomer-themes. This feature is neeed for ownbrander.
 
 use Data::Dumper;
 use File::Copy;
