@@ -127,6 +127,7 @@ sub prepareTarball($$) {
     print "Extract client...\n";
     my $client = getFileName( $argv0 );
     my $theme  = getFileName( $argv1 );
+    die "ERROR: $clienttar must have a top level directory $client\n\n" unless -d $client;
 
     # client is owncloudclient-1.8.0pre1
     # theme is cernbox => cernbox-client-1.8.0pre1
@@ -139,11 +140,11 @@ sub prepareTarball($$) {
         $newname =~ s/^client/$theme/i; # note: no -client suffix. works with setup_all_oem_clients.pl
         $newname =~ s/^owncloud/$theme/i; # note that we add a - here.
     }
-
+    print "newname=$newname, theme=$theme, client=$client\n";
     if( $newname ne $client ) {
         move($client, $newname);
     }
-    chdir($newname);
+    chdir($newname) or die "cannot chdir $newname: $!\n";
 
     print "Extracting theme...\n";
 
@@ -158,7 +159,7 @@ sub prepareTarball($$) {
     warn "One tar error is expected above.\n" if $r1  or $r2;
     chdir("..");
 
-    print " success: $newname\n";
+    print " success: " . Cwd::abs_path($newname) . "\n";
     return $newname;
 }
 

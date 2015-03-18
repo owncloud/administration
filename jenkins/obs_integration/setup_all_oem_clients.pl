@@ -41,8 +41,10 @@
 # 2015-01-22, jw, accept /syncclient/package.cfg instead of /mirall/package.cfg (seen with testpilotclient)
 # 2015-02-03, jw, option -P got removed from genbranding. We prepare the client tar ball with the prerelease tag now.
 # 2015-02-15, jw, added make_dummy_package_cfg() using OEM.cmake -- it does not get any better.
+# 2015-03-18, jw, moved subroutines at the end.
 
 use Data::Dumper;
+use File::Copy;
 use File::Path;
 use File::Temp ();	# tempdir()
 use POSIX;		# strftime()
@@ -66,6 +68,10 @@ Usage: $0 v1.6.2 [home:jw:oem[/] [filterbranding,... [api [tmpl]]]]
 
 ... or similar.
 
+Special case example without accessing github:
+
+       $0 owncloudclient-1.8.0.tar.xz home:jw:oem rzg.tar.xz [api [tmpl]]
+
 The build service project name is normally constructed from second and third 
  parameter. I.e.  the brandname is appended to the specified 'parent project 
  name' to form the complete subproject name.
@@ -74,7 +80,12 @@ The build service project name is normally constructed from second and third
 If you specify the projectname with a trialing slash, it is taken as the 
  subproject name as is.  This is useful to have all brandings in the same 
  project, or if only one branding is intended.
- 
+
+If you specify a client tar-file as first and a branding tar-file as third parameter, 
+no github is accessed.  These tar files are used directly. 
+The branding tar-file must have a top level directory named like the branding.
+The client tar-file must have a top level directory exactly name as the tar-file 
+but without the tar.* extension.
 };
   }
 
@@ -131,6 +142,170 @@ else
   }
 my $tmp_t = "$tmp/customer_themes_git";
 
+print "source_tar=$source_tar\n";
+my $version = undef;
+my $prerelease = undef;
+($source_tar,$version,$prerelease) = fetch_client_from_branch($source_git, $source_tar, $tmp);
+$source_tar = Cwd::abs_path($source_tar);	# we'll chdir() around. Take care.
+print "source_tar=$source_tar\n";
+die "need a source_tar path name or version number matching /^v[\\d\\.]+/\n" unless defined $source_tar and -e $source_tar;
+
+print "prerelease=$prerelease\n" if defined $prerelease;
+print "\nwaiting 5 sec. Press CTRL-C now if this looks odd.\n";
+sleep 5;
+
+
+my @candidates = ();
+
+if (scalar(@client_filter) and -f $client_filter[0])
+  {
+    for my $f (@client_filter)
+      {
+        $f = Cwd::abs_path($f);		# we'll chdir() around. Take care.
+        push @candidates, $f;
+      }
+    %client_filter = map { $_ => 1 } @client_filter;	# refresh the hash with full path names.
+  }
+else
+  {
+    # checkout customer_themes_github unless we have a tar file name passed as third parameter (or a list of file names)
+    run("git clone --depth 1 $customer_themes_git $tmp_t") 
+      unless $skipahead > 3;
+
+    opendir(DIR, $tmp_t) or die("cannot opendir my own $tmp: $!");
+    my @d = grep { ! /^\./ } readdir(DIR);
+    closedir(DIR);
+
+    for my $dir (sort @d)
+      {
+	my $linuxdir = 'syncclient';
+	$linuxdir = 'mirall' unless -d "$tmp_t/$dir/$linuxdir";
+	next unless -d "$tmp_t/$dir/$linuxdir";
+	next if @client_filter and not $client_filter{$dir};
+	#  - generate the branding tar ball
+	# CAUTION: keep in sync with jenkins jobs customer_themes
+	# https://rotor.owncloud.com/view/mirall/job/customer-themes/configure
+
+	if ( @client_filter and -f "$tmp_t/$dir/$linuxdir/OEM.cmake" and not -f "$tmp_t/$dir/$linuxdir/package.cfg")
+	  {
+	    # we asked for this via a filter, the OEM.cmake is there, but no package.cfg
+	    make_dummy_package_cfg("$tmp_t/$dir/$linuxdir");
+	  }
+
+	chdir($tmp_t);
+	run("tar cjf ../$dir.tar.bz2 ./$dir")
+	  unless $skipahead > 4;
+
+	push @candidates, $dir if -f "$tmp_t/$dir/$linuxdir/package.cfg";
+      }
+  }
+
+print Dumper \@candidates;
+
+## make sure the top project is there in obs
+obs_prj_from_template($osc_cmd, $template_prj, $container_project, "OwnCloud Desktop Client OEM Container project");
+chdir($scriptdir) if defined $scriptdir;
+
+for my $branding (@candidates)
+  {
+    # branding is either a tar file name or the brandname.
+    if (@client_filter)
+      {
+        unless ($client_filter{$branding})
+	  {
+	    print "Branding $branding skipped: not in client_filter\n";
+	    next;
+	  }
+	delete $client_filter{$branding};
+      }
+
+    my $branding_tar = undef;
+    ($branding_tar,$branding) = ($branding,$2) if $branding =~ m{^(.*/)?(.*)(\.tar\..*?)$};
+    # die Dumper [$branding_tar, $branding];
+    my $project = "$container_project:$branding";
+    my $container_project_colon = "$container_project:";
+    if ($container_project =~ m{/$})
+      {
+        $project = $container_project;
+	$project =~ s{/$}{};
+        $container_project_colon = $container_project;
+      }
+
+    ## generate the individual container projects
+    obs_prj_from_template($osc_cmd, $template_prj, $project, "OwnCloud Desktop Client project $branding");
+
+    ## create an empty package, so that genbranding is happy.
+    obs_pkg_from_template($osc_cmd, $template_prj, $template_pkg, $project, "$branding-client", "$branding Desktop Client");
+
+    $branding_tar = "$tmp/$branding.tar.bz2" unless defined $branding_tar;	# when branding comes from git checkout.
+      
+    # checkout branding-client, update, checkin.
+    run("rm -rf '$project'");
+    run("$osc_cmd checkout '$project' '$branding-client'");
+    # we run in |cat, so that git diff not open less with the (useless) changes 
+    run("env PAGER=cat OBS_INTEGRATION_MSG='$create_msg' $genbranding '$source_tar' '$branding_tar'");	
+    # FIXME: abort, if this fails. Pipe cat prevents error diagnostics here. Maybe PAGER=cat helps?
+
+    run("rm -rf '$project'");
+
+    ## fill in all the support packages.
+    ## CAUTION: trailing colon is important when catenating. 
+    ## We use trailing slash here again to avoid catenating.
+    run("./setup_oem_client.pl '$branding' '$container_project_colon' '$obs_api' '$template_prj'");
+
+    ## babble out the diffs. Just for the logfile.
+    ## This helps catching outdated *.in files in templates/client/* -- 
+    ## genbranding uses them. Mabye it should use files from the template package as template?
+    for my $f ('%s-client.spec', '%s-client.dsc', 'debian.control', '%s-client.desktop')
+      {
+        my $template_file = sprintf "$f", 'owncloud';
+        my $branding_file = sprintf "$f", $branding;
+	run("$osc_cmd cat $template_prj $template_pkg $template_file > $tmp/$template_file || true");
+	run("$osc_cmd cat '$project' '$branding-client' '$branding_file'> $tmp/$branding_file || true");
+	run("diff -ub '$tmp/$template_file' '$tmp/$branding_file' || true");
+	unlink("$tmp/$template_file");
+	unlink("$tmp/$branding_file");
+      }
+  }
+
+if (@client_filter and scalar(keys %client_filter))
+  {
+    print "ERROR: branding not found: unused filter terms: ", Dumper \%client_filter;
+    print "\tAvailable candidates: @candidates\n";
+    print "Check your spelling!\n";
+    exit(1);
+  }
+
+if ($skipahead)
+  {
+    die("leaving around $tmp");
+  }
+else
+  {
+    run("sleep 3; rm -rf $tmp");
+  }
+
+$obs_api =~ s{api\.opensuse\.org}{build.opensuse.org};	# special case them; with our s2 the names match.
+print "Wait an hour or so, then check if things have built.\n";
+
+for my $branding (@candidates)
+  {
+    my $branding_tar = undef;
+    ($branding_tar,$branding) = ($branding,$2) if $branding =~ m{^(.*/)?(.*)(\.tar\..*?)$};
+    my $suffix = ":$branding/";
+    $suffix = '' if $container_project =~ m{/$};
+    print " $obs_api/package/show/$container_project$suffix$branding-client\n";
+  }
+
+print "To check for build progress and publish the packages, try (repeatedly) the following command:\n";
+print "\n internal/collect_all_oem_clients.pl -f ".join(',',@candidates)." -r $build_token\n";
+
+print "(If $build_token is not part of the version number seen in the client.dsc version number. Try to call collect_all_oem_clients.pl with out -r.\n";
+print "If this happens, please investigate, why. Seen in job/publish-oem-client-linux/42/console output.)\n";
+
+exit 0;
+#################################################################################
+
 sub run
 {
   my ($cmd) = @_;
@@ -160,9 +335,27 @@ sub pull_VERSION_cmake
 
 # pull a branch from git, place it into destdir, packaged as a tar ball.
 # This also double-checks if the version in VERSION.cmake matches the name of the branch.
+#
+# If passed a tar-file name as second parameter, nothing is pulled from github.
+# the tar-file is simply copied to destdir then.
 sub fetch_client_from_branch
 {
   my ($giturl, $branch, $destdir) = @_;
+  
+  if ($branch =~ m{\.tar\.})
+    {
+      die "tar file $branch does not exist.\n" unless -f $branch;
+    
+      # owncloudclient-1.8.0.tar.xz
+      my $prerelease = undef;
+      my $version = "v$1" if $branch =~ m{.*-(\d[\.\d]+.*?)\.tar\.};
+      # CAUTION: keep regexp identical to below
+      ($version,$prerelease) = ($1,$2) if $version =~ m{^v([\d\.]+)[-~]?([abr]\w+)?$}i;
+      my $source_tar = $branch; $source_tar =~ s{.*/}{};
+
+      File::Copy::copy($branch, "$destdir/$source_tar");
+      return ("$destdir/$source_tar", $version, $prerelease);
+    }
 
   my $gitsubdir = "$destdir/client_git";
   # CAUTION: keep in sync with
@@ -173,7 +366,8 @@ sub fetch_client_from_branch
 
   # v1.7.0-alpha1
   # v1.6.2-themefix is a valid branch name.
-  my ($version,$prerelease) = ($1,$2) if $branch =~ m{^v([\d\.]+)([abr-]\w+)?$}i;
+  # CAUTION: keep regexp identical to above.
+  my ($version,$prerelease) = ($1,$2) if $branch =~ m{^v([\d\.]+)[~-]?([abr]\w+)?$}i;
   #a git tag does not necessarily qualify the prerelease name
   #$prerelease =~ s{^-}{} if defined $prerelease;
 
@@ -240,51 +434,6 @@ sub make_dummy_package_cfg
    close OUT or die "make_dummy_package_cfg: could not write $cfgfile: $!\n";
 }
 
-
-print "source_tar=$source_tar\n";
-my $version = undef;
-my $prerelease = undef;
-($source_tar,$version,$prerelease) = fetch_client_from_branch($source_git, $source_tar, $tmp) 
-  if $source_tar =~ m{^v[\d\.]+};
-$source_tar = Cwd::abs_path($source_tar);	# we'll chdir() around. Take care.
-print "source_tar=$source_tar\n";
-print "prerelease=$prerelease\n" if defined $prerelease;
-sleep 5;
-
-die "need a source_tar path name or version number matching /^v[\\d\\.]+/\n" unless defined $source_tar and -e $source_tar;
-
-run("git clone --depth 1 $customer_themes_git $tmp_t") 
-  unless $skipahead > 3;
-
-opendir(DIR, $tmp_t) or die("cannot opendir my own $tmp: $!");
-my @d = grep { ! /^\./ } readdir(DIR);
-closedir(DIR);
-
-my @candidates = ();
-for my $dir (sort @d)
-  {
-    my $linuxdir = 'syncclient';
-    $linuxdir = 'mirall' unless -d "$tmp_t/$dir/$linuxdir";
-    next unless -d "$tmp_t/$dir/$linuxdir";
-    next if @client_filter and not $client_filter{$dir};
-    #  - generate the branding tar ball
-    # CAUTION: keep in sync with jenkins jobs customer_themes
-    # https://rotor.owncloud.com/view/mirall/job/customer-themes/configure
-
-    if ( @client_filter and -f "$tmp_t/$dir/$linuxdir/OEM.cmake" and not -f "$tmp_t/$dir/$linuxdir/package.cfg")
-      {
-        # we asked for this via a filter, the OEM.cmake is there, but no package.cfg
-        make_dummy_package_cfg("$tmp_t/$dir/$linuxdir");
-      }
-
-    chdir($tmp_t);
-    run("tar cjf ../$dir.tar.bz2 ./$dir")
-      unless $skipahead > 4;
-
-    push @candidates, $dir if -f "$tmp_t/$dir/$linuxdir/package.cfg";
-  }
-
-print Dumper \@candidates;
 
 sub obs_user
 {
@@ -376,95 +525,3 @@ sub obs_pkg_from_template
   print "Package '$prj/$pkg' created.\n";
 }
 
-## make sure the top project is there in obs
-obs_prj_from_template($osc_cmd, $template_prj, $container_project, "OwnCloud Desktop Client OEM Container project");
-chdir($scriptdir) if defined $scriptdir;
-
-for my $branding (@candidates)
-  {
-    if (@client_filter)
-      {
-        unless ($client_filter{$branding})
-	  {
-	    print "Branding $branding skipped: not in client_filter\n";
-	    next;
-	  }
-	delete $client_filter{$branding};
-      }
-
-    my $project = "$container_project:$branding";
-    my $container_project_colon = "$container_project:";
-    if ($container_project =~ m{/$})
-      {
-        $project = $container_project;
-	$project =~ s{/$}{};
-        $container_project_colon = $container_project;
-      }
-
-    ## generate the individual container projects
-    obs_prj_from_template($osc_cmd, $template_prj, $project, "OwnCloud Desktop Client project $branding");
-
-    ## create an empty package, so that genbranding is happy.
-    obs_pkg_from_template($osc_cmd, $template_prj, $template_pkg, $project, "$branding-client", "$branding Desktop Client");
-
-    # checkout branding-client, update, checkin.
-    run("rm -rf '$project'");
-    run("$osc_cmd checkout '$project' '$branding-client'");
-    # we run in |cat, so that git diff not open less with the (useless) changes 
-    run("env PAGER=cat OBS_INTEGRATION_MSG='$create_msg' $genbranding '$source_tar' '$tmp/$branding.tar.bz2'");	
-    # FIXME: abort, if this fails. Pipe cat prevents error diagnostics here. Maybe PAGER=cat helps?
-
-    run("rm -rf '$project'");
-
-    ## fill in all the support packages.
-    ## CAUTION: trailing colon is important when catenating. 
-    ## We use trailing slash here again to avoid catenating.
-    run("./setup_oem_client.pl '$branding' '$container_project_colon' '$obs_api' '$template_prj'");
-
-    ## babble out the diffs. Just for the logfile.
-    ## This helps catching outdated *.in files in templates/client/* -- 
-    ## genbranding uses them. Mabye it should use files from the template package as template?
-    for my $f ('%s-client.spec', '%s-client.dsc', 'debian.control', '%s-client.desktop')
-      {
-        my $template_file = sprintf "$f", 'owncloud';
-        my $branding_file = sprintf "$f", $branding;
-	run("$osc_cmd cat $template_prj $template_pkg $template_file > $tmp/$template_file || true");
-	run("$osc_cmd cat '$project' '$branding-client' '$branding_file'> $tmp/$branding_file || true");
-	run("diff -ub '$tmp/$template_file' '$tmp/$branding_file' || true");
-	unlink("$tmp/$template_file");
-	unlink("$tmp/$branding_file");
-      }
-  }
-
-if (@client_filter and scalar(keys %client_filter))
-  {
-    print "ERROR: branding not found: unused filter terms: ", Dumper \%client_filter;
-    print "\tAvailable candidates: @candidates\n";
-    print "Check your spelling!\n";
-    exit(1);
-  }
-
-if ($skipahead)
-  {
-    die("leaving around $tmp");
-  }
-else
-  {
-    run("sleep 3; rm -rf $tmp");
-  }
-
-$obs_api =~ s{api\.opensuse\.org}{build.opensuse.org};	# special case them; with our s2 the names match.
-print "Wait an hour or so, then check if things have built.\n";
-
-for my $branding (@candidates)
-  {
-    my $suffix = ":$branding/";
-    $suffix = '' if $container_project =~ m{/$};
-    print " $obs_api/package/show/$container_project$suffix$branding-client\n";
-  }
-
-print "To check for build progress and publish the packages, try (repeatedly) the following command:\n";
-print "\n internal/collect_all_oem_clients.pl -f ".join(',',@candidates)." -r $build_token\n";
-
-print "FIXME: If $build_token is not part of the version number seen in the client.dsc version number. Try to call collect_all_oem_clients.pl with out -r.\n";
-print "FIXME: investigate, why that can happen. Seen in job/publish-oem-client-linux/42/console output.\n";
