@@ -53,12 +53,13 @@
 # V2.6  -- 2015-03-04, jw  also accept Ubuntu* without leading x.
 # V2.7  -- 2015-03-16, jw  added docker_on_aufs() to help workaround aufs-specific issues.
 # V2.8  -- 2015-03-17, jw  'aufs' in json config is now honored.
+# V2.9  -- 2015-03-23, jw  fixed image name collision by including server and project in the name.
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="2.8"
+__VERSION__="2.9"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import json, sys, os, re, time, tempfile
@@ -119,6 +120,16 @@ RUN rpm -ivh epel-7.rpm
 RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_7/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
 RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
 """},
+
+      "CentOS_CentOS-7":        { "fmt":"YUM", "from":"centos:centos7", "pre":"""
+RUN yum install -y --nogpgcheck wget
+RUN wget -nv http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm -O epel-7.rpm
+RUN rpm -ivh epel-7.rpm
+""", "aufs":"""
+RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_7/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
+RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
+"""},
+
       "CentOS_6":        { "fmt":"YUM", "from":"centos:centos6", "pre":"""
 RUN yum install -y --nogpgcheck wget
 RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm -O epel-6.rpm
@@ -717,7 +728,13 @@ download=obs_download_cfg(obs_config["obs"][obs_api], args.download, args.projec
 if args.image_name:
   image_name = args.image_name
 else:
-  image_name = args.package+'-'+version+'-'+release+'-'+target
+  image_name = args.package+'-'+version+'-'+release
+  server=obs_config['obs'][obs_api]
+  if 'aliases' in server and len(server['aliases']):
+    server_name = server['aliases'][0]
+  else:
+    server_name = re.sub('^\w+://','', obs_api)
+  image_name = image_name + '-' + server_name + '-' + args.project + '-' + target
   # docker disallows upper case, and many special chars. Grrr.
   image_name = re.sub('[^a-z0-9-_\.]', '-', image_name.lower())
 
