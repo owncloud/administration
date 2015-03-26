@@ -4,3 +4,6 @@
 
 qmake && make
 DAV_USER=username DAV_PASS=password ./webdav-benchmark http://localhost/owncloud/remote.php/webdav/
+
+On the first run, the benchmark will create test data in a webdav-bench-data subfolder.
+
