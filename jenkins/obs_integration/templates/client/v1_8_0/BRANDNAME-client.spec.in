@@ -181,7 +181,9 @@ BuildRequires:  neon-devel
 %if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
 BuildRequires:  sqlite-devel
 BuildRequires:  inetd desktop-file-utils
+%if 0%{?rhel_version} > 600 || 0%{?centos_version} > 600
 BuildRequires:  python-sphinx
+%endif
 %else
 BuildRequires:  python-Sphinx
 BuildRequires:  sqlite3-devel
