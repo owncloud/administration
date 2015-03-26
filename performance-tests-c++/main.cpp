@@ -208,7 +208,7 @@ void Test::copyFolder_data()
     QTest::addColumn<int>("dirSize");
     QTest::newRow("1") << 1;
     QTest::newRow("10") << 10;
-    QTest::newRow("1k") << 1000;
+    // QTest::newRow("1k") << 1000;
 }
 
 void Test::copyFolder()
