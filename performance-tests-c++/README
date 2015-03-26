@@ -1,0 +1,6 @@
+== To build ==
+
+- Qt 5.x required
+
+qmake && make
+DAV_USER=username DAV_PASS=password ./webdav-benchmark http://localhost/owncloud/remote.php/webdav/
