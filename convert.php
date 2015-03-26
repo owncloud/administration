@@ -223,7 +223,7 @@ $configDocumentationOutput = '';
 
 $tmp = explode('DEFAULT_SECTION_START', $configDocumentation);
 if(count($tmp) !== 2) {
-	print("There are several DEFAULT_SECTION_START in the config documentation\n");
+	print("There are not exactly one DEFAULT_SECTION_START in the config documentation\n");
 	exit();
 }
 
@@ -237,14 +237,14 @@ $configDocumentationOutput .= ".. DEFAULT_SECTION_END";
 
 $tmp = explode('DEFAULT_SECTION_END', $tmp[1]);
 if(count($tmp) !== 2) {
-	print("There are several DEFAULT_SECTION_END in the config documentation\n");
+	print("There are not exactly one DEFAULT_SECTION_END in the config documentation\n");
 	exit();
 }
 // drop the first part (old generated documentation which should be overwritten
 // by  this script) and just process
 $tmp  = explode('ALL_OTHER_SECTIONS_START', $tmp[1]);
 if(count($tmp) !== 2) {
-	print("There are several ALL_OTHER_SECTIONS_START in the config documentation\n");
+	print("There are not exactly one ALL_OTHER_SECTIONS_START in the config documentation\n");
 	exit();
 }
 // apppend middle part between DEFAULT_SECTION_END and ALL_OTHER_SECTIONS_START
@@ -253,6 +253,18 @@ $configDocumentationOutput .= $tmp[0];
 $configDocumentationOutput .= "ALL_OTHER_SECTIONS_START\n\n";
 // append rest of generated code
 $configDocumentationOutput .= $output;
+
+// drop the first part (old generated documentation which should be overwritten
+// by  this script) and just process
+$tmp  = explode('ALL_OTHER_SECTIONS_END', $tmp[1]);
+if(count($tmp) !== 2) {
+	print("There are not exactly one ALL_OTHER_SECTIONS_END in the config documentation\n");
+	exit();
+}
+// append end placeholder
+$configDocumentationOutput .= "\n.. ALL_OTHER_SECTIONS_END";
+
+$configDocumentationOutput .= $tmp[1];
 
 // write content to file
 file_put_contents($OUTPUT_FILE, $configDocumentationOutput);
