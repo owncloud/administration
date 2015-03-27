@@ -72,7 +72,7 @@ QNetworkReply *Test::reqPropfind(const QUrl &url, QIODevice *body)
 
 bool Test::waitForReply(QNetworkReply *reply, bool expectSuccess)
 {
-    QSignalSpy finishSpy{reply, &QNetworkReply::finished};
+    QSignalSpy finishSpy{reply, SIGNAL(finished())};
     if (!finishSpy.wait(30000))
         return false;
     if (expectSuccess && reply->error())
