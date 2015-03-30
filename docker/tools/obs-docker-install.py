@@ -81,11 +81,11 @@ default_obs_config_yaml = "# Written by "+sys.argv[0]+""" -- edit also the built
 obs:
   https://api.opensuse.org:
     aliases: [obs]
-    download: 
+    download:
       internal: http://download.opensuse.org/repositories/
       public: http://download.opensuse.org/repositories/
     map:
-      public: 
+      public:
         'openSUSE:13.1': /pub/opensuse/distribution/13.1/repo/oss
     prj_re: ^(isv:ownCloud:|home:jnweiger)
 
@@ -217,12 +217,14 @@ def yaml_load_expand(stream_thing):
     base_seen = []
     for depth in range(5):	# may be needed, if a base has anotherbase, we a parsing them in random order.
       if 'base' in t:
-        for b in t['base']:
+        t_base = t['base']
+        del(t['base'])
+        for b in t_base:
           if not b in base_seen:
             for bk in y['target'][b].keys():
               if not bk in t:
                 t[bk] = y['target'][b][bk]
-	    base_seen.append(b)
+          base_seen.append(b)
   return y
 
 default_obs_config = yaml_load_expand(default_obs_config_yaml)
