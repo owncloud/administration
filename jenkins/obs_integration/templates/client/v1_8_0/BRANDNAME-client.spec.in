@@ -296,10 +296,10 @@ in the nautilus file manager.
 # autostart_use_wrapper.diff
 %patch1 -p1
 %endif
-%patch2 -p1
 
 %if 0%{?rhel_version} == 600 || 0%{?centos_version} == 600
 sed -i -e 's/OVERRIDE=override/OVERRIDE=/' cmake/modules/QtVersionAbstraction.cmake
+%patch2 -p1
 %endif
 
 %build
