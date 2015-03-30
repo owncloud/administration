@@ -412,7 +412,7 @@ def docker_from_obs(obs_target_name):
     r = obs_config['target'][obs_target_name]
     r['obs'] = obs_target_name
     return r
-  raise ValueError("no docker base image known for '"+obs_target_name+"' - choose other obs target or update config in "+args.configfile)
+  raise ValueError("no config known for target '"+obs_target_name+"' - choose other obs target or update config in "+args.configfile)
 
 def obs_download_cfg(config, download_item, prj_path, urltest_target=None, verbose=True):
   """

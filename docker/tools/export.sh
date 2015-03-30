@@ -17,7 +17,7 @@ usage()
 }
 
 unset imageName
-unset outputPath
+outputPath=.
 
 while getopts ":hi:o:" opt; do
   case $opt in
@@ -66,8 +66,7 @@ docker save "$imageName" > "$outputPath/$imageName.tar"
 
 if [ -s $outputPath/$imageName.tar ] 
 then
-	zip "$outputPath/$imageName.tar.zip" "$outputPath/$imageName.tar"
-	rm "$outputPath/$imageName.tar"
+	bzip2 $outputPath/$imageName.tar
 else 
 	echo ""
 	echo "Choose one of these below if ID is not existing: "
