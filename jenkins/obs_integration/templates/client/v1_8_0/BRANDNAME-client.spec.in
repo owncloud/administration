@@ -63,6 +63,7 @@ Source0:        [% tarball %].tar.bz2
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 Source1:        [% APPLICATION_EXECUTABLE %].sh
 Patch1:         autostart_use_wrapper.diff
+Patch2:         dont_reset_ssl_config.diff
 %endif
 
 %if (0%{?rhel_version} && 0%{?rhel_version}<700) || (0%{?centos_version} && 0%{?centos_version}<700) || 0%{?suse_version} == 1110
@@ -298,6 +299,7 @@ in the nautilus file manager.
 
 %if 0%{?rhel_version} == 600 || 0%{?centos_version} == 600
 sed -i -e 's/OVERRIDE=override/OVERRIDE=/' cmake/modules/QtVersionAbstraction.cmake
+%patch2 -p1
 %endif
 
 %build

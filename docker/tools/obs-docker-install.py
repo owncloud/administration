@@ -54,15 +54,18 @@
 # V2.7  -- 2015-03-16, jw  added docker_on_aufs() to help workaround aufs-specific issues.
 # V2.8  -- 2015-03-17, jw  'aufs' in json config is now honored.
 # V2.9  -- 2015-03-23, jw  fixed image name collision by including server and project in the name.
+# V2.10 -- 2015-03-30, jw  converted config file format from json to yaml. Human readability is key!
+#			   aufs changed to aufs_hack and no longer automatic. It is now triggered by env AUFS_HACK=1 ...
+#                          added yaml_load_expand(): to use 'base' elements in 'target' as inheritance templates.
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="2.9"
+__VERSION__="2.10"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
-import json, sys, os, re, time, tempfile
+import yaml, sys, os, re, time, tempfile
 import subprocess, base64, requests
 
 
@@ -74,136 +77,157 @@ except ImportError:
 
 target="Ubuntu_14.04"		# default value
 
-default_obs_config = {
-  "_comment": "Written by "+sys.argv[0]+" -- edit also the builtin template",
-  "obs":
-    {
-      "https://api.opensuse.org":
-        {
-          "aliases": ["obs"],
-          "prj_re": "^(isv:ownCloud:|home:jnweiger)",
-          "download":
-            {
-              "public":   "http://download.opensuse.org/repositories/",
-              "api":      "https://[OBS_USER]:[OBS_PASS]@api.opensuse.org/build/[OBS_PROJ]/[OBS_TARGET]/[OBS_ARCH]/[OBS_PACK]"
-            },
-          "map":
-            {
-              "public": { "openSUSE:13.1": "/pub/opensuse/distribution/13.1/repo/oss" }
-            }
-        },
-    },
-  "target":
-    {
-      "xUbuntu_14.10":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:14.10" },
-      "xUbuntu_14.04":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:14.04" },
-      "xUbuntu_13.10":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:13.10" },
-      "xUbuntu_13.04":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:13.04" },
-      "xUbuntu_12.10":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:12.10" },
-      "xUbuntu_12.04":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:12.04" },
+default_obs_config_yaml = "# Written by "+sys.argv[0]+""" -- edit also the builtin template
+obs:
+  https://api.opensuse.org:
+    aliases: [obs]
+    download:
+      internal: http://download.opensuse.org/repositories/
+      public: http://download.opensuse.org/repositories/
+    map:
+      public:
+        'openSUSE:13.1': /pub/opensuse/distribution/13.1/repo/oss
+    prj_re: ^(isv:ownCloud:|home:jnweiger)
 
-      "Ubuntu_14.10":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:14.10" },
-      "Ubuntu_14.04":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:14.04" },
-      "Ubuntu_13.10":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:13.10" },
-      "Ubuntu_13.04":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:13.04" },
-      "Ubuntu_12.10":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:12.10" },
-      "Ubuntu_12.04":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:12.04" },
+target:
+  CentOS_6:
+    aufs_hack: |
+      RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
+      RUN yum install -y --nogpgcheck libcap-dummy      # workaround aufs issue with cpio.
+    fmt: YUM
+    from: centos:centos6
+    inst: [wget, samba-client]
 
-      "Debian_6.0":      { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"debian:6.0" },
-      "Debian_7.0":      { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"debian:7" },
+  CentOS_CentOS-6:
+    base: [CentOS_6]
+    pre: |
+      RUN yum install -y --nogpgcheck wget
+      RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+      RUN rpm -ivh epel-release-6-8.noarch.rpm
 
-      "CentOS_7":        { "fmt":"YUM", "from":"centos:centos7", "pre":"""
-RUN yum install -y --nogpgcheck wget
-RUN wget -nv http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm -O epel-7.rpm
-RUN rpm -ivh epel-7.rpm
-""", "aufs":"""
-RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_7/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
-RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
-"""},
+  CentOS_6@SCL-PHP54:
+    base: [CentOS_6]
+    pre: |
+      RUN yum install -y --nogpgcheck centos-release-SCL
+      RUN yum install -y --nogpgcheck php54
 
-      "CentOS_CentOS-7":        { "fmt":"YUM", "from":"centos:centos7", "pre":"""
-RUN yum install -y --nogpgcheck wget
-RUN wget -nv http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm -O epel-7.rpm
-RUN rpm -ivh epel-7.rpm
-""", "aufs":"""
-RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_7/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
-RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
-"""},
+  CentOS_6_PHP54:
+    base: [CentOS_6]
+    pre: |
+      RUN yum install -y --nogpgcheck wget yum-utils
+      RUN wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+      RUN wget -nv http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
+      RUN rpm -ivh remi-release-6*.rpm epel-release-6*.rpm
+      RUN yum-config-manager --enable remi
+      RUN yum install -y --nogpgcheck php
 
-      "CentOS_6":        { "fmt":"YUM", "from":"centos:centos6", "pre":"""
-RUN yum install -y --nogpgcheck wget
-RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm -O epel-6.rpm
-RUN rpm -ivh epel-6.rpm
-""", "aufs":"""
-RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
-RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
-""" },
-      "CentOS_6@SCL-PHP54":  { "fmt":"YUM", "inst": ["wget"], "from":"centos:centos6", "pre":"""
-RUN yum install -y --nogpgcheck centos-release-SCL
-RUN yum install -y --nogpgcheck php54
-""", "aufs":"""
-RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
-RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
-""" },
+  CentOS_6_PHP55:
+    base: [CentOS_6]
+    pre: |
+      RUN yum install -y --nogpgcheck wget yum-utils
+      RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+      RUN wget -nv http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
+      RUN rpm -ivh remi-release-6*.rpm epel-release-6*.rpm
+      RUN yum-config-manager --enable remi,remi-php55
+      RUN yum install -y --nogpgcheck php
 
-      "CentOS_6_PHP54":  { "fmt":"YUM", "from":"centos:centos6", "pre":"""
-RUN yum install -y --nogpgcheck wget yum-utils
-RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm -O epel-6.rpm
-RUN wget -nv http://rpms.famillecollet.com/enterprise/remi-release-6.rpm -O remi-6.rpm
-RUN rpm -ivh remi-6.rpm epel-6.rpm
-RUN yum-config-manager --enable remi
-RUN yum install -y --nogpgcheck php
-""", "aufs":"""
-RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
-RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
-""" },
+  CentOS_6_PHP56:
+    base: [CentOS_6]
+    pre: |
+      RUN yum install -y --nogpgcheck wget yum-utils
+      RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+      RUN wget -nv http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
+      RUN rpm -ivh remi-release-6*.rpm epel-release-6*.rpm
+      RUN yum-config-manager --enable remi,remi-php56
+      RUN yum install -y --nogpgcheck php
 
-      "CentOS_6_PHP55":  { "fmt":"YUM", "from":"centos:centos6", "pre":"""
-RUN yum install -y --nogpgcheck wget yum-utils
-RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm -O epel-6.rpm
-RUN wget -nv http://rpms.famillecollet.com/enterprise/remi-release-6.rpm -O remi-6.rpm
-RUN rpm -ivh remi-6.rpm epel-6.rpm
-RUN yum-config-manager --enable remi-php55
-RUN yum install -y --nogpgcheck php
-""", "aufs":"""
-RUN rpm --import http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/repodata/repomd.xml.key
-RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
-RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
-""" },
+  CentOS_7:
+    aufs_hack: |
+      RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_7/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
+      RUN yum install -y --nogpgcheck libcap-dummy      # workaround aufs issue with cpio.
+    fmt: YUM
+    from: centos:centos7
+    inst: [wget]
+    pre: |
+      RUN yum install -y --nogpgcheck wget
+      RUN wget -nv http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+      RUN rpm -ivh epel-release-7*.rpm
 
-      "CentOS_6_PHP56":  { "fmt":"YUM", "from":"centos:centos6", "pre":"""
-RUN yum install -y --nogpgcheck wget yum-utils
-RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm -O epel-6.rpm
-RUN wget -nv http://rpms.famillecollet.com/enterprise/remi-release-6.rpm -O remi-6.rpm
-RUN rpm -ivh remi-6.rpm epel-6.rpm
-RUN yum-config-manager --enable remi-php56
-RUN yum install -y --nogpgcheck php
-""", "aufs":"""
-RUN rpm --import http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/repodata/repomd.xml.key
-RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
-RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
-""" },
+  CentOS_CentOS-7: { base: [CentOS_7] }
 
-      "CentOS_CentOS-6": { "fmt":"YUM", "inst": ["wget"], "from":"centos:centos6", "aufs":"""
-RUN rpm --import http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/repodata/repomd.xml.key
-RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
-RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
-""" },
-      "Fedora_20":       { "fmt":"YUM", "inst": ["wget"], "from":"fedora:20", "aufs":"""
-RUN rpm --import http://download.opensuse.org/repositories/isv:/ownCloud:/devel/Fedora_20/repodata/repomd.xml.key
-RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/Fedora_20/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
-RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
-""" },
-      "Fedora_21":       { "fmt":"YUM", "inst": ["wget"], "from":"fedora:21", "pre":"RUN localedef -i en_US -f UTF-8 en_US.UTF-8", "aufs":"""
-RUN rpm --import http://download.opensuse.org/repositories/isv:/ownCloud:/devel/Fedora_21/repodata/repomd.xml.key
-RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/Fedora_21/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
-RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
-""" },
-      "openSUSE_13.2":   { "fmt":"ZYPP","inst": ["ca-certificates"], "from":"opensuse:13.2" },
-      "openSUSE_13.1":   { "fmt":"ZYPP","inst": ["ca-certificates"], "from":"opensuse:13.1" },
-      "openSUSE_12.3":   { "fmt":"ZYPP","inst": ["ca-certificates"], "from":"flavio/opensuse-12-3" }
-    }
-}
+  Debian_6.0:
+    fmt: APT
+    from: debian:6.0
+    inst: [wget, apt-transport-https]
+
+  Debian_7.0: { base: [Debian_6.0], from: 'debian:7' }
+
+  Fedora_20:
+    aufs_hack: |
+      RUN rpm --import http://download.opensuse.org/repositories/isv:/ownCloud:/devel/Fedora_20/repodata/repomd.xml.key
+      RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/Fedora_20/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
+      RUN yum install -y --nogpgcheck libcap-dummy      # workaround aufs issue with cpio.
+    fmt: YUM
+    from: fedora:20
+    inst: [wget]
+
+  Fedora_21:
+    aufs_hack: |
+      RUN rpm --import http://download.opensuse.org/repositories/isv:/ownCloud:/devel/Fedora_21/repodata/repomd.xml.key
+      RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/Fedora_21/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
+      RUN yum install -y --nogpgcheck libcap-dummy      # workaround aufs issue with cpio.
+    fmt: YUM
+    from: fedora:21
+    inst: [wget]
+
+  Ubuntu_12.04:
+    fmt: APT
+    from: ubuntu:12.04
+    inst: [wget, apt-transport-https]
+
+  Ubuntu_12.10: { base: [Ubuntu_12.04], from: 'ubuntu:12.10' }
+  Ubuntu_13.04: { base: [Ubuntu_12.04], from: 'ubuntu:13.04' }
+  Ubuntu_13.10: { base: [Ubuntu_12.04], from: 'ubuntu:13.10' }
+  Ubuntu_14.04: { base: [Ubuntu_12.04], from: 'ubuntu:14.04' }
+  Ubuntu_14.10: { base: [Ubuntu_12.04], from: 'ubuntu:14.10' }
+
+  # xUbuntu* are simply aliases for Ubuntu*
+  xUbuntu_12.04: { base: [Ubuntu_12.04] }
+  xUbuntu_12.10: { base: [Ubuntu_12.10] }
+  xUbuntu_13.04: { base: [Ubuntu_13.04] }
+  xUbuntu_13.10: { base: [Ubuntu_13.10] }
+  xUbuntu_14.04: { base: [Ubuntu_14.04] }
+  xUbuntu_14.10: { base: [Ubuntu_14.10] }
+
+  openSUSE_13.1:
+    fmt: ZYPP
+    from: opensuse:13.1
+    inst: [ca-certificates]
+
+  SLE_12:        { base: [openSUSE_13.1], pre: '# attention: using openSUSE base image!!!' }
+  openSUSE_13.2: { base: [openSUSE_13.1], from: 'opensuse:13.2' }
+  openSUSE_12.3: { base: [openSUSE_13.1], from: 'flavio/opensuse-12-3' }
+
+"""
+
+def yaml_load_expand(stream_thing):
+  y = yaml.load(stream_thing)
+  for k in y['target'].keys():
+    t = y['target'][k]
+    base_seen = []
+    for depth in range(5):	# may be needed, if a base has anotherbase, we a parsing them in random order.
+      if 'base' in t:
+        t_base = t['base']
+        del(t['base'])
+        for b in t_base:
+          if not b in base_seen:
+            for bk in y['target'][b].keys():
+              if not bk in t:
+                t[bk] = y['target'][b][bk]
+          base_seen.append(b)
+  return y
+
+default_obs_config = yaml_load_expand(default_obs_config_yaml)
 
 docker_volumes=[]
 
@@ -261,7 +285,6 @@ class ListUrl:
   def __init__(self, callback=None, recursive=True):
     self.callback=callback
     self.recursive=recursive
-
 
 # Keep in sync with internal_tar2obs.py obs_docker_install.py
 def run(args, input=None, redirect=None, redirect_stdout=True, redirect_stderr=True, return_tuple=False, return_code=False, tee=False):
@@ -413,9 +436,12 @@ def docker_on_aufs():
       AUFS has issues with setting filesystem capabilities, and thus
       e.g. httpd cannot be installed on a Fedora system inside docker.
   """
-  docker_info = run(["docker", "info"], redirect_stdout=True)
+  # docker_info = run(["docker", "info"], redirect_stdout=True)
   # Storage Driver: aufs
-  if (re.search('^Storage\s+Driver:\s*aufs\s*$', docker_info, re.M)):
+  # if (re.search('^Storage\s+Driver:\s*aufs\s*$', docker_info, re.M)):
+  #   using_aufs = True
+  using_aufs = os.getenv('AUFS_HACK') or '0'
+  if using_aufs != '0' and using_aufs != '':
     return True
   return False
 
@@ -468,7 +494,7 @@ def docker_from_obs(obs_target_name):
     r = obs_config['target'][obs_target_name]
     r['obs'] = obs_target_name
     return r
-  raise ValueError("no docker base image known for '"+obs_target_name+"' - choose other obs target or update config in "+args.configfile)
+  raise ValueError("no config known for target '"+obs_target_name+"' - choose other obs target or update config in "+args.configfile)
 
 
 def obs_download_cfg(config, download_item, prj_path, urltest_target=None, verbose=True):
@@ -573,17 +599,18 @@ Suggested cleanup:
  """+docker_cmd_clean_c+"\n "+docker_cmd_clean_i+"""
 
 Version: """+__VERSION__,
-  description="Create docker images for RPM and DEB packages built with openSUSE Build Service (public or other instance)."
+  description="Create docker images for RPM and DEB packages built with openSUSE Build Service (public or other instance).\nUse env AUFS_HACK=1 to circumvent libcap issues with docker running on aufs.\n"
 )
 
 ap.add_argument("-p", "--platform", dest="target", metavar="TARGET", help="obs build target name. Default: "+target)
 ap.add_argument("-f", "--base-image", "--from", metavar="IMG", help="docker base image to start with. Exclusive with specifying a -p platform name")
 ap.add_argument("-V", "--version", default=False, action="store_true", help="print version number and exit")
 ap.add_argument("-d", "--download", default='public', metavar="SERVER", help='use a different download server. Try "internal" or a full url. Default: "public"')
-ap.add_argument("-c", "--configfile", default='obs-docker.json', metavar="FILE", help='specify different config file. Default: generate a default file if missing, so that you can edit')
+ap.add_argument("-c", "--configfile", default='obs-docker.yaml', metavar="FILE", help='specify different config file. Default: generate a default file if missing, so that you can edit')
 ap.add_argument("-W", "--writeconfig", default=False, action="store_true", help='Write a default config file and exit. Default: use existing config file')
 ap.add_argument("-A", "--obs-api", help="Identify the build service. Default: guessed from project name")
 ap.add_argument("-n", "--image-name", help="Specify the name for the docker image. Default: construct a name and print")
+ap.add_argument("--dump", help="Dump an element from the yaml config. supported values: 'from', 'inst', 'pre', 'run', ...")
 ap.add_argument("-I", "--print-image-name-only", default=False, action="store_true", help="construct a name and exit after printing")
 ap.add_argument("-P", "--print-config-only", default=False, action="store_true", help="show the current project and target configuration and exit after printing. An optional target argument (see also -T) can be used to pretty print only one target configuration.")
 ap.add_argument("-T", "--list-targets-only", default=False, action="store_true", help="show a list of configured build target names and exit after printing")
@@ -629,8 +656,9 @@ if args.writeconfig:
     print("Please use -c to choose a different name, or move the file away")
     sys.exit(1)
   cfp = open(args.configfile, "w")
-  json.dump(default_obs_config, cfp, indent=4, sort_keys=True)
-  cfp.write("\n")
+  cfp.write(default_obs_config_yaml)
+  # json.dump(default_obs_config, cfp, indent=4, sort_keys=True)
+  # cfp.write("\n")
   cfp.close()
   print("default config written to " + args.configfile)
   sys.exit(0)
@@ -646,7 +674,7 @@ if not os.path.exists(args.configfile):
 else:
   try:
     cfp = open(args.configfile)
-    obs_config = json.load(cfp)
+    obs_config = yaml_load_expand(cfp)
   except Exception as e:
     print("ERROR: loading "+args.configfile+" failed: ", e)
     print("")
@@ -654,13 +682,22 @@ else:
 
 if args.print_config_only:
   import pprint
-  if args.project:
-    cfg=obs_config['target'][args.project]
+  if args.platform:
+    cfg=obs_config['target'][args.platform]
     print("FROM "+cfg['from']+"\n# ",end='')
     del(cfg['from'])
     pprint.pprint(cfg)
   else:
     pprint.pprint(obs_config)
+  sys.exit(0)
+
+if args.dump:
+  cfg=obs_config['target'][args.platform]
+  if args.dump in cfg:
+    print(cfg[args.dump])
+  else:
+    if not args.quiet:
+      print("ERROR: " + args.dump + " not in 'target->" + args.platform + "', try one of these:\n", cfg.keys(), file=sys.stderr)
   sys.exit(0)
 
 if args.list_targets_only:
