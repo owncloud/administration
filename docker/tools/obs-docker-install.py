@@ -898,7 +898,7 @@ docker_build.extend(["-t", image_name, context_dir])
 if args.no_operation:
   run(['rm', '-rf', context_dir])
   print(dockerfile)
-  docker_build[-1] = 'Dockerfile'
+  docker_build[-1] = '"dirname(Dockerfile)"'
   print("\nYou can use the above Dockerfile to create an image like this:\n "+" ".join(docker_build)+"\n")
 else:
   fd=open(context_dir+"/Dockerfile", "w")
