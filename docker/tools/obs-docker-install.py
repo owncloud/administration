@@ -584,6 +584,22 @@ def obs_download_cfg(config, download_item, prj_path, urltest_target=None, verbo
 
   return data
 
+def matched_package_run_script(package_name, platform_name, pat_dict):
+  match_list = []
+  ret = None
+  for pat in pat_dict.keys():
+    # FIXME: should have package_version instead of package here.
+    if re.search(pat, package_name):
+      match_list.append(pat)
+      ret = pat_dict[pat]
+  if (len(match_list) > 1):
+    print("ERROR: run("+package_name+") in 'target->"+platform_name+"' matches multiple patterns: ", match_list, file=sys.stderr)
+    sys.exit(1)
+  if (len(match_list) < 1):
+    print("ERROR: run("+package_name+") in 'target->"+platform_name+"' matches no pattern: ", pat_dict.keys(), file=sys.stderr)
+    sys.exit(1)
+  return ret
+
 ################################################################################
 
 docker_cmd_clean_c=" docker ps -a  | grep Exited   | awk '{ print $1 }' | xargs -r docker rm"
@@ -629,13 +645,14 @@ ap.add_argument("project", metavar="PROJECT", nargs="?", help="obs project name.
 ap.add_argument("package", metavar="PACKAGE",  nargs="?", help="obs package name, or PROJ/PACK")
 ap.add_argument("platform",metavar="PLATFORM", nargs="?", help="obs build target name. Alternate syntax to -p. Default: "+target)
 args,run_args = ap.parse_known_args()  # --help is automatic
+if len(run_args) and run_args[0] == '--':
+  run_args = run_args[1:]
 
 if args.version: ap.exit(__VERSION__)
 if args.print_image_name_only or args.dockerfile:
   args.quiet=True
   args.no_operation=True
 if args.quiet: run.verbose=0
-
 
 context_dir = tempfile.mkdtemp(prefix="obs_docker_install_context_")
 docker_cmd_cmd="/bin/bash"
@@ -693,7 +710,10 @@ if args.print_config_only:
 if args.dump:
   cfg=obs_config['target'][args.platform]
   if args.dump in cfg:
-    print(cfg[args.dump])
+    if args.dump == 'run':	# this one matches package names.
+      print(matched_package_run_script(args.package, args.platform, cfg[args.dump]))
+    else:
+      print(cfg[args.dump])
   else:
     if not args.quiet:
       print("ERROR: " + args.dump + " not in 'target->" + args.platform + "', try one of these:\n", cfg.keys(), file=sys.stderr)
@@ -827,8 +847,11 @@ for item in run_args[1:]:
   else:
     docker_run_int.append(item)
 if not ampersand and run_args:
-  print("Use @ for ImageName")  
-  sys.exit(1)
+  # print("run: Use @ for ImageName after docker run options, and before docker run shell command.")
+  # sys.exit(1)
+  ## user normally does not provide an image name or command to run. We do that oourselves...
+  ## Caution: Keep in sync with dockerfile+=ADD ... below
+  docker_run_int.extend([image_name, '/bin/bash', '/root/start.sh'])
   
 docker_run=["docker","run","-ti"]
 for vol in docker_volumes:
@@ -845,12 +868,16 @@ else:
 dockerfile="FROM "+docker['from']+"\n"
 
 if 'run' in obs_config['target'][target] and not args.dockerfile:
-  startfile = context_dir+'/start.sh'
-  f = open(startfile,'w')
-  f.write(obs_config['target'][target]['run'])
-  os.fchmod(f.fileno(),0o755) 
-  f.close()
-  dockerfile+='ADD ./start.sh /root/\n'
+  script=matched_package_run_script(args.package, args.platform, obs_config['target'][target]['run'])
+  if script:
+    print("# run script /root/start.sh:\n" + script + "\n\n")
+    startfile = context_dir+'/start.sh'
+    f = open(startfile,'w')
+    f.write(script)
+    os.fchmod(f.fileno(),0o755)
+    f.close()
+    # CAUTION: Keep in sync with docker_run_int.extend(image_name, ...) above
+    dockerfile+='ADD ./start.sh /root/\n'
   
 if 'pre' in docker:
   dockerfile+=docker['pre']
@@ -991,6 +1018,6 @@ if run_args:
   if run_args[0]=="run":
     r = run(docker_run_int, redirect_stderr=False, redirect_stdout=False, return_code=True)
   else:
-    print("Keyword can only be 'run'")
-    print("Usage: obs-docker-install ee:8.0 owncloud-enterprise xUbuntu_14.10 -- run -ti -p 8888:80 @ /bin/bash /root/start.sh")
+    print("Keyword can only be 'run', not ", run_args)
+    print("Usage: obs-docker-install ee:8.0 owncloud-enterprise xUbuntu_14.10 -- run -ti -p 8888:80 [@ /bin/bash /root/start.sh]")
 sys.exit(r)
