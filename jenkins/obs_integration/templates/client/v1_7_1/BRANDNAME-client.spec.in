@@ -284,8 +284,8 @@ popd
 
 if [ -d ${RPM_BUILD_ROOT}%{_mandir}/man1 ]; then
 %if "%{name}" != "owncloud-client"
-  mv ${RPM_BUILD_ROOT}%{_mandir}/man1/{owncloud.1,[% shortname %].1}
-  mv ${RPM_BUILD_ROOT}%{_mandir}/man1/{owncloudcmd.1,[% shortname %]cmd.1}
+  mv ${RPM_BUILD_ROOT}%{_mandir}/man1/{owncloud.1,[% executable %].1}
+  mv ${RPM_BUILD_ROOT}%{_mandir}/man1/{owncloudcmd.1,[% executable %]cmd.1}
 %endif
   gzip ${RPM_BUILD_ROOT}%{_mandir}/man1/*.1
 fi
@@ -297,7 +297,7 @@ test -f %{extdir}/ownCloud.pyc && mv %{extdir}/ownCloud.pyc %{extdir}/[% shortna
 
 %if %opt_hack
 mkdir -p $RPM_BUILD_ROOT/usr/share/applications/
-cat $RPM_BUILD_ROOT%{_datadir}/applications/[% shortname %].desktop |sed "s,Exec=.*,Exec=/usr/bin/[% shortname %]," > $RPM_BUILD_ROOT/usr/share/applications/[% shortname %].desktop
+cat $RPM_BUILD_ROOT%{_datadir}/applications/[% executable%].desktop |sed "s,Exec=.*,Exec=/usr/bin/[% executable %]," > $RPM_BUILD_ROOT/usr/share/applications/[% executable %].desktop
 # rm $RPM_BUILD_ROOT%{_datadir}/applications/[% shortname %].desktop
 mkdir -p $RPM_BUILD_ROOT/usr/share/icons/hicolor
 mv $RPM_BUILD_ROOT%{_datadir}/icons/hicolor/* $RPM_BUILD_ROOT/usr/share/icons/hicolor
@@ -306,7 +306,7 @@ install -m 755 %{SOURCE1} $RPM_BUILD_ROOT/usr/bin/[% shortname %]
 %endif
 
 %if %{?suse_version:1}0
-%suse_update_desktop_file -n [% shortname %]
+%suse_update_desktop_file -n [% executable %]
 %endif
 
 %check
@@ -339,9 +339,9 @@ fi
 
 %files
 %defattr(-,root,root,-)
-%{_bindir}/[% shortname %]
-%{_bindir}/[% shortname %]cmd
-%{_datadir}/applications/[% shortname %].desktop
+%{_bindir}/[% executable %]
+%{_bindir}/[% executable %]cmd
+%{_datadir}/applications/[% executable %].desktop
 %{_datadir}/icons/hicolor
 %if 0%{have_doc}
 %{_mandir}/man1/[% shortname %]*
@@ -355,7 +355,7 @@ fi
 
 %if %opt_hack
 /usr/share/icons/hicolor
-/usr/share/applications/[% shortname %].desktop
+/usr/share/applications/[% executable %].desktop
 /usr/bin/[% shortname %]
 %config /opt/etc/[% shortname %]
 %dir /opt/etc

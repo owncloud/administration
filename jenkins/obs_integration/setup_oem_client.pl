@@ -16,7 +16,7 @@
 use Data::Dumper;
 sub list_obs_pkg;
 
-my @src_pkgs = qw{ neon libqt4 cmake libqt4 libqt4-sql-plugins qtwebkit qtkeychain };
+my @src_pkgs = qw{ neon libqt4 cmake libqt4 libqt4-sql-plugins qtwebkit qt5keychain qtkeychain };
 my $src_prj = 'desktop';
 my $dest_prj_prefix = 'oem:';
 my $obs_api = 'https://s2.owncloud.com';

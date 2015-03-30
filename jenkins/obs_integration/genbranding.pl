@@ -37,6 +37,7 @@
 #       - support for trailing slash with -p proj_name/ added.
 #         Semantics see setup_all_oem_client.pl
 # 2015-01-22, jw, V1.7a accept also /syncclient/package.cfg instead of /mirall/package.cfg
+# 2015-03-18, jw, V1.8 better errror checking against malformed tar-files. Version number added to create message.
 
 use Getopt::Std;
 use Config::IniFiles;
@@ -49,7 +50,8 @@ use Cwd;
 use Template;
 use Data::Dumper;
 
-my $msg_def = "created by: $0 @ARGV";
+my $version = '1.8';
+my $msg_def = "created by: $0 (V$version) @ARGV";
 
 use strict;
 use vars qw($clienttar $themetar $templatedir $dir $opt_h $opt_o $opt_b $opt_c $opt_n $opt_f $opt_p $dest_prj $dest_prj_theme $opt_r);
@@ -127,6 +129,7 @@ sub prepareTarball($$) {
     print "Extract client...\n";
     my $client = getFileName( $argv0 );
     my $theme  = getFileName( $argv1 );
+    die "ERROR: $clienttar must have a top level directory $client\n\n" unless -d $client;
 
     # client is owncloudclient-1.8.0pre1
     # theme is cernbox => cernbox-client-1.8.0pre1
@@ -139,11 +142,11 @@ sub prepareTarball($$) {
         $newname =~ s/^client/$theme/i; # note: no -client suffix. works with setup_all_oem_clients.pl
         $newname =~ s/^owncloud/$theme/i; # note that we add a - here.
     }
-
+    print "newname=$newname, theme=$theme, client=$client\n";
     if( $newname ne $client ) {
         move($client, $newname);
     }
-    chdir($newname);
+    chdir($newname) or die "cannot chdir $newname: $!\n";
 
     print "Extracting theme...\n";
 
@@ -158,7 +161,7 @@ sub prepareTarball($$) {
     warn "One tar error is expected above.\n" if $r1  or $r2;
     chdir("..");
 
-    print " success: $newname\n";
+    print " success: " . Cwd::abs_path($newname) . "\n";
     return $newname;
 }
 
@@ -340,8 +343,6 @@ sub getSubsts( $ )
     die("Please provide a syncclient/package.cfg file in the custom dir!\n") unless( $cfgFile );
 
     print "Reading substs from $cfgFile\n";
-    my %substs;
-    $substs{'oem_sub_dir'} = $oem_sub_dir;
 
     my $oemFile = $cfgFile;
     $oemFile =~ s/package\.cfg/OEM.cmake/;
@@ -349,7 +350,8 @@ sub getSubsts( $ )
     unless( -e $oemFile ) {
       $oemFile = "$subsDir/OWNCLOUD.cmake";
     }
-    %substs = readOEMcmake( $oemFile );
+    my %substs = readOEMcmake( $oemFile );
+    $substs{'oem_sub_dir'} = $oem_sub_dir;
 
     # read the file package.cfg from the tarball and also remove it there evtl.
     my %s2;

@@ -51,12 +51,15 @@
 #                          - added a 12.3 base image. (officially EOL)
 # V2.5  -- 2015-03-01, jw  rpm --import ... repodata/repomd.xml.key added for YUM.
 # V2.6  -- 2015-03-04, jw  also accept Ubuntu* without leading x.
+# V2.7  -- 2015-03-16, jw  added docker_on_aufs() to help workaround aufs-specific issues.
+# V2.8  -- 2015-03-17, jw  'aufs' in json config is now honored.
+# V2.9  -- 2015-03-23, jw  fixed image name collision by including server and project in the name.
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="2.6"
+__VERSION__="2.9"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import json, sys, os, re, time, tempfile
@@ -92,7 +95,6 @@ default_obs_config = {
     },
   "target":
     {
-
       "xUbuntu_14.10":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:14.10" },
       "xUbuntu_14.04":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:14.04" },
       "xUbuntu_13.10":   { "fmt":"APT", "inst": ["wget","apt-transport-https"], "from":"ubuntu:13.10" },
@@ -114,15 +116,34 @@ default_obs_config = {
 RUN yum install -y --nogpgcheck wget
 RUN wget -nv http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm -O epel-7.rpm
 RUN rpm -ivh epel-7.rpm
-""" },
+""", "aufs":"""
+RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_7/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
+RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
+"""},
+
+      "CentOS_CentOS-7":        { "fmt":"YUM", "from":"centos:centos7", "pre":"""
+RUN yum install -y --nogpgcheck wget
+RUN wget -nv http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm -O epel-7.rpm
+RUN rpm -ivh epel-7.rpm
+""", "aufs":"""
+RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_7/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
+RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
+"""},
+
       "CentOS_6":        { "fmt":"YUM", "from":"centos:centos6", "pre":"""
 RUN yum install -y --nogpgcheck wget
 RUN wget -nv http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm -O epel-6.rpm
 RUN rpm -ivh epel-6.rpm
+""", "aufs":"""
+RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
+RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
 """ },
       "CentOS_6@SCL-PHP54":  { "fmt":"YUM", "inst": ["wget"], "from":"centos:centos6", "pre":"""
 RUN yum install -y --nogpgcheck centos-release-SCL
 RUN yum install -y --nogpgcheck php54
+""", "aufs":"""
+RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
+RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
 """ },
 
       "CentOS_6_PHP54":  { "fmt":"YUM", "from":"centos:centos6", "pre":"""
@@ -132,6 +153,9 @@ RUN wget -nv http://rpms.famillecollet.com/enterprise/remi-release-6.rpm -O remi
 RUN rpm -ivh remi-6.rpm epel-6.rpm
 RUN yum-config-manager --enable remi
 RUN yum install -y --nogpgcheck php
+""", "aufs":"""
+RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
+RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
 """ },
 
       "CentOS_6_PHP55":  { "fmt":"YUM", "from":"centos:centos6", "pre":"""
@@ -141,6 +165,10 @@ RUN wget -nv http://rpms.famillecollet.com/enterprise/remi-release-6.rpm -O remi
 RUN rpm -ivh remi-6.rpm epel-6.rpm
 RUN yum-config-manager --enable remi-php55
 RUN yum install -y --nogpgcheck php
+""", "aufs":"""
+RUN rpm --import http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/repodata/repomd.xml.key
+RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
+RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
 """ },
 
       "CentOS_6_PHP56":  { "fmt":"YUM", "from":"centos:centos6", "pre":"""
@@ -150,11 +178,27 @@ RUN wget -nv http://rpms.famillecollet.com/enterprise/remi-release-6.rpm -O remi
 RUN rpm -ivh remi-6.rpm epel-6.rpm
 RUN yum-config-manager --enable remi-php56
 RUN yum install -y --nogpgcheck php
+""", "aufs":"""
+RUN rpm --import http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/repodata/repomd.xml.key
+RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
+RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
 """ },
 
-      "CentOS_CentOS-6": { "fmt":"YUM", "inst": ["wget"], "from":"centos:centos6" },
-      "Fedora_20":       { "fmt":"YUM", "inst": ["wget"], "from":"fedora:20" },
-      "Fedora_21":       { "fmt":"YUM", "inst": ["wget"], "from":"fedora:21", "pre":"RUN localedef -i en_US -f UTF-8 en_US.UTF-8" },
+      "CentOS_CentOS-6": { "fmt":"YUM", "inst": ["wget"], "from":"centos:centos6", "aufs":"""
+RUN rpm --import http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/repodata/repomd.xml.key
+RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/CentOS_CentOS-6/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
+RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
+""" },
+      "Fedora_20":       { "fmt":"YUM", "inst": ["wget"], "from":"fedora:20", "aufs":"""
+RUN rpm --import http://download.opensuse.org/repositories/isv:/ownCloud:/devel/Fedora_20/repodata/repomd.xml.key
+RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/Fedora_20/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
+RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
+""" },
+      "Fedora_21":       { "fmt":"YUM", "inst": ["wget"], "from":"fedora:21", "pre":"RUN localedef -i en_US -f UTF-8 en_US.UTF-8", "aufs":"""
+RUN rpm --import http://download.opensuse.org/repositories/isv:/ownCloud:/devel/Fedora_21/repodata/repomd.xml.key
+RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/Fedora_21/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
+RUN yum install -y --nogpgcheck libcap-dummy		# workaround aufs issue with cpio.
+""" },
       "openSUSE_13.2":   { "fmt":"ZYPP","inst": ["ca-certificates"], "from":"opensuse:13.2" },
       "openSUSE_13.1":   { "fmt":"ZYPP","inst": ["ca-certificates"], "from":"opensuse:13.1" },
       "openSUSE_12.3":   { "fmt":"ZYPP","inst": ["ca-certificates"], "from":"flavio/opensuse-12-3" }
@@ -364,6 +408,18 @@ def printable_url(url):
   return re.sub("://([^/]*?)@", "://********@", url);
 
 
+def docker_on_aufs():
+  """ return true if docker is running with the Storage Backend aufs.
+      AUFS has issues with setting filesystem capabilities, and thus
+      e.g. httpd cannot be installed on a Fedora system inside docker.
+  """
+  docker_info = run(["docker", "info"], redirect_stdout=True)
+  # Storage Driver: aufs
+  if (re.search('^Storage\s+Driver:\s*aufs\s*$', docker_info, re.M)):
+    return True
+  return False
+
+
 def obs_fetch_bin_version(api, download_item, prj, pkg, target):
   cfg = obs_download_cfg(obs_config['obs'][api], download_item, prj, urltest_target=None, verbose=False)
   lu = ListUrl()
@@ -413,6 +469,7 @@ def docker_from_obs(obs_target_name):
     r['obs'] = obs_target_name
     return r
   raise ValueError("no config known for target '"+obs_target_name+"' - choose other obs target or update config in "+args.configfile)
+
 
 def obs_download_cfg(config, download_item, prj_path, urltest_target=None, verbose=True):
   """
@@ -671,7 +728,13 @@ download=obs_download_cfg(obs_config["obs"][obs_api], args.download, args.projec
 if args.image_name:
   image_name = args.image_name
 else:
-  image_name = args.package+'-'+version+'-'+release+'-'+target
+  image_name = args.package+'-'+version+'-'+release
+  server=obs_config['obs'][obs_api]
+  if 'aliases' in server and len(server['aliases']):
+    server_name = server['aliases'][0]
+  else:
+    server_name = re.sub('^\w+://','', obs_api)
+  image_name = image_name + '-' + server_name + '-' + args.project + '-' + target
   # docker disallows upper case, and many special chars. Grrr.
   image_name = re.sub('[^a-z0-9-_\.]', '-', image_name.lower())
 
@@ -697,7 +760,7 @@ if args.xauth:
   # add basic fonts, so that a GUI becomes readable.
   if re.search(r'suse', obs_target, re.I): 			extra_packages.extend(['xorg-x11-fonts-core'])
   if re.search(r'centos|rhel|fedora', obs_target, re.I): 	extra_packages.extend(['gnu-free-sans-fonts'])
-  if re.search(r'ubuntu|debian', obs_target, re.I):		extra_packages.extend(['fonts-dejavu-core'])
+  if re.search(r'ubuntu_1[4567]', obs_target, re.I):		extra_packages.extend(['fonts-dejavu-core'])
 
 if args.ssh_key:
   if args.ssh_key.endswith(".pub"):
@@ -754,6 +817,11 @@ if docker["fmt"] == "APT":
   dockerfile+="RUN apt-get -q -y update"+d_endl
   if "inst" in docker and len(docker["inst"]):
     dockerfile+="RUN apt-get -q -y install "+" ".join(docker["inst"])+d_endl
+
+  if docker_on_aufs() and 'aufs' in docker:
+    dockerfile+=docker['aufs']
+    if not re.search(r'\n$', dockerfile): dockerfile+="\n"
+  
   dockerfile+="RUN "+wget_cmd+obs_target+"/Release.key -O Release.key"+d_endl
   dockerfile+="RUN apt-key add - < Release.key"+d_endl
   dockerfile+="RUN echo 'deb "+download["url_cred"]+"/"+obs_target+"/ /' >> /etc/apt/sources.list.d/"+args.package+".list"+d_endl
@@ -764,12 +832,18 @@ if docker["fmt"] == "APT":
   dockerfile+="RUN zcat /usr/share/doc/"+args.package+"/changelog*.gz  | head -20"+d_endl
   dockerfile+="RUN echo 'apt-get install "+args.package+"' >> ~/.bash_history"+d_endl
 
+
 elif docker["fmt"] == "YUM":
   yum_install = 'yum install -y'
   if args.nogpgcheck: yum_install += ' --nogpgcheck'
   dockerfile+="RUN yum clean expire-cache"+d_endl
   if "inst" in docker and len(docker["inst"]):
     dockerfile+="RUN "+yum_install+" "+" ".join(docker["inst"])+d_endl
+
+  if docker_on_aufs() and 'aufs' in docker:
+    dockerfile+=docker['aufs']
+    if not re.search(r'\n$', dockerfile): dockerfile+="\n"
+  
   dockerfile+="RUN rpm --import "+download["url_cred"]+"/"+obs_target+"/repodata/repomd.xml.key"+d_endl
   dockerfile+="RUN "+wget_cmd+obs_target+'/'+args.project+".repo -O /etc/yum.repos.d/"+args.project+".repo"+d_endl
   if extra_packages:	dockerfile+="RUN "+yum_install+" "+" ".join(extra_packages)+d_endl
@@ -783,6 +857,11 @@ elif docker["fmt"] == "ZYPP":
   dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys refresh"+d_endl
   if "inst" in docker and len(docker["inst"]):
     dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+" ".join(docker["inst"])+d_endl
+
+  if docker_on_aufs() and 'aufs' in docker:
+    dockerfile+=docker['aufs']
+    if not re.search(r'\n$', dockerfile): dockerfile+="\n"
+  
   dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys addrepo "+download["url_cred"]+obs_target+"/"+args.project+".repo"+d_endl
   if extra_packages:	dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+" ".join(extra_packages)+d_endl
   if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
