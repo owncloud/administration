@@ -628,8 +628,7 @@ ap.add_argument("-S", "--ssh-key", help="Import an ssh-key (e.g. ~/.ssh/id_dsa.p
 ap.add_argument("project", metavar="PROJECT", nargs="?", help="obs project name. Alternate syntax to PROJ/PACK")
 ap.add_argument("package", metavar="PACKAGE",  nargs="?", help="obs package name, or PROJ/PACK")
 ap.add_argument("platform",metavar="PLATFORM", nargs="?", help="obs build target name. Alternate syntax to -p. Default: "+target)
-ap.add_argument("--run", "--exec", nargs="+", metavar="SHELLCMDARGS", help="Execute a command (with parameters) via docker run. Default: build only and print exec instructions.")
-args = ap.parse_args()  # --help is automatic
+args,run_args = ap.parse_known_args()  # --help is automatic
 
 if args.version: ap.exit(__VERSION__)
 if args.print_image_name_only or args.dockerfile:
@@ -819,6 +818,18 @@ if args.ssh_key:
     docker_cmd_cmd='mkdir -p /var/run/sshd; /usr/sbin/sshd; ip a | grep global ; exec /bin/bash'
 
 
+docker_run_int=["docker","run"]
+ampersand=False
+for item in run_args[1:]: 
+  if(item=='@'):
+    ampersand=True
+    docker_run_int.append(image_name)
+  else:
+    docker_run_int.append(item)
+if not ampersand and run_args:
+  print("Use @ for ImageName")  
+  sys.exit(1)
+  
 docker_run=["docker","run","-ti"]
 for vol in docker_volumes:
   docker_run.extend(["-v", vol])
@@ -828,14 +839,26 @@ if args.dockerfile:
 else:
   print("#+ " + " ".join(docker_run))
 
+
+
 ## multi line docker commands are no longer supported in 'from', use 'pre'!
 dockerfile="FROM "+docker['from']+"\n"
+
+if 'run' in obs_config['target'][target] and not args.dockerfile:
+  startfile = context_dir+'/start.sh'
+  f = open(startfile,'w')
+  f.write(obs_config['target'][target]['run'])
+  os.fchmod(f.fileno(),0o755) 
+  f.close()
+  dockerfile+='ADD ./start.sh /root/\n'
+  
 if 'pre' in docker:
   dockerfile+=docker['pre']
   if not re.search(r'\n$', dockerfile):
     dockerfile+="\n"
 dockerfile+="ENV TERM ansi\n"
 dockerfile+="ENV HOME /root\n"
+
 
 wget_cmd="wget -nv"
 if "username" in download: wget_cmd+=" --user '"+download["username"]+"'"
@@ -917,6 +940,7 @@ if args.xauth:
 dockerfile+='RUN : "'+" ".join(docker_run)+'"'+"\n"
 dockerfile+='CMD '+docker_cmd_cmd+"\n"
 
+
 if args.dockerfile:
   run(['rm', '-rf', context_dir])
   print(dockerfile)
@@ -950,7 +974,7 @@ else:
   if not args.quiet:
     if r:
       print("Failed with non-zero exit code="+str(r)+". Check for errors in the above log.\n")
-      args.run = False
+      run_args = None
     else:
       print("Image successfully created. Check for warnings in the above log.\n")
 print(time.strftime("build time: %H:%M:%S", time.gmtime(time.time()-start_time)))
@@ -958,11 +982,15 @@ print(time.strftime("build time: %H:%M:%S", time.gmtime(time.time()-start_time))
 if not args.rm and not r and not args.quiet:
   print("You may remove unused container/images with e.g.\n "+docker_cmd_clean_c+"\n "+docker_cmd_clean_i+"\n")
 
-if not r and not args.run:
+if not r and not run_args:
   print("You can run the new image with:\n "+" ".join(docker_run))
 
-if args.run:
-  if re.search(r'[\s;&<>"]', args.run[0]): args.run=['/bin/bash', '-c', " ".join(args.run)]
-  r = run(docker_run+args.run, redirect_stderr=False, redirect_stdout=False, return_code=True)
-
+#if args.run:
+#  if re.search(r'[\s;&<>"]', args.run[0]): args.run=['/bin/bash', '-c', " ".join(args.run)]
+if run_args:
+  if run_args[0]=="run":
+    r = run(docker_run_int, redirect_stderr=False, redirect_stdout=False, return_code=True)
+  else:
+    print("Keyword can only be 'run'")
+    print("Usage: obs-docker-install ee:8.0 owncloud-enterprise xUbuntu_14.10 -- run -ti -p 8888:80 @ /bin/bash /root/start.sh")
 sys.exit(r)
