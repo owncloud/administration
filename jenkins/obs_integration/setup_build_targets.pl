@@ -8,11 +8,12 @@
 # v0.1, 2015-03-06, jw, initial draught.
 # v0.2, 2015-03-08, jw, option parser, done, obs meta pkg parser done, meta pkg setter todo.
 # v0.3, 2015-03-09, jw, meta pkg setter done. wipebinaries option added.
+# v0.4, 2015-03-31, jw, allow _x86 suffix in set32.
 
 use Data::Dumper;
 use XML::Simple;
 
-my $version = '0.3';
+my $version = '0.4';
 my $verbose = 1;
 my $obs_api = $ENV{'OBS_API'} || 'https://s2.owncloud.com';
 my $osc_cmd = $ENV{'OSC_CMD'} || 'osc';
@@ -274,9 +275,11 @@ sub mk_repo_aliases
     }
 
   # hack to allow obsoleting the x in front of Ubuntu some day.
+  # hack to allow _x86 suffix from ownbrander.
   for my $n (keys %a)
     {
       $a{'x'.$n} = $a{$n} if $n =~ m{^ubuntu} and not exists $a{'x'.$n};
+      $a{$n.'_x86'} = $a{$n} if not exists $a{$n.'_x86'};
     }
   return \%a;
 }
