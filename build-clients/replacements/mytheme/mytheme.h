@@ -14,7 +14,7 @@
 #ifndef MY_THEME_H
 #define MY_THEME_H
 
-#include "mirall/theme.h"
+#include "theme.h"
 
 #include <QString>
 #include <QDebug>
