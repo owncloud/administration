@@ -839,18 +839,23 @@ if args.ssh_key:
 
 
 docker_run_int=["docker","run"]
-ampersand=False
+atSign=False
+
+if run_args and run_args[0]!="run":
+  print("Keyword can only be 'run'")
+  print("Usage: obs-docker-install ee:8.0 owncloud-enterprise xUbuntu_14.10 -- run -ti -p 8888:80 @ /bin/bash /root/start.sh")
+  sys.exit(1)
 for item in run_args[1:]: 
   if(item=='@'):
-    ampersand=True
+    atSign=True
     docker_run_int.append(image_name)
   else:
     docker_run_int.append(item)
-if not ampersand and run_args:
+if not atSign and run_args:
   # print("run: Use @ for ImageName after docker run options, and before docker run shell command.")
   # sys.exit(1)
   ## user normally does not provide an image name or command to run. We do that oourselves...
-  ## Caution: Keep in sync with dockerfile+=ADD ... below
+  ## CAUTION: Keep in sync with dockerfile+=ADD ... below
   docker_run_int.extend([image_name, '/bin/bash', '/root/start.sh'])
   
 docker_run=["docker","run","-ti"]
