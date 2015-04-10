@@ -57,12 +57,13 @@
 # V2.10 -- 2015-03-30, jw  converted config file format from json to yaml. Human readability is key!
 #			   aufs changed to aufs_hack and no longer automatic. It is now triggered by env AUFS_HACK=1 ...
 #                          added yaml_load_expand(): to use 'base' elements in 'target' as inheritance templates.
+# V2.11 -- 2015-04-10, jw  added support for -- run -ti -p 888:80, using the 'run' snippets in the yaml file.
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="2.10"
+__VERSION__="2.11"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import yaml, sys, os, re, time, tempfile
@@ -75,7 +76,7 @@ except ImportError:
   import urllib2			# python2
 
 
-target="Ubuntu_14.04"		# default value
+target="Ubuntu_14.10"		# default value
 
 default_obs_config_yaml = "# Written by "+sys.argv[0]+""" -- edit also the builtin template
 obs:
@@ -609,10 +610,9 @@ self_cmd = " ".join(sys.argv)
 ap = ArgumentParser(
   formatter_class=RawDescriptionHelpFormatter,
   epilog="""Example:
- """+sys.argv[0]+""" isv:ownCloud:desktop/owncloud-client CentOS_CentOS-6
+ """+sys.argv[0]+""" isv:ownCloud:desktop owncloud-client CentOS_CentOS-6
 
-Suggested cleanup:
- """+docker_cmd_clean_c+"\n "+docker_cmd_clean_i+"""
+ """+sys.argv[0]+""" isv:ownCloud:community:8.0 owncloud xUbuntu_14.10 -- run -ti -p 8888:80 @ /bin/bash /root/start.sh
 
 Version: """+__VERSION__,
   description="Create docker images for RPM and DEB packages built with openSUSE Build Service (public or other instance).\nUse env AUFS_HACK=1 to circumvent libcap issues with docker running on aufs.\n"
@@ -1024,5 +1024,5 @@ if run_args:
     r = run(docker_run_int, redirect_stderr=False, redirect_stdout=False, return_code=True)
   else:
     print("Keyword can only be 'run', not ", run_args)
-    print("Usage: obs-docker-install ee:8.0 owncloud-enterprise xUbuntu_14.10 -- run -ti -p 8888:80 [@ /bin/bash /root/start.sh]")
+    print("Usage: obs-docker-install ee:8.0 owncloud-enterprise "+target+" -- run -ti -p 8888:80 [@ /bin/bash /root/start.sh]")
 sys.exit(r)
