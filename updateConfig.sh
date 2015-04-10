@@ -11,24 +11,20 @@ fi
 git clone -q git@github.com:owncloud/documentation.git /tmp/owncloud-documentation
 cd /tmp/owncloud-documentation
 
-for branch in stable7 master
+for branch in stable7 stable8 master
 do
 	git checkout -q $branch
 	cd $currentDir
 
-	if [[ $branch == 'master' ]]; then
-		branch=stable8
-	fi
-
 	# download current version of config.sample.php
 	curl -sS -o /tmp/config.sample.php https://raw.githubusercontent.com/owncloud/core/$branch/config/config.sample.php
 
-	if [[ $branch == 'stable8' ]]; then
-		# use that to generate the documentation
-		php convert.php --input-file=/tmp/config.sample.php --output-file=/tmp/owncloud-documentation/admin_manual/configuration_server/config_sample_php_parameters.rst
-	else
+	if [[ $branch == 'stable7' ]]; then
 		# use that to generate the documentation
 		php convert.php --input-file=/tmp/config.sample.php --output-file=/tmp/owncloud-documentation/admin_manual/configuration/config_sample_php_parameters.rst
+	else
+		# use that to generate the documentation
+		php convert.php --input-file=/tmp/config.sample.php --output-file=/tmp/owncloud-documentation/admin_manual/configuration_server/config_sample_php_parameters.rst
 	fi
 
 	cd /tmp/owncloud-documentation
