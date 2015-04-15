@@ -1,4 +1,5 @@
 Format: 1.0
+# CAUTION: Keep in sync with genbranding.pl:addDebChangelog(...)
 Source: [% shortname %]-client
 Version: [% version_deb %]-[% buildrelease_deb %]
 Binary: [% shortname %]-client

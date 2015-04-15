@@ -589,8 +589,10 @@ if( $opt_o ) {
        $change .= "\n  $create_msg"  if length $create_msg;
        $change .= "\n";
 
-    # FIXME: themename_deb
-    my $debpackname = lc $packName;
+    my $debpackname = lc $substs->{shortname};
+    # CAUTION: keep in sync with templates/client/v1_8_0/SHORTNAME-client.dsc.in
+    # debpackname must be based on shortname. If we get an error due to upper case shortname,
+    # we need to fix this in the templates. Debian packages are always lower case.
     addDebChangelog(  $debpackname, $change, $substs->{version_deb} );
     addSpecChangelog( $packName, $change );
     chdir( "../.." );
