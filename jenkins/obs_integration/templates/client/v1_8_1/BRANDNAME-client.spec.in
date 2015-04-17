@@ -63,8 +63,8 @@ Source0:        [% tarball %].tar.bz2
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 Source1:        [% APPLICATION_EXECUTABLE %].sh
 Patch1:         autostart_use_wrapper.diff
-Patch2:         dont_reset_ssl_config.diff
 %endif
+Patch2:         dont_reset_ssl_config.diff
 
 %if (0%{?rhel_version} && 0%{?rhel_version}<700) || (0%{?centos_version} && 0%{?centos_version}<700) || 0%{?suse_version} == 1110
 %if 0%{?suse_version} == 1110
