@@ -1,0 +1,21 @@
+diff --git a/src/libsync/account.cpp b/src/libsync/account.cpp
+index a46611d..3a751e8 100644
+--- a/src/libsync/account.cpp
++++ b/src/libsync/account.cpp
+@@ -321,7 +321,7 @@ QNetworkReply *Account::getRequest(const QString &relPath)
+ QNetworkReply *Account::getRequest(const QUrl &url)
+ {
+     QNetworkRequest request(url);
+-    request.setSslConfiguration(this->createSslConfig());
++    //request.setSslConfiguration(this->createSslConfig());
+     return _am->get(request);
+ }
+
+@@ -333,7 +333,7 @@ QNetworkReply *Account::davRequest(const QByteArray &verb, c
+ QNetworkReply *Account::davRequest(const QByteArray &verb, const QUrl &url, QNe
+ {
+     req.setUrl(url);
+-    req.setSslConfiguration(this->createSslConfig());
++    //req.setSslConfiguration(this->createSslConfig());
+     return _am->sendCustomRequest(req, verb, data);
+ }

@@ -1,0 +1,7 @@
+[Desktop Entry]
+Categories=Utility
+Type=Application
+Exec=[% APPLICATION_EXECUTABLE %]
+Name=[% desktopdescription %]
+GenericName=Folder Sync
+Icon=[% APPLICATION_EXECUTABLE %]
