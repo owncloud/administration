@@ -589,7 +589,7 @@ if( $opt_o ) {
        $change .= "\n  $create_msg"  if length $create_msg;
        $change .= "\n";
 
-    my $debpackname = lc $substs->{shortname};
+    my $debpackname = lc "$substs->{shortname}-client";
     # CAUTION: keep in sync with templates/client/v1_8_0/SHORTNAME-client.dsc.in
     # debpackname must be based on shortname. If we get an error due to upper case shortname,
     # we need to fix this in the templates. Debian packages are always lower case.
