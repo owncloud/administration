@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/bin/bash -xe
 OPTIND=1         # Reset in case getopts has been used previously in the shell.
-
 CMD=$(basename $0)
 
+build_number=0
 extract_symbols=false
 nightly_build=false
 cmake_params=
@@ -15,7 +15,8 @@ show_usage() {
 show_help() {
     show_usage
     echo ""
-    echo "Optional arguments:"
+    echo "Available arguments:"
+    echo "  -b ................ Build number (default: 0)"
     echo "  -c ................ Pass additional parameters to cmake"
     echo "  -e ................ Extract symbols for use with breakpad to \$PWD/symbols"
     echo "  -n ................ Build nightly build"
@@ -25,7 +26,7 @@ show_help() {
 build_client() {
     params="$1"
 
-    mkdir build
+    mkdir -p build
     pushd build
 
     if [ ! -z "$oem_theme" ]; then
@@ -37,21 +38,22 @@ build_client() {
       fi
     fi
 
-    if [ "$extract_symbols" ]; then
+    if [ "$extract_symbols" = true ]; then
       params="-DWITH_CRASHREPORTER=ON $params"
     fi
 
-    if [ "$nightly_build" ]; then
+    if [ "$nightly_build" = true ]; then
       today=$(date +%Y%m%d)
       params="$params -DVERSION_SUFFIX=-nightly$today -DMIRALL_VERSION_SUFFIX=-nightly$today"
     fi
 
-    params="$params -DMIRALL_VERSION_BUILD=$BUILD_NUMBER -DBUILD_WITH_QT4=OFF"
+    params="$params -DMIRALL_VERSION_BUILD=$build_number -DBUILD_WITH_QT4=OFF"
 
     cmake -DCMAKE_TOOLCHAIN_FILE=../admin/win/Toolchain-mingw32-openSUSE.cmake \
           -DCMAKE_BUILD_TYPE="RelWithDebInfo" \
           $params ..
     make -j4 VERBOSE=1
+    popd
 }
 
 extract_symbols() {
@@ -79,7 +81,7 @@ extract_symbols() {
         fi
     done
 
-    if [ "$nightly_build" = "true" ]; then
+    if [ "$nightly_build" = true ]; then
         folder="nightly"
     else
         folder="stable"
@@ -93,14 +95,17 @@ create_package() {
       ../admin/win/download_runtimes.sh
     fi
     make package
+    popd
 }
 
 # main
-while getopts "h?ec:" opt; do
+while getopts "b:h?ec:n:" opt; do
     case "$opt" in
     h|\?)
         show_help
         exit 0
+        ;;
+    b)  build_number=$OPTARG
         ;;
     c)  cmake_params=$OPTARG
         ;;
@@ -117,15 +122,15 @@ shift $((OPTIND-1))
 
 path=$@
 
-if [ -e $path ]; then
+if [ -z $path ]; then
     show_usage
     exit 0
 fi
 
 cd "$path"
 build_client
-if [ $extract_symbols ]; then
+if [ "$extract_symbols" = true ]; then
     extract_symbols
-fi;
+fi
 create_package
 
