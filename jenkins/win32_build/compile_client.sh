@@ -3,8 +3,9 @@ OPTIND=1         # Reset in case getopts has been used previously in the shell.
 
 CMD=$(basename $0)
 
-cmake_params=
 extract_symbols=false
+nightly_build=false
+cmake_params=
 path=
 
 show_usage() {
@@ -17,7 +18,8 @@ show_help() {
     echo "Optional arguments:"
     echo "  -c ................ Pass additional parameters to cmake"
     echo "  -e ................ Extract symbols for use with breakpad to \$PWD/symbols"
-    echo "  -h, -?............. Show this help"
+    echo "  -n ................ Build nightly build"
+    echo "  -h, -? ............ Show this help"
 }
 
 build_client() {
@@ -35,11 +37,11 @@ build_client() {
       fi
     fi
 
-    if [ "$enable_crashreports" == "true" ]; then
+    if [ "$extract_symbols" ]; then
       params="-DWITH_CRASHREPORTER=ON $params"
     fi
 
-    if [ "$nightly_build" = "true" ]; then
+    if [ "$nightly_build" ]; then
       today=$(date +%Y%m%d)
       params="$params -DVERSION_SUFFIX=-nightly$today -DMIRALL_VERSION_SUFFIX=-nightly$today"
     fi
@@ -103,6 +105,8 @@ while getopts "h?ec:" opt; do
     c)  cmake_params=$OPTARG
         ;;
     e)  extract_symbols=true
+        ;;
+    n)  nighly_builds=true
         ;;
     esac
 done
