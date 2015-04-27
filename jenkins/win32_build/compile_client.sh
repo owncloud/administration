@@ -38,11 +38,11 @@ build_client() {
       fi
     fi
 
-    if [ "$extract_symbols" = true ]; then
+    if [ $extract_symbols = true ]; then
       params="-DWITH_CRASHREPORTER=ON $params"
     fi
 
-    if [ "$nightly_build" = true ]; then
+    if [ $nightly_build = true ]; then
       today=$(date +%Y%m%d)
       params="$params -DVERSION_SUFFIX=-nightly$today -DMIRALL_VERSION_SUFFIX=-nightly$today"
     fi
@@ -81,7 +81,7 @@ extract_symbols() {
         fi
     done
 
-    if [ "$nightly_build" = true ]; then
+    if [ $nightly_build = true ]; then
         folder="nightly"
     else
         folder="stable"
@@ -129,7 +129,7 @@ fi
 
 cd "$path"
 build_client
-if [ "$extract_symbols" = true ]; then
+if [ $extract_symbols = true ]; then
     extract_symbols
 fi
 create_package
