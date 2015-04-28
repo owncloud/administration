@@ -6,6 +6,8 @@ build_number=0
 extract_symbols=false
 nightly_build=false
 cmake_params=
+pkcs_file=
+pkcs_password=
 path=
 
 show_usage() {
@@ -20,6 +22,8 @@ show_help() {
     echo "  -c ................ Pass additional parameters to cmake"
     echo "  -e ................ Extract symbols for use with breakpad to \$PWD/symbols"
     echo "  -n ................ Build nightly build"
+    echo "  -k ................ PKCS file with certificate and key for signing"
+    echo "  -p ................ Password to decrypt PKCS file"
     echo "  -h, -? ............ Show this help"
 }
 
@@ -98,8 +102,24 @@ create_package() {
     popd
 }
 
+sign_package() {
+    pushd build
+    installer_file=$(echo *-setup.exe)
+    unsigned_file=`basename ${installer_file} .exe`-unsigned.exe
+    mv ${installer_file} ${unsigned_file}
+    osslsigncode -pkcs12 $pkcs_file -h sha1 \
+               -pass $pkcs_password \
+               -n "ownCloud Client" \
+               -i "http://owncloud.com" \
+               -ts "http://www.startssl.com/timestamp" \
+               -in ${unsigned_file} \
+               -out ${installer_file}
+    rm ${unsigned_file}
+    popd
+}
+
 # main
-while getopts "b:h?ec:n" opt; do
+while getopts "b:h?ec:nk:p:" opt; do
     case "$opt" in
     h|\?)
         show_help
@@ -112,6 +132,10 @@ while getopts "b:h?ec:n" opt; do
     e)  extract_symbols=true
         ;;
     n)  nighly_builds=true
+        ;;
+    k)  pkcs_file=$OPTARG
+        ;;
+    p)  pkcs_password=$OPTARG
         ;;
     esac
 done
@@ -133,4 +157,6 @@ if [ $extract_symbols = true ]; then
     extract_symbols
 fi
 create_package
-
+if [ ! -z $pkcs_file ]; then
+    sign_package
+fi
