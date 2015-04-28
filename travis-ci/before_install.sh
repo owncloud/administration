@@ -24,9 +24,11 @@ cp -R ../../$APP_NAME/ .
 cd $WORKDIR
 
 if [ "$DB" == "mysql" ] ; then
+  echo "Setting up mysql ..."
   mysql -e 'create database oc_autotest;'
   mysql -u root -e "CREATE USER 'oc_autotest'@'localhost' IDENTIFIED BY 'owncloud'";
   mysql -u root -e "grant all on oc_autotest.* to 'oc_autotest'@'localhost'";
+  mysql -e "SELECT User FROM mysql.user;"
 fi
 
 if [ "$DB" == "pgsql" ] ; then
