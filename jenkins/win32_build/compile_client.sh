@@ -131,7 +131,7 @@ while getopts "b:h?ec:nk:p:" opt; do
         ;;
     e)  extract_symbols=true
         ;;
-    n)  nighly_builds=true
+    n)  nightly_build=true
         ;;
     k)  pkcs_file=$OPTARG
         ;;
