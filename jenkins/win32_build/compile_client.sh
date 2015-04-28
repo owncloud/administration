@@ -8,6 +8,8 @@ nightly_build=false
 cmake_params=
 path=
 
+echo "DEBUG: $@"
+
 show_usage() {
     echo "Usage: $CMD [-e] [-c \"cmake params\"] [-h|-?] container_path"
 }
