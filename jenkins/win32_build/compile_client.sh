@@ -8,8 +8,6 @@ nightly_build=false
 cmake_params=
 path=
 
-echo "DEBUG: $@"
-
 show_usage() {
     echo "Usage: $CMD [-e] [-c \"cmake params\"] [-h|-?] container_path"
 }
@@ -101,7 +99,7 @@ create_package() {
 }
 
 # main
-while getopts "b:h?ec:n:" opt; do
+while getopts "b:h?ec:n" opt; do
     case "$opt" in
     h|\?)
         show_help
