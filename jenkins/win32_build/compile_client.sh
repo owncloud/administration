@@ -36,7 +36,9 @@ build_client() {
     pushd build
 
     if [ ! -z "$oem_theme" ]; then
-      tar xvf ../$oem_theme.tar.xz
+      # FIXME!
+      #tar xvf ../$oem_theme.tar.xz
+      mv ../$oem_theme .
       if [ -d $PWD/$oem_theme/syncclient ]; then
         params="-DOEM_THEME_DIR=$PWD/$oem_theme/syncclient"
       else
