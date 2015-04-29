@@ -8,6 +8,7 @@ nightly_build=false
 cmake_params=
 pkcs_file=
 pkcs_password=
+oem_theme=
 path=
 
 show_usage() {
@@ -24,6 +25,7 @@ show_help() {
     echo "  -n ................ Build nightly build"
     echo "  -k ................ PKCS file with certificate and key for signing"
     echo "  -p ................ Password to decrypt PKCS file"
+    echo "  -o ................ OEM theme"
     echo "  -h, -? ............ Show this help"
 }
 
@@ -34,7 +36,7 @@ build_client() {
     pushd build
 
     if [ ! -z "$oem_theme" ]; then
-      tar xvfj ../$oem_theme.tar.bz2
+      tar xvf ../$oem_theme.tar.xz
       if [ -d $PWD/$oem_theme/syncclient ]; then
         params="-DOEM_THEME_DIR=$PWD/$oem_theme/syncclient"
       else
@@ -119,7 +121,7 @@ sign_package() {
 }
 
 # main
-while getopts "b:h?ec:nk:p:" opt; do
+while getopts "b:h?ec:nk:p:o:" opt; do
     case "$opt" in
     h|\?)
         show_help
@@ -136,6 +138,8 @@ while getopts "b:h?ec:nk:p:" opt; do
     k)  pkcs_file=$OPTARG
         ;;
     p)  pkcs_password=$OPTARG
+        ;;
+    o)  oem_theme=$OPTARG
         ;;
     esac
 done
