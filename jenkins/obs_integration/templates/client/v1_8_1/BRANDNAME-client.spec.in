@@ -202,8 +202,8 @@ Requires:       %{qtprefix}libqt4-sql
 Requires:       %{qtprefix}libqt4-sql-sqlite
 Requires:       oc-neon
 %endif
-%if 0%{?fedora_version} > 20 || 0%{?centos_version} > 700 || 0%{?suse_version} || 0%{?rhel_version} > 600
-# Fedora-19 and -20, CentOS-6, CentOS-7 don't have Suggests.
+%if 0%{?fedora_version} > 20 || 0%{?centos_version} > 700 || 0%{?suse_version} || 0%{?rhel_version} > 700
+# Fedora-19 and -20, CentOS-6, CentOS-7, RHEL_6,7 don't have Suggests.
 Suggests:	%{name}-nautilus
 %endif
 
@@ -301,6 +301,11 @@ sed -i -e 's/OVERRIDE=override/OVERRIDE=/' cmake/modules/QtVersionAbstraction.cm
 %endif
 
 %build
+echo centos_version 0%{?centos_version}
+echo rhel_version   0%{?rhel_version}
+echo fedora_version 0%{?fedora_version}
+echo suse_version   0%{?suse_version}
+
 %if %opt_hack
 export PKG_CONFIG_PATH=/opt/neon-0.30.0/%{_lib}/pkgconfig
 export PATH=/opt/neon-0.30.0/bin:$PATH
