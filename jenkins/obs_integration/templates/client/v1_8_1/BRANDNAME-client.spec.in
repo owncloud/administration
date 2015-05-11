@@ -174,7 +174,10 @@ BuildRequires:  oc-neon-devel
 %if %require_neon
 BuildRequires:  neon-devel
 %endif
+%if 0%{?suse_version} || 0%{?fedora_version} || 0%{?rhel_version} > 600 || 0%{?centos_version} > 600
+# sphinx at centos6 just fails
 %define have_doc 1
+%endif
 %endif
 
 # Version independant package name mapping between suse and fedora/centos
