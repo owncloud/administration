@@ -38,6 +38,7 @@
 #         Semantics see setup_all_oem_client.pl
 # 2015-01-22, jw, V1.7a accept also /syncclient/package.cfg instead of /mirall/package.cfg
 # 2015-03-18, jw, V1.8 better errror checking against malformed tar-files. Version number added to create message.
+# 2015-05-13, jw, V1.9 proper shortname_deb, added debian_filename().
 
 use Getopt::Std;
 use Config::IniFiles;
@@ -50,7 +51,7 @@ use Cwd;
 use Template;
 use Data::Dumper;
 
-my $version = '1.8';
+my $version = '1.9';
 my $msg_def = "created by: $0 (V$version) @ARGV";
 
 use strict;
@@ -105,6 +106,14 @@ ENDHELP
 
 
 # ======================================================================================
+sub debian_filename( $ )
+{
+  my ($name) = @_;
+  $name = lc $name;
+  $name =~ s{_}{-}g;
+  return $name;
+}
+
 sub getFileName( $ ) {
   my ($tarname) = @_;
   $tarname = basename($tarname);
@@ -232,6 +241,7 @@ Please do the following steps (or similar):
 	    $target =~ s/BRANDNAME/$substs->{themename}/;
 	}
         $target =~ s/SHORTNAME/$substs->{shortname}/;
+        $target =~ s/SHORTNAME_DEB/$substs->{shortname_deb}/;
 
         if($source =~ /\.in$/) {
             print "process $clienttemplatedir/$versdir/$source to $targetDir/$target\n";
@@ -322,6 +332,8 @@ sub readOEMcmake( $ )
 	$substs{executable} = $substs{APPLICATION_EXECUTABLE};
     }
     # more tags: APPLICATION_EXECUTABLE, APPLICATION_VENDOR, APPLICATION_REV_DOMAIN, THEME_CLASS, WIN_SETUP_BITMAP_PATH
+
+    $substs{shortname_deb} = debian_filename($substs{shortname});	# debian packages don't allow upper case.
     return %substs;
 }
 
@@ -456,7 +468,7 @@ my $dirName = prepareTarball($ARGV[0], $ARGV[1]);
 # returns hash reference
 my $substs = getSubsts($dirName);
 $substs->{themename} = $theme;
-$substs->{themename_deb} = lc $theme;	# debian packagin guide allows no upper case. (e.g. SURFdrive).
+$substs->{themename_deb} = debian_filename($theme);	# debian packagin guide allows no upper case. (e.g. SURFdrive).
 $substs->{create_msg} = $create_msg || '' unless defined $substs->{create_msg};
 $substs->{summary} = "The $theme client";	# prevent shdbox to die with empty summary.
 
@@ -589,7 +601,7 @@ if( $opt_o ) {
        $change .= "\n  $create_msg"  if length $create_msg;
        $change .= "\n";
 
-    my $debpackname = lc "$substs->{shortname}-client";
+    my $debpackname = debian_filename("$substs->{shortname}-client");
     # CAUTION: keep in sync with templates/client/v1_8_0/SHORTNAME-client.dsc.in
     # debpackname must be based on shortname. If we get an error due to upper case shortname,
     # we need to fix this in the templates. Debian packages are always lower case.
