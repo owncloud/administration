@@ -19,8 +19,8 @@
 ##  isv:ownCloud:desktop
 ##  isv:ownCloud:community:nightly
 ##  isv:ownCloud:community:testing
-##  github.com/owncloud/administration/jenkins/obs_integration/templates/client/BRANDNAME.client.spec.in
-##  -> you can modify it in testing, and play around for a while, but then merge into the copy
+##  github.com/owncloud/administration/jenkins/obs_integration/templates/client/v1_8_1/SHORTNAME-client.spec.in
+##  -> you can modify it in testing, and play around for a while, but then merge into the copy on
 ##     github, which is authorative for the branded clients.
 ##
 ## [% create_msg %]
