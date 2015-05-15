@@ -385,6 +385,13 @@ install -m 755 %{SOURCE1} $RPM_BUILD_ROOT/usr/bin/[% APPLICATION_EXECUTABLE %]
 
 %if %{?suse_version:1}0
 %suse_update_desktop_file -n [% APPLICATION_EXECUTABLE %]
+# workaround for https://github.com/owncloud/ownbrander/issues/322
+for desktop_icon_dir in $RPM_BUILD_ROOT/usr/share/icons/hicolor/*/apps; do
+  # copy shortname to executable name, if missing.
+  if [ -f $desktop_icon_dir/[% shortname %].png -a ! -f $desktop_icon_dir/[% APPLICATION_EXECUTABLE %].png ]; then
+    cp $desktop_icon_dir/[% shortname %].png $desktop_icon_dir/[% APPLICATION_EXECUTABLE %].png
+  fi
+done
 %endif
 
 %check
