@@ -40,6 +40,7 @@
 # 2015-03-18, jw, V1.8 better errror checking against malformed tar-files. Version number added to create message.
 # 2015-05-13, jw, V1.9 proper shortname_deb, added debian_filename().
 # 2015-05-15, jw, V1.10 use shortname in addSpecChangelog() too. 
+# 2015-05-15, jw, V1.11 fix substitution of SHORTNAME_DEB
 
 use Getopt::Std;
 use Config::IniFiles;
@@ -52,7 +53,7 @@ use Cwd;
 use Template;
 use Data::Dumper;
 
-my $version = '1.10';
+my $version = '1.11';
 my $msg_def = "created by: $0 (V$version) @ARGV";
 
 use strict;
@@ -241,8 +242,8 @@ Please do the following steps (or similar):
 	} else {
 	    $target =~ s/BRANDNAME/$substs->{themename}/;
 	}
-        $target =~ s/SHORTNAME/$substs->{shortname}/;
         $target =~ s/SHORTNAME_DEB/$substs->{shortname_deb}/;
+        $target =~ s/SHORTNAME/$substs->{shortname}/;
 
         if($source =~ /\.in$/) {
             print "process $clienttemplatedir/$versdir/$source to $targetDir/$target\n";
