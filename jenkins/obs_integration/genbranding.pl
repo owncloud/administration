@@ -39,6 +39,7 @@
 # 2015-01-22, jw, V1.7a accept also /syncclient/package.cfg instead of /mirall/package.cfg
 # 2015-03-18, jw, V1.8 better errror checking against malformed tar-files. Version number added to create message.
 # 2015-05-13, jw, V1.9 proper shortname_deb, added debian_filename().
+# 2015-05-15, jw, V1.10 use shortname in addSpecChangelog() too. 
 
 use Getopt::Std;
 use Config::IniFiles;
@@ -51,7 +52,7 @@ use Cwd;
 use Template;
 use Data::Dumper;
 
-my $version = '1.9';
+my $version = '1.10';
 my $msg_def = "created by: $0 (V$version) @ARGV";
 
 use strict;
@@ -603,11 +604,11 @@ if( $opt_o ) {
 
     my $debpackname = debian_filename("$substs->{shortname}-client");
     # CAUTION: keep in sync with templates/client/v1_8_0/SHORTNAME-client.dsc.in
-    # CAUTION: keep packName in sync with dsc.in file, note that addDebChangelog lowercases $packName
     # debpackname must be based on shortname. If we get an error due to upper case shortname,
     # we need to fix this in the templates. Debian packages are always lower case.
-    addDebChangelog(  $debpackname, $change, $substs->{version_deb} );
-    addSpecChangelog( $packName, $change );
+    # https://github.com/owncloud/ownbrander/issues/312
+    addDebChangelog(  debian_filename("$substs->{shortname}-client"), $change, $substs->{version_deb} );
+    addSpecChangelog(                 "$substs->{shortname}-client" , $change );
     chdir( "../.." );
 }
 
