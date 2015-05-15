@@ -41,6 +41,7 @@
 # 2015-05-13, jw, V1.9 proper shortname_deb, added debian_filename().
 # 2015-05-15, jw, V1.10 use shortname in addSpecChangelog() too. 
 # 2015-05-15, jw, V1.11 fix substitution of SHORTNAME_DEB
+# 2015-05-15, jw, V1.12 Also support EXECUTABLE_DEB and EXECUTABLE. needed for the autostart wrapper in centos and rhel.
 
 use Getopt::Std;
 use Config::IniFiles;
@@ -53,7 +54,7 @@ use Cwd;
 use Template;
 use Data::Dumper;
 
-my $version = '1.11';
+my $version = '1.12';
 my $msg_def = "created by: $0 (V$version) @ARGV";
 
 use strict;
@@ -237,13 +238,16 @@ Please do the following steps (or similar):
         my $target = $source;
         $target =~ s/BRANDNAME_DEB/$substs->{themename_deb}/;	# longer subst first. We have no delimiters.
         if( buildOwnCloudTheme($theme) ) {
-            # for owncloud we need the lowercase variant.
+            # for owncloud we need the lowercase variant. Evil Hack!
 	    $target =~ s/BRANDNAME/$substs->{themename_deb}/;
 	} else {
 	    $target =~ s/BRANDNAME/$substs->{themename}/;
 	}
         $target =~ s/SHORTNAME_DEB/$substs->{shortname_deb}/;
         $target =~ s/SHORTNAME/$substs->{shortname}/;
+
+        $target =~ s/EXECUTABLE_DEB/$substs->{executable_deb}/;
+        $target =~ s/EXECUTABLE/$substs->{executable}/;
 
         if($source =~ /\.in$/) {
             print "process $clienttemplatedir/$versdir/$source to $targetDir/$target\n";
@@ -336,6 +340,7 @@ sub readOEMcmake( $ )
     # more tags: APPLICATION_EXECUTABLE, APPLICATION_VENDOR, APPLICATION_REV_DOMAIN, THEME_CLASS, WIN_SETUP_BITMAP_PATH
 
     $substs{shortname_deb} = debian_filename($substs{shortname});	# debian packages don't allow upper case.
+    $substs{executable_deb} = debian_filename($substs{executable});	# No case know where this is needed. But hey.
     return %substs;
 }
 
