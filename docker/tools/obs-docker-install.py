@@ -59,7 +59,7 @@
 #                          added yaml_load_expand(): to use 'base' elements in 'target' as inheritance templates.
 # V2.11 -- 2015-04-10, jw  added support for -- run -ti -p 888:80, using the 'run' snippets in the yaml file.
 # V2.12	-- 2015-05-18, jw  survive missing [run] in yaml. Added default run snippets to builtin yaml.
-#                    
+#                          Error fallback added: make one attempt to create an image despite install errors.
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
@@ -944,6 +944,7 @@ now=time.strftime('%Y%m%d%H%M')
 start_time=time.time()
 d_endl="\n"
 if args.keep_going: d_endl = " || true\n"
+dockerfile_tail=''
 
 if docker["fmt"] == "APT":
   if args.nogpgcheck: print("Option nogpgcheck not implemented for APT")
@@ -962,9 +963,9 @@ if docker["fmt"] == "APT":
   dockerfile+="RUN apt-get -q -y update"+d_endl
   if extra_packages: 	dockerfile+="RUN apt-get -q -y install "+' '.join(extra_packages)+d_endl
   if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
-  dockerfile+="RUN date="+now+" apt-get -q -y update && apt-get -q -y install "+args.package+d_endl
-  dockerfile+="RUN zcat /usr/share/doc/"+args.package+"/changelog*.gz  | head -20"+d_endl
-  dockerfile+="RUN echo 'apt-get install "+args.package+"' >> ~/.bash_history"+d_endl
+  dockerfile+="RUN date="+now+" apt-get -q -y update && apt-get -q -y install "+args.package
+  dockerfile_tail ="RUN zcat /usr/share/doc/"+args.package+"/changelog*.gz  | head -20"+d_endl
+  dockerfile_tail+="RUN echo 'apt-get install "+args.package+"' >> ~/.bash_history"+d_endl
 
 
 elif docker["fmt"] == "YUM":
@@ -982,9 +983,9 @@ elif docker["fmt"] == "YUM":
   dockerfile+="RUN "+wget_cmd+obs_target+'/'+args.project+".repo -O /etc/yum.repos.d/"+args.project+".repo"+d_endl
   if extra_packages:	dockerfile+="RUN "+yum_install+" "+" ".join(extra_packages)+d_endl
   if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
-  dockerfile+="RUN date="+now+" yum clean expire-cache && "+yum_install+" "+args.package+d_endl
-  dockerfile+="RUN rpm -q --changelog "+args.package+" | head -20"+d_endl
-  dockerfile+="RUN echo '"+yum_install+" "+args.package+"' >> ~/.bash_history"+d_endl
+  dockerfile+="RUN date="+now+" yum clean expire-cache && "+yum_install+" "+args.package
+  dockerfile_tail="RUN rpm -q --changelog "+args.package+" | head -20"+d_endl
+  dockerfile_tail+="RUN echo '"+yum_install+" "+args.package+"' >> ~/.bash_history"+d_endl
 
 elif docker["fmt"] == "ZYPP":
   if args.nogpgcheck: print("Option nogpgcheck not implemented for ZYPP")
@@ -999,20 +1000,25 @@ elif docker["fmt"] == "ZYPP":
   dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys addrepo "+download["url_cred"]+obs_target+"/"+args.project+".repo"+d_endl
   if extra_packages:	dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+" ".join(extra_packages)+d_endl
   if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
-  dockerfile+="RUN date="+now+" zypper --non-interactive --gpg-auto-import-keys refresh && zypper --non-interactive --gpg-auto-import-keys install "+args.package+d_endl
-  dockerfile+="RUN rpm -q --changelog "+args.package+" | head -20"+d_endl
-  dockerfile+="RUN echo 'zypper install "+args.package+"' >> ~/.bash_history"+d_endl
+
+  dockerfile+="RUN date="+now+" zypper --non-interactive --gpg-auto-import-keys refresh && zypper --non-interactive --gpg-auto-import-keys install "+args.package
+  dockerfile_tail = "RUN rpm -q --changelog "+args.package+" | head -20"+d_endl
+  dockerfile_tail +="RUN echo 'zypper install "+args.package+"' >> ~/.bash_history"+d_endl
 
 else:
   raise ValueError("dockerfile generator not implemented for fmt="+docker["fmt"])
 
 if args.xauth:
-  dockerfile+="ENV DISPLAY unix:0\n"
-  dockerfile+="ENV XDG_RUNTIME_DIR /run/user/1000\n"
-  dockerfile+="ENV XAUTHORITY "+xauthfile+"\n"
-  dockerfile+='RUN : "'+xa_cmd+'"'+"\n"
-dockerfile+='RUN : "'+" ".join(docker_run)+'"'+"\n"
-dockerfile+='CMD '+docker_cmd_cmd+"\n"
+  dockerfile_tail +="ENV DISPLAY unix:0\n"
+  dockerfile_tail +="ENV XDG_RUNTIME_DIR /run/user/1000\n"
+  dockerfile_tail +="ENV XAUTHORITY "+xauthfile+"\n"
+  dockerfile_tail +='RUN : "'+xa_cmd+'"'+"\n"
+dockerfile_tail +='RUN : "'+" ".join(docker_run)+'"'+"\n"
+dockerfile_tail +='CMD '+docker_cmd_cmd+"\n"
+
+# dockerfile_ign has the most-likely-command-to-fail wrapped with '&& true', so that it does not bail out.
+dockerfile_ign = dockerfile + " || true" + d_endl + dockerfile_tail
+dockerfile     = dockerfile +              d_endl + dockerfile_tail
 
 
 if args.dockerfile:
@@ -1044,13 +1050,22 @@ else:
   # using stdin would silently disable ADD instructions.
   r=run(docker_build, redirect_stdout=False, redirect_stderr=False, return_code=True)
   run.verbose -= 1
-  run(['rm', '-rf', context_dir])
-  if not args.quiet:
+  if not args.quiet:	# FIXME: quiet also suppresses the rebuild on error??
     if r:
       print("Failed with non-zero exit code="+str(r)+". Check for errors in the above log.\n")
       run_args = None
+
+      fd=open(context_dir+"/Dockerfile", "w")
+      fd.write(dockerfile_ign) 		# fallback to the error-ignoring Dockerfile
+      fd.close()
+      r2 = run(docker_build, redirect_stdout=False, redirect_stderr=False, return_code=True)
+      if not r2:
+        print("\n\nERROR: Image build failed. Rebuilt ignoring errors.  Try to rerun the last command from the shell history inside\n "+" ".join(docker_run)+"\n\n")
+
     else:
       print("Image successfully created. Check for warnings in the above log.\n")
+  run(['rm', '-rf', context_dir])
+
 print(time.strftime("build time: %H:%M:%S", time.gmtime(time.time()-start_time)))
 
 if not args.rm and not r and not args.quiet:
