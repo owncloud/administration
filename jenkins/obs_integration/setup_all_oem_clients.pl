@@ -254,19 +254,20 @@ for my $branding (@candidates)
     ## We use trailing slash here again to avoid catenating.
     run("./setup_oem_client.pl '$branding' '$container_project_colon' '$obs_api' '$template_prj'");
 
+    # inspection code below commented out. It assumes shortname == executable name.
     ## babble out the diffs. Just for the logfile.
     ## This helps catching outdated *.in files in templates/client/* -- 
     ## genbranding uses them. Mabye it should use files from the template package as template?
-    for my $f ('%s-client.spec', '%s-client.dsc', 'debian.control', '%s-client.desktop')
-      {
-        my $template_file = sprintf "$f", 'owncloud';
-        my $branding_file = sprintf "$f", $branding;
-	run("$osc_cmd cat $template_prj $template_pkg $template_file > $tmp/$template_file || true");
-	run("$osc_cmd cat '$project' '$branding-client' '$branding_file'> $tmp/$branding_file || true");
-	run("diff -ub '$tmp/$template_file' '$tmp/$branding_file' || true");
-	unlink("$tmp/$template_file");
-	unlink("$tmp/$branding_file");
-      }
+    # for my $f ('%s-client.spec', '%s-client.dsc', 'debian.control', '%s-client.desktop')
+    #   {
+    #     my $template_file = sprintf "$f", 'owncloud';
+    #     my $branding_file = sprintf "$f", $branding;
+    # 	run("$osc_cmd cat $template_prj $template_pkg $template_file > $tmp/$template_file || true");
+    # 	run("$osc_cmd cat '$project' '$branding-client' '$branding_file'> $tmp/$branding_file || true");
+    # 	run("diff -ub '$tmp/$template_file' '$tmp/$branding_file' || true");
+    # 	unlink("$tmp/$template_file");
+    # 	unlink("$tmp/$branding_file");
+    #      }
   }
 
 if (@client_filter and scalar(keys %client_filter))
