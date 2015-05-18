@@ -58,12 +58,14 @@
 #			   aufs changed to aufs_hack and no longer automatic. It is now triggered by env AUFS_HACK=1 ...
 #                          added yaml_load_expand(): to use 'base' elements in 'target' as inheritance templates.
 # V2.11 -- 2015-04-10, jw  added support for -- run -ti -p 888:80, using the 'run' snippets in the yaml file.
+# V2.12	-- 2015-05-18, jw  survive missing [run] in yaml. Added default run snippets to builtin yaml.
+#                    
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="2.11"
+__VERSION__="2.12"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import yaml, sys, os, re, time, tempfile
@@ -98,6 +100,20 @@ target:
     fmt: YUM
     from: centos:centos6
     inst: [wget, samba-client]
+    run:
+      '^(owncloud)$': |
+        yum install -y mysql-server
+        yum install -y php-mysql
+        service mysqld start
+        sleep 5
+        /usr/bin/mysqladmin -u root password root
+        service httpd start
+        sleep 2
+        curl -s localhost:80/owncloud/ | grep pass
+        php --version
+      '(-client)$': |
+        ${package}
+
 
   CentOS_CentOS-6:
     base: [CentOS_6]
@@ -171,6 +187,21 @@ target:
     fmt: YUM
     from: fedora:20
     inst: [wget]
+    run:
+      '^(owncloud)$': |
+        mysql_install_db
+        chown -R mysql:mysql /var/lib/mysql
+        chown -R mysql:mysql /var/log/mariadb/
+        service mariadb start
+        sleep 3
+        /usr/bin/mysqladmin -u root password root
+        service httpd start
+        sleep 1
+        curl -s localhost:80/owncloud/ | grep pass
+        php --version
+      '(-client)$': |
+        ${package}
+
 
   Fedora_21:
     aufs_hack: |
@@ -185,6 +216,18 @@ target:
     fmt: APT
     from: ubuntu:12.04
     inst: [wget, apt-transport-https]
+    run:
+      '^(owncloud|owncloud-enterprise)$': |
+        service mysql start
+        sleep 3
+        /usr/bin/mysqladmin -u root password root
+        service apache2 start
+        sleep 1
+        curl -s localhost:80/owncloud/ | grep pass
+        php --version
+      '(-client)$': |
+        ${package}
+
 
   Ubuntu_12.10: { base: [Ubuntu_12.04], from: 'ubuntu:12.10' }
   Ubuntu_13.04: { base: [Ubuntu_12.04], from: 'ubuntu:13.04' }
@@ -597,8 +640,7 @@ def matched_package_run_script(package_name, platform_name, pat_dict):
     print("ERROR: run("+package_name+") in 'target->"+platform_name+"' matches multiple patterns: ", match_list, file=sys.stderr)
     sys.exit(1)
   if (len(match_list) < 1):
-    print("ERROR: run("+package_name+") in 'target->"+platform_name+"' matches no pattern: ", pat_dict.keys(), file=sys.stderr)
-    sys.exit(1)
+    print("Warning: run("+package_name+") in 'target->"+platform_name+"' matches no pattern: ", pat_dict.keys(), file=sys.stderr)
   return ret
 
 ################################################################################
