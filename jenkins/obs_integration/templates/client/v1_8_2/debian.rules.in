@@ -1,0 +1,32 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+# This file was originally written by Joey Hess and Craig Small.
+# As a special exception, when this file is copied by dh-make into a
+# dh-make output file, you may use that output file without restriction.
+# This special exception was added by Craig Small in version 0.37 of dh-make.
+
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+
+export DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+
+SHELL=/bin/bash
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	if grep -q ' 12.04 LTS ' /etc/issue; then \
+	  patch -p0 < /usr/src/packages/SOURCES/neon27_ubuntu1204_compat_csync.diff; \
+	  sed -i.orig -e 's/OVERRIDE=override/OVERRIDE=/' cmake/modules/QtVersionAbstraction.cmake; \
+	fi
+	# not sure, when which variables are set.
+	echo source:Version=${source:Version}
+	echo source:Upstream-Version=${source:Upstream-Version}
+	echo binary:Version=${binary:Version}
+
+	# protect against poisonous tar-balls.
+	if [ -d binary ]; then ls -la; echo; echo "A top level directory named 'binary' exists. This kills dpkg-genchangelog."; echo; echo "Please remove that directory."; echo; echo; exit 1; fi
+
+	dh_auto_configure -- -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_DOCDIR=/usr/share/doc/[% shortname %]-client -DSYSCONF_INSTALL_DIR=/etc -DWITH_DOC=FALSE -DCMAKE_SKIP_RPATH=FALSE -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE -DOEM_THEME_DIR=$(PWD)/[% themename %]/[% oem_sub_dir %]
