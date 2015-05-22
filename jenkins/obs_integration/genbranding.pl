@@ -315,7 +315,9 @@ sub readOEMcmake( $ )
 	    print "  * found <$key> => $val\n";
 	    $substs{$key} = $val;
 	} else {
-            print "  * OEM.cmake PARSE error: $l\n";
+	    unless( $l =~ /^\s*$/ || $l =~ /^\s*#/ ) {
+	        print "  * OEM.cmake PARSE error: $l\n";
+	    }
         }
     }
 
