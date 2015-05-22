@@ -146,6 +146,7 @@ BuildRequires:  libQt5WebKitWidgets-devel
 BuildRequires:  libQt5Xml-devel
 BuildRequires:  libQt5PrintSupport-devel
 BuildRequires:  libQt5DBus-devel
+BuildRequires:  libQt5Concurrent-devel
 BuildRequires:  libqt5-linguist-devel
 
 %else # no qt5
