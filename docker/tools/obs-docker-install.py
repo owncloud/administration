@@ -60,12 +60,15 @@
 # V2.11 -- 2015-04-10, jw  added support for -- run -ti -p 888:80, using the 'run' snippets in the yaml file.
 # V2.12	-- 2015-05-18, jw  survive missing [run] in yaml. Added default run snippets to builtin yaml.
 #                          Error fallback added: make one attempt to create an image despite install errors.
+# V2.13 -- 2015-05-18, jw  Fixed '--dump run' to work with default target too. Apache start code as default start.sh script.
+#			   Try obs target xUbuntu* if the specified Ubuntu* is not there.
+#                          Printed Dockerfile has a hint about start.sh script if one exists. 
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="2.12"
+__VERSION__="2.13"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import yaml, sys, os, re, time, tempfile
@@ -113,7 +116,7 @@ target:
         php --version
       '(-client)$': |
         ${package}
-
+      '': |
 
   CentOS_CentOS-6:
     base: [CentOS_6]
@@ -201,7 +204,8 @@ target:
         php --version
       '(-client)$': |
         ${package}
-
+      '': |
+        service httpd start
 
   Fedora_21:
     aufs_hack: |
@@ -227,13 +231,15 @@ target:
         php --version
       '(-client)$': |
         ${package}
-
+      '': |
+        service apache2 start
 
   Ubuntu_12.10: { base: [Ubuntu_12.04], from: 'ubuntu:12.10' }
   Ubuntu_13.04: { base: [Ubuntu_12.04], from: 'ubuntu:13.04' }
   Ubuntu_13.10: { base: [Ubuntu_12.04], from: 'ubuntu:13.10' }
   Ubuntu_14.04: { base: [Ubuntu_12.04], from: 'ubuntu:14.04' }
   Ubuntu_14.10: { base: [Ubuntu_12.04], from: 'ubuntu:14.10' }
+  Ubuntu_15.04: { base: [Ubuntu_12.04], from: 'ubuntu:15.04' }
 
   # xUbuntu* are simply aliases for Ubuntu*
   xUbuntu_12.04: { base: [Ubuntu_12.04] }
@@ -242,11 +248,15 @@ target:
   xUbuntu_13.10: { base: [Ubuntu_13.10] }
   xUbuntu_14.04: { base: [Ubuntu_14.04] }
   xUbuntu_14.10: { base: [Ubuntu_14.10] }
+  xUbuntu_15.04: { base: [Ubuntu_15.04] }
 
   openSUSE_13.1:
     fmt: ZYPP
     from: opensuse:13.1
     inst: [ca-certificates]
+    run:
+      '': |
+        service apache2 start
 
   SLE_12:        { base: [openSUSE_13.1], pre: '# attention: using openSUSE base image!!!' }
   openSUSE_13.2: { base: [openSUSE_13.1], from: 'opensuse:13.2' }
@@ -490,7 +500,7 @@ def docker_on_aufs():
   return False
 
 
-def obs_fetch_bin_version(api, download_item, prj, pkg, target):
+def obs_fetch_bin_version(api, download_item, prj, pkg, target, retry=True):
   cfg = obs_download_cfg(obs_config['obs'][api], download_item, prj, urltest_target=None, verbose=False)
   lu = ListUrl()
   bin_seen = ''
@@ -516,6 +526,10 @@ def obs_fetch_bin_version(api, download_item, prj, pkg, target):
   # cloudtirea-client-1.7.0-4.1.i686.rpm
   m = re.search(r'^\s*'+re.escape(args.package)+r'-(\d+[^-\s]*)\-([\w\.]+?)\.(x86_64|i\d86|noarch)\.rpm$', bin_seen, re.M)
   if m: return (m.group(1),m.group(2))
+  if retry and re.match('^Ubuntu', target):
+    print("retrying x"+target+" instead of "+target)
+    return obs_fetch_bin_version(api, download_item, prj, pkg, 'x'+target, retry=False)
+
   print("package "+args.package+" for "+target+" not seen in "+cfg['url']+'/'+target+" :\n"+ bin_seen)
   print("Try one of these:")
   lu.recursive = False
@@ -629,9 +643,13 @@ def obs_download_cfg(config, download_item, prj_path, urltest_target=None, verbo
   return data
 
 def matched_package_run_script(package_name, platform_name, pat_dict):
+  """ pat_dict.key() '' is a special case. 
+      It is the default that matches only when nothing lese matches.
+  """ 
   match_list = []
   ret = None
   for pat in pat_dict.keys():
+    if pat == '': continue
     # FIXME: should have package_version instead of package here.
     if re.search(pat, package_name):
       match_list.append(pat)
@@ -640,7 +658,10 @@ def matched_package_run_script(package_name, platform_name, pat_dict):
     print("ERROR: run("+package_name+") in 'target->"+platform_name+"' matches multiple patterns: ", match_list, file=sys.stderr)
     sys.exit(1)
   if (len(match_list) < 1):
-    print("Warning: run("+package_name+") in 'target->"+platform_name+"' matches no pattern: ", pat_dict.keys(), file=sys.stderr)
+    if '' in pat_dict.keys():
+      ret = pat_dict['']
+    else:
+      print("Warning: run("+package_name+") in 'target->"+platform_name+"' matches no pattern: ", pat_dict.keys(), file=sys.stderr)
   return ret
 
 ################################################################################
@@ -749,18 +770,6 @@ if args.print_config_only:
     pprint.pprint(obs_config)
   sys.exit(0)
 
-if args.dump:
-  cfg=obs_config['target'][args.platform]
-  if args.dump in cfg:
-    if args.dump == 'run':	# this one matches package names.
-      print(matched_package_run_script(args.package, args.platform, cfg[args.dump]))
-    else:
-      print(cfg[args.dump])
-  else:
-    if not args.quiet:
-      print("ERROR: " + args.dump + " not in 'target->" + args.platform + "', try one of these:\n", cfg.keys(), file=sys.stderr)
-  sys.exit(0)
-
 if args.list_targets_only:
   print("OBS platform          Docker base image")
   print("---------------------------------------")
@@ -790,6 +799,18 @@ if args.target and args.platform:
   sys.exit(1)
 target = re.sub(':','_', target)        # just in case we get the project name instead of the build target name
 obs_target = re.sub("@.*$", "", target)	# strip away @SCL or similar suffix.
+
+if args.dump:
+  cfg=obs_config['target'][target]
+  if args.dump in cfg:
+    if args.dump == 'run':	# this one matches package names.
+      print(matched_package_run_script(args.package, target, cfg[args.dump]))
+    else:
+      print(cfg[args.dump])
+  else:
+    if not args.quiet:
+      print("ERROR: " + args.dump + " not in 'target->" + target + "', try one of these:\n", cfg.keys(), file=sys.stderr)
+  sys.exit(0)
 
 obs_api=guess_obs_api(args.project, args.obs_api, not args.quiet)
 try:
@@ -914,17 +935,23 @@ else:
 ## multi line docker commands are no longer supported in 'from', use 'pre'!
 dockerfile="FROM "+docker['from']+"\n"
 
-if 'run' in obs_config['target'][target] and not args.dockerfile:
-  script=matched_package_run_script(args.package, args.platform, obs_config['target'][target]['run'])
+if 'run' in obs_config['target'][target]:	# and not args.dockerfile:
+  script=matched_package_run_script(args.package, target, obs_config['target'][target]['run'])
   if script:
-    print("# run script /root/start.sh:\n" + script + "\n\n")
+    if not args.dockerfile:
+      print("# run script /root/start.sh:\n" + script + "\n\n")
     startfile = context_dir+'/start.sh'
     f = open(startfile,'w')
     f.write(script)
     os.fchmod(f.fileno(),0o755)
     f.close()
     # CAUTION: Keep in sync with docker_run_int.extend(image_name, ...) above
-    dockerfile+='ADD ./start.sh /root/\n'
+    if args.dockerfile:
+      dockerfile+='# see --dump run for the contents of /root/start.sh\n'
+    else:
+      dockerfile+='ADD ./start.sh /root/\n'
+    # script_echo = re.sub('$','\\n\\', script)
+    # dockerfile+='RUN echo "'+script_echo+'" > /root/start.sh'
   
 if 'pre' in docker:
   dockerfile+=docker['pre']
