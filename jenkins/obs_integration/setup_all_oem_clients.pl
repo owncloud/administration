@@ -514,7 +514,7 @@ sub obs_pkg_from_template
   #   }
   #####
   # sweep the carpet every time! Much safer!
-  run("$osc_cmd rdelete -m- '$prj' '$pkg'");
+  run("$osc_cmd rdelete -m- '$prj' '$pkg' || true");
 
   open(my $ifd, "$osc_cmd meta pkg '$template_prj' '$template_pkg'|") or die "cannot fetch meta pkg $template_prj/$template_pkg: $!\n";
   my $meta_pkg_template = join("",<$ifd>);
