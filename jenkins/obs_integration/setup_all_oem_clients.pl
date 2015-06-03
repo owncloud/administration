@@ -43,6 +43,7 @@
 # 2015-02-15, jw, added make_dummy_package_cfg() using OEM.cmake -- it does not get any better.
 # 2015-03-18, jw, moved subroutines at the end. Allow both, client and branding to be provided as tar-files, instead
 #                 as git-branch and branding name in cusomer-themes. This feature is neeed for ownbrander.
+# 2015-06-03, jw, obs_pkg_from_template() now always deletes the package before filling in.
 
 use Data::Dumper;
 use File::Copy;
@@ -503,14 +504,17 @@ sub obs_pkg_from_template
   $prj =~ s{/$}{};
   $template_prj =~ s{/$}{};
 
-  # test, if it is already there, if so, do nothing:
-  open(my $tfd, "$osc_cmd meta pkg '$prj' '$pkg' 2>/dev/null|") or die "cannot check '$prj/$pkg'\n";
-  if (<$tfd>)
-    {
-      close($tfd);
-      print "Package '$prj/$pkg' already there.\n";
-      return;
-    }
+  # # test, if it is already there, if so, do nothing:
+  # open(my $tfd, "$osc_cmd meta pkg '$prj' '$pkg' 2>/dev/null|") or die "cannot check '$prj/$pkg'\n";
+  # if (<$tfd>)
+  #   {
+  #     close($tfd);
+  #     print "Package '$prj/$pkg' already there.\n";
+  #     return;
+  #   }
+  #####
+  # sweep the carpet every time! Much safer!
+  run("$osc_cmd rdelete -m- '$prj' '$pkg'");
 
   open(my $ifd, "$osc_cmd meta pkg '$template_prj' '$template_pkg'|") or die "cannot fetch meta pkg $template_prj/$template_pkg: $!\n";
   my $meta_pkg_template = join("",<$ifd>);
