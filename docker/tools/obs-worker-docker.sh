@@ -2,9 +2,14 @@
 #
 # run an obs-worker in a simple docker container.
 # (C) 2015 jw@owncloud.com
+#
+# Distribute under GPL-2.0 or ask.
 
-OBS_SRC_SERVER="s2.int.owncloud.com:5352"
-OBS_REPO_SERVERS="s2.int.owncloud.com:5252"
+obs_server=$1
+test -z "$obs_server" && obs_server="s2.int.owncloud.com"
+
+OBS_SRC_SERVER="$OBS_SERVER:5352"
+OBS_REPO_SERVERS="$OBS_SERVER:5252"
 
 SUSE_BASE_IMAGE="opensuse:13.2"
 PACKAGES="aaa_base curl perl-XML-Parser vim-base less"
@@ -25,14 +30,15 @@ if [ ! -d /docker ]; then
   echo -e "FROM $SUSE_BASE_IMAGE\nRUN zypper in -y $PACKAGES" | docker build -t $IMAGE_NAME -
 
   echo entering docker container ...
-  ## FIXME: must run without NAT here.
+  ## must run without NAT here.
   set -x
-  docker run -ti -p $port:$port -v $dir/$self:/docker/$self -e OBS_WORKER_PORT=$port obs-worker-opensuse sh /docker/$self
+  docker run -ti -p $port:$port -v $dir/$self:/docker/$self -e OBS_SERVER=$obs_server -e OBS_WORKER_PORT=$port obs-worker-opensuse sh /docker/$self
   echo ... exiting docker container.
   exit 0
 fi
 
 echo obs-worker port: $OBS_WORKER_PORT
+echo obs src server:  $OBS_SRC_SERVER
 
 cat <<EOF >> /etc/sysconfig/obs-server
 #
@@ -441,19 +447,12 @@ done
 obsrundir="$OBS_RUN_DIR"
 workerdir="$obsrundir"/worker
 workerbootdir="$workerdir"/boot
-screenrc="$workerdir"/boot/screenrc
 OBS_WORKER_OPT=""
 
 if [ -n "$OBS_CACHE_SIZE" -a -n "$OBS_CACHE_DIR" ]; then
     OBS_WORKER_OPT="--cachedir $OBS_CACHE_DIR"
     mkdir -p $OBS_CACHE_DIR
     OBS_WORKER_OPT="$OBS_WORKER_OPT --cachesize $OBS_CACHE_SIZE"
-fi
-
-if [ -n "$OBS_VM_KERNEL" -a "$OBS_VM_KERNEL" != "none" ] ; then
-    if [ -n "$OBS_VM_INITRD" -a "$OBS_VM_INITRD" != "none" ] ; then
-        OBS_WORKER_OPT="$OBS_WORKER_OPT --vm-kernel $OBS_VM_KERNEL  --vm-initrd $OBS_VM_INITRD"
-    fi
 fi
 
 if [ -n "$OBS_WORKER_LOCALKIWI_DIRECTORY" ]; then
@@ -479,10 +478,6 @@ done
 ln -s . XML 
 chmod 755 bs_worker
 
-for i in $OBS_WORKER_HOSTLABELS; do
-   HOSTLABELS="$HOSTLABELS --hostlabel $i"
-done
-OBS_WORKER_OPT1="$OBS_WORKER_OPT"
 I=0
 
 R=$OBS_WORKER_DIRECTORY/root_$I
