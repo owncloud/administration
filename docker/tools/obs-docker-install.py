@@ -58,12 +58,17 @@
 #			   aufs changed to aufs_hack and no longer automatic. It is now triggered by env AUFS_HACK=1 ...
 #                          added yaml_load_expand(): to use 'base' elements in 'target' as inheritance templates.
 # V2.11 -- 2015-04-10, jw  added support for -- run -ti -p 888:80, using the 'run' snippets in the yaml file.
+# V2.12	-- 2015-05-18, jw  survive missing [run] in yaml. Added default run snippets to builtin yaml.
+#                          Error fallback added: make one attempt to create an image despite install errors.
+# V2.13 -- 2015-05-18, jw  Fixed '--dump run' to work with default target too. Apache start code as default start.sh script.
+#			   Try obs target xUbuntu* if the specified Ubuntu* is not there.
+#                          Printed Dockerfile has a hint about start.sh script if one exists. 
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="2.11"
+__VERSION__="2.13"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import yaml, sys, os, re, time, tempfile
@@ -98,6 +103,20 @@ target:
     fmt: YUM
     from: centos:centos6
     inst: [wget, samba-client]
+    run:
+      '^(owncloud)$': |
+        yum install -y mysql-server
+        yum install -y php-mysql
+        service mysqld start
+        sleep 5
+        /usr/bin/mysqladmin -u root password root
+        service httpd start
+        sleep 2
+        curl -s localhost:80/owncloud/ | grep pass
+        php --version
+      '(-client)$': |
+        ${package}
+      '': |
 
   CentOS_CentOS-6:
     base: [CentOS_6]
@@ -171,6 +190,22 @@ target:
     fmt: YUM
     from: fedora:20
     inst: [wget]
+    run:
+      '^(owncloud)$': |
+        mysql_install_db
+        chown -R mysql:mysql /var/lib/mysql
+        chown -R mysql:mysql /var/log/mariadb/
+        service mariadb start
+        sleep 3
+        /usr/bin/mysqladmin -u root password root
+        service httpd start
+        sleep 1
+        curl -s localhost:80/owncloud/ | grep pass
+        php --version
+      '(-client)$': |
+        ${package}
+      '': |
+        service httpd start
 
   Fedora_21:
     aufs_hack: |
@@ -185,12 +220,26 @@ target:
     fmt: APT
     from: ubuntu:12.04
     inst: [wget, apt-transport-https]
+    run:
+      '^(owncloud|owncloud-enterprise)$': |
+        service mysql start
+        sleep 3
+        /usr/bin/mysqladmin -u root password root
+        service apache2 start
+        sleep 1
+        curl -s localhost:80/owncloud/ | grep pass
+        php --version
+      '(-client)$': |
+        ${package}
+      '': |
+        service apache2 start
 
   Ubuntu_12.10: { base: [Ubuntu_12.04], from: 'ubuntu:12.10' }
   Ubuntu_13.04: { base: [Ubuntu_12.04], from: 'ubuntu:13.04' }
   Ubuntu_13.10: { base: [Ubuntu_12.04], from: 'ubuntu:13.10' }
   Ubuntu_14.04: { base: [Ubuntu_12.04], from: 'ubuntu:14.04' }
   Ubuntu_14.10: { base: [Ubuntu_12.04], from: 'ubuntu:14.10' }
+  Ubuntu_15.04: { base: [Ubuntu_12.04], from: 'ubuntu:15.04' }
 
   # xUbuntu* are simply aliases for Ubuntu*
   xUbuntu_12.04: { base: [Ubuntu_12.04] }
@@ -199,11 +248,15 @@ target:
   xUbuntu_13.10: { base: [Ubuntu_13.10] }
   xUbuntu_14.04: { base: [Ubuntu_14.04] }
   xUbuntu_14.10: { base: [Ubuntu_14.10] }
+  xUbuntu_15.04: { base: [Ubuntu_15.04] }
 
   openSUSE_13.1:
     fmt: ZYPP
     from: opensuse:13.1
     inst: [ca-certificates]
+    run:
+      '': |
+        service apache2 start
 
   SLE_12:        { base: [openSUSE_13.1], pre: '# attention: using openSUSE base image!!!' }
   openSUSE_13.2: { base: [openSUSE_13.1], from: 'opensuse:13.2' }
@@ -447,7 +500,7 @@ def docker_on_aufs():
   return False
 
 
-def obs_fetch_bin_version(api, download_item, prj, pkg, target):
+def obs_fetch_bin_version(api, download_item, prj, pkg, target, retry=True):
   cfg = obs_download_cfg(obs_config['obs'][api], download_item, prj, urltest_target=None, verbose=False)
   lu = ListUrl()
   bin_seen = ''
@@ -473,6 +526,10 @@ def obs_fetch_bin_version(api, download_item, prj, pkg, target):
   # cloudtirea-client-1.7.0-4.1.i686.rpm
   m = re.search(r'^\s*'+re.escape(args.package)+r'-(\d+[^-\s]*)\-([\w\.]+?)\.(x86_64|i\d86|noarch)\.rpm$', bin_seen, re.M)
   if m: return (m.group(1),m.group(2))
+  if retry and re.match('^Ubuntu', target):
+    print("retrying x"+target+" instead of "+target)
+    return obs_fetch_bin_version(api, download_item, prj, pkg, 'x'+target, retry=False)
+
   print("package "+args.package+" for "+target+" not seen in "+cfg['url']+'/'+target+" :\n"+ bin_seen)
   print("Try one of these:")
   lu.recursive = False
@@ -586,9 +643,13 @@ def obs_download_cfg(config, download_item, prj_path, urltest_target=None, verbo
   return data
 
 def matched_package_run_script(package_name, platform_name, pat_dict):
+  """ pat_dict.key() '' is a special case. 
+      It is the default that matches only when nothing lese matches.
+  """ 
   match_list = []
   ret = None
   for pat in pat_dict.keys():
+    if pat == '': continue
     # FIXME: should have package_version instead of package here.
     if re.search(pat, package_name):
       match_list.append(pat)
@@ -597,8 +658,10 @@ def matched_package_run_script(package_name, platform_name, pat_dict):
     print("ERROR: run("+package_name+") in 'target->"+platform_name+"' matches multiple patterns: ", match_list, file=sys.stderr)
     sys.exit(1)
   if (len(match_list) < 1):
-    print("ERROR: run("+package_name+") in 'target->"+platform_name+"' matches no pattern: ", pat_dict.keys(), file=sys.stderr)
-    sys.exit(1)
+    if '' in pat_dict.keys():
+      ret = pat_dict['']
+    else:
+      print("Warning: run("+package_name+") in 'target->"+platform_name+"' matches no pattern: ", pat_dict.keys(), file=sys.stderr)
   return ret
 
 ################################################################################
@@ -707,18 +770,6 @@ if args.print_config_only:
     pprint.pprint(obs_config)
   sys.exit(0)
 
-if args.dump:
-  cfg=obs_config['target'][args.platform]
-  if args.dump in cfg:
-    if args.dump == 'run':	# this one matches package names.
-      print(matched_package_run_script(args.package, args.platform, cfg[args.dump]))
-    else:
-      print(cfg[args.dump])
-  else:
-    if not args.quiet:
-      print("ERROR: " + args.dump + " not in 'target->" + args.platform + "', try one of these:\n", cfg.keys(), file=sys.stderr)
-  sys.exit(0)
-
 if args.list_targets_only:
   print("OBS platform          Docker base image")
   print("---------------------------------------")
@@ -748,6 +799,18 @@ if args.target and args.platform:
   sys.exit(1)
 target = re.sub(':','_', target)        # just in case we get the project name instead of the build target name
 obs_target = re.sub("@.*$", "", target)	# strip away @SCL or similar suffix.
+
+if args.dump:
+  cfg=obs_config['target'][target]
+  if args.dump in cfg:
+    if args.dump == 'run':	# this one matches package names.
+      print(matched_package_run_script(args.package, target, cfg[args.dump]))
+    else:
+      print(cfg[args.dump])
+  else:
+    if not args.quiet:
+      print("ERROR: " + args.dump + " not in 'target->" + target + "', try one of these:\n", cfg.keys(), file=sys.stderr)
+  sys.exit(0)
 
 obs_api=guess_obs_api(args.project, args.obs_api, not args.quiet)
 try:
@@ -872,17 +935,23 @@ else:
 ## multi line docker commands are no longer supported in 'from', use 'pre'!
 dockerfile="FROM "+docker['from']+"\n"
 
-if 'run' in obs_config['target'][target] and not args.dockerfile:
-  script=matched_package_run_script(args.package, args.platform, obs_config['target'][target]['run'])
+if 'run' in obs_config['target'][target]:	# and not args.dockerfile:
+  script=matched_package_run_script(args.package, target, obs_config['target'][target]['run'])
   if script:
-    print("# run script /root/start.sh:\n" + script + "\n\n")
+    if not args.dockerfile:
+      print("# run script /root/start.sh:\n" + script + "\n\n")
     startfile = context_dir+'/start.sh'
     f = open(startfile,'w')
     f.write(script)
     os.fchmod(f.fileno(),0o755)
     f.close()
     # CAUTION: Keep in sync with docker_run_int.extend(image_name, ...) above
-    dockerfile+='ADD ./start.sh /root/\n'
+    if args.dockerfile:
+      dockerfile+='# see --dump run for the contents of /root/start.sh\n'
+    else:
+      dockerfile+='ADD ./start.sh /root/\n'
+    # script_echo = re.sub('$','\\n\\', script)
+    # dockerfile+='RUN echo "'+script_echo+'" > /root/start.sh'
   
 if 'pre' in docker:
   dockerfile+=docker['pre']
@@ -902,6 +971,7 @@ now=time.strftime('%Y%m%d%H%M')
 start_time=time.time()
 d_endl="\n"
 if args.keep_going: d_endl = " || true\n"
+dockerfile_tail=''
 
 if docker["fmt"] == "APT":
   if args.nogpgcheck: print("Option nogpgcheck not implemented for APT")
@@ -920,9 +990,9 @@ if docker["fmt"] == "APT":
   dockerfile+="RUN apt-get -q -y update"+d_endl
   if extra_packages: 	dockerfile+="RUN apt-get -q -y install "+' '.join(extra_packages)+d_endl
   if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
-  dockerfile+="RUN date="+now+" apt-get -q -y update && apt-get -q -y install "+args.package+d_endl
-  dockerfile+="RUN zcat /usr/share/doc/"+args.package+"/changelog*.gz  | head -20"+d_endl
-  dockerfile+="RUN echo 'apt-get install "+args.package+"' >> ~/.bash_history"+d_endl
+  dockerfile+="RUN date="+now+" apt-get -q -y update && apt-get -q -y install "+args.package
+  dockerfile_tail ="RUN zcat /usr/share/doc/"+args.package+"/changelog*.gz  | head -20"+d_endl
+  dockerfile_tail+="RUN echo 'apt-get install "+args.package+"' >> ~/.bash_history"+d_endl
 
 
 elif docker["fmt"] == "YUM":
@@ -940,9 +1010,9 @@ elif docker["fmt"] == "YUM":
   dockerfile+="RUN "+wget_cmd+obs_target+'/'+args.project+".repo -O /etc/yum.repos.d/"+args.project+".repo"+d_endl
   if extra_packages:	dockerfile+="RUN "+yum_install+" "+" ".join(extra_packages)+d_endl
   if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
-  dockerfile+="RUN date="+now+" yum clean expire-cache && "+yum_install+" "+args.package+d_endl
-  dockerfile+="RUN rpm -q --changelog "+args.package+" | head -20"+d_endl
-  dockerfile+="RUN echo '"+yum_install+" "+args.package+"' >> ~/.bash_history"+d_endl
+  dockerfile+="RUN date="+now+" yum clean expire-cache && "+yum_install+" "+args.package
+  dockerfile_tail="RUN rpm -q --changelog "+args.package+" | head -20"+d_endl
+  dockerfile_tail+="RUN echo '"+yum_install+" "+args.package+"' >> ~/.bash_history"+d_endl
 
 elif docker["fmt"] == "ZYPP":
   if args.nogpgcheck: print("Option nogpgcheck not implemented for ZYPP")
@@ -957,20 +1027,25 @@ elif docker["fmt"] == "ZYPP":
   dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys addrepo "+download["url_cred"]+obs_target+"/"+args.project+".repo"+d_endl
   if extra_packages:	dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+" ".join(extra_packages)+d_endl
   if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
-  dockerfile+="RUN date="+now+" zypper --non-interactive --gpg-auto-import-keys refresh && zypper --non-interactive --gpg-auto-import-keys install "+args.package+d_endl
-  dockerfile+="RUN rpm -q --changelog "+args.package+" | head -20"+d_endl
-  dockerfile+="RUN echo 'zypper install "+args.package+"' >> ~/.bash_history"+d_endl
+
+  dockerfile+="RUN date="+now+" zypper --non-interactive --gpg-auto-import-keys refresh && zypper --non-interactive --gpg-auto-import-keys install "+args.package
+  dockerfile_tail = "RUN rpm -q --changelog "+args.package+" | head -20"+d_endl
+  dockerfile_tail +="RUN echo 'zypper install "+args.package+"' >> ~/.bash_history"+d_endl
 
 else:
   raise ValueError("dockerfile generator not implemented for fmt="+docker["fmt"])
 
 if args.xauth:
-  dockerfile+="ENV DISPLAY unix:0\n"
-  dockerfile+="ENV XDG_RUNTIME_DIR /run/user/1000\n"
-  dockerfile+="ENV XAUTHORITY "+xauthfile+"\n"
-  dockerfile+='RUN : "'+xa_cmd+'"'+"\n"
-dockerfile+='RUN : "'+" ".join(docker_run)+'"'+"\n"
-dockerfile+='CMD '+docker_cmd_cmd+"\n"
+  dockerfile_tail +="ENV DISPLAY unix:0\n"
+  dockerfile_tail +="ENV XDG_RUNTIME_DIR /run/user/1000\n"
+  dockerfile_tail +="ENV XAUTHORITY "+xauthfile+"\n"
+  dockerfile_tail +='RUN : "'+xa_cmd+'"'+"\n"
+dockerfile_tail +='RUN : "'+" ".join(docker_run)+'"'+"\n"
+dockerfile_tail +='CMD '+docker_cmd_cmd+"\n"
+
+# dockerfile_ign has the most-likely-command-to-fail wrapped with '&& true', so that it does not bail out.
+dockerfile_ign = dockerfile + " || true" + d_endl + dockerfile_tail
+dockerfile     = dockerfile +              d_endl + dockerfile_tail
 
 
 if args.dockerfile:
@@ -1002,13 +1077,22 @@ else:
   # using stdin would silently disable ADD instructions.
   r=run(docker_build, redirect_stdout=False, redirect_stderr=False, return_code=True)
   run.verbose -= 1
-  run(['rm', '-rf', context_dir])
-  if not args.quiet:
+  if not args.quiet:	# FIXME: quiet also suppresses the rebuild on error??
     if r:
       print("Failed with non-zero exit code="+str(r)+". Check for errors in the above log.\n")
       run_args = None
+
+      fd=open(context_dir+"/Dockerfile", "w")
+      fd.write(dockerfile_ign) 		# fallback to the error-ignoring Dockerfile
+      fd.close()
+      r2 = run(docker_build, redirect_stdout=False, redirect_stderr=False, return_code=True)
+      if not r2:
+        print("\n\nERROR: Image build failed. Rebuilt ignoring errors.  Try to rerun the last command from the shell history inside\n "+" ".join(docker_run)+"\n\n")
+
     else:
       print("Image successfully created. Check for warnings in the above log.\n")
+  run(['rm', '-rf', context_dir])
+
 print(time.strftime("build time: %H:%M:%S", time.gmtime(time.time()-start_time)))
 
 if not args.rm and not r and not args.quiet:

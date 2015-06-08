@@ -40,6 +40,9 @@
 # 2015-01-22, jw, V1.7a accept also /syncclient/package.cfg instead of /mirall/package.cfg
 # 2015-03-18, jw, V1.8 better errror checking against malformed tar-files. Version number added to create message.
 # 2015-05-13, jw, V1.9 proper shortname_deb, added debian_filename().
+# 2015-05-15, jw, V1.10 use shortname in addSpecChangelog() too. 
+# 2015-05-15, jw, V1.11 fix substitution of SHORTNAME_DEB
+# 2015-05-15, jw, V1.12 Also support EXECUTABLE_DEB and EXECUTABLE. needed for the autostart wrapper in centos and rhel.
 
 use Getopt::Std;
 use Config::IniFiles;
@@ -52,7 +55,7 @@ use Cwd;
 use Template;
 use Data::Dumper;
 
-my $version = '1.9';
+my $version = '1.12';
 my $msg_def = "created by: $0 (V$version) @ARGV";
 
 use strict;
@@ -236,13 +239,16 @@ Please do the following steps (or similar):
         my $target = $source;
         $target =~ s/BRANDNAME_DEB/$substs->{themename_deb}/;	# longer subst first. We have no delimiters.
         if( buildOwnCloudTheme($theme) ) {
-            # for owncloud we need the lowercase variant.
+            # for owncloud we need the lowercase variant. Evil Hack!
 	    $target =~ s/BRANDNAME/$substs->{themename_deb}/;
 	} else {
 	    $target =~ s/BRANDNAME/$substs->{themename}/;
 	}
-        $target =~ s/SHORTNAME/$substs->{shortname}/;
         $target =~ s/SHORTNAME_DEB/$substs->{shortname_deb}/;
+        $target =~ s/SHORTNAME/$substs->{shortname}/;
+
+        $target =~ s/EXECUTABLE_DEB/$substs->{executable_deb}/;
+        $target =~ s/EXECUTABLE/$substs->{executable}/;
 
         if($source =~ /\.in$/) {
             print "process $clienttemplatedir/$versdir/$source to $targetDir/$target\n";
@@ -310,7 +316,9 @@ sub readOEMcmake( $ )
 	    print "  * found <$key> => $val\n";
 	    $substs{$key} = $val;
 	} else {
-            print "  * OEM.cmake PARSE error: $l\n";
+	    unless( $l =~ /^\s*$/ || $l =~ /^\s*#/ ) {
+	        print "  * OEM.cmake PARSE error: $l\n";
+	    }
         }
     }
 
@@ -335,6 +343,7 @@ sub readOEMcmake( $ )
     # more tags: APPLICATION_EXECUTABLE, APPLICATION_VENDOR, APPLICATION_REV_DOMAIN, THEME_CLASS, WIN_SETUP_BITMAP_PATH
 
     $substs{shortname_deb} = debian_filename($substs{shortname});	# debian packages don't allow upper case.
+    $substs{executable_deb} = debian_filename($substs{executable});	# No case know where this is needed. But hey.
     return %substs;
 }
 
@@ -604,11 +613,11 @@ if( $opt_o ) {
 
     my $debpackname = debian_filename("$substs->{shortname}-client");
     # CAUTION: keep in sync with templates/client/v1_8_0/SHORTNAME-client.dsc.in
-    # CAUTION: keep packName in sync with dsc.in file, note that addDebChangelog lowercases $packName
     # debpackname must be based on shortname. If we get an error due to upper case shortname,
     # we need to fix this in the templates. Debian packages are always lower case.
-    addDebChangelog(  $debpackname, $change, $substs->{version_deb} );
-    addSpecChangelog( $packName, $change );
+    # https://github.com/owncloud/ownbrander/issues/312
+    addDebChangelog(  debian_filename("$substs->{shortname}-client"), $change, $substs->{version_deb} );
+    addSpecChangelog(                 "$substs->{shortname}-client" , $change );
     chdir( "../.." );
 }
 

@@ -23,7 +23,7 @@ docker run -p 127.0.0.1:$LDAP_LOCAL_PORT:389 \
 SLAPD_CONTAINER_IP=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" docker-slapd)
 docker run -p $PHPLDAPADMIN_LOCAL_PORT:443 \
 	--name docker-phpldapadmin \
-	-e LDAP_HOST=$SLAPD_CONTAINER_IP \
+	-e LDAP_HOSTS=$SLAPD_CONTAINER_IP \
 	-e LDAP_BASE_DN=$LDAP_BASE_DN \
 	-e LDAP_LOGIN_DN=$LDAP_LOGIN_DN \
 	-d osixia/phpldapadmin || exit 2

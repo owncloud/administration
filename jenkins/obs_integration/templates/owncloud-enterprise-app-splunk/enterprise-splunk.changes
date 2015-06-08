@@ -1,0 +1,26 @@
+-------------------------------------------------------------------
+Tue Jun  2 14:24:55 UTC 2015 - jw@owncloud.com
+
+- Splunk from 8.0.4~RC2
+
+-------------------------------------------------------------------
+Mon Feb  2 11:34:13 UTC 2015 - jw@owncloud.com
+
+- updated to RC1 (unchanged)
+
+-------------------------------------------------------------------
+Wed Jan 28 17:07:45 UTC 2015 - jw@owncloud.com
+
+- renamed enterprise-splunk to owncloud-enterprise-app-splunk
+
+-------------------------------------------------------------------
+Mon Jan 26 10:26:15 UTC 2015 - jw@owncloud.com
+
+- updated to beta2
+
+-------------------------------------------------------------------
+Mon Jan 12 22:01:38 UTC 2015 - jw@owncloud.com
+
+- initial check in
+- looks like an onwCloud app. Packaging like one.
+

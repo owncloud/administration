@@ -43,6 +43,7 @@
 # 2015-02-15, jw, added make_dummy_package_cfg() using OEM.cmake -- it does not get any better.
 # 2015-03-18, jw, moved subroutines at the end. Allow both, client and branding to be provided as tar-files, instead
 #                 as git-branch and branding name in cusomer-themes. This feature is neeed for ownbrander.
+# 2015-06-03, jw, obs_pkg_from_template() now always deletes the package before filling in.
 
 use Data::Dumper;
 use File::Copy;
@@ -64,8 +65,9 @@ if (!defined $source_tar or $source_tar =~ m{^-})
     die qq{
 Usage: $0 v1.6.2 [home:jw:oem[/] [filterbranding,... [api [tmpl]]]]
 
-       $0 v1.7.1 isv:ownCloud:oem testpilotcloud https://api.opensuse.org isv:ownCloud:community:nightly
-       $0 v1.8.0-beta1a isv:ownCloud:community:testing testpilotcloud https://api.opensuse.org isv:ownCloud:desktop
+       $0 v1.8.1 isv:ownCloud:community:testing testpilotcloud https://api.opensuse.org  isv:ownCloud:desktop
+       osc copypac isv:ownCloud:community:testing:testpilotcloud testpilotcloud-client isv:ownCloud:community:testing
+       osc rdelete isv:ownCloud:community:testing:testpilotcloud --recursive
 
 ... or similar.
 
@@ -254,19 +256,20 @@ for my $branding (@candidates)
     ## We use trailing slash here again to avoid catenating.
     run("./setup_oem_client.pl '$branding' '$container_project_colon' '$obs_api' '$template_prj'");
 
+    # inspection code below commented out. It assumes shortname == executable name.
     ## babble out the diffs. Just for the logfile.
     ## This helps catching outdated *.in files in templates/client/* -- 
     ## genbranding uses them. Mabye it should use files from the template package as template?
-    for my $f ('%s-client.spec', '%s-client.dsc', 'debian.control', '%s-client.desktop')
-      {
-        my $template_file = sprintf "$f", 'owncloud';
-        my $branding_file = sprintf "$f", $branding;
-	run("$osc_cmd cat $template_prj $template_pkg $template_file > $tmp/$template_file || true");
-	run("$osc_cmd cat '$project' '$branding-client' '$branding_file'> $tmp/$branding_file || true");
-	run("diff -ub '$tmp/$template_file' '$tmp/$branding_file' || true");
-	unlink("$tmp/$template_file");
-	unlink("$tmp/$branding_file");
-      }
+    # for my $f ('%s-client.spec', '%s-client.dsc', 'debian.control', '%s-client.desktop')
+    #   {
+    #     my $template_file = sprintf "$f", 'owncloud';
+    #     my $branding_file = sprintf "$f", $branding;
+    # 	run("$osc_cmd cat $template_prj $template_pkg $template_file > $tmp/$template_file || true");
+    # 	run("$osc_cmd cat '$project' '$branding-client' '$branding_file'> $tmp/$branding_file || true");
+    # 	run("diff -ub '$tmp/$template_file' '$tmp/$branding_file' || true");
+    # 	unlink("$tmp/$template_file");
+    # 	unlink("$tmp/$branding_file");
+    #      }
   }
 
 if (@client_filter and scalar(keys %client_filter))
@@ -501,14 +504,17 @@ sub obs_pkg_from_template
   $prj =~ s{/$}{};
   $template_prj =~ s{/$}{};
 
-  # test, if it is already there, if so, do nothing:
-  open(my $tfd, "$osc_cmd meta pkg '$prj' '$pkg' 2>/dev/null|") or die "cannot check '$prj/$pkg'\n";
-  if (<$tfd>)
-    {
-      close($tfd);
-      print "Package '$prj/$pkg' already there.\n";
-      return;
-    }
+  # # test, if it is already there, if so, do nothing:
+  # open(my $tfd, "$osc_cmd meta pkg '$prj' '$pkg' 2>/dev/null|") or die "cannot check '$prj/$pkg'\n";
+  # if (<$tfd>)
+  #   {
+  #     close($tfd);
+  #     print "Package '$prj/$pkg' already there.\n";
+  #     return;
+  #   }
+  #####
+  # sweep the carpet every time! Much safer!
+  run("$osc_cmd rdelete -m- '$prj' '$pkg' || true");
 
   open(my $ifd, "$osc_cmd meta pkg '$template_prj' '$template_pkg'|") or die "cannot fetch meta pkg $template_prj/$template_pkg: $!\n";
   my $meta_pkg_template = join("",<$ifd>);
