@@ -2,6 +2,7 @@
 #
 # This script automates package build for jenkins based on OBS
 # Copyright Klaas Freitag <freitag@owncloud.com>
+#           Juergen Weigert <jw@owncloud.com>
 #
 # Released under GPL V.2.
 #
