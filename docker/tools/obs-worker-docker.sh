@@ -1,9 +1,12 @@
 #! /bin/bash
 #
 # run an obs-worker in a simple docker container.
+# (C) 2015 jw@owncloud.com
 
 OBS_SRC_SERVER="s2.int.owncloud.com:5352"
 OBS_REPO_SERVERS="s2.int.owncloud.com:5252"
+
+SUSE_BASE_IMAGE="opensuse:13.2"
 PACKAGES="aaa_base curl perl-XML-Parser vim-base less"
 
 IMAGE_NAME=obs-worker-opensuse
@@ -19,12 +22,12 @@ port=$(echo ${RANDOM}000 | sed -s 's@\(...\).*@22\1@')
 
 if [ ! -d /docker ]; then
   echo preparing docker container ...
-  echo -e "FROM opensuse:13.1\nRUN zypper in -y $PACKAGES" | docker build -t $IMAGE_NAME -
+  echo -e "FROM $SUSE_BASE_IMAGE\nRUN zypper in -y $PACKAGES" | docker build -t $IMAGE_NAME -
 
   echo entering docker container ...
   ## FIXME: must run without NAT here.
   set -x
-  docker run -ti -p $port:$port -v $dir:/docker -e OBS_WORKER_PORT=$port obs-worker-opensuse sh /docker/$self
+  docker run -ti -p $port:$port -v $dir/$self:/docker/$self -e OBS_WORKER_PORT=$port obs-worker-opensuse sh /docker/$self
   echo ... exiting docker container.
   exit 0
 fi
@@ -487,4 +490,5 @@ mkdir -p $workerdir/$I
 
 set -x
 ./bs_worker --port $OBS_WORKER_PORT --root $R --statedir $workerdir/$I $REPO_PARAM &
+ps -efww
 bash
