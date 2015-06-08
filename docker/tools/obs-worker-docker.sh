@@ -483,7 +483,7 @@ I=0
 R=$OBS_WORKER_DIRECTORY/root_$I
 mkdir -p $workerdir/$I
 
+(sleep 1; ps -efww) &
 set -x
-./bs_worker --port $OBS_WORKER_PORT --root $R --statedir $workerdir/$I $REPO_PARAM &
-ps -efww
+./bs_worker --port $OBS_WORKER_PORT --root $R --statedir $workerdir/$I $REPO_PARAM # &
 bash
