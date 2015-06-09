@@ -125,6 +125,14 @@ sub getFileName( $ ) {
   return $tarname;
 }
 
+sub buildTestpilot( $ )
+{
+    my ($theme) = @_;
+
+    return 1 if( $theme eq 'testpilotcloud' );
+    return 0;
+}
+
 sub buildOwnCloudTheme( $ )
 {
    my( $theme ) = @_;
@@ -449,7 +457,10 @@ my $theme = getFileName( $ARGV[1] );
 
 my $packName = "$theme-client";
 
-if( buildOwnCloudTheme($theme) ) {
+if( buildTestpilot($theme) ) {
+    $dest_prj_theme = $dest_prj;
+    # packName is ok.
+} elsif( buildOwnCloudTheme($theme) ) {
     $dest_prj_theme = $dest_prj;
     $packName = 'owncloud-client'; # historical reason, not ownCloud-client
 } else {
