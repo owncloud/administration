@@ -14,6 +14,7 @@ def_apiurl="https://api.opensuse.org"
 ap=argparse.ArgumentParser(description='Monitor build service results')
 ap.add_argument('-r', '--retrigger-failed', action='store_true', help="Retrigger a build for all failed packages")
 # ap.add_argument('-s', '--subprojects', action='store_true', help="also recurse into subprojects.")
+ap.add_argument('-g', '--good', action='store_true', help="also report good status.")
 ap.add_argument('-A', '--apiurl', help='the build service api to contact', default=def_apiurl)
 ap.add_argument('proj', type=str, nargs='+', help="projects to monitor")
 args=ap.parse_args()
@@ -97,6 +98,7 @@ mapped = {
 }
 
 ret={}
+tot={}
 w=0
 all_pkgs = list_packages_r(args.apiurl, args.proj[0])
 for p in all_pkgs: 
@@ -113,6 +115,11 @@ for p in all_pkgs:
     if not v in cnt:   cnt[v] = 0
     rstat[v].append(k)
     cnt[v] +=1
+
+  for t in cnt.keys():
+    if not t in tot: tot[t] = 0
+    tot[t] += cnt[t]
+
   for retrigger in ['failed', 'unresolvable']:
     if retrigger in rstat:
       if not retrigger in ret: ret[retrigger] = 0
@@ -123,6 +130,8 @@ for p in all_pkgs:
 	  plat, arch = target.split('/') 
           print "\tretrigger", p, plat, arch
 	  run(["osc", "-A"+args.apiurl, "rebuildpac", p, plat, arch], redirect=False)
-  print "%-*s  %s" %(w,p, cnt)
+  if not args.good: del(cnt['good'])
+  if len(cnt): print "%-*s  %s" %(w,p, cnt)
 
-print ret
+print "total:", tot
+if args.retrigger: print "retriggered:", ret
