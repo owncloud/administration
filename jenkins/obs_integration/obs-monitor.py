@@ -14,7 +14,7 @@ def_apiurl="https://api.opensuse.org"
 ap=argparse.ArgumentParser(description='Monitor build service results')
 ap.add_argument('-r', '--retrigger-failed', action='store_true', help="Retrigger a build for all failed packages")
 # ap.add_argument('-s', '--subprojects', action='store_true', help="also recurse into subprojects.")
-ap.add_argument('-g', '--good', action='store_true', help="also report good status.")
+ap.add_argument('-H', '--hide-good', action='store_true', help="hide all with good status.")
 ap.add_argument('-A', '--apiurl', help='the build service api to contact', default=def_apiurl)
 ap.add_argument('proj', type=str, nargs='+', help="projects to monitor")
 args=ap.parse_args()
@@ -130,8 +130,8 @@ for p in all_pkgs:
 	  plat, arch = target.split('/') 
           print "\tretrigger", p, plat, arch
 	  run(["osc", "-A"+args.apiurl, "rebuildpac", p, plat, arch], redirect=False)
-  if not args.good: del(cnt['good'])
+  if args.hide_good: del(cnt['good'])
   if len(cnt): print "%-*s  %s" %(w,p, cnt)
 
 print "total:", tot
-if args.retrigger: print "retriggered:", ret
+if args.retrigger_failed: print "retriggered:", ret
