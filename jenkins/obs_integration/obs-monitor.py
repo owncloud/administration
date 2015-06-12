@@ -11,8 +11,7 @@ import sys, time
 
 verbose=0
 def_apiurl="https://api.opensuse.org"
-pkg_url="https://s2.owncloud.com/package/show/"
-log_url="https://s2.owncloud.com/package/live_build_log/"
+weburl="https://build.opensuse.org"
 
 ap=argparse.ArgumentParser(description='Monitor build service results')
 ap.add_argument('-r', '--retrigger-failed', action='store_true', help="Retrigger a build for all failed packages")
@@ -22,6 +21,10 @@ ap.add_argument('--html', action='store_true', help="produce html with links rat
 ap.add_argument('-A', '--apiurl', help='the build service api to contact', default=def_apiurl)
 ap.add_argument('proj', type=str, nargs='+', help="projects to monitor")
 args=ap.parse_args()
+
+if args.apiurl: weburl = args.apiurl	# not necessarily correct.
+pkg_url="https://%s/package/show/" % weburl
+log_url="https://%s/package/live_build_log/" % weburl
 
 # Keep in sync with internal_tar2obs.py obs_docker_install.py
 def run(args, input=None, redirect=None, redirect_stdout=True, redirect_stderr=True, return_tuple=False, return_code=False, tee=False):
