@@ -6,14 +6,19 @@
 #
 # 2015-06-11, v1.0, jw -- initial draft. But can already retrigger recursively
 #
-import argparse, subprocess, sys, os, re
+import argparse, subprocess, os, re
+import sys, time
 
 verbose=0
 def_apiurl="https://api.opensuse.org"
+pkg_url="https://s2.owncloud.com/package/show/"
+log_url="https://s2.owncloud.com/package/live_build_log/"
+
 ap=argparse.ArgumentParser(description='Monitor build service results')
 ap.add_argument('-r', '--retrigger-failed', action='store_true', help="Retrigger a build for all failed packages")
 # ap.add_argument('-s', '--subprojects', action='store_true', help="also recurse into subprojects.")
 ap.add_argument('-H', '--hide-good', action='store_true', help="hide all with good status.")
+ap.add_argument('--html', action='store_true', help="produce html with links rather than plain text.")
 ap.add_argument('-A', '--apiurl', help='the build service api to contact', default=def_apiurl)
 ap.add_argument('proj', type=str, nargs='+', help="projects to monitor")
 args=ap.parse_args()
@@ -103,7 +108,24 @@ all_pkgs = list_packages_r(args.apiurl, args.proj[0])
 for p in all_pkgs: 
   if len(p) > w: w=len(p)
 
+if args.html:
+  print """
+<table width="100%%"><tr><td align="right"><small>%s</small></td></tr></table>
+<H4>Build statistics for %s</H4>
+
+<table border="0">""" % (time.ctime(), args.proj[0])
+
+prefix=None
+
 for p in all_pkgs:
+  newprefix,_ = p.split('/')
+  if prefix and prefix != newprefix:
+    if args.html:
+      print "<tr><td colspan=3><hr></td></tr>"
+    else:
+      print ""
+  prefix = newprefix
+
   st = pkg_status(args.apiurl, p, ignore_re=None)
   rstat = {}
   cnt = {}
@@ -119,6 +141,18 @@ for p in all_pkgs:
     if not t in tot: tot[t] = 0
     tot[t] += cnt[t]
 
+  if args.hide_good: del(cnt['good'])
+  if len(cnt): 
+    if args.html:
+      if len(cnt) == 1 and 'good' in cnt:
+        stats = str(cnt)
+      else:
+        prj,pkg = p.split('/')
+        stats = '<a href="https://s2.owncloud.com/project/monitor/%s?pkgname=%s&succeeded=0">%s</a>' % (prj,pkg,cnt)
+      print '<tr><td><a href="%s/%s">%s</a></td><td>%s</td></tr>' % (pkg_url, p, p, stats)
+    else:
+      print "%-*s  %s" %(w,p, cnt)
+
   for retrigger in ['failed', 'unresolvable']:
     if retrigger in rstat:
       if not retrigger in ret: ret[retrigger] = 0
@@ -127,10 +161,14 @@ for p in all_pkgs:
       if args.retrigger_failed:
         for target in rstat[retrigger]:
 	  plat, arch = target.split('/') 
-          print "\tretrigger", p, plat, arch
+	  if args.html:
+            print "<tr><td colspan=3><small>&nbsp;-- retrigger <a href='%s/%s/%s/%s'>%s %s/%s</a></small></td></tr>" % (log_url, p, plat, arch, p, plat, arch)
+          else:
+            print "\tretrigger", p, plat, arch
 	  run(["osc", "-A"+args.apiurl, "rebuildpac", p, plat, arch], redirect=False)
-  if args.hide_good: del(cnt['good'])
-  if len(cnt): print "%-*s  %s" %(w,p, cnt)
 
-print "total:", tot
+if args.html:
+  print "</table><p>total:", tot
+else:
+  print "total:", tot
 if args.retrigger_failed: print "retriggered:", ret
