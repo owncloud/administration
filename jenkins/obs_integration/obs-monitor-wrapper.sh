@@ -13,16 +13,18 @@
 obsapi=$1
 obsproj=$2
 dir=$3
+selfdir=$(dirname $0)
 
 if [ -z "$3" ]; then
   echo Usage: $0 obsapi obsproj outdir
   exit 0
 fi
 
+
 pkgurl=$obsapi/package/show/
 statsbase=/var/www/html/monitor/$obsproj-stats
 api=https://s2.owncloud.com
-python obs-monitor.py -A$obsapi $obsproj > $statsbase.html.new --html --retrigger-failed
+python $selfdir/obs-monitor.py -A$obsapi $obsproj > $statsbase.html.new --html --retrigger-failed
 
 cat > $statsbase.html <<EOF
 <meta http-equiv="refresh" content="300">
@@ -35,6 +37,6 @@ EOF
 cat < $statsbase.html.new >> $statsbase.html
 rm    $statsbase.html.new
 
-python obs-monitor.py -A$obsapi $obsproj > $statsbase.txt.new
+python $selfdir/obs-monitor.py -A$obsapi $obsproj > $statsbase.txt.new
 mv $statsbase.txt.new $statsbase.txt
 
