@@ -1,8 +1,10 @@
 #!/bin/sh
 #
 # obs-monitor-wrapper.sh calls obs-monitor.py
-# A html page is generated, and failed builds are retriggered.
-# Then an easier to parse text page is generated.
+# * A human readable html page is generated. It autorefreshes every 5min,
+#   so that running this wrapper via cron keeps the contents current.
+# * Failed builds are retriggered.
+# * parseable text file is also generated.
 #
 # Run this on monkey.
 #
@@ -23,6 +25,8 @@ api=https://s2.owncloud.com
 python obs-monitor.py -A$obsapi $obsproj > $statsbase.html.new --html --retrigger-failed
 
 cat > $statsbase.html <<EOF
+<meta http-equiv="refresh" content="300">
+
 <table width='100%'><tr><td align='right'>
   updated every 15min by<br>
   <a href="https://github.com/owncloud/administration/blob/master/jenkins/obs_integration/obs-monitor.py">obs-monitor.py</a>
