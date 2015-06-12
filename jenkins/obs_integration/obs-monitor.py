@@ -6,7 +6,6 @@
 #
 # 2015-06-11, v1.0, jw -- initial draft. But can already retrigger recursively
 #
-#
 import argparse, subprocess, sys, os, re
 
 verbose=0
