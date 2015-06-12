@@ -33,7 +33,7 @@ cat > $statsbase.html <<EOF
 <meta http-equiv="refresh" content="300">
 
 <table width='100%'><tr><td align='right'>
-  updated every 15min by<br>
+  $UPDATE_MSG by<br>
   <a href="https://github.com/owncloud/administration/blob/master/jenkins/obs_integration/obs-monitor.py">obs-monitor.py</a>
 </td></tr></table>
 EOF

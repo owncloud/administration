@@ -106,7 +106,7 @@ def pkg_status(apiurl, proj_pack, ignore_re=None):
 success_re = r'(excluded|succeeded|\(unpublished\))'
 mapped = {
   'good': [ 'disabled', 'excluded', 'succeeded', '(unpublished)',
-  	    '*', 'disabled*', 'succeeded*' ]
+  	    '*', 'excluded*', 'disabled*', 'succeeded*' ]
 }
 
 ret={}
