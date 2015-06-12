@@ -40,6 +40,7 @@ EOF
 cat < $statsbase.html.new >> $statsbase.html
 rm    $statsbase.html.new
 
-python $selfdir/obs-monitor.py -A$obsapi $obsproj > $statsbase.txt.new
-mv $statsbase.txt.new $statsbase.txt
+## not really needed today.
+# python $selfdir/obs-monitor.py -A$obsapi $obsproj > $statsbase.txt.new
+# mv $statsbase.txt.new $statsbase.txt
 
