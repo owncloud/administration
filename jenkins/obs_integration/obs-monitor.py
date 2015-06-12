@@ -5,7 +5,8 @@
 # (c) 2015 jw@owncloud.com, distribute under GPL-2.0 or ask.
 #
 # 2015-06-11, v1.0, jw -- initial draft. But can already retrigger recursively
-#
+# 2015-06-12, v1.1, jw -- supports html output
+
 import argparse, subprocess, os, re
 import sys, time
 
@@ -22,9 +23,13 @@ ap.add_argument('-A', '--apiurl', help='the build service api to contact', defau
 ap.add_argument('proj', type=str, nargs='+', help="projects to monitor")
 args=ap.parse_args()
 
-if args.apiurl: weburl = args.apiurl	# not necessarily correct.
-pkg_url="https://%s/package/show/" % weburl
-log_url="https://%s/package/live_build_log/" % weburl
+if args.apiurl:
+  if   args.apiurl in ('https://api.opensuse.org', 'obs'): weburl = 'https://build.opensuse.org'
+  else: weburl = args.apiurl	# not necessarily correct.
+
+pkg_url="%s/package/show/" % weburl
+log_url="%s/package/live_build_log/" % weburl
+mon_url="%s/project/monitor/" % weburl
 
 # Keep in sync with internal_tar2obs.py obs_docker_install.py
 def run(args, input=None, redirect=None, redirect_stdout=True, redirect_stderr=True, return_tuple=False, return_code=False, tee=False):
@@ -151,7 +156,7 @@ for p in all_pkgs:
         stats = str(cnt)
       else:
         prj,pkg = p.split('/')
-        stats = '<a href="https://s2.owncloud.com/project/monitor/%s?pkgname=%s&succeeded=0">%s</a>' % (prj,pkg,cnt)
+        stats = '<a href="%s/%s?pkgname=%s&succeeded=0">%s</a>' % (mon_url, prj,pkg,cnt)
       print '<tr><td><a href="%s/%s">%s</a></td><td>%s</td></tr>' % (pkg_url, p, p, stats)
     else:
       print "%-*s  %s" %(w,p, cnt)
