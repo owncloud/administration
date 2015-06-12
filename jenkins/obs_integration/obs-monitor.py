@@ -114,7 +114,7 @@ for p in all_pkgs:
 if args.html:
   print """
 <table width="100%%"><tr><td align="right"><small>%s</small></td></tr></table>
-<H4>Build statistics for %s</H4>
+<H4>OBS build statistics for %s</H4>
 
 <table border="0">""" % (time.ctime(), args.proj[0])
 
