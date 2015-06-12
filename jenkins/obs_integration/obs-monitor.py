@@ -105,8 +105,9 @@ def pkg_status(apiurl, proj_pack, ignore_re=None):
 
 success_re = r'(excluded|succeeded|\(unpublished\))'
 mapped = {
-  'good': [ 'disabled', 'excluded', 'succeeded', '(unpublished)',
-  	    '*', 'excluded*', 'disabled*', 'succeeded*' ]
+  'good': [ 'excluded', 'succeeded', '(unpublished)',
+            'excluded*', 'succeeded*' ],
+  'ignore': [ 'disabled', 'disabled*', '*' ]
 }
 
 ret={}
@@ -145,11 +146,12 @@ for p in all_pkgs:
     rstat[v].append(k)
     cnt[v] +=1
 
+  if 'ignore' in cnt: del(cnt['ignore'])	# don't count what we do not want
   for t in cnt.keys():
     if not t in tot: tot[t] = 0
     tot[t] += cnt[t]
 
-  if args.hide_good: del(cnt['good'])
+  if args.hide_good and 'good' in cnt: del(cnt['good'])
   if len(cnt): 
     if args.html:
       if len(cnt) == 1 and 'good' in cnt:
