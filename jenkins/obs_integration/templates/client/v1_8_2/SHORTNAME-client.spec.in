@@ -99,6 +99,10 @@ Patch1:         autostart_use_wrapper.diff
   %define require_neon 0
 %endif
 %endif
+# Check for SLE12 -> it does not have qt5 obviously.
+%if 0%{?suse_version}==1315
+  %define use_qt5 0
+%endif
 
 ######################################################################### BuildRequires only below here.
 
@@ -182,6 +186,11 @@ BuildRequires:  neon-devel
 %endif
 %endif
 
+# no documents on SLE12
+%if 0%{?suse_version} == 1315
+%define have_doc 0
+%endif
+
 # Version independant package name mapping between suse and fedora/centos
 %if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
 BuildRequires:  sqlite-devel
@@ -190,7 +199,9 @@ BuildRequires:  inetd desktop-file-utils
 BuildRequires:  python-sphinx
 %endif
 %else
+%if 0%{have_doc}
 BuildRequires:  python-Sphinx
+%endif
 BuildRequires:  sqlite3-devel
 BuildRequires:  update-desktop-files
 %endif
