@@ -68,7 +68,7 @@
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="2.13"
+__VERSION__="2.14"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import yaml, sys, os, re, time, tempfile
@@ -938,17 +938,16 @@ dockerfile="FROM "+docker['from']+"\n"
 if 'run' in obs_config['target'][target]:	# and not args.dockerfile:
   script=matched_package_run_script(args.package, target, obs_config['target'][target]['run'])
   if script:
-    if not args.dockerfile:
-      print("# run script /root/start.sh:\n" + script + "\n\n")
+    if True:	# not args.dockerfile:
+      script_commented = re.sub('^', '# ', script, flags=re.M)
+      print("## run script /root/start.sh:\n" + script_commented + "\n##\n")
     startfile = context_dir+'/start.sh'
     f = open(startfile,'w')
     f.write(script)
     os.fchmod(f.fileno(),0o755)
     f.close()
     # CAUTION: Keep in sync with docker_run_int.extend(image_name, ...) above
-    if args.dockerfile:
-      dockerfile+='# see --dump run for the contents of /root/start.sh\n'
-    else:
+    if not args.dockerfile:
       dockerfile+='ADD ./start.sh /root/\n'
     # script_echo = re.sub('$','\\n\\', script)
     # dockerfile+='RUN echo "'+script_echo+'" > /root/start.sh'
