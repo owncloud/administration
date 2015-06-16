@@ -63,6 +63,7 @@
 # V2.13 -- 2015-05-18, jw  Fixed '--dump run' to work with default target too. Apache start code as default start.sh script.
 #			   Try obs target xUbuntu* if the specified Ubuntu* is not there.
 #                          Printed Dockerfile has a hint about start.sh script if one exists. 
+# V2.14 -- 2015-06-16, jw  Directly printing start.sh with -D now as a comment. Hint removed.
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
