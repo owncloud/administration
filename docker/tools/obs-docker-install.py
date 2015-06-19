@@ -950,7 +950,7 @@ if 'run' in obs_config['target'][target]:	# and not args.dockerfile:
     f.write(script)
     os.fchmod(f.fileno(),0o755)
     f.close()
-    startfile = /root/start.sh'
+    startfile = '/root/start.sh'
     # CAUTION: Keep in sync with docker_run_int.extend(image_name, ...) above
     if not args.dockerfile:
       dockerfile+='ADD ./start.sh /root/\n'
