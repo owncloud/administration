@@ -64,12 +64,14 @@
 #			   Try obs target xUbuntu* if the specified Ubuntu* is not there.
 #                          Printed Dockerfile has a hint about start.sh script if one exists. 
 # V2.14 -- 2015-06-16, jw  Directly printing start.sh with -D now as a comment. Hint removed.
+# V2.15 -- 2015-06-16, jw  mention startfile in as bash --rcfile /root/start.sh
+#                          run apt-get install with -V to show version numbers.
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="2.14"
+__VERSION__="2.15"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import yaml, sys, os, re, time, tempfile
@@ -922,6 +924,7 @@ if not atSign and run_args:
   ## CAUTION: Keep in sync with dockerfile+=ADD ... below
   docker_run_int.extend([image_name, '/bin/bash', '/root/start.sh'])
   
+startfile=None
 docker_run=["docker","run","-ti"]
 for vol in docker_volumes:
   docker_run.extend(["-v", vol])
@@ -947,11 +950,10 @@ if 'run' in obs_config['target'][target]:	# and not args.dockerfile:
     f.write(script)
     os.fchmod(f.fileno(),0o755)
     f.close()
+    startfile = /root/start.sh'
     # CAUTION: Keep in sync with docker_run_int.extend(image_name, ...) above
     if not args.dockerfile:
       dockerfile+='ADD ./start.sh /root/\n'
-    # script_echo = re.sub('$','\\n\\', script)
-    # dockerfile+='RUN echo "'+script_echo+'" > /root/start.sh'
   
 if 'pre' in docker:
   dockerfile+=docker['pre']
@@ -978,7 +980,7 @@ if docker["fmt"] == "APT":
   dockerfile+="ENV DEBIAN_FRONTEND noninteractive\n"
   dockerfile+="RUN apt-get -q -y update"+d_endl
   if "inst" in docker and len(docker["inst"]):
-    dockerfile+="RUN apt-get -q -y install "+" ".join(docker["inst"])+d_endl
+    dockerfile+="RUN apt-get -q -y -V install "+" ".join(docker["inst"])+d_endl
 
   if docker_on_aufs() and 'aufs' in docker:
     dockerfile+=docker['aufs']
@@ -988,11 +990,11 @@ if docker["fmt"] == "APT":
   dockerfile+="RUN apt-key add - < Release.key"+d_endl
   dockerfile+="RUN echo 'deb "+download["url_cred"]+"/"+obs_target+"/ /' >> /etc/apt/sources.list.d/"+args.package+".list"+d_endl
   dockerfile+="RUN apt-get -q -y update"+d_endl
-  if extra_packages: 	dockerfile+="RUN apt-get -q -y install "+' '.join(extra_packages)+d_endl
+  if extra_packages: 	dockerfile+="RUN apt-get -q -y -V install "+' '.join(extra_packages)+d_endl
   if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
-  dockerfile+="RUN date="+now+" apt-get -q -y update && apt-get -q -y install "+args.package
+  dockerfile+="RUN date="+now+" apt-get -q -y update && apt-get -q -y -V install "+args.package
   dockerfile_tail ="RUN zcat /usr/share/doc/"+args.package+"/changelog*.gz  | head -20"+d_endl
-  dockerfile_tail+="RUN echo 'apt-get install "+args.package+"' >> ~/.bash_history"+d_endl
+  dockerfile_tail+="RUN echo 'apt-get -V install "+args.package+"' >> ~/.bash_history"+d_endl
 
 
 elif docker["fmt"] == "YUM":
@@ -1099,6 +1101,8 @@ if not args.rm and not r and not args.quiet:
   print("You may remove unused container/images with e.g.\n "+docker_cmd_clean_c+"\n "+docker_cmd_clean_i+"\n")
 
 if not r and not run_args:
+  if startfile is not None:
+    docker_run.extend(['bash', '--rcfile', startfile])
   print("You can run the new image with:\n "+" ".join(docker_run))
 
 #if args.run:
