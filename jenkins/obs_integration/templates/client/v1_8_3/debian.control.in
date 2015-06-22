@@ -23,7 +23,7 @@ Description: development files for the [% displayname %] sync lib.
 Package: [% shortname_deb %]-client-l10n
 Architecture: all
 Section: devel
-Depends: [% shortname_deb %]-client (= ${binary:Version}), ${misc:Depends}, lib[% shortname_deb %]sync0
+Depends: [% shortname_deb %]-client (>= ${binary:Version}), ${misc:Depends}, lib[% shortname_deb %]sync0
 Breaks: [% shortname_deb %]-client (<= 1.5.0)
 Description: Internationalisation files for [% displayname %]
  Internationalisation files for [% displayname %].
