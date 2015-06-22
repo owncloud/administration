@@ -6,6 +6,7 @@
 #
 # 2015-06-11, v1.0, jw -- initial draft. But can already retrigger recursively
 # 2015-06-12, v1.1, jw -- supports html output
+# 2015-06-22, v1.2, jw -- move excluded* into the ignore class.
 
 import argparse, subprocess, os, re
 import sys, time
@@ -105,9 +106,8 @@ def pkg_status(apiurl, proj_pack, ignore_re=None):
 
 success_re = r'(excluded|succeeded|\(unpublished\))'
 mapped = {
-  'good': [ 'excluded', 'succeeded', '(unpublished)',
-            'excluded*', 'succeeded*' ],
-  'ignore': [ 'disabled', 'disabled*', '*' ]
+  'good': [ 'succeeded', '(unpublished)', 'succeeded*' ],
+  'ignore': [ 'excluded', 'excluded*', 'disabled', 'disabled*', '*' ]
 }
 
 ret={}
