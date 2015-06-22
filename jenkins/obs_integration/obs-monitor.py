@@ -6,6 +6,7 @@
 #
 # 2015-06-11, v1.0, jw -- initial draft. But can already retrigger recursively
 # 2015-06-12, v1.1, jw -- supports html output
+# 2015-06-22, v1.2, jw -- move excluded* into the ignore class. Refactored output code from collector code.
 
 import argparse, subprocess, os, re
 import sys, time
@@ -30,6 +31,9 @@ if args.apiurl:
 pkg_url="%s/package/show/" % weburl
 log_url="%s/package/live_build_log/" % weburl
 mon_url="%s/project/monitor/" % weburl
+
+out_plain = ''
+out_html = ''
 
 # Keep in sync with internal_tar2obs.py obs_docker_install.py
 def run(args, input=None, redirect=None, redirect_stdout=True, redirect_stderr=True, return_tuple=False, return_code=False, tee=False):
@@ -105,9 +109,8 @@ def pkg_status(apiurl, proj_pack, ignore_re=None):
 
 success_re = r'(excluded|succeeded|\(unpublished\))'
 mapped = {
-  'good': [ 'excluded', 'succeeded', '(unpublished)',
-            'excluded*', 'succeeded*' ],
-  'ignore': [ 'disabled', 'disabled*', '*' ]
+  'good': [ 'succeeded', '(unpublished)', 'succeeded*' ],
+  'ignore': [ 'excluded', 'excluded*', 'disabled', 'disabled*', '*' ]
 }
 
 ret={}
@@ -117,22 +120,20 @@ all_pkgs = list_packages_r(args.apiurl, args.proj[0])
 for p in all_pkgs: 
   if len(p) > w: w=len(p)
 
-if args.html:
-  print """
+out_html = """
 <table width="100%%"><tr><td align="right"><small>%s</small></td></tr></table>
 <H4>OBS build statistics for %s</H4>
 
-<table border="0">""" % (time.ctime(), args.proj[0])
+<table border="0">
+""" % (time.ctime(), args.proj[0])
 
 prefix=None
 
 for p in all_pkgs:
   newprefix,_ = p.split('/')
   if prefix and prefix != newprefix:
-    if args.html:
-      print "<tr><td colspan=3><hr></td></tr>"
-    else:
-      print ""
+      out_html += "<tr><td colspan=3><hr></td></tr>\n"
+      out_plain += "\n"
   prefix = newprefix
 
   st = pkg_status(args.apiurl, p, ignore_re=None)
@@ -153,15 +154,13 @@ for p in all_pkgs:
 
   if args.hide_good and 'good' in cnt: del(cnt['good'])
   if len(cnt): 
-    if args.html:
-      if len(cnt) == 1 and 'good' in cnt:
+    if len(cnt) == 1 and 'good' in cnt:
         stats = str(cnt)
-      else:
+    else:
         prj,pkg = p.split('/')
         stats = '<a href="%s/%s?pkgname=%s&succeeded=0">%s</a>' % (mon_url, prj,pkg,cnt)
-      print '<tr><td><a href="%s/%s">%s</a></td><td>%s</td></tr>' % (pkg_url, p, p, stats)
-    else:
-      print "%-*s  %s" %(w,p, cnt)
+    out_html  += '<tr><td><a href="%s/%s">%s</a></td><td>%s</td></tr>\n' % (pkg_url, p, p, stats)
+    out_plain += "%-*s  %s\n" %(w,p, cnt)
 
   for retrigger in ['failed', 'unresolvable']:
     if retrigger in rstat:
@@ -171,14 +170,18 @@ for p in all_pkgs:
       if args.retrigger_failed:
         for target in rstat[retrigger]:
 	  plat, arch = target.split('/') 
-	  if args.html:
-            print "<tr><td colspan=3><small>&nbsp;-- retrigger <a href='%s/%s/%s/%s'>%s %s/%s</a></small></td></tr>" % (log_url, p, plat, arch, p, plat, arch)
-          else:
-            print "\tretrigger", p, plat, arch
+          out_html  += "<tr><td colspan=3><small>&nbsp;-- retrigger <a href='%s/%s/%s/%s'>%s %s/%s</a></small></td></tr>\n" % (log_url, p, plat, arch, p, plat, arch)
+          out_plain += "\tretrigger\n", p, plat, arch
 	  run(["osc", "-A"+args.apiurl, "rebuildpac", p, plat, arch], redirect=False)
 
+out_html  += "</table><p>\ntotal: %s\n" % (tot)
+out_plain += "total: %s\n" % (tot)
+if args.retrigger_failed: 
+  out_html  += "retriggered: %s\n" % (ret)
+  out_plain += "retriggered: %s\n" % (ret)
+
 if args.html:
-  print "</table><p>total:", tot
+  print out_html
 else:
-  print "total:", tot
-if args.retrigger_failed: print "retriggered:", ret
+  print out_plain
+
