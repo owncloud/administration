@@ -66,12 +66,13 @@
 # V2.14 -- 2015-06-16, jw  Directly printing start.sh with -D now as a comment. Hint removed.
 # V2.15 -- 2015-06-16, jw  mention startfile in as bash --rcfile /root/start.sh
 #                          run apt-get install with -V to show version numbers.
+# V2.16 -- 2015-06-29, jw  Support start.sh with ssh server.
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="2.15"
+__VERSION__="2.16"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import yaml, sys, os, re, time, tempfile
@@ -669,6 +670,8 @@ def matched_package_run_script(package_name, platform_name, pat_dict):
 
 ################################################################################
 
+start_script_pre = [] 
+start_script_post = []
 docker_cmd_clean_c=" docker ps -a  | grep Exited   | awk '{ print $1 }' | xargs -r docker rm"
 docker_cmd_clean_i=" docker images | grep '<none>' | awk '{ print $3 }' | xargs -r docker rmi"
 self_cmd = " ".join(sys.argv)
@@ -706,7 +709,7 @@ ap.add_argument("--no-cache", default=False, action="store_true", help="Do not u
 ap.add_argument("--nogpgcheck", default=False, action="store_true", help="Ignore broken or missing keys. Default: yum check, zypper auto-import")
 ap.add_argument("-X", "--xauth", default=False, action="store_true", help="Prepare a docker image that can connect to your X-Server.")
 ap.add_argument("-C", "--cleanup", default=False, action="store_true", help="Run suggested docker cleanup.")
-ap.add_argument("-S", "--ssh-key", help="Import an ssh-key (e.g. ~/.ssh/id_dsa.pub) and start an ssh server with the default docker run CMD.")
+ap.add_argument("-S", "--ssh-server", default=False, action="store_true", help="Start an ssh login server with the default docker run CMD and start.sh script.")
 ap.add_argument("project", metavar="PROJECT", nargs="?", help="obs project name. Alternate syntax to PROJ/PACK")
 ap.add_argument("package", metavar="PACKAGE",  nargs="?", help="obs package name, or PROJ/PACK")
 ap.add_argument("platform",metavar="PLATFORM", nargs="?", help="obs build target name. Alternate syntax to -p. Default: "+target)
@@ -884,24 +887,28 @@ if args.xauth:
   if re.search(r'centos|rhel|fedora', obs_target, re.I): 	extra_packages.extend(['gnu-free-sans-fonts'])
   if re.search(r'ubuntu_1[4567]', obs_target, re.I):		extra_packages.extend(['fonts-dejavu-core'])
 
-if args.ssh_key:
-  if args.ssh_key.endswith(".pub"):
-    if not args.no_operation: run(["cp", args.ssh_key, context_dir+'/authorized_keys'])
-    extra_docker_cmd.extend(['RUN mkdir /root/.ssh', 'ADD authorized_keys /root/.ssh/authorized_keys'])
-    # tested with centos:
-    extra_docker_cmd.extend(["RUN sed '/pam_loginuid.so/s/^/#/g' -i /etc/pam.d/*"])
-  else:
-    print("ssh-key '"+args.ssh_key+"' does not end in '.pub' is not a plain file. Ignored.");
-  # add ssh server
+if args.ssh_server:
+  if not args.quiet:
+    print("Installing an ssh-server. To log in later without password, you can try 'docker run -v ~/.ssh/id_dsa.pub:/root/.ssh/authorized_keys ... ' or similar.")
+  docker_volumes.append('~/.ssh/id_dsa.pub:/root/.ssh/authorized_keys')
+  extra_docker_cmd.extend(['RUN mkdir /root/.ssh'])
+  # tested with centos:
+  extra_docker_cmd.extend(["RUN sed '/pam_loginuid.so/s/^/#/g' -i /etc/pam.d/*"])
+
+  # add ssh server to start.sh and run cmd.
   if re.search(r'suse', obs_target, re.I):
     extra_packages.extend(['openssh'])
     docker_cmd_cmd='service sshd start ; ip a | grep global ; exec /bin/bash'
+    start_script_post.extend(['service sshd start'])
   if re.search(r'centos|rhel|fedora', obs_target, re.I):
     extra_packages.extend(['openssh-server'])
     docker_cmd_cmd='service sshd start ; ip a | grep global ; exec /bin/bash'
+    start_script_post.extend(['service sshd start'])
   if re.search(r'ubuntu|debian', obs_target, re.I):
     extra_packages.extend(['openssh-server'])
     docker_cmd_cmd='mkdir -p /var/run/sshd; /usr/sbin/sshd; ip a | grep global ; exec /bin/bash'
+    start_script_post.extend(['mkdir -p /var/run/sshd', '/usr/sbin/sshd'])
+  start_script_post.extend(['ip a | grep global'])
 
 
 docker_run_int=["docker","run"]
@@ -925,7 +932,7 @@ if not atSign and run_args:
   docker_run_int.extend([image_name, '/bin/bash', '/root/start.sh'])
   
 startfile=None
-docker_run=["docker","run","-ti"]
+docker_run=["docker","run","-ti"]	# docker_run is printed as a hint only.
 for vol in docker_volumes:
   docker_run.extend(["-v", vol])
 docker_run.append(image_name)
@@ -947,7 +954,10 @@ if 'run' in obs_config['target'][target]:	# and not args.dockerfile:
       print("## run script /root/start.sh:\n" + script_commented + "\n##\n")
     startfile = context_dir+'/start.sh'
     f = open(startfile,'w')
+    # FIXME: we should rather have a start.d/*.sh directory, than pasting it all together.
+    if len(start_script_pre): f.write("\n".join(start_script_pre) + "\n")
     f.write(script)
+    if len(start_script_post): f.write("\n" + "\n".join(start_script_post) + "\n")
     os.fchmod(f.fileno(),0o755)
     f.close()
     startfile = '/root/start.sh'

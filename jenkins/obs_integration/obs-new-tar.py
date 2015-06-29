@@ -13,6 +13,7 @@ import sys, time, argparse, subprocess, os, re
 verbose=1
 ap=argparse.ArgumentParser(description='obs package updater, run from a checked out working copy')
 ap.add_argument('url', type=str, help="tar ball (file or) url to put into this package")
+ap.add_argument('-c', '--commit', '--checkin', action='store_true', help="call 'osc ci' after updating the working copy")
 
 args=ap.parse_args()
 
@@ -121,7 +122,9 @@ def edit_specfile(specfile, data):
 def debian_version(data, buildrel=1):
   full_version = data['version']
   if "prerelease" in data and data['prerelease'] != '%nil': 
-    full_version += "~"+data['prerelease']
+    pre = data['prerelease']
+    pre = re.sub(r'^rc','RC', pre, re.I)
+    full_version += "~"+pre.capitalize()
   if buildrel is not None:
     full_version += "-" + str(buildrel)
   return full_version
@@ -239,4 +242,8 @@ edit_dscfile(data['name']+".dsc", data)
 edit_debchangelog("debian.changelog", data)
 edit_changes(data['name']+".changes", data)
 addremove_tars(newtarfile)
-run(["osc", "diff"], redirect=False)
+
+if args.commit:
+  run(["osc", "ci"], redirect=False)
+else:
+  run(["osc", "diff"], redirect=False)
