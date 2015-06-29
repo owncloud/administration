@@ -522,14 +522,14 @@ def obs_fetch_bin_version(api, download_item, prj, pkg, target, retry=True):
   # obs-docker-install_1.0-20141218_amd64.deb
   # cernbox-client_1.7.0-0.jw20141127_amd64.deb
   m = re.search(r'^\s*'+re.escape(deb_pkg_name)+r'_(\d+[^-\s]*)\-(\d+[^_\s]*)_.*?\.deb$', bin_seen, re.M)
-  if m: return (m.group(1),m.group(2))
+  if m: return (m.group(1),m.group(2),target)
   # owncloud-client_1.7.0_i386.deb
   m = re.search(r'^\s*'+re.escape(deb_pkg_name)+r'_(\d+[^_\s]*)_.*?\.deb$', bin_seen, re.M)
-  if m: return (m.group(1),'')
+  if m: return (m.group(1),'',target)
 
   # cloudtirea-client-1.7.0-4.1.i686.rpm
   m = re.search(r'^\s*'+re.escape(args.package)+r'-(\d+[^-\s]*)\-([\w\.]+?)\.(x86_64|i\d86|noarch)\.rpm$', bin_seen, re.M)
-  if m: return (m.group(1),m.group(2))
+  if m: return (m.group(1),m.group(2),target)
   if retry and re.match('^Ubuntu', target):
     print("retrying x"+target+" instead of "+target)
     return obs_fetch_bin_version(api, download_item, prj, pkg, 'x'+target, retry=False)
@@ -820,7 +820,7 @@ if args.dump:
 
 obs_api=guess_obs_api(args.project, args.obs_api, not args.quiet)
 try:
-  version,release=obs_fetch_bin_version(obs_api, args.download, args.project, args.package, obs_target)
+  version,release,obs_target=obs_fetch_bin_version(obs_api, args.download, args.project, args.package, obs_target)
 except Exception as e:
   if args.keep_going:
     print(str(e))
@@ -948,16 +948,18 @@ dockerfile="FROM "+docker['from']+"\n"
 
 if 'run' in obs_config['target'][target]:	# and not args.dockerfile:
   script=matched_package_run_script(args.package, target, obs_config['target'][target]['run'])
+
   if script:
+    # FIXME: we should rather have a start.d/*.sh directory, than pasting it all together.
+    if len(start_script_pre):  script = "\n".join(start_script_pre) + "\n" + script
+    if len(start_script_post): script += "\n" + "\n".join(start_script_post) + "\n"
+
     if True:	# not args.dockerfile:
       script_commented = re.sub('^', '# ', script, flags=re.M)
       print("## run script /root/start.sh:\n" + script_commented + "\n##\n")
     startfile = context_dir+'/start.sh'
     f = open(startfile,'w')
-    # FIXME: we should rather have a start.d/*.sh directory, than pasting it all together.
-    if len(start_script_pre): f.write("\n".join(start_script_pre) + "\n")
     f.write(script)
-    if len(start_script_post): f.write("\n" + "\n".join(start_script_post) + "\n")
     os.fchmod(f.fileno(),0o755)
     f.close()
     startfile = '/root/start.sh'
