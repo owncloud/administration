@@ -13,9 +13,9 @@ while the user doesn't know about the instances and only sees the central server
 
 The idea is, an ownCloud user with an login name ```felix@instance2.domain.com``` gets redirected to use the  ```https://instance2.domain.com``` automatically.
 
-The redirects need to be done for the web frontend, desktop sync clients and mobile apps.
+The redirects can be done for desktop sync clients and mobile apps.
 
-## Sync client and mobile apps
+## Sync Client
 
 On connection the clients are requesting
 
@@ -28,6 +28,10 @@ The ```status.php``` needs to be on the central server, just to proceed with the
 Now in ```remote.php``` the username can be evaluated to distinguish the correct instance and redirect.
 
 All you need on the central server are those two files, and you can customize the code for the selection of the instances.
+
+##  Mobile Apps
+
+Work in progress to behave like sync client.
 
 ## Web frontend
 
