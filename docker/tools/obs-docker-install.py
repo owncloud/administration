@@ -179,13 +179,6 @@ target:
 
   CentOS_CentOS-7: { base: [CentOS_7] }
 
-  Debian_6.0:
-    fmt: APT
-    from: debian:6.0
-    inst: [wget, apt-transport-https]
-
-  Debian_7.0: { base: [Debian_6.0], from: 'debian:7' }
-
   Fedora_20:
     aufs_hack: |
       RUN rpm --import http://download.opensuse.org/repositories/isv:/ownCloud:/devel/Fedora_20/repodata/repomd.xml.key
@@ -220,9 +213,9 @@ target:
     from: fedora:21
     inst: [wget]
 
-  Ubuntu_12.04:
+  Debian_6.0:
     fmt: APT
-    from: ubuntu:12.04
+    from: debian:6.0
     inst: [wget, apt-transport-https]
     run:
       '^(owncloud|owncloud-enterprise)$': |
@@ -238,12 +231,16 @@ target:
       '': |
         service apache2 start
 
-  Ubuntu_12.10: { base: [Ubuntu_12.04], from: 'ubuntu:12.10' }
-  Ubuntu_13.04: { base: [Ubuntu_12.04], from: 'ubuntu:13.04' }
-  Ubuntu_13.10: { base: [Ubuntu_12.04], from: 'ubuntu:13.10' }
-  Ubuntu_14.04: { base: [Ubuntu_12.04], from: 'ubuntu:14.04' }
-  Ubuntu_14.10: { base: [Ubuntu_12.04], from: 'ubuntu:14.10' }
-  Ubuntu_15.04: { base: [Ubuntu_12.04], from: 'ubuntu:15.04' }
+  Debian_7.0: { base: [Debian_6.0], from: 'debian:7' }
+  Debian_8.0: { base: [Debian_6.0], from: 'debian:8' }
+
+  Ubuntu_12.04: { base: [Debian_6.0], from: 'ubuntu:12.04' }
+  Ubuntu_12.10: { base: [Debian_6.0], from: 'ubuntu:12.10' }
+  Ubuntu_13.04: { base: [Debian_6.0], from: 'ubuntu:13.04' }
+  Ubuntu_13.10: { base: [Debian_6.0], from: 'ubuntu:13.10' }
+  Ubuntu_14.04: { base: [Debian_6.0], from: 'ubuntu:14.04' }
+  Ubuntu_14.10: { base: [Debian_6.0], from: 'ubuntu:14.10' }
+  Ubuntu_15.04: { base: [Debian_6.0], from: 'ubuntu:15.04' }
 
   # xUbuntu* are simply aliases for Ubuntu*
   xUbuntu_12.04: { base: [Ubuntu_12.04] }
