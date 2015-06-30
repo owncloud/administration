@@ -4,8 +4,9 @@ $dispatcher = new OC_Central();
 $dispatcher->redirect();
 
 class OC_Central {
-	private static $authUser;
-	private static $origPath;
+	private $authUser;
+	private $origPath;
+	private $domain;
 
 	function __construct() {
 		$this->authUser = $_SERVER['PHP_AUTH_USER'];
@@ -43,8 +44,7 @@ class OC_Central {
 		$mail = explode("@", $this->authUser);
 		$domain = $mail[1];
 		$domainParts = explode(".", $domain);
-		array_pop($domainParts);
-		return $domainParts[1];
+		return $domainParts[0];
 	}
 
 	private function errorUnauthorized($message) {

@@ -58,7 +58,7 @@ Possible usernames:
 which get redirected to ```https://owncloud.achernar.uberspace.de/instanceX```.
 Password is: ```secret```.
 
-Try with curl:
+Or try with curl:
 
 ```
 curl -v -L -u'test@instance3.com:secret' https://owncloud.achernar.uberspace.de/remote.php/webdav/
