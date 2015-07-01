@@ -7,6 +7,7 @@
 # 2015-06-11, v1.0, jw -- initial draft. But can already retrigger recursively
 # 2015-06-12, v1.1, jw -- supports html output
 # 2015-06-22, v1.2, jw -- move excluded* into the ignore class. Refactored output code from collector code.
+# 2015-07-01, v1.3, jw -- retrigger_failed also for 'broken'
 
 import argparse, subprocess, os, re
 import sys, time
@@ -162,7 +163,7 @@ for p in all_pkgs:
     out_html  += '<tr><td><a href="%s/%s">%s</a></td><td>%s</td></tr>\n' % (pkg_url, p, p, stats)
     out_plain += "%-*s  %s\n" %(w,p, cnt)
 
-  for retrigger in ['failed', 'unresolvable']:
+  for retrigger in ['failed', 'unresolvable', 'broken']:
     if retrigger in rstat:
       if not retrigger in ret: ret[retrigger] = 0
       ret[retrigger] += cnt[retrigger]
