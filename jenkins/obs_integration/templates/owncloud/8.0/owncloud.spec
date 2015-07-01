@@ -11,7 +11,7 @@
 # case the license is the MIT License). An "Open Source License" is a
 # license that conforms to the Open Source Definition (Version 1.9)
 # published by the Open Source Initiative.
-
+#
 # Please submit bugfixes, issues or comments via http://github.com/owncloud/
 #
 
@@ -70,20 +70,19 @@
 
 
 %if %{fhs}
-Name:           owncloud-fhs
+Name:           owncloud
 %else
 Name:           owncloud
 %endif
 
-# Downloaded from http://download.owncloud.org/owncloud-7.0.0.tar.bz2
-# Downloaded from http://download.owncloud.org/community/owncloud-7.0.1.tar.bz2
 # Downloaded from http://download.owncloud.org/community/owncloud-8.0.1.tar.bz2
-# Downloaded from http://download.owncloud.org/community/testing/owncloud-8.0.3RC2.tar.bz2
-# Downloaded from http://download.owncloud.org/community/testing/owncloud-8.1.0alpha2.tar.bz2
+# Downloaded from http://download.owncloud.org/community/testing/owncloud-8.0.3RC3.tar.bz2
+# Downloaded from http://download.owncloud.org/community/owncloud-8.0.3.tar.bz2
+# Downloaded from http://download.owncloud.org/community/testing/owncloud-8.0.5beta.tar.bz2
 
 ## define prerelease %nil, if this is *not* a prerelease.
-%define prerelease %nil
-%define base_version 8.1_20150701
+%define prerelease RC1
+%define base_version 8.0.5
 %define tar_version %{base_version}%{prerelease}
 
 
@@ -178,6 +177,7 @@ Requires:	%{name}-config-apache = %{version}
 %define require_standard_apps %{nil}\
 Requires:	%{name}-3rdparty              = %{version} \
 Requires:	%{name}-app-activity          = %{version} \
+Requires:	%{name}-app-files_encryption  = %{version} \
 Requires:	%{name}-app-files_pdfviewer   = %{version} \
 Requires:	%{name}-app-files_trashbin    = %{version} \
 Requires:	%{name}-app-firstrunwizard    = %{version} \
@@ -194,13 +194,10 @@ Requires:	%{name}-app-files_locking     = %{version} \
 Requires:	%{name}-app-files_texteditor  = %{version} \
 Requires:	%{name}-app-files_videoviewer = %{version} \
 Requires:	%{name}-app-provisioning_api  = %{version} \
-Requires:	%{name}-app-user_external     = %{version} \
-Requires:	%{name}-app-encryption	      = %{version}
-
+Requires:	%{name}-app-user_external     = %{version}
 
 ## not recommended for Linux packages.
 # Requires:	#{name}-app-updater           = #{version}
-Obsoletes:	%{name}-app-updater           < %{version}
 
 
 %if %{fhs}
@@ -478,9 +475,7 @@ cp %{SOURCE10} .
 #%%patch0 -p0
 
 # obs_check_deb_spec.sh
-pushd $RPM_SOURCE_DIR
-sh %{SOURCE100} all
-popd
+sh %{SOURCE100} rpm
 
 # remove .bower.json .bowerrc .gitattributes .gitmodules
 find . -name .bower\* -print -o -name .git\* -print | xargs rm
@@ -489,9 +484,6 @@ find . -name .bower\* -print -o -name .git\* -print | xargs rm
 # obsolete stuff, to be removed from tar-balls.
 rm -f indie.json
 rm -f l10n/l10n.pl
-
-# do not build updater app.
-rm -rf apps/updater
 
 %install
 # no server side java code contained, alarm is false
@@ -549,6 +541,8 @@ if [ -x /usr/sbin/sestatus ] ; then \
     restorecon '%{oc_config_dir}'
     semanage fcontext -a -t httpd_sys_rw_content_t '%{oc_dir}/apps'
     restorecon '%{oc_dir}/apps'
+    semanage fcontext -a -t httpd_sys_rw_content_t '%{oc_dir}/assets'
+    restorecon '%{oc_dir}/assets'
   }
 fi
 true
@@ -572,6 +566,10 @@ if [ -x /usr/sbin/sestatus ] ; then \
     semanage fcontext -l | grep '%{oc_dir}/apps' && {
       semanage fcontext -d -t httpd_sys_rw_content_t '%{oc_dir}/apps'
       restorecon '%{oc_dir}/apps'
+    }
+    semanage fcontext -l | grep '%{oc_dir}/assets' && {
+      semanage fcontext -d -t httpd_sys_rw_content_t '%{oc_dir}/assets'
+      restorecon '%{oc_dir}/assets'
     }
   }
 fi
@@ -792,16 +790,23 @@ chmod -R a+w   %{oc_dir}/apps/ %{oc_config_dir}/ %{oc_data_dir}/ || true
 rm -rf "$RPM_BUILD_ROOT"
 
 %oc_app_package activity
+%oc_app_package files_encryption	Requires:php-openssl
 %oc_app_package files_pdfviewer
 %oc_app_package files_trashbin
 %oc_app_package firstrunwizard
 %oc_app_package templateeditor
+%if "%_repository" == "CentOS_6_PHP54" || "%_repository" == "RHEL_6_PHP54"
+# FIXME: should have the same for _PHP55 and _PHP56 ? Or make Substitute: work in prjconf ?
+%oc_app_package user_ldap		Requires:php54-php-ldap
+%else
 %oc_app_package user_ldap		Requires:php-ldap
+%endif
 %oc_app_package external
 %oc_app_package files_external
 %oc_app_package files_sharing
 %oc_app_package files_versions
 %oc_app_package gallery
+%oc_app_package updater
 %oc_app_package user_webdavauth
 %oc_app_package files
 %oc_app_package files_locking
@@ -809,7 +814,6 @@ rm -rf "$RPM_BUILD_ROOT"
 %oc_app_package files_videoviewer
 %oc_app_package provisioning_api
 %oc_app_package user_external		Requires:owncloud-app-external
-%oc_app_package encryption
 
 
 %files
@@ -830,7 +834,6 @@ rm -rf "$RPM_BUILD_ROOT"
 %{oc_dir}/index.php
 %{oc_dir}/lib
 %{oc_dir}/ocs
-%{oc_dir}/ocs-provider
 %{oc_dir}/public.php
 %{oc_dir}/remote.php
 %{oc_dir}/settings
@@ -873,24 +876,21 @@ rm -rf "$RPM_BUILD_ROOT"
 %{oc_dir}/index.php
 %{oc_dir}/lib
 %{oc_dir}/ocs
-%{oc_dir}/ocs-provider
 %{oc_dir}/public.php
 %{oc_dir}/remote.php
 %{oc_dir}/settings
 %{oc_dir}/status.php
+%{oc_dir}/themes
 %{oc_dir}/cron.php
 %{oc_dir}/robots.txt
 %{oc_dir}/index.html
 %{oc_dir}/console.php
 %{oc_dir}/version.php
-
 %if %{fhs}
 ## symlink. Only included if it is a link.
 %{oc_dir}/config
 %endif
-
 %defattr(0755,%{oc_user},%{oc_group},0775)
-%{oc_dir}/themes
 %{oc_dir}/occ
 %dir %{oc_dir}/assets
 %dir %{oc_dir}/apps
