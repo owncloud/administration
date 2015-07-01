@@ -27,7 +27,7 @@ api=https://s2.owncloud.com
 opt_r=--retrigger-failed
 test 0$NO_TRIGGER -gt 0 && opt_r=
 
-python $selfdir/obs-monitor.py -A$obsapi $obsproj > $statsbase.html.new --html $opt_r
+python $selfdir/obs-monitor.py -A$obsapi $obsproj > $statsbase.html.new 2>&1 --html $opt_r
 
 cat > $statsbase.html <<EOF
 <meta http-equiv="refresh" content="300">

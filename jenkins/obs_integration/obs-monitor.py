@@ -161,7 +161,7 @@ for p in all_pkgs:
         prj,pkg = p.split('/')
         stats = '<a href="%s/%s?pkgname=%s&succeeded=0">%s</a>' % (mon_url, prj,pkg,cnt)
     out_html  += '<tr><td><a href="%s/%s">%s</a></td><td>%s</td></tr>\n' % (pkg_url, p, p, stats)
-    out_plain += "%-*s  %s\n" %(w,p, cnt)
+    out_plain += "%-*s  %s\n" % (w, p, cnt)
 
   for retrigger in ['failed', 'unresolvable', 'broken']:
     if retrigger in rstat:
@@ -172,7 +172,7 @@ for p in all_pkgs:
         for target in rstat[retrigger]:
 	  plat, arch = target.split('/') 
           out_html  += "<tr><td colspan=3><small>&nbsp;-- retrigger <a href='%s/%s/%s/%s'>%s %s/%s</a></small></td></tr>\n" % (log_url, p, plat, arch, p, plat, arch)
-          out_plain += "\tretrigger\n", p, plat, arch
+          out_plain += "\tretrigger %s %s %s\n" % (p, plat, arch)
 	  run(["osc", "-A"+args.apiurl, "rebuildpac", p, plat, arch], redirect=False)
 
 out_html  += "</table><p>\ntotal: %s\n" % (tot)
