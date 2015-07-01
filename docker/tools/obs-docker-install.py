@@ -67,12 +67,13 @@
 # V2.15 -- 2015-06-16, jw  mention startfile in as bash --rcfile /root/start.sh
 #                          run apt-get install with -V to show version numbers.
 # V2.16 -- 2015-06-29, jw  Support start.sh with ssh server.
+# V2.17 -- 2015-07-01, jw  run_tstamp introduced to switch off timestamp printing with -D
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="2.16"
+__VERSION__="2.17"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import yaml, sys, os, re, time, tempfile
@@ -984,6 +985,11 @@ start_time=time.time()
 d_endl="\n"
 if args.keep_going: d_endl = " || true\n"
 dockerfile_tail=''
+if args.dockerfile:
+  run_tstamp = 'RUN'
+else:
+  run_tstamp = 'RUN date='+now
+
 
 if docker["fmt"] == "APT":
   if args.nogpgcheck: print("Option nogpgcheck not implemented for APT")
@@ -1002,7 +1008,7 @@ if docker["fmt"] == "APT":
   dockerfile+="RUN apt-get -q -y update"+d_endl
   if extra_packages: 	dockerfile+="RUN apt-get -q -y -V install "+' '.join(extra_packages)+d_endl
   if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
-  dockerfile+="RUN date="+now+" apt-get -q -y update && apt-get -q -y -V install "+args.package
+  dockerfile+=run_tstamp +" apt-get -q -y update && apt-get -q -y -V install "+args.package
   dockerfile_tail ="RUN zcat /usr/share/doc/"+args.package+"/changelog*.gz  | head -20"+d_endl
   dockerfile_tail+="RUN echo 'apt-get -V install "+args.package+"' >> ~/.bash_history"+d_endl
 
@@ -1022,7 +1028,7 @@ elif docker["fmt"] == "YUM":
   dockerfile+="RUN "+wget_cmd+obs_target+'/'+args.project+".repo -O /etc/yum.repos.d/"+args.project+".repo"+d_endl
   if extra_packages:	dockerfile+="RUN "+yum_install+" "+" ".join(extra_packages)+d_endl
   if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
-  dockerfile+="RUN date="+now+" yum clean expire-cache && "+yum_install+" "+args.package
+  dockerfile+=run_tstamp+" yum clean expire-cache && "+yum_install+" "+args.package
   dockerfile_tail="RUN rpm -q --changelog "+args.package+" | head -20"+d_endl
   dockerfile_tail+="RUN echo '"+yum_install+" "+args.package+"' >> ~/.bash_history"+d_endl
 
@@ -1040,7 +1046,7 @@ elif docker["fmt"] == "ZYPP":
   if extra_packages:	dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+" ".join(extra_packages)+d_endl
   if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
 
-  dockerfile+="RUN date="+now+" zypper --non-interactive --gpg-auto-import-keys refresh && zypper --non-interactive --gpg-auto-import-keys install "+args.package
+  dockerfile+=run_tstamp+" zypper --non-interactive --gpg-auto-import-keys refresh && zypper --non-interactive --gpg-auto-import-keys install "+args.package
   dockerfile_tail = "RUN rpm -q --changelog "+args.package+" | head -20"+d_endl
   dockerfile_tail +="RUN echo 'zypper install "+args.package+"' >> ~/.bash_history"+d_endl
 
