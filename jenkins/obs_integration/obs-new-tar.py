@@ -6,6 +6,7 @@
 # * this assumes the owncloud way of macros in the specfile.
 
 # Version 1.0: works in a working copy. 
+# Version 1.1: RC capitalized correctly. owncloud not prefixed with owncloud. Email override.
 
 
 import sys, time, argparse, subprocess, os, re
@@ -14,8 +15,14 @@ verbose=1
 ap=argparse.ArgumentParser(description='obs package updater, run from a checked out working copy')
 ap.add_argument('url', type=str, help="tar ball (file or) url to put into this package")
 ap.add_argument('-c', '--commit', '--checkin', action='store_true', help="call 'osc ci' after updating the working copy")
+ap.add_argument('-e', '--email', help="Specify maintainer email address. Default: derive from 'osc user'")
+ap.add_argument('-n', '--name', help="Specify name (and version) Default: derive from url")
 
 args=ap.parse_args()
+
+if args.name:
+  print("name(-version) specification not implemented.\n")
+  sys.exit(0)
 
 # Keep in sync with internal_tar2obs.py obs_docker_install.py
 def run(args, input=None, redirect=None, redirect_stdout=True, redirect_stderr=True, return_tuple=False, return_code=False, tee=False):
@@ -75,7 +82,7 @@ def parse_tarname(tarname, tarversion):
   m = re.match("(.*?)[-_](\d[\d\._]+)[-_~]?(\w.*?)?$", pkg)
   if m: (pkg,ver,pre) = m.groups()
   pkg = re.sub("_", "-", pkg)
-  if not re.match('owncloud-.*', pkg):
+  if pkg != 'owncloud' and not re.match('owncloud-.*', pkg):
     pkg = 'owncloud-'+pkg
   if ver is not None and tarversion is not None:
     if ver != tarversion and ver+pre != tarversion:
@@ -122,9 +129,9 @@ def edit_specfile(specfile, data):
 def debian_version(data, buildrel=1):
   full_version = data['version']
   if "prerelease" in data and data['prerelease'] != '%nil': 
-    pre = data['prerelease']
-    pre = re.sub(r'^rc','RC', pre, re.I)
-    full_version += "~"+pre.capitalize()
+    pre = data['prerelease'].capitalize()
+    pre = re.sub(r'^rc','RC', pre.lower(), re.I)	# re.I does not work???
+    full_version += "~"+pre
   if buildrel is not None:
     full_version += "-" + str(buildrel)
   return full_version
@@ -215,6 +222,7 @@ def parse_osc_user(data):
   data['logname'] = m.group(1)
   data['maintainer_name'] = m.group(2)
   data['maintainer_email'] = m.group(3)
+  if args.email: data['maintainer_email'] = args.email
 
 def addremove_tars(tarname):
   """ remove all tar balls except the named one
