@@ -68,12 +68,15 @@
 #                          run apt-get install with -V to show version numbers.
 # V2.16 -- 2015-06-29, jw  Support start.sh with ssh server.
 # V2.17 -- 2015-07-01, jw  run_tstamp introduced to switch off timestamp printing with -D
+# V2.18 -- 2015-07-03, jw  matched_package_run_script() return value is format() expanded for
+#                          {ObsApi}/{Project}/{Package}/{Platform}
+#                          run: snippets for -client added to run owncloudcmd -v or similar.
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="2.17"
+__VERSION__="2.18"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import yaml, sys, os, re, time, tempfile
@@ -119,8 +122,10 @@ target:
         sleep 2
         curl -s localhost:80/owncloud/ | grep pass
         php --version
+
       '(-client)$': |
-        ${package}
+        $(rpm -ql {Package} | grep -e '^/usr/bin/.*cmd$') -v
+
       '': |
 
   CentOS_CentOS-6:
@@ -200,8 +205,10 @@ target:
         sleep 1
         curl -s localhost:80/owncloud/ | grep pass
         php --version
+
       '(-client)$': |
-        ${package}
+        $(rpm -ql {Package} | grep -e '^/usr/bin/.*cmd$') -v
+
       '': |
         service httpd start
 
@@ -227,8 +234,10 @@ target:
         sleep 1
         curl -s localhost:80/owncloud/ | grep pass
         php --version
+
       '(-client)$': |
-        ${package}
+        $(dpkg -L {Package} | grep -e '^/usr/bin/.*cmd$') -v
+
       '': |
         service apache2 start
 
@@ -257,6 +266,9 @@ target:
     from: opensuse:13.1
     inst: [ca-certificates]
     run:
+      '(-client)$': |
+        $(rpm -ql {Package} | grep -e '^/usr/bin/.*cmd$') -v
+
       '': |
         service apache2 start
 
@@ -952,6 +964,7 @@ if 'run' in obs_config['target'][target]:	# and not args.dockerfile:
     # FIXME: we should rather have a start.d/*.sh directory, than pasting it all together.
     if len(start_script_pre):  script = "\n".join(start_script_pre) + "\n" + script
     if len(start_script_post): script += "\n" + "\n".join(start_script_post) + "\n"
+    script = script.format(Package=args.package, Platform=target, Project=args.project, ObsApi=obs_api)
 
     if True:	# not args.dockerfile:
       script_commented = re.sub('^', '# ', script, flags=re.M)

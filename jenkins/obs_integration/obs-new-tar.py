@@ -7,6 +7,7 @@
 
 # Version 1.0: works in a working copy. 
 # Version 1.1: RC capitalized correctly. owncloud not prefixed with owncloud. Email override.
+# Version 1.2: added option --sr TARGETPRJ.
 
 
 import sys, time, argparse, subprocess, os, re
@@ -15,6 +16,7 @@ verbose=1
 ap=argparse.ArgumentParser(description='obs package updater, run from a checked out working copy')
 ap.add_argument('url', type=str, help="tar ball (file or) url to put into this package")
 ap.add_argument('-c', '--commit', '--checkin', action='store_true', help="call 'osc ci' after updating the working copy")
+ap.add_argument('-S', '--submitreq', '--sr', metavar='TARGETPRJ', help="call 'osc ci; osc submitreq TARGETPRJ' after updating the working copy")
 ap.add_argument('-e', '--email', help="Specify maintainer email address. Default: derive from 'osc user'")
 ap.add_argument('-n', '--name', help="Specify name (and version) Default: derive from url")
 
@@ -234,6 +236,8 @@ def addremove_tars(tarname):
   run(["osc", "add", tarname], redirect=False)
 
 ##################################################################
+run(["osc", "up"], redirect=False)
+
 newtarfile=args.url
 if re.search(r'://', args.url):
   newtarfile=re.sub(r'.*/','', args.url)
@@ -251,7 +255,9 @@ edit_debchangelog("debian.changelog", data)
 edit_changes(data['name']+".changes", data)
 addremove_tars(newtarfile)
 
-if args.commit:
+if args.commit or args.submitreq:
   run(["osc", "ci"], redirect=False)
+  if args.submitreq:
+    run(["osc", "submitreq", args.submitreq], redirect=False)
 else:
   run(["osc", "diff"], redirect=False)
