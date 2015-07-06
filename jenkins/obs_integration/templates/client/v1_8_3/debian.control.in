@@ -46,7 +46,7 @@ Description: ownCloud sync library.
 Package: lib[% shortname_deb %]sync-dev
 Architecture: any
 Section: devel
-Depends: lib[% shortname_deb %]sync0, ${misc:Depends}
+Depends: lib[% shortname_deb %]sync0 (= ${binary:Version}), ${misc:Depends}
 Description: [% displayname %] sync library development files.
  [% displayname %] uses this as a sync engine implementation.
  .
