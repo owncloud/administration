@@ -1,4 +1,4 @@
 # needed for Debian 8.0 to finsh a build in obs.
 # FIXME: all that should be warnings in obs, as they are in s2 and local builds.
-owncloud source: not-binnmuable-all-depends-any
+owncloud-client source: not-binnmuable-all-depends-any
 
