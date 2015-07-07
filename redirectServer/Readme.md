@@ -32,8 +32,8 @@ All you need on the central server are those two files, and you can customize th
 ##  Mobile Apps
 
 Work in progress to behave like sync client.
-Android: the update will be included on the version 1.7.2, expected to be released 7th July
-iOS: the update will be included on the version 3.4.4, expected to be release by the end of July.
+* Android: the update will be included on the version 1.7.2, expected to be released 7th July
+* iOS: the update will be included on the version 3.4.4, expected to be release by the end of July.
 
 ## Web frontend
 
