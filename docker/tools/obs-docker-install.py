@@ -71,12 +71,14 @@
 # V2.18 -- 2015-07-03, jw  matched_package_run_script() return value is format() expanded for
 #                          {ObsApi}/{Project}/{Package}/{Platform}
 #                          run: snippets for -client added to run owncloudcmd -v or similar.
+# V2.19 -- 2015-07-08, jw  Disabled run_tstamp alltogether. 
+#                          Using yum clean all instead of yum clean expire-cache.
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="2.18"
+__VERSION__="2.19"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import yaml, sys, os, re, time, tempfile
@@ -998,7 +1000,8 @@ start_time=time.time()
 d_endl="\n"
 if args.keep_going: d_endl = " || true\n"
 dockerfile_tail=''
-if args.dockerfile:
+
+if args.dockerfile or True:	# is that run_tstamp trick any good?
   run_tstamp = 'RUN'
 else:
   run_tstamp = 'RUN date='+now
@@ -1029,7 +1032,7 @@ if docker["fmt"] == "APT":
 elif docker["fmt"] == "YUM":
   yum_install = 'yum install -y'
   if args.nogpgcheck: yum_install += ' --nogpgcheck'
-  dockerfile+="RUN yum clean expire-cache"+d_endl
+  dockerfile+="RUN yum clean all"+d_endl 	#expire-cache"+d_endl
   if "inst" in docker and len(docker["inst"]):
     dockerfile+="RUN "+yum_install+" "+" ".join(docker["inst"])+d_endl
 
@@ -1041,7 +1044,7 @@ elif docker["fmt"] == "YUM":
   dockerfile+="RUN "+wget_cmd+obs_target+'/'+args.project+".repo -O /etc/yum.repos.d/"+args.project+".repo"+d_endl
   if extra_packages:	dockerfile+="RUN "+yum_install+" "+" ".join(extra_packages)+d_endl
   if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
-  dockerfile+=run_tstamp+" yum clean expire-cache && "+yum_install+" "+args.package
+  dockerfile+=run_tstamp+" yum clean all && "+yum_install+" "+args.package
   dockerfile_tail="RUN rpm -q --changelog "+args.package+" | head -20"+d_endl
   dockerfile_tail+="RUN echo '"+yum_install+" "+args.package+"' >> ~/.bash_history"+d_endl
 

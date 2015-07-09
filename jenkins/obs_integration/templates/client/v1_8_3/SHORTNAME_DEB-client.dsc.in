@@ -3,6 +3,7 @@ Format: 1.0
 Source: [% shortname_deb %]-client
 Version: [% version_deb %]-[% buildrelease_deb %]
 Binary: [% shortname_deb %]-client
+# According to debian lintian, maintainer must include a <email@exampl.com>
 Maintainer: [% maintainer %]
 Architecture: any
 Standards-Version: 3.7.2

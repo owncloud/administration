@@ -88,9 +88,9 @@ while read a b c; do
 ## REMOVE-THIS-LINE-AFTER-REVIEWING-BELOW
 Package: $sub_pkg
 Architecture: all
-Depends: ${misc:Depends}, $pkgname (= \${binary:Version})
-Replaces: owncloud (< 8.0.0)
-Break: owncloud (< 8.0.0)
+Depends: $pkgname-server (= \${binary:Version})
+Replaces: owncloud (<< 8.0.0)
+Break: owncloud (<< 8.0.0)
 Description: The $pkgname subpackage $sub_pkg
  .
 EOF
