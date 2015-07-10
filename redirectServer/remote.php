@@ -17,8 +17,21 @@ class OC_Central {
 	public function redirect() {
 		$this->checkRequest();
 
-		$baseDomain = "https://" . $this->domain . "/";
-		$url = $baseDomain . $this->parseUser() . $this->parsePath();
+		$url = "https://";
+
+		$subdomain = $this->parseSubdomain();
+		if ($subdomain) {
+			$url .= $subdomain . '.';
+		}
+
+		$url .= $this->parseDomain();
+
+		$rootPath = $this->parseRootPath();
+		if ($rootPath) {
+			$url .= '/' . $rootPath;
+		}
+
+		$url .= $this->parseOcPath();
 
 		header('Location: ' . $url, true, 301);
 		exit;
@@ -36,15 +49,23 @@ class OC_Central {
 		}
 	}
 
-	private function parsePath() {
-		return $this->origPath;
+	private function parseSubdomain() {
+		return false;
 	}
 
-	private function parseUser() {
+	private function parseDomain() {
+		return $this->domain;
+	}
+
+	private function parseRootPath() {
 		$mail = explode("@", $this->authUser);
 		$domain = $mail[1];
 		$domainParts = explode(".", $domain);
 		return $domainParts[0];
+	}
+
+	private function parseOcPath() {
+		return $this->origPath;
 	}
 
 	private function errorUnauthorized($message) {
