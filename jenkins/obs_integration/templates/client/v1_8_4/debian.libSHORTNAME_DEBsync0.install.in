@@ -1,0 +1,3 @@
+[% sysconfdir %]*
+usr/lib/*/lib[% APPLICATION_EXECUTABLE %]sync.so.*
+usr/lib/*/*/libocsync.so.*
