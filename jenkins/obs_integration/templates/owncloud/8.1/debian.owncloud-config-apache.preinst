@@ -1,0 +1,34 @@
+#!/bin/sh -e
+# preinst script for owncloud-config-apache
+# https://github.com/owncloud/core/issues/13392
+# https://github.com/owncloud/core/issues/14610
+# https://github.com/owncloud/core/issues/16189
+# https://github.com/owncloud/core/issues/16949
+
+## CAUTION: keep in sync with debian.rules
+export SPEC_owncloud=owncloud
+export SPEC_apache_serverroot=/var/www
+export SPEC_apache_confdir=/etc/apache2/conf.d
+export SPEC_apache_confdir_a=/etc/apache2/conf-available
+
+export SPEC_oc_apache_web_dir=$SPEC_apache_serverroot/$SPEC_owncloud
+
+export SPEC_oc_user=www-data
+export SPEC_oc_group=www-data
+export SPEC_oc_dir=$SPEC_oc_apache_web_dir
+export SPEC_oc_doc_dir=/usr/share/doc/$SPEC_owncloud
+export SPEC_oc_config_dir=$SPEC_oc_apache_web_dir/config
+export SPEC_oc_data_dir=$SPEC_oc_apache_web_dir/data
+export SPEC_oc_data_pdir=$SPEC_oc_apache_web_dir
+
+set -e
+
+#DEBHELPER#
+
+if dpkg-maintscript-helper supports rm_conffile 2>/dev/null; then
+    dpkg-maintscript-helper rm_conffile $SPEC_oc_dir/.htaccess 8.0.3-0 -- "$@"
+fi
+
+f=/etc/apache2/conf-available/owncloud.conf; test -f $f && cp $f $f.old   || true
+
+exit 0
