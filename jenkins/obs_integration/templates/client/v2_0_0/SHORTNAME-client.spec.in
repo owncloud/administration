@@ -36,7 +36,7 @@
 %define prerelease [% prerelease %]
 %define base_version [% version %]
 %define tar_version %{base_version}%{prerelease}
-Name:           [% APPLICATION_EXECUTABLE %]-client
+Name:           [% shortname %]-client
 
 %if 0%{?centos_version} == 600 || 0%{?rhel_version} == 600 || 0%{?fedora_version} || "%{prerelease}" == ""
 # For beta and rc versions we use the ~ notation, as documented in
@@ -232,12 +232,13 @@ Requires: 	%{qtprefix}qt4-sqlite
 %endif
 
 Requires: %{name}-l10n
-Requires: lib[% APPLICATION_EXECUTABLE %]sync0 = %{version}
+Requires: lib[% shortname %]sync0 = %{version}
 
 ######################################################################### Obsoletes only below here.
 
 Obsoletes: libocsync0
 Obsoletes: libocsync-devel
+Obsoletes: libocsync-plugin-[% shortname %]
 Obsoletes: libocsync-plugin-[% APPLICATION_EXECUTABLE %]
 Obsoletes: libocsync-devel-doc
 Obsoletes: libocsync-doc
@@ -270,7 +271,7 @@ Requires: %{name}%{?_isa} = %{version}-%{release}
 %description -n %{name}-l10n
 Localisation files for the [% displayname %] desktop application.
 
-%package -n lib[% APPLICATION_EXECUTABLE %]sync0
+%package -n lib[% shortname %]sync0
 %if %use_qt5
 Requires:       libqt5keychain0
 %else
@@ -279,15 +280,15 @@ Requires:       %{qtprefix}libqtkeychain0 >= 0.3
 Summary:        The [% displayname %] sync library
 Group:          Development/Libraries/C and C++
 
-%description -n lib[% APPLICATION_EXECUTABLE %]sync0
+%description -n lib[% shortname %]sync0
 The [% displayname %] sync library.
 
-%package -n lib[% APPLICATION_EXECUTABLE %]sync-devel
+%package -n lib[% shortname %]sync-devel
 Summary:        Development files for the [% displayname %] sync library
 Group:          Development/Libraries/C and C++
-Requires: lib[% APPLICATION_EXECUTABLE %]sync0 = %{version}
+Requires: lib[% shortname %]sync0 = %{version}
 
-%description -n lib[% APPLICATION_EXECUTABLE %]sync-devel
+%description -n lib[% shortname %]sync-devel
 Development files for the [% displayname %] sync library.
 
 %package -n %{name}-nautilus
@@ -353,7 +354,7 @@ then
   mv conf.py doc/
 fi
 
-env LD_RUN_PATH=%{_libdir}/[% APPLICATION_EXECUTABLE %] make %{?_smp_mflags} VERBOSE=1
+env LD_RUN_PATH=%{_libdir}/[% APPLICATION_EXECUTABLE %]:%{_libdir}/[% shortname %] make %{?_smp_mflags} VERBOSE=1
 
 make doc
 popd
@@ -432,10 +433,10 @@ fi
 /usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %endif
 
-%post -n lib[% APPLICATION_EXECUTABLE %]sync0
+%post -n lib[% shortname %]sync0
 /sbin/ldconfig
 
-%postun -n lib[% APPLICATION_EXECUTABLE %]sync0
+%postun -n lib[% shortname %]sync0
 /sbin/ldconfig
 
 %files
@@ -477,13 +478,13 @@ fi
 %defattr(-,root,root,-)
 %{_datadir}/[% APPLICATION_EXECUTABLE %]
 
-%files -n lib[% APPLICATION_EXECUTABLE %]sync0
+%files -n lib[% shortname %]sync0
 %defattr(-,root,root,-)
 %{_libdir}/lib[% APPLICATION_EXECUTABLE %]sync.so.*
 %{_libdir}/[% APPLICATION_EXECUTABLE %]/libocsync.so.*
 %dir %{_libdir}/[% APPLICATION_EXECUTABLE %]
 
-%files -n lib[% APPLICATION_EXECUTABLE %]sync-devel
+%files -n lib[% shortname %]sync-devel
 %defattr(-,root,root,-)
 %{_libdir}/lib[% APPLICATION_EXECUTABLE %]sync.so
 %if %require_neon
