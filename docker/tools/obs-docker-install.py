@@ -73,12 +73,14 @@
 #                          run: snippets for -client added to run owncloudcmd -v or similar.
 # V2.19 -- 2015-07-08, jw  Disabled run_tstamp alltogether. 
 #                          Using yum clean all instead of yum clean expire-cache.
+# V2.20 -- 2016-08-20, jw  Moving ADD further down to allow more caching.
+#                          Added run_nocache using image_name.
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="2.19"
+__VERSION__="2.20"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import yaml, sys, os, re, time, tempfile
@@ -957,7 +959,8 @@ else:
 
 
 ## multi line docker commands are no longer supported in 'from', use 'pre'!
-dockerfile="FROM "+docker['from']+"\n"
+dockerfile = "FROM "+docker['from']+"\n"
+dockerfile_tail = 'CMD '+docker_cmd_cmd+"\n"
 
 if 'run' in obs_config['target'][target]:	# and not args.dockerfile:
   script=matched_package_run_script(args.package, target, obs_config['target'][target]['run'])
@@ -978,15 +981,15 @@ if 'run' in obs_config['target'][target]:	# and not args.dockerfile:
     f.close()
     startfile = '/root/start.sh'
     # CAUTION: Keep in sync with docker_run_int.extend(image_name, ...) above
-    if not args.dockerfile:
-      dockerfile+='ADD ./start.sh /root/\n'
+    if args.dockerfile: dockerfile_tail += '# '
+    dockerfile_tail += 'ADD ./start.sh /root/\n'
   
 if 'pre' in docker:
-  dockerfile+=docker['pre']
+  dockerfile += docker['pre']
   if not re.search(r'\n$', dockerfile):
-    dockerfile+="\n"
-dockerfile+="ENV TERM ansi\n"
-dockerfile+="ENV HOME /root\n"
+    dockerfile += "\n"
+dockerfile += "ENV TERM ansi\n"
+dockerfile += "ENV HOME /root\n"
 
 
 wget_cmd="wget -nv"
@@ -999,83 +1002,81 @@ now=time.strftime('%Y%m%d%H%M')
 start_time=time.time()
 d_endl="\n"
 if args.keep_going: d_endl = " || true\n"
-dockerfile_tail=''
 
-if args.dockerfile or True:	# is that run_tstamp trick any good?
-  run_tstamp = 'RUN'
+# With image_name, caching depends on the build release number of the package.
+# (Used to be a timestamp, which is too much.
+if args.dockerfile:
+  run_nocache = 'RUN'
 else:
-  run_tstamp = 'RUN date='+now
-
+  run_nocache = 'RUN image_name='+image_name
 
 if docker["fmt"] == "APT":
   if args.nogpgcheck: print("Option nogpgcheck not implemented for APT")
-  dockerfile+="ENV DEBIAN_FRONTEND noninteractive\n"
-  dockerfile+="RUN apt-get -q -y update"+d_endl
+  dockerfile += "ENV DEBIAN_FRONTEND noninteractive\n"
+  dockerfile += "RUN apt-get -q -y update"+d_endl
   if "inst" in docker and len(docker["inst"]):
-    dockerfile+="RUN apt-get -q -y -V install "+" ".join(docker["inst"])+d_endl
+    dockerfile += "RUN apt-get -q -y -V install "+" ".join(docker["inst"])+d_endl
 
   if docker_on_aufs() and 'aufs' in docker:
-    dockerfile+=docker['aufs']
-    if not re.search(r'\n$', dockerfile): dockerfile+="\n"
+    dockerfile += docker['aufs']
+    if not re.search(r'\n$', dockerfile): dockerfile += "\n"
   
-  dockerfile+="RUN "+wget_cmd+obs_target+"/Release.key -O Release.key"+d_endl
-  dockerfile+="RUN apt-key add - < Release.key"+d_endl
-  dockerfile+="RUN echo 'deb "+download["url_cred"]+"/"+obs_target+"/ /' >> /etc/apt/sources.list.d/"+args.package+".list"+d_endl
-  dockerfile+="RUN apt-get -q -y update"+d_endl
-  if extra_packages: 	dockerfile+="RUN apt-get -q -y -V install "+' '.join(extra_packages)+d_endl
-  if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
-  dockerfile+=run_tstamp +" apt-get -q -y update && apt-get -q -y -V install "+args.package
-  dockerfile_tail ="RUN zcat /usr/share/doc/"+args.package+"/changelog*.gz  | head -20"+d_endl
-  dockerfile_tail+="RUN echo 'apt-get -V install "+args.package+"' >> ~/.bash_history"+d_endl
+  dockerfile += "RUN "+wget_cmd+obs_target+"/Release.key -O Release.key"+d_endl
+  dockerfile += "RUN apt-key add - < Release.key"+d_endl
+  dockerfile += "RUN echo 'deb "+download["url_cred"]+"/"+obs_target+"/ /' >> /etc/apt/sources.list.d/"+args.package+".list"+d_endl
+  dockerfile += "RUN apt-get -q -y update"+d_endl
+  if extra_packages: 	dockerfile += "RUN apt-get -q -y -V install "+' '.join(extra_packages)+d_endl
+  if extra_docker_cmd:	dockerfile += d_endl.join(extra_docker_cmd)+d_endl
+  dockerfile += run_nocache +" apt-get -q -y update && apt-get -q -y -V install "+args.package
+  dockerfile_tail += "RUN zcat /usr/share/doc/"+args.package+"/changelog*.gz  | head -20"+d_endl
+  # dockerfile_tail += "RUN echo 'apt-get -V install "+args.package+"' >> ~/.bash_history"+d_endl
 
 
 elif docker["fmt"] == "YUM":
   yum_install = 'yum install -y'
   if args.nogpgcheck: yum_install += ' --nogpgcheck'
-  dockerfile+="RUN yum clean all"+d_endl 	#expire-cache"+d_endl
+  dockerfile += "RUN yum clean all"+d_endl 	#expire-cache"+d_endl
   if "inst" in docker and len(docker["inst"]):
-    dockerfile+="RUN "+yum_install+" "+" ".join(docker["inst"])+d_endl
+    dockerfile += "RUN "+yum_install+" "+" ".join(docker["inst"])+d_endl
 
   if docker_on_aufs() and 'aufs' in docker:
-    dockerfile+=docker['aufs']
-    if not re.search(r'\n$', dockerfile): dockerfile+="\n"
+    dockerfile += docker['aufs']
+    if not re.search(r'\n$', dockerfile): dockerfile += "\n"
   
-  dockerfile+="RUN rpm --import "+download["url_cred"]+"/"+obs_target+"/repodata/repomd.xml.key"+d_endl
-  dockerfile+="RUN "+wget_cmd+obs_target+'/'+args.project+".repo -O /etc/yum.repos.d/"+args.project+".repo"+d_endl
-  if extra_packages:	dockerfile+="RUN "+yum_install+" "+" ".join(extra_packages)+d_endl
-  if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
-  dockerfile+=run_tstamp+" yum clean all && "+yum_install+" "+args.package
-  dockerfile_tail="RUN rpm -q --changelog "+args.package+" | head -20"+d_endl
-  dockerfile_tail+="RUN echo '"+yum_install+" "+args.package+"' >> ~/.bash_history"+d_endl
+  dockerfile += "RUN rpm --import "+download["url_cred"]+"/"+obs_target+"/repodata/repomd.xml.key"+d_endl
+  dockerfile += "RUN "+wget_cmd+obs_target+'/'+args.project+".repo -O /etc/yum.repos.d/"+args.project+".repo"+d_endl
+  if extra_packages:	dockerfile += "RUN "+yum_install+" "+" ".join(extra_packages)+d_endl
+  if extra_docker_cmd:	dockerfile += d_endl.join(extra_docker_cmd)+d_endl
+  dockerfile += run_nocache+" yum clean all && "+yum_install+" "+args.package
+  dockerfile_tail += "RUN rpm -q --changelog "+args.package+" | head -20"+d_endl
+  # dockerfile_tail += "RUN echo '"+yum_install+" "+args.package+"' >> ~/.bash_history"+d_endl
 
 elif docker["fmt"] == "ZYPP":
   if args.nogpgcheck: print("Option nogpgcheck not implemented for ZYPP")
-  dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys refresh"+d_endl
+  dockerfile += "RUN zypper --non-interactive --gpg-auto-import-keys refresh"+d_endl
   if "inst" in docker and len(docker["inst"]):
-    dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+" ".join(docker["inst"])+d_endl
+    dockerfile += "RUN zypper --non-interactive --gpg-auto-import-keys install "+" ".join(docker["inst"])+d_endl
 
   if docker_on_aufs() and 'aufs' in docker:
-    dockerfile+=docker['aufs']
-    if not re.search(r'\n$', dockerfile): dockerfile+="\n"
+    dockerfile += docker['aufs']
+    if not re.search(r'\n$', dockerfile): dockerfile += "\n"
   
-  dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys addrepo "+download["url_cred"]+obs_target+"/"+args.project+".repo"+d_endl
-  if extra_packages:	dockerfile+="RUN zypper --non-interactive --gpg-auto-import-keys install "+" ".join(extra_packages)+d_endl
-  if extra_docker_cmd:	dockerfile+=d_endl.join(extra_docker_cmd)+d_endl
+  dockerfile += "RUN zypper --non-interactive --gpg-auto-import-keys addrepo "+download["url_cred"]+obs_target+"/"+args.project+".repo"+d_endl
+  if extra_packages:	dockerfile += "RUN zypper --non-interactive --gpg-auto-import-keys install "+" ".join(extra_packages)+d_endl
+  if extra_docker_cmd:	dockerfile += d_endl.join(extra_docker_cmd)+d_endl
 
-  dockerfile+=run_tstamp+" zypper --non-interactive --gpg-auto-import-keys refresh && zypper --non-interactive --gpg-auto-import-keys install "+args.package
-  dockerfile_tail = "RUN rpm -q --changelog "+args.package+" | head -20"+d_endl
-  dockerfile_tail +="RUN echo 'zypper install "+args.package+"' >> ~/.bash_history"+d_endl
+  dockerfile += run_nocache+" zypper --non-interactive --gpg-auto-import-keys refresh && zypper --non-interactive --gpg-auto-import-keys install "+args.package
+  dockerfile_tail += "RUN rpm -q --changelog "+args.package+" | head -20"+d_endl
+  # dockerfile_tail += "RUN echo 'zypper install "+args.package+"' >> ~/.bash_history"+d_endl
 
 else:
   raise ValueError("dockerfile generator not implemented for fmt="+docker["fmt"])
 
 if args.xauth:
-  dockerfile_tail +="ENV DISPLAY unix:0\n"
-  dockerfile_tail +="ENV XDG_RUNTIME_DIR /run/user/1000\n"
-  dockerfile_tail +="ENV XAUTHORITY "+xauthfile+"\n"
-  dockerfile_tail +='RUN : "'+xa_cmd+'"'+"\n"
-dockerfile_tail +='RUN : "'+" ".join(docker_run)+'"'+"\n"
-dockerfile_tail +='CMD '+docker_cmd_cmd+"\n"
+  dockerfile_tail += "ENV DISPLAY unix:0\n"
+  dockerfile_tail += "ENV XDG_RUNTIME_DIR /run/user/1000\n"
+  dockerfile_tail += "ENV XAUTHORITY "+xauthfile+"\n"
+  dockerfile_tail += 'RUN : "'+xa_cmd+'"'+"\n"
 
 # dockerfile_ign has the most-likely-command-to-fail wrapped with '|| true', so that it does not bail out.
 dockerfile_ign = dockerfile + " || true" + d_endl + dockerfile_tail
@@ -1121,7 +1122,7 @@ else:
       fd.close()
       r2 = run(docker_build, redirect_stdout=False, redirect_stderr=False, return_code=True)
       if not r2:
-        print("\n\nERROR: Image build failed. Rebuilt ignoring errors.  Try to rerun the last command from the shell history inside\n "+" ".join(docker_run)+"\n\n")
+        print("\n\nERROR: Image build failed. Rebuilt ignoring errors.  Try to rerun the last command from the shell inside\n "+" ".join(docker_run)+"\n\n")
 
     else:
       print("Image successfully created. Check for warnings in the above log.\n")
