@@ -1,4 +1,4 @@
-# 
+#
 # spec file for package owncloud
 #
 # Copyright (c) 2012-2015 ownCloud, Inc.
@@ -120,7 +120,7 @@ Group:          Productivity/Networking/Web/Utilities
 
 ###############################################
 ## All build requires go into the main package.
-%if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version} 
+%if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
 BuildRequires:  httpd
 %endif
 
@@ -142,15 +142,15 @@ Requires:       sqlite
 %endif
 
 %if 0%{?fedora_version}
-# missing at CentOS/RHEL: do we really need that? 
-Requires:       php-pear-MDB2-Driver-mysqli 
+# missing at CentOS/RHEL: do we really need that?
+Requires:       php-pear-MDB2-Driver-mysqli
 BuildRequires:  php-pear-MDB2-Driver-mysqli
 %endif
 
 %if 0%{?suse_version}
 %if 0%{?suse_version} != 1110
 # For all SUSEs except SLES 11
-Requires:       sqlite3 php5-sqlite 
+Requires:       sqlite3 php5-sqlite
 %else
 # SLES 11 requires
 # require mysql directly for SLES 11
@@ -169,7 +169,7 @@ Recommends:     php54-mysql mysql php54-imagick
 Requires:       mysql
 %endif
 
-Requires:       curl 
+Requires:       curl
 Requires:	%{name}-server-core   = %{version}
 Requires:	%{name}-config-apache = %{version}
 
@@ -213,8 +213,8 @@ cloud. Host this server to easily sync business or private documents
 across all your devices, and share those documents with other users of
 your ownCloud server on their devices.
 
-The owncloud-fhs* packages adhere to the Linux Filesystem Hierarchy Standards 
-by installing in the expected locations. The traditional packages install all 
+The owncloud-fhs* packages adhere to the Linux Filesystem Hierarchy Standards
+by installing in the expected locations. The traditional packages install all
 in the web server root.
 
 This package installs as follows:
@@ -241,7 +241,7 @@ Requires:       sqlite php54 php54-php-common php54-php-mbstring php54-php-proce
 # core#13944
 Requires:	php54-php-gd
 # core#13917, apache module
-Requires:	php54-php 
+Requires:	php54-php
 # Class 'PDO' not found at /var/www/html/owncloud/3rdparty/doctrine/dbal/lib/Doctrine/DBAL/DriverManager.php#172
 Requires:	php54-php-pdo
 # core#13357, occ
@@ -254,7 +254,7 @@ Requires:	policycoreutils-python
 # The server core is common code
 Provides:	owncloud-enterprise-server = %{version}
 Provides:	owncloud-enterprise-server
-# 
+#
 Provides:	owncloud-server-core = %{version}
 Provides:	owncloud-server-core
 
@@ -263,11 +263,11 @@ The %{name}-server package contains the common owncloud server core.
 To run the servers, you either need to also install an ${name}-config-* package
 or configure the server yourself for your system.
 
-%{name}-server-scl-php54 provides an %{name}-server that is suitable for 
+%{name}-server-scl-php54 provides an %{name}-server that is suitable for
 centos6 with php54 installed via software collections.
 
-The owncloud-fhs* packages adhere to the Linux Filesystem Hierarchy Standards 
-by installing in the expected locations. The traditional packages install all 
+The owncloud-fhs* packages adhere to the Linux Filesystem Hierarchy Standards
+by installing in the expected locations. The traditional packages install all
 in the web server root.
 
 This package installs as follows:
@@ -289,15 +289,21 @@ Summary:      Common code server for ownCloud
 
 # In ownCloud 8.0, we use PHP 5.4 language features that 5.3 does not support
 %if 0%{?fedora_version} || 0%{?rhel_version} >= 6 || 0%{?centos_version} >= 6
-Requires:       sqlite php >= 5.4.0 php-json php-mbstring php-process php-xml php-zip
+Requires:       sqlite php-json php-mbstring php-process php-xml php-zip
 # core#13357
 Requires:	php-posix
 # core#13944
 Requires:	php-gd
+%if "%_repository" == "CentOS_6_PHP54" || "%_repository" == "RHEL_6_PHP54" || "%_repository" == "CentOS_6_PHP55" || "%_repository" == "RHEL_6_PHP55" || "%_repository" == "CentOS_6_PHP56" || "%_repository" == "RHEL_6_PHP56"
+## They name their php packages all different, and all have lousy version numbers.
+## We are happy, if they have a useless php 5.3.3 together with some php55w 1.2.x something.
+%else
+Requires:       php >= 5.4.0
+%endif
 %endif
 
 %if 0%{?fedora_version}
-# missing at CentOS/RHEL: do we really need that? 
+# missing at CentOS/RHEL: do we really need that?
 ## Requires:       php-pear-Net-Curl
 ## BuildRequires:  php-pear-Net-Curl
 %endif
@@ -334,8 +340,8 @@ The %{name}-server package contains the common owncloud server core.
 To run the servers, you either need to also install an ${name}-config-* package
 or configure the server yourself for your system.
 
-The owncloud-fhs* packages adhere to the Linux Filesystem Hierarchy Standards 
-by installing in the expected locations. The traditional packages install all 
+The owncloud-fhs* packages adhere to the Linux Filesystem Hierarchy Standards
+by installing in the expected locations. The traditional packages install all
 in the web server root.
 
 This package installs as follows:
@@ -359,7 +365,7 @@ Requires:       httpd
 %if 0%{?suse_version}
 %if 0%{?suse_version} != 1110
 # For all SUSEs except SLES 11
-Requires:       apache2 apache2-mod_php5 
+Requires:       apache2 apache2-mod_php5
 %else
 # SLES 11 requires
 Requires:       apache2 apache2-mod_php54
@@ -370,8 +376,8 @@ Requires:       apache2 apache2-mod_php54
 This sub-package configures an apache webserver for owncloud.
 Install only, if you us to make changes to your webserver setup.
 
-The owncloud-fhs* packages adhere to the Linux Filesystem Hierarchy Standards 
-by installing in the expected locations. The traditional packages install all 
+The owncloud-fhs* packages adhere to the Linux Filesystem Hierarchy Standards
+by installing in the expected locations. The traditional packages install all
 in the web server root.
 
 This package installs as follows:
@@ -412,8 +418,8 @@ Requires:       nginx
 This sub-package configures an nginx webserver for owncloud.
 Install only, if you us to make changes to your webserver setup.
 
-The owncloud-fhs* packages adhere to the Linux Filesystem Hierarchy Standards 
-by installing in the expected locations. The traditional packages install all 
+The owncloud-fhs* packages adhere to the Linux Filesystem Hierarchy Standards
+by installing in the expected locations. The traditional packages install all
 in the web server root.
 
 This package installs as follows:
@@ -435,13 +441,13 @@ Group:        Development/Libraries/PHP
 Summary:      3rdparty libraries for ownCloud
 Requires:     %{name}-server-core = %{version}
 %description 3rdparty
-3rdparty libraries needed for running ownCloud. 
+3rdparty libraries needed for running ownCloud.
 Contained in separate package due to different source code licenses.
 
 #####################################################
 # oc_app_package
 #
-# Caution: This macro definition must be below the main package chunk. 
+# Caution: This macro definition must be below the main package chunk.
 #          Otherwise the specfile parser in obs fails.
 #
 # Parameters:
@@ -534,7 +540,7 @@ sed -i -e"s|@@OC_DIR@@|%{oc_dir}|g" $RPM_BUILD_ROOT/%{nginx_confdir}/owncloud.co
 # relabel data directory for SELinux to allow ownCloud write access on redhat platforms
 %if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
 if [ -x /usr/sbin/sestatus ] ; then \
-  sestatus | grep -E '^(SELinux status|Current).*(enforcing|permissive)' > /dev/null && { 
+  sestatus | grep -E '^(SELinux status|Current).*(enforcing|permissive)' > /dev/null && {
     semanage fcontext -a -t httpd_sys_rw_content_t '%{oc_data_dir}'
     restorecon '%{oc_data_dir}'
     semanage fcontext -a -t httpd_sys_rw_content_t '%{oc_config_dir}'
@@ -554,7 +560,7 @@ true
 [ $1 -eq 0 ] || exit 0
 %if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
 if [ -x /usr/sbin/sestatus ] ; then \
-  sestatus | grep -E '^(SELinux status|Current).*(enforcing|permissive)' > /dev/null && { 
+  sestatus | grep -E '^(SELinux status|Current).*(enforcing|permissive)' > /dev/null && {
     semanage fcontext -l | grep '%{oc_data_dir}' && {
       semanage fcontext -d -t httpd_sys_rw_content_t '%{oc_data_dir}'
       restorecon '%{oc_data_dir}'
@@ -581,13 +587,13 @@ true
 # https://github.com/owncloud/core/issues/10953
 #
 # TBD: https://github.com/owncloud/core/issues/12125
-#  The code below is bad user experience.  We should 
-#  put the existing owncloud in maintenance mode, 
-#  apply our changes, reload (not restart!) apache, then 
+#  The code below is bad user experience.  We should
+#  put the existing owncloud in maintenance mode,
+#  apply our changes, reload (not restart!) apache, then
 #  exit maintenance mode.
-# 
+#
 # We don't do this for new installs. Only for updates.
-# If the first argument to pre is 1, the RPM operation is an initial installation. 
+# If the first argument to pre is 1, the RPM operation is an initial installation.
 # If the argument is 2, the operation is an upgrade from an existing version to a new one.
 if [ $1 -gt 1 -a ! -s /tmp/apache_stopped_during_owncloud_install ]; then	
   echo "%{name} update: Checking for running Apache"
@@ -631,10 +637,10 @@ fi
 #
 ## FIXME: probably we have no chance to chmod the files when apache comes in.
 ## config can be chown-ed to root:www after the initial DB config is done.
-# if [ -e %{oc_data_dir} ]; then 
+# if [ -e %{oc_data_dir} ]; then
 #   chown -R %{oc_user}:%{oc_group} %{oc_data_dir}
 # fi
-# if [ -e %{oc_config_dir} ]; then 
+# if [ -e %{oc_config_dir} ]; then
 #   chown -R %{oc_user}:%{oc_group} %{oc_config_dir}
 # fi
 
@@ -699,7 +705,7 @@ fi
 # Unless it is already a symlink.
 #
 # later in %post, the data folder is either created as a folder
-# or taken as the exising symlink. 
+# or taken as the exising symlink.
 if [ ! -L "%{oc_apache_web_dir}" ]; then
   if [ -e "%{oc_apache_web_dir}" ]; then
     echo "moving existing %{oc_apache_web_dir} out of the way"
@@ -713,7 +719,7 @@ if [ ! -L "%{oc_apache_web_dir}" ]; then
   fi
 fi
 %endif
-   
+
 %preun server
 %if %{fhs}
 ## downgrade ... ?
@@ -744,7 +750,7 @@ if [ -L "%{oc_data_dir}" ]; then
 An existing owncloud installation was detected while installing %{name}-server %{version} .
 Your data folder was preserved where the symbolic link 'data' points to.
 This location may or may not agree with the linux Filesystem Hierarchy Standards.
-We suggest to resolve the symbolic link and physically move your data folder here. 
+We suggest to resolve the symbolic link and physically move your data folder here.
 EOF
 fi
 ln -s %{oc_data_dir} %{oc_dir}/data || true
@@ -779,7 +785,7 @@ fi
 #
 # FIXME: We should try to add acl's and only resort to chmod/chgrp
 # if nothing else helps.
-# CAUTION: openSUSE bails out on this postinstall script at build time. 
+# CAUTION: openSUSE bails out on this postinstall script at build time.
 # Running the scripts is pointless at build time, but obs still wants to do that.
 chgrp -R nginx %{oc_dir}/apps/ %{oc_config_dir}/ %{oc_data_dir}/ || true
 chmod -R a+w   %{oc_dir}/apps/ %{oc_config_dir}/ %{oc_data_dir}/ || true
