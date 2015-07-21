@@ -112,6 +112,8 @@ ENDHELP
 # ======================================================================================
 sub debian_filename( $ )
 {
+  # debian packaging guide allows no upper case. (e.g. SURFdrive).
+  # debian packaging guide allows no _ (used to seperate version)
   my ($name) = @_;
   $name = lc $name;
   $name =~ s{_}{-}g;
@@ -489,7 +491,7 @@ my $dirName = prepareTarball($ARGV[0], $ARGV[1]);
 # returns hash reference
 my $substs = getSubsts($dirName);
 $substs->{themename} = $theme;
-$substs->{themename_deb} = debian_filename($theme);	# debian packagin guide allows no upper case. (e.g. SURFdrive).
+$substs->{themename_deb} = debian_filename($theme);	# debian packaging guide allows no upper case. (e.g. SURFdrive).
 $substs->{create_msg} = $create_msg || '' unless defined $substs->{create_msg};
 $substs->{summary} = "The $theme client";	# prevent shdbox to die with empty summary.
 
