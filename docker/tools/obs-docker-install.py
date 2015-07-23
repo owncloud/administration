@@ -988,8 +988,7 @@ if 'pre' in docker:
   dockerfile += docker['pre']
   if not re.search(r'\n$', dockerfile):
     dockerfile += "\n"
-dockerfile += "ENV TERM ansi\n"
-dockerfile += "ENV HOME /root\n"
+dockerfile += "ENV TERM=ansi ENV HOME=/root\n"
 
 
 wget_cmd="wget -nv"
@@ -1073,9 +1072,7 @@ else:
   raise ValueError("dockerfile generator not implemented for fmt="+docker["fmt"])
 
 if args.xauth:
-  dockerfile_tail += "ENV DISPLAY unix:0\n"
-  dockerfile_tail += "ENV XDG_RUNTIME_DIR /run/user/1000\n"
-  dockerfile_tail += "ENV XAUTHORITY "+xauthfile+"\n"
+  dockerfile_tail += "ENV DISPLAY=unix:0 XDG_RUNTIME_DIR=/run/user/1000 XAUTHORITY="+xauthfile+"\n"
   dockerfile_tail += 'RUN : "'+xa_cmd+'"'+"\n"
 
 # dockerfile_ign has the most-likely-command-to-fail wrapped with '|| true', so that it does not bail out.

@@ -148,6 +148,8 @@ BuildRequires:  php-pear-MDB2-Driver-mysqli
 %endif
 
 %if 0%{?suse_version}
+# SUSE does not include the fileinfo module in php-common.
+Requires:       php-fileinfo
 %if 0%{?suse_version} != 1110
 # For all SUSEs except SLES 11
 Requires:       sqlite3 php5-sqlite
@@ -801,12 +803,7 @@ rm -rf "$RPM_BUILD_ROOT"
 %oc_app_package files_trashbin
 %oc_app_package firstrunwizard
 %oc_app_package templateeditor
-%if "%_repository" == "CentOS_6_PHP54" || "%_repository" == "RHEL_6_PHP54"
-# FIXME: should have the same for _PHP55 and _PHP56 ? Or make Substitute: work in prjconf ?
-%oc_app_package user_ldap		Requires:php54-php-ldap
-%else
 %oc_app_package user_ldap		Requires:php-ldap
-%endif
 %oc_app_package external
 %oc_app_package files_external
 %oc_app_package files_sharing
