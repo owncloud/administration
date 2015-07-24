@@ -8,12 +8,13 @@
 # Version 1.0: works in a working copy. 
 # Version 1.1: RC capitalized correctly. owncloud not prefixed with owncloud. Email override.
 # Version 1.2: added option --sr TARGETPRJ.
+# Version 1.3: checking the tar ball to match the checkout name.
 
 
 import sys, time, argparse, subprocess, os, re
 
 verbose=1
-ap=argparse.ArgumentParser(description='obs package updater, run from a checked out working copy')
+ap=argparse.ArgumentParser(description='obs package updater, run from a checked out working copy. Usually called from internal/update_all_tars.sh')
 ap.add_argument('url', type=str, help="tar ball (file or) url to put into this package")
 ap.add_argument('-c', '--commit', '--checkin', action='store_true', help="call 'osc ci' after updating the working copy")
 ap.add_argument('-S', '--submitreq', '--sr', metavar='TARGETPRJ', help="call 'osc ci; osc submitreq TARGETPRJ' after updating the working copy")
@@ -99,7 +100,7 @@ def parse_tarname(tarname, tarversion):
   return (pkg, ver, pre)
 
 
-def edit_specfile(specfile, data):
+def edit_specfile(specfile, data, tarurl):
   """
      open specfile, edit inplace for the given fields in data
      filed names need to be all lower case, not the way it really is in the specfile.
@@ -109,6 +110,8 @@ def edit_specfile(specfile, data):
      and the base_version variable name is hardcoded. Live with it.
   """
   txt = open(specfile).read()
+  txt = re.sub("^Source0:\s+(\S+)", "\g<1>"+tarurl, txt, flags=re.M)
+
   for item in data:
     item = item.lower()		# just an assertion.
     # print "%s should be %s" % (item, data[item])
@@ -236,20 +239,51 @@ def addremove_tars(tarname):
   run(["osc", "add", tarname], redirect=False)
 
 ##################################################################
+
+cwd = os.path.abspath('.')
+# ['', 'home', 'testy', 'src', 'obs', 'isv', 'ownCloud', 'community', '7.0', 'testing', 'owncloud']
+cwd_pkg = re.split('[:/]', cwd)[-1]
+cwd_ver = re.split('[:/]', cwd)[-2]
+cwd_testing = False
+if cwd_ver == 'testing':
+  cwd_testing = True
+  cwd_ver = re.split('[:/]', cwd)[-3]
+  print ":testing project seen here.\n"
+else:
+  print "non-testing project seen here.\n"
+
+print(cwd, cwd_ver, cwd_testing)
+
 run(["osc", "up"], redirect=False)
 
 newtarfile=args.url
 if re.search(r'://', args.url):
   newtarfile=re.sub(r'.*/','', args.url)
-  run(["wget", args.url,"-O",newtarfile], redirect=False)
+  r=run(["wget", args.url,"-O",newtarfile], redirect=False, return_code=True)
+  if r: sys.exit()
 
 tar = parse_tarname(newtarfile, None)
 # ('owncloud-enterprise-3rdparty', '6.0.9', 'beta')
 data = { 'name': tar[0], 'version': tar[1], 'prerelease':tar[2] }
 if data['prerelease'] is None or data['prerelease'] == '': 
   data['prerelease'] = '%nil'
+  if cwd_testing:
+    print("You are trying to commit a final release into a testing project at %s\n" % cwd)
+    sys.exit()
+else:
+  if not cwd_testing:
+    print("You are trying to commit a testing release into a final project at %s\n" % cwd)
+    sys.exit()
+if data['name'] != cwd_pkg:
+  print("You are trying to commit tar %s into a checkout of package '%s'\n" % (data['name'], cwd_pkg))
+  sys.exit()
+
+if os.path.exists('obs_check_deb_spec.sh'):
+  run(["sh", "obs_check_deb_spec.sh"], redirect=False)
+
+
 parse_osc_user(data)
-edit_specfile(data['name']+".spec", data)
+edit_specfile(data['name']+".spec", data, newtarfile)
 edit_dscfile(data['name']+".dsc", data)
 edit_debchangelog("debian.changelog", data)
 edit_changes(data['name']+".changes", data)
@@ -261,3 +295,11 @@ if args.commit or args.submitreq:
     run(["osc", "submitreq", args.submitreq], redirect=False)
 else:
   run(["osc", "diff"], redirect=False)
+
+info=run(["osc", "info", "."], redirect=True)
+src=re.search('Source URL:\s(.*)$', info, re.M)
+dst=re.search('link to project\s([^,]*),', info, re.M)
+
+print("Check the build results at %s\n" % re.sub('/source/', '/package/show/', src.group(1)))
+if not args.commit: print(" ... after committing ...")
+if args.submitreq: print(" ... and in %s after accepting the above request" % dst.group(1))
