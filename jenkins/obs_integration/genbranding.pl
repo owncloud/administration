@@ -257,7 +257,6 @@ Please do the following steps (or similar):
         $target =~ s/SHORTNAME_DEB/$substs->{shortname_deb}/;
         $target =~ s/SHORTNAME/$substs->{shortname}/;
 
-        $target =~ s/EXECUTABLE_DEB/$substs->{executable_deb}/;
         $target =~ s/EXECUTABLE/$substs->{executable}/;
 
         if($source =~ /\.in$/) {
@@ -353,7 +352,6 @@ sub readOEMcmake( $ )
     # more tags: APPLICATION_EXECUTABLE, APPLICATION_VENDOR, APPLICATION_REV_DOMAIN, THEME_CLASS, WIN_SETUP_BITMAP_PATH
 
     $substs{shortname_deb} = debian_filename($substs{shortname});	# debian packages don't allow upper case.
-    $substs{executable_deb} = debian_filename($substs{executable});	# No case know where this is needed. But hey.
     return %substs;
 }
 
