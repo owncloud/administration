@@ -9,6 +9,7 @@
 # Version 1.1: RC capitalized correctly. owncloud not prefixed with owncloud. Email override.
 # Version 1.2: added option --sr TARGETPRJ.
 # Version 1.3: checking the tar ball to match the checkout name.
+# Version 1.4: updating Source0: in the Specfiles.
 
 
 import sys, time, argparse, subprocess, os, re
@@ -110,7 +111,7 @@ def edit_specfile(specfile, data, tarurl):
      and the base_version variable name is hardcoded. Live with it.
   """
   txt = open(specfile).read()
-  txt = re.sub("^Source0:\s+(\S+)", "\g<1>"+tarurl, txt, flags=re.M)
+  txt = re.sub("^(Source0:\s+)(\S+)", "\g<1>"+tarurl, txt, flags=re.M)
 
   for item in data:
     item = item.lower()		# just an assertion.
@@ -283,7 +284,7 @@ if os.path.exists('obs_check_deb_spec.sh'):
 
 
 parse_osc_user(data)
-edit_specfile(data['name']+".spec", data, newtarfile)
+edit_specfile(data['name']+".spec", data, args.url)
 edit_dscfile(data['name']+".dsc", data)
 edit_debchangelog("debian.changelog", data)
 edit_changes(data['name']+".changes", data)
