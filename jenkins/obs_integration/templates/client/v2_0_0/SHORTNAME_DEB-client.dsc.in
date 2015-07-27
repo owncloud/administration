@@ -1,15 +1,15 @@
 Format: 1.0
 # CAUTION: Keep in sync with genbranding.pl:addDebChangelog(...)
-Source: [% shortname_deb %]-client
+Source: [% shortname %]-client
 Version: [% version_deb %]-[% buildrelease_deb %]
-Binary: [% shortname_deb %]-client
+Binary: [% shortname %]-client
 # According to debian lintian, maintainer must include a <email@exampl.com>
 Maintainer: [% maintainer %]
 Architecture: any
 Standards-Version: 3.7.2
 Build-Depends: debhelper (>= 4.2.21), cmake, libqt4-dev (>= 4.7), libqtwebkit-dev (>= 2.2.0), qtkeychain-dev, libqtkeychain0 (>= 0.3), libneon27-dev, libsqlite3-dev, python-sphinx
 Package-List:
- lib[% shortname_deb %]sync0 deb libs optional
- [% shortname_deb %]-client deb net optional
- [% shortname_deb %]-client-doc deb doc optional
- [% shortname_deb %]-client-l10n deb localization optional
+ lib[% shortname %]sync0 deb libs optional
+ [% shortname %]-client deb net optional
+ [% shortname %]-client-doc deb doc optional
+ [% shortname %]-client-l10n deb localization optional

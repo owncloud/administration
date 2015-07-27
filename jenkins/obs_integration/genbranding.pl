@@ -254,7 +254,6 @@ Please do the following steps (or similar):
 	} else {
 	    $target =~ s/BRANDNAME/$substs->{themename}/;
 	}
-        $target =~ s/SHORTNAME_DEB/$substs->{shortname_deb}/;
         $target =~ s/SHORTNAME/$substs->{shortname}/;
 
         $target =~ s/EXECUTABLE/$substs->{executable}/;
@@ -351,7 +350,25 @@ sub readOEMcmake( $ )
     }
     # more tags: APPLICATION_EXECUTABLE, APPLICATION_VENDOR, APPLICATION_REV_DOMAIN, THEME_CLASS, WIN_SETUP_BITMAP_PATH
 
-    $substs{shortname_deb} = debian_filename($substs{shortname});	# debian packages don't allow upper case.
+    # The story about shortname versus shortname_deb: Before 2.0.0 shortname could
+    # contain upper chars, but now, due to ownBrander, it can only contain lower case
+    # characters and no special chars, as well as -, but no _
+    # For plain ownCloud, it may still be ownCloud
+    if( ! buildOwnCloudTheme() ) {
+        if( $substs{shortname} !~ /^[a-z-]+$/ ) {
+            die("shortname \"$substs{shortname}\" contains invalid characters - bailing out!");
+        }
+    }
+    $substs{shortname_deb} = $substs{shortname}; # keep the shortname_deb for pre 2.0.0 clients
+
+
+    $substs{shortname_etc} = $substs{shortname};
+    if( buildOwnCloudTheme() ) {
+        # For ownCloud, the excludes must to to ownCloud with capital C
+        # for historical reasons.
+        $substs{shortname_etc} = 'ownCloud';
+    }
+
     return %substs;
 }
 
