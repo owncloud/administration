@@ -350,25 +350,6 @@ sub readOEMcmake( $ )
     }
     # more tags: APPLICATION_EXECUTABLE, APPLICATION_VENDOR, APPLICATION_REV_DOMAIN, THEME_CLASS, WIN_SETUP_BITMAP_PATH
 
-    # The story about shortname versus shortname_deb: Before 2.0.0 shortname could
-    # contain upper chars, but now, due to ownBrander, it can only contain lower case
-    # characters and no special chars, as well as -, but no _
-    # For plain ownCloud, it may still be ownCloud
-    if( ! buildOwnCloudTheme() ) {
-        if( $substs{shortname} !~ /^[a-z-]+$/ ) {
-            die("shortname \"$substs{shortname}\" contains invalid characters - bailing out!");
-        }
-    }
-    $substs{shortname_deb} = $substs{shortname}; # keep the shortname_deb for pre 2.0.0 clients
-
-
-    $substs{shortname_etc} = $substs{shortname};
-    if( buildOwnCloudTheme() ) {
-        # For ownCloud, the excludes must to to ownCloud with capital C
-        # for historical reasons.
-        $substs{shortname_etc} = 'ownCloud';
-    }
-
     return %substs;
 }
 
@@ -505,6 +486,25 @@ my $dirName = prepareTarball($ARGV[0], $ARGV[1]);
 
 # returns hash reference
 my $substs = getSubsts($dirName);
+
+# The story about shortname versus shortname_deb: Before 2.0.0 shortname could
+# contain upper chars, but now, due to ownBrander, it can only contain lower case
+# characters and no special chars, as well as -, but no _
+# For plain ownCloud, it may still be ownCloud
+if( ! buildOwnCloudTheme($theme) ) {
+    if( $substs->{shortname} !~ /^[a-z-]+$/ ) {
+        die("shortname \"$substs->{shortname}\" contains invalid characters - bailing out!");
+    }
+}
+$substs->{shortname_deb} = $substs->{shortname}; # keep the shortname_deb for pre 2.0.0 clients
+
+$substs->{shortname_etc} = $substs->{shortname};
+if( buildOwnCloudTheme($theme) ) {
+    # For ownCloud, the excludes must to to ownCloud with capital C
+    # for historical reasons.
+    $substs->{shortname_etc} = 'ownCloud';
+}
+
 $substs->{themename} = $theme;
 $substs->{themename_deb} = debian_filename($theme);	# debian packaging guide allows no upper case. (e.g. SURFdrive).
 $substs->{create_msg} = $create_msg || '' unless defined $substs->{create_msg};
