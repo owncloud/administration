@@ -523,6 +523,10 @@ unless( defined $substs->{version} )
         $vers = $1;
         $prerel = $2;
         $substs->{version_deb} = $vers . '~' . $prerel;
+    } elsif( $vers =~ /(\d+\.\d+\.\d+)git$/ ) {
+        $vers = $1;
+        $prerel = 'git';
+        $substs->{version_deb} = $vers . '~git';
     } elsif( $vers =~ /(\d+\.\d+\.\d+)/ ) {
         $vers = $1;
         $prerel = '%nil';
