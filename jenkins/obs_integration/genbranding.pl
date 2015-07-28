@@ -491,7 +491,12 @@ my $substs = getSubsts($dirName);
 # contain upper chars, but now, due to ownBrander, it can only contain lower case
 # characters and no special chars, as well as -, but no _
 # For plain ownCloud, it may still be ownCloud
-if( ! buildOwnCloudTheme($theme) ) {
+if( buildOwnCloudTheme($theme) ) {
+    # The theme does not provide an APPLICATION_SHORTNAME, CMakelist.txt falls back to APPLICATION_NAME.
+    $substs->{shortname} = "owncloud";	# Enforce all lowercase. Used a deb package name.
+}
+else
+{
     if( $substs->{shortname} !~ /^[a-z-]+$/ ) {
         die("shortname \"$substs->{shortname}\" contains invalid characters - bailing out!");
     }
