@@ -36,7 +36,14 @@
 %define prerelease [% prerelease %]
 %define base_version [% version %]
 %define tar_version %{base_version}%{prerelease}
+
 Name:           [% shortname %]-client
+
+%if "%{name}" == "owncloud-client"
+%define is_owncloud_client 1
+%else
+%define is_owncloud_client 0
+%endif
 
 %if 0%{?centos_version} == 600 || 0%{?rhel_version} == 600 || 0%{?fedora_version} || "%{prerelease}" == ""
 # For beta and rc versions we use the ~ notation, as documented in
@@ -245,7 +252,7 @@ Obsoletes: libocsync-doc
 Obsoletes: [% APPLICATION_EXECUTABLE %]-client
 
 # Obsolete the experimental Qt5 packages if this is the unbranded client.
-%if "%{name}" == "ownCloud-client"
+%if %{is_owncloud_client}
 Obsoletes: libowncloudqt5sync0 libowncloudqt5sync-devel owncloud-client-qt5 owncloud-client-qt5-doc owncloud-client-qt5-l10n
 %endif
 
@@ -343,7 +350,7 @@ cmake .. -DWITH_DOC=TRUE \
 %if %{_lib} == lib64
   -DLIB_SUFFIX=64 \
 %endif
-%if "%{name}" != "ownCloud-client"
+%if ! %{is_owncloud_client}
   -DOEM_THEME_DIR=$PWD/../[% themename %]/[% oem_sub_dir %] \
 %endif
   %cmake_args
@@ -376,7 +383,7 @@ fi
 popd
 
 if [ -d ${RPM_BUILD_ROOT}%{_mandir}/man1 ]; then
-%if "%{name}" != "ownCloud-client"
+%if ! %{is_owncloud_client}
   mv ${RPM_BUILD_ROOT}%{_mandir}/man1/{owncloud.1,[% APPLICATION_EXECUTABLE %].1}
   mv ${RPM_BUILD_ROOT}%{_mandir}/man1/{owncloudcmd.1,[% APPLICATION_EXECUTABLE %]cmd.1}
 %endif
