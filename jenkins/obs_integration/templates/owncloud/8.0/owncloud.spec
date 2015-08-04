@@ -75,6 +75,22 @@ Name:           owncloud
 Name:           owncloud
 %endif
 
+%define ocphp	php
+%define ochttpd	httpd
+%if "%_repository" == "CentOS_6_PHP54" || "%_repository" == "RHEL_6_PHP54"
+%define ocphp	php54-php
+%define ochttpd	httpd
+%endif
+%if "%_repository" == "CentOS_6_PHP55" || "%_repository" == "RHEL_6_PHP55" 
+%define ocphp	php55-php
+%define ochttpd	htppd24-httpd
+%endif
+%if "%_repository" == "CentOS_6_PHP56" || "%_repository" == "RHEL_6_PHP56"
+%define ocphp	php56-php
+%define ochttpd	htppd24-httpd
+%endif
+
+
 # Downloaded from http://download.owncloud.org/community/owncloud-8.0.1.tar.bz2
 # Downloaded from http://download.owncloud.org/community/testing/owncloud-8.0.3RC3.tar.bz2
 # Downloaded from http://download.owncloud.org/community/owncloud-8.0.3.tar.bz2
@@ -121,7 +137,7 @@ Group:          Productivity/Networking/Web/Utilities
 ###############################################
 ## All build requires go into the main package.
 %if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
-BuildRequires:  httpd
+BuildRequires:  %{ochttpd}
 %endif
 
 %if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
@@ -361,7 +377,7 @@ Summary:      Apache setup for ownCloud
 Requires:     %{name}-server-core = %{version}
 
 %if 0%{?fedora_version} || 0%{?rhel_version} >= 6 || 0%{?centos_version} >= 6
-Requires:       httpd
+Requires:       %{ochttpd}
 %endif
 
 %if 0%{?suse_version}
@@ -611,8 +627,8 @@ if [ $1 -gt 1 -a ! -s /tmp/apache_stopped_during_owncloud_install ]; then
 %endif
 %endif
 %if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
-  service httpd status | grep running > /tmp/apache_stopped_during_owncloud_install
-  service httpd stop
+  service %{ochttpd} status | grep running > /tmp/apache_stopped_during_owncloud_install
+  service %{ochttpd} stop
 %endif
 fi
 if [ -s /tmp/apache_stopped_during_owncloud_install ]; then
@@ -666,7 +682,7 @@ if [ -s /tmp/apache_stopped_during_owncloud_install ]; then
 %endif
 %endif
 %if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
-  service httpd start
+  service %{ochttpd} start
 %endif
 fi
 
@@ -680,7 +696,7 @@ if [ ! -s /tmp/apache_stopped_during_owncloud_install ]; then
 %endif
 %endif
 %if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
-  service httpd status && service httpd reload || service httpd start
+  service %{ochttpd} status && service %{ochttpd} reload || service %{ochttpd} start
 %endif
 fi
 rm -f /tmp/apache_stopped_during_owncloud_install
