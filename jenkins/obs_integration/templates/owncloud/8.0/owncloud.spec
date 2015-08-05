@@ -83,11 +83,11 @@ Name:           owncloud
 %endif
 %if "%_repository" == "CentOS_6_PHP55" || "%_repository" == "RHEL_6_PHP55" 
 %define ocphp	php55-php
-%define ochttpd	htppd24-httpd
+%define ochttpd	httpd24-httpd
 %endif
 %if "%_repository" == "CentOS_6_PHP56" || "%_repository" == "RHEL_6_PHP56"
 %define ocphp	php56-php
-%define ochttpd	htppd24-httpd
+%define ochttpd	httpd24-httpd
 %endif
 
 
