@@ -189,35 +189,40 @@ Recommends:     php54-mysql mysql php54-imagick
 Requires:       mysql
 # don't be fooled by a versionless %{name}-server-core provides.
 # (fine with suse, but not good for centos, which has alternatives to owncloud-server)
-Requires:       %{name}-server        = %{version}
+PreReq:       %{name}-server        = %{version}
 %endif
 
 Requires:       curl
-Requires:	%{name}-server-core   = %{version}
-Requires:	%{name}-config-apache = %{version}
+
+## FIXME: with https://github.com/owncloud/core/issues/18043
+## we have a valid reason for two way dependencies between server and apps.
+## This makes seperate app packages questionable.
+## PreReq asserts that all apps are installed, before the server runs its post scripts.
+PreReq:	%{name}-server-core   = %{version}
+PreReq:	%{name}-config-apache = %{version}
 
 # must have nil on the first line to survive source-validator.
 %define require_standard_apps %{nil}\
-Requires:	%{name}-3rdparty              = %{version} \
-Requires:	%{name}-app-activity          = %{version} \
-Requires:	%{name}-app-files_pdfviewer   = %{version} \
-Requires:	%{name}-app-files_trashbin    = %{version} \
-Requires:	%{name}-app-firstrunwizard    = %{version} \
-Requires:	%{name}-app-templateeditor    = %{version} \
-Requires:	%{name}-app-user_ldap         = %{version} \
-Requires:	%{name}-app-external          = %{version} \
-Requires:	%{name}-app-files_external    = %{version} \
-Requires:	%{name}-app-files_sharing     = %{version} \
-Requires:	%{name}-app-files_versions    = %{version} \
-Requires:	%{name}-app-gallery           = %{version} \
-Requires:	%{name}-app-user_webdavauth   = %{version} \
-Requires:	%{name}-app-files             = %{version} \
-Requires:	%{name}-app-files_locking     = %{version} \
-Requires:	%{name}-app-files_texteditor  = %{version} \
-Requires:	%{name}-app-files_videoviewer = %{version} \
-Requires:	%{name}-app-provisioning_api  = %{version} \
-Requires:	%{name}-app-user_external     = %{version} \
-Requires:	%{name}-app-encryption	      = %{version}
+PreReq:	%{name}-3rdparty              = %{version} \
+PreReq:	%{name}-app-activity          = %{version} \
+PreReq:	%{name}-app-files_pdfviewer   = %{version} \
+PreReq:	%{name}-app-files_trashbin    = %{version} \
+PreReq:	%{name}-app-firstrunwizard    = %{version} \
+PreReq:	%{name}-app-templateeditor    = %{version} \
+PreReq:	%{name}-app-user_ldap         = %{version} \
+PreReq:	%{name}-app-external          = %{version} \
+PreReq:	%{name}-app-files_external    = %{version} \
+PreReq:	%{name}-app-files_sharing     = %{version} \
+PreReq:	%{name}-app-files_versions    = %{version} \
+PreReq:	%{name}-app-gallery           = %{version} \
+PreReq:	%{name}-app-user_webdavauth   = %{version} \
+PreReq:	%{name}-app-files             = %{version} \
+PreReq:	%{name}-app-files_locking     = %{version} \
+PreReq:	%{name}-app-files_texteditor  = %{version} \
+PreReq:	%{name}-app-files_videoviewer = %{version} \
+PreReq:	%{name}-app-provisioning_api  = %{version} \
+PreReq:	%{name}-app-user_external     = %{version} \
+PreReq:	%{name}-app-encryption	      = %{version}
 
 
 ## not recommended for Linux packages.

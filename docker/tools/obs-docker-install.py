@@ -988,7 +988,7 @@ if 'pre' in docker:
   dockerfile += docker['pre']
   if not re.search(r'\n$', dockerfile):
     dockerfile += "\n"
-dockerfile += "ENV TERM=ansi ENV HOME=/root\n"
+dockerfile += "ENV TERM=ansi HOME=/root\n"
 
 
 wget_cmd="wget -nv"
