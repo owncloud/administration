@@ -1,8 +1,8 @@
 # needed for Debian 8.0 to finsh a build in obs.
 # FIXME: all that should be warnings in obs, as they are in s2 and local builds.
-owncloud-client source: not-binnmuable-all-depends-any
+[% shortname %]-client source: not-binnmuable-all-depends-any
 # owncloud-client: binary-or-shlib-defines-rpath usr/bin/owncloud /usr/lib/x86_64-linux-gnu/owncloud
-owncloud-client: binary-or-shlib-defines-rpath
+[% shortname %]-client: binary-or-shlib-defines-rpath
 # owncloud-client: arch-dependent-file-not-in-arch-specific-directory usr/bin/owncloud
-owncloud-client: arch-dependent-file-not-in-arch-specific-directory
+[% shortname %]-client: arch-dependent-file-not-in-arch-specific-directory
 
