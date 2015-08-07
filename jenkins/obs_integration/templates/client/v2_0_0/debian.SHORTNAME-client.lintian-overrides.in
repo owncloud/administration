@@ -1,0 +1,3 @@
+[% shortname %]-client: arch-dependent-file-not-in-arch-specific-directory
+[% shortname %]-client: binary-or-shlib-defines-rpath
+[% shortname %]-client: possible-gpl-code-linked-with-openssl
