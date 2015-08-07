@@ -1,0 +1,3 @@
+owncloud-client: arch-dependent-file-not-in-arch-specific-directory
+owncloud-client: binary-or-shlib-defines-rpath
+owncloud-client: possible-gpl-code-linked-with-openssl
