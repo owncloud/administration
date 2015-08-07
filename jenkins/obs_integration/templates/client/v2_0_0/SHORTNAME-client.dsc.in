@@ -3,10 +3,10 @@ Format: 1.0
 Source: [% shortname %]-client
 Version: [% version_deb %]-[% buildrelease_deb %]
 Binary: [% shortname %]-client
-# According to debian lintian, maintainer must include a <email@exampl.com>
-Maintainer: [% maintainer %]
+# According to debian lintian, maintainer must include a <email@example.com>
+Maintainer: [% maintainer_person %]
 Architecture: any
-Standards-Version: 3.7.2
+Standards-Version: 3.9.6
 Build-Depends: debhelper (>= 4.2.21), cmake, libqt4-dev (>= 4.7), libqtwebkit-dev (>= 2.2.0), qtkeychain-dev, libqtkeychain0 (>= 0.3), libneon27-dev, libsqlite3-dev, python-sphinx
 Package-List:
  lib[% shortname %]sync0 deb libs optional

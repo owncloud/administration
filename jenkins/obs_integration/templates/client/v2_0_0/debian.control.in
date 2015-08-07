@@ -26,7 +26,7 @@ Section: devel
 Depends: [% shortname %]-client (>= ${binary:Version}), ${misc:Depends}, lib[% shortname %]sync0
 Breaks: [% shortname %]-client (<= 1.5.0)
 Description: Internationalisation files for [% displayname %]
- Internationalisation files for [% displayname %].
+ Internationalisation for [% displayname %] desktop sync client.
  .
  This package contains the translation packages.
 
