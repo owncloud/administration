@@ -1,4 +1,7 @@
 #! /usr/bin/python
+#
+# (C) 2015 jw@owncloud.com
+#
 # Stuff tar balls from download url or local file into an obs package
 #
 # CAVEATS: 
@@ -10,6 +13,7 @@
 # Version 1.2: added option --sr TARGETPRJ.
 # Version 1.3: checking the tar ball to match the checkout name.
 # Version 1.4: updating Source0: in the Specfiles.
+# Version 1.5: allow final commits into testing. just remind of submitrequests then.
 
 
 import sys, time, argparse, subprocess, os, re
@@ -271,8 +275,11 @@ data = { 'name': tar[0], 'version': tar[1], 'prerelease':tar[2] }
 if data['prerelease'] is None or data['prerelease'] == '': 
   data['prerelease'] = '%nil'
   if cwd_testing:
-    print("You are trying to commit a final release into a testing project at %s\n" % cwd)
-    sys.exit()
+    print("Commiting a final release into a testing at %s\n" % cwd)
+    if args.submitreq:
+      print("... and sending a submitrequest.\n")
+    else:
+      print("You should followup with a submitrequest.\n")
 else:
   if not cwd_testing:
     print("You are trying to commit a testing release into a final project at %s\n" % cwd)
