@@ -7,6 +7,8 @@
 # CAVEATS: 
 # * this assumes, there is exactly one tar per package.
 # * this assumes the owncloud way of macros in the specfile.
+# FIXME:
+# * option -S has a race with slow source services on the server. sleep 10 workaround.
 
 # Version 1.0: works in a working copy. 
 # Version 1.1: RC capitalized correctly. owncloud not prefixed with owncloud. Email override.
@@ -14,6 +16,7 @@
 # Version 1.3: checking the tar ball to match the checkout name.
 # Version 1.4: updating Source0: in the Specfiles.
 # Version 1.5: allow final commits into testing. just remind of submitrequests then.
+#              pamper slow source services with a sleep(10)
 
 
 import sys, time, argparse, subprocess, os, re
@@ -307,6 +310,8 @@ if args.commit or args.submitreq:
     run(["osc", "ci"], redirect=False)
 
   if args.submitreq:
+    print("Waiting for slow source services on the server to finish before submitreq")
+    time.sleep(10)
     run(["osc", "submitreq", args.submitreq], redirect=False)
 else:
   run(["osc", "diff"], redirect=False)
