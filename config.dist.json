@@ -16,5 +16,11 @@
   },
   "addLabels": [
     "shiny-new-label"
+  ],
+  "renameMilestones": {
+    "old-milestone": "new-milestone"
+  },
+  "addMilestones": [
+    "shiny-new-milestone"
   ]
 }
