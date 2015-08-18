@@ -447,10 +447,10 @@ fi
 /usr/share/applications/[% APPLICATION_EXECUTABLE %].desktop
 /usr/bin/[% APPLICATION_EXECUTABLE %]
 /usr/bin/[% APPLICATION_EXECUTABLE %]cmd
-%config /opt/etc/[% shortname %]
+%config /opt/etc/[% shortname_etc %]
 %dir /opt/etc
 %else
-%config /etc/[% shortname %]
+%config /etc/[% shortname_etc %]
 %dir /etc
 %endif
 

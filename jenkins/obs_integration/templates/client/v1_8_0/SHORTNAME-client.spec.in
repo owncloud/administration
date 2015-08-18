@@ -434,10 +434,10 @@ fi
 /usr/share/icons/hicolor
 /usr/share/applications/[% APPLICATION_EXECUTABLE %].desktop
 /usr/bin/[% APPLICATION_EXECUTABLE %]
-%config /opt/etc/[% shortname %]
+%config /opt/etc/[% shortname_etc %]
 %dir /opt/etc
 %else
-%config /etc/[% shortname %]
+%config /etc/[% shortname_etc %]
 %dir /etc
 %endif
 
