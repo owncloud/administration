@@ -549,13 +549,13 @@ unless (defined $substs->{buildrelease} )
     if (defined $opt_r)
       {
         $substs->{buildrelease} = "<CI_CNT>.<B_CNT>.$opt_r";
-        $substs->{buildrelease_deb} = "0.$opt_r";
+        $substs->{buildrelease_deb} = "1.$opt_r";
 	$substs->{buildrelease_deb} =~ s{[^a-zA-Z0-9\.]}{}g;	# sanitized
       }
     else
       {
         $substs->{buildrelease} = '0';
-        $substs->{buildrelease_deb} = '0';
+        $substs->{buildrelease_deb} = '1';
       }
   }
 
