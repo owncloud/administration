@@ -384,7 +384,12 @@ sub getSubsts( $ )
     # read the file package.cfg from the tarball and also remove it there evtl.
     my %s2;
     if( -r "$cfgFile" ) {
-	%s2 = do $cfgFile;
+	# %s2 = do $cfgFile;		# 'do' kills all email addresses jw@owncloud.com -> jw.com
+	open(my $ifd, $cfgFile);
+	my $txt = join("",<my $ifd>);
+	close($ifd);
+	$txt =~ s/"/'/g; 		# HACK. cfg should be a more well defined syntax. INI. YAML. whatever.
+	%s2 = eval $txt;
     } else {
 	die "ERROR: Could not read package config file $cfgFile!\n";
     }
