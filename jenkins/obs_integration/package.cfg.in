@@ -4,6 +4,5 @@
         pkgdescription => "Such summary\n\nMuch Text!\nVery product!",
         sysconfdir => "etc/ownCloud", #(etc/ownCloud, but lowercase for all OEMs...), without a leading slash
         maintainer => "ownCloud Inc.",
-        maintainer_person => "Markus Rex <msrex@owncloud.com>",
         desktopdescription => "ownCloud desktop sync client",
 
