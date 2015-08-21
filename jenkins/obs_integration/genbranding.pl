@@ -78,7 +78,7 @@ sub help() {
 
   Options:
   -h:           help, displays help text
-  -b:           build the package locally before uploading
+  -b:           build the package locally before uploading. Requires OBS_INTEGRATION_PRODUCT.
   -o:           osc mode, build against ownCloud obs
   -c "params":  additional osc paramters
   -n:           don't recreate the tarball, use an existing one.
@@ -401,11 +401,12 @@ sub getSubsts( $ )
     foreach my $k ( keys %s2 ) {
 	$substs{$k} = $s2{$k};
     }
+    $substs{sysconfdir_defined} = 1 if defined $substs{sysconfdir};
 
     # calculate some subst values, such as
     $substs{tarball} = $subsDir unless( $substs{tarball} );
     $substs{pkgdescription_debian} = debianDesc( $substs{pkgdescription} );
-    $substs{sysconfdir} = "/etc/". $substs{shortname} unless( $substs{sysconfdir} );
+    $substs{sysconfdir} = "etc/". $substs{shortname_etc} unless $substs{sysconfdir_defined};
     $substs{maintainer} = "ownCloud Inc." unless( $substs{maintainer} );
     $substs{maintainer_person} = "ownCloud packages <packages\@owncloud.com>" unless( $substs{maintainer_person} );
     $substs{desktopdescription} = $substs{displayname} . " desktop sync client" unless( $substs{desktopdescription} );
@@ -499,7 +500,7 @@ my $substs = getSubsts($dirName);
 # For plain ownCloud, it may still be ownCloud
 if( buildOwnCloudTheme($theme) ) {
     # The theme does not provide an APPLICATION_SHORTNAME, CMakelist.txt falls back to APPLICATION_NAME.
-    $substs->{shortname} = "owncloud";	# Enforce all lowercase. Used a deb package name.
+    $substs->{shortname} = "owncloud";	# Enforce all lowercase. Used as a deb package name.
 }
 else
 {
@@ -510,10 +511,13 @@ else
 $substs->{shortname_deb} = $substs->{shortname}; # keep the shortname_deb for pre 2.0.0 clients
 
 $substs->{shortname_etc} = $substs->{shortname};
-if( buildOwnCloudTheme($theme) ) {
+if( buildOwnCloudTheme($theme) || $substs->{shortname} eq 'owncloud' ) {
     # For ownCloud, the excludes must to to ownCloud with capital C
     # for historical reasons.
+    # Caution: this also affects customers like SOU, using 'owncloud' as their shortname.
     $substs->{shortname_etc} = 'ownCloud';
+    # monkey-patch sysconfdir. make it etc/ownCloud, even if package.cfg says etc/owncloud.
+    $substs->{sysconfdir} = "etc/". $substs->{shortname_etc} if $substs->{sysconfdir} eq 'etc/'.$substs->{shortname};
 }
 
 $substs->{themename} = $theme;
@@ -640,7 +644,7 @@ if( $changeCnt == 0 && ! $opt_f && $opt_o ) {
 if( $opt_o ) {
     chdir( $clientdir );
     # create and osc add changelog files if they do not exist yet.
-    foreach my $f ( ('debian.changelog', "$packName.changes") ) {
+    foreach my $f ( ('debian.changelog', "$substs->{shortname}-client.changes") ) {
       unless( -e $f ) {
 	system( "touch $f" );
 	my @osc = oscParams($opt_c);
@@ -670,7 +674,7 @@ if( $opt_b ) {
     my @osc = oscParams($opt_c);
     my $product = $ENV{OBS_INTEGRATION_PRODUCT} || 'openSUSE_13.1';
     my $arch =    $ENV{OBS_INTEGRATION_ARCH}    || 'x86_64';
-    push @osc, ('build', '--no-service', '--clean', '--download-api-only', '--local-package', $product, $arch, "$packName.spec");
+    push @osc, ('build', '--no-service', '--no-verify', '--clean', '--download-api-only', '--local-package', $product, $arch, "$substs->{shortname}-client.spec");
     print "+ osc " . join( " ", @osc ) . "\n";
     chdir( $clientdir );
     $buildOk = doOSC( @osc );
