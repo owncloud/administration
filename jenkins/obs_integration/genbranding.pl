@@ -407,7 +407,7 @@ sub getSubsts( $ )
     # calculate some subst values, such as
     $substs{tarball} = $subsDir unless( $substs{tarball} );
     $substs{pkgdescription_debian} = debianDesc( $substs{pkgdescription} );
-    $substs{sysconfdir} = "etc/". $substs{shortname_etc} unless $substs{sysconfdir_defined};
+    $substs{sysconfdir} = "etc/". $substs{shortname} unless $substs{sysconfdir_defined};
     $substs{maintainer} = "ownCloud Inc." unless( $substs{maintainer} );
     $substs{maintainer_person} = "ownCloud packages <packages\@owncloud.com>" unless( $substs{maintainer_person} );
     $substs{desktopdescription} = $substs{displayname} . " desktop sync client" unless( $substs{desktopdescription} );
