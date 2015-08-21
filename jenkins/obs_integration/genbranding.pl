@@ -40,7 +40,7 @@
 # 2015-01-22, jw, V1.7a accept also /syncclient/package.cfg instead of /mirall/package.cfg
 # 2015-03-18, jw, V1.8 better errror checking against malformed tar-files. Version number added to create message.
 # 2015-05-13, jw, V1.9 proper shortname_deb, added debian_filename().
-# 2015-05-15, jw, V1.10 use shortname in addSpecChangelog() too. 
+# 2015-05-15, jw, V1.10 use shortname in addSpecChangelog() too.
 # 2015-05-15, jw, V1.11 fix substitution of SHORTNAME_DEB
 # 2015-05-15, jw, V1.12 Also support EXECUTABLE_DEB and EXECUTABLE. needed for the autostart wrapper in centos and rhel.
 
@@ -390,6 +390,7 @@ sub getSubsts( $ )
 	close($ifd);
 	$txt =~ s/"/'/g; 		# HACK. cfg should be a more well defined syntax. INI. YAML. whatever.
 	%s2 = eval $txt;
+        die( "Parsing of package.cfg FAILED: $@") if $@;
     } else {
 	die "ERROR: Could not read package config file $cfgFile!\n";
     }
