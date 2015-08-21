@@ -517,7 +517,8 @@ if( buildOwnCloudTheme($theme) || $substs->{shortname} eq 'owncloud' ) {
     # Caution: this also affects customers like SOU, using 'owncloud' as their shortname.
     $substs->{shortname_etc} = 'ownCloud';
     # monkey-patch sysconfdir. make it etc/ownCloud, even if package.cfg says etc/owncloud.
-    $substs->{sysconfdir} = "etc/". $substs->{shortname_etc} if $substs->{sysconfdir} eq 'etc/'.$substs->{shortname};
+    # Do not do that. It breaks DEB packages.
+    # $substs->{sysconfdir} = "etc/". $substs->{shortname_etc} if $substs->{sysconfdir} eq 'etc/'.$substs->{shortname};
 }
 
 $substs->{themename} = $theme;
