@@ -1,0 +1,4 @@
+usr/bin/[% APPLICATION_EXECUTABLE %]*
+usr/share/applications/[% APPLICATION_EXECUTABLE %].desktop
+usr/share/icons/hicolor
+usr/share/man
