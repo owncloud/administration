@@ -11,11 +11,12 @@
 # v0.4, 2015-03-31, jw, allow _x86 suffix in set32.
 # v0.5, 2015-07-15, jw, always sync list of available repositories from TEMPLATE_PRJ.
 #                       Fixing https://github.com/owncloud/ownbrander/issues/393
+# v0.6, 2015-08-26, jw, No CentOS_7 or RHEL_7 for 32bit when expanding wildcards.
 
 use Data::Dumper;
 use XML::Simple;
 
-my $version = '0.5';
+my $version = '0.6';
 my $verbose = 1;
 my $obs_api = $ENV{'OBS_API'} || 'https://s2.owncloud.com';
 my $osc_cmd = $ENV{'OSC_CMD'} || 'osc';
@@ -55,10 +56,13 @@ Environment variables:
 my @existing_pkg = list_obs_pkg($obs_proj);
 update_obs_repos($obs_proj) if $ARGV[1] and length($template_prj);	 # we are going to set something...
 my $configured_repos = list_obs_repos($obs_proj);
+# die Dumper $configured_repos;
 
 my $repo_aliases = mk_repo_aliases(keys %{$configured_repos->{32}},
 				   keys %{$configured_repos->{64}});
 
+delete $repo_aliases->{'centos_7'};	# no such 32bit platform. centos_7_x86 only!
+delete $repo_aliases->{'rhel_7'};	# no such 32bit platform. rhel_7_x86 only!
 # print Dumper expand_alias_wild($repo_aliases, ['centos*', 'xubuntu-14.04']);
 
 unless ($ARGV[1])
@@ -150,8 +154,10 @@ while ($ARGV[1])
       }
   }
 
-$set32 = expand_alias_wild($repo_aliases, $set32);
-$set64 = expand_alias_wild($repo_aliases, $set64);
+my $repo_aliases_32 = { map { $_ => $repo_aliases->{$_} } grep { ! /_x86$/ } keys %$repo_aliases };
+my $repo_aliases_64 = { map { $_ => $repo_aliases->{$_} } grep {   /_x86$/ } keys %$repo_aliases };
+$set32 = expand_alias_wild($repo_aliases_32, $set32);
+$set64 = expand_alias_wild($repo_aliases_64, $set64);
 # die Dumper [ $set32, $set64 ];
 print "set32: @$set32\n" if $verbose;
 print "set64: @$set64\n" if $verbose;
