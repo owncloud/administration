@@ -155,7 +155,7 @@ while ($ARGV[1])
   }
 
 my $repo_aliases_32 = { map { $_ => $repo_aliases->{$_} } grep { ! /_x86$/ } keys %$repo_aliases };
-my $repo_aliases_64 = { map { $_ => $repo_aliases->{$_} } grep {   /_x86$/ } keys %$repo_aliases };
+my $repo_aliases_64 = { map { my $n = $_; $n =~ s/_x86$//; $n => $repo_aliases->{$_} } grep {   /_x86$/ } keys %$repo_aliases };
 $set32 = expand_alias_wild($repo_aliases_32, $set32);
 $set64 = expand_alias_wild($repo_aliases_64, $set64);
 # die Dumper [ $set32, $set64 ];
