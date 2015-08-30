@@ -254,8 +254,9 @@ cwd = os.path.abspath('.')
 # ['', 'home', 'testy', 'src', 'obs', 'isv', 'ownCloud', 'community', '7.0', 'testing', 'owncloud']
 cwd_pkg = re.split('[:/]', cwd)[-1]
 cwd_ver = re.split('[:/]', cwd)[-2]
+cwd_oth = re.split('[:/]', cwd)[-3]
 cwd_testing = False
-if cwd_ver == 'testing':
+if cwd_ver == 'testing' or cwd_oth == 'testing':
   cwd_testing = True
   cwd_ver = re.split('[:/]', cwd)[-3]
   print ":testing project seen here.\n"
