@@ -166,15 +166,6 @@ foreach($repositories as $name => $repository) {
 	if(in_array($name, $config->skipLabels)) {
 		continue;
 	}
-	if(!array_key_exists('6.0.9', $repository['labels'])) {
-		print($COLOR_RED . '6.0.9 missing in ' . $config->org . '/' . $name . $NO_COLOR . PHP_EOL);
-	}
-	if(!array_key_exists('7.0.7', $repository['labels'])) {
-		print($COLOR_RED . '7.0.7 missing in ' . $config->org . '/' . $name . $NO_COLOR . PHP_EOL);
-	}
-	if(!array_key_exists('8.0.5', $repository['labels'])) {
-		print($COLOR_RED . '8.0.5 missing in ' . $config->org . '/' . $name . $NO_COLOR . PHP_EOL);
-	}
 
 	foreach($repository['labels'] as $label => $info) {
 		if(array_key_exists($label, $config->renameLabels)) {
