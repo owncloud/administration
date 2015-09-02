@@ -25,6 +25,10 @@ function milestoneSort($a, $b) {
 function labelSort($a, $b) {
 	return strnatcasecmp($a['name'], $b['name']);
 }
+function skipBecauseOfVersionConstraint($versionAdded, $milestoneOrLabelName) {
+	$version = explode('-', $milestoneOrLabelName)[0];
+	return version_compare($versionAdded, $version) === 1;
+}
 
 $authentication = json_decode(file_get_contents('credentials.json'));
 
@@ -140,6 +144,11 @@ foreach($repositories as $name => $repository) {
 
 	foreach($config->addMilestones as $milestone) {
 		if(!array_key_exists($milestone, $repository['milestones'])) {
+			if(isset($config->versionAdded->$name) && skipBecauseOfVersionConstraint($config->versionAdded->$name, $milestone)) {
+				print($config->org . '/' . $name . ': skipped milestone ' . $milestone . $NO_COLOR . PHP_EOL);
+				continue;
+			}
+
 			print($COLOR_RED . $config->org . '/' . $name . ': add milestone ' . $milestone . $NO_COLOR . PHP_EOL);
 			$data = [
 				"title" => $milestone
@@ -178,6 +187,10 @@ foreach($repositories as $name => $repository) {
 
 	foreach($config->addLabels as $label) {
 		if(!array_key_exists($label, $repository['labels'])) {
+			if(isset($config->versionAdded->$name) && skipBecauseOfVersionConstraint($config->versionAdded->$name, $label)) {
+				print($config->org . '/' . $name . ': skipped label ' . $label . $NO_COLOR . PHP_EOL);
+				continue;
+			}
 			print($COLOR_RED . $config->org . '/' . $name . ': add label ' . $label . $NO_COLOR . PHP_EOL);
 			continue;
 			// TODO ask for the update

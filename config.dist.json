@@ -22,5 +22,8 @@
   },
   "addMilestones": [
     "shiny-new-milestone"
-  ]
+  ],
+  "versionAdded": {
+    "repo2": "2.4"
+  }
 }
