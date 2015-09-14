@@ -196,7 +196,7 @@ sub doBuild( $$ ) {
   }
 
   if( $re && $opt_p) {
-    my @osc = ( "commit", "-m", "Update by Mr. Jenkins nightly build." );
+    my @osc = ( "commit", "-m", "Update by Mr. Jenkins nightly build.", "--noservice" );
     print("DOING the push to OBS\n");
     doOSC( @osc );
   }
