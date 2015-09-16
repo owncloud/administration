@@ -149,7 +149,7 @@ EOF
 
 	#test execution
 	cd tests
-	php -f enable_all.php
+	#php -f enable_all.php
 }
 
 #
