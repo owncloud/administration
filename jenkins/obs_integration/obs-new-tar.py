@@ -25,7 +25,7 @@ argv0 = 'obs_integration/obs-new-tar.py'
 verbose=1
 ap=argparse.ArgumentParser(description='obs package updater, run from a checked out working copy. Usually called from internal/update_all_tars.sh')
 ap.add_argument('url', type=str, help="tar ball (file or) url to put into this package")
-ap.add_argument('-c', '--commit', '--checkin', action='count', help="call 'osc ci' after updating the working copy")
+ap.add_argument('-c', '--commit', '--checkin', action='count', help="call 'osc ci' after updating the working copy; use -c -c to skip editing the commit message")
 ap.add_argument('-S', '--submitreq', '--sr', metavar='TARGETPRJ', help="call 'osc ci; osc submitreq TARGETPRJ' after updating the working copy")
 ap.add_argument('-e', '--email', help="Specify maintainer email address. Default: derive from 'osc user'")
 ap.add_argument('-n', '--name', help="Specify name (and version) Default: derive from url")
