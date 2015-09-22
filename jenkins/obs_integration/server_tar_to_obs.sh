@@ -1,17 +1,13 @@
 #!/bin/bash -x
 #
-# update_all_tars.h
+# server_tar_to_obs.sh
 #
 # wrapper for obs-new-tar.py to push new tar verstions
 # into internal and external build service.
-# Usage:
-#  * branch and checkout :testing in ~/src/obs when there is the firt beta, that goes into testing.
-#    This script will cd there, and use the working copies during the update process.
-#  * When a final release is made, push that also into the testing branches, but with submitreq=1, wait until all
-#    succeeds, then approve the requests on release day.
+# This is a version of the initial script called update_all_tar.sh that
+# is mainly to be used out of jenkins. That is why it reads its parameter
+# from the environment.
 #
-# FIXME: Added a delay before submitreq. We have a race with slow source services on the server.
-
 ########### The following variables should be set outside of this script:
 # PREREL: a suffix like rc1 or beta1
 # VERSIONS: A space separated list of versions.
