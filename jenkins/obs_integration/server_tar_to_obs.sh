@@ -14,6 +14,7 @@
 # USERNAME: The person who changed it
 # INT_URL_WITH_CREDS: Internal url to download packages with credentials
 #                     something like http://owncloud:secret@download.owncloud.com
+# SUFFIX_REPO: Repository suffix, usually testing, but can be devel 
 #
 prerel="${PREREL:-}"
 username="${USERNAME:-'jenkins@owncloud.com'}"
@@ -36,7 +37,7 @@ else
 fi
 d_o_c_path=internal		# beta,rc,final tars are all ther.
 
-prjsuffix=:testing
+prjsuffix=${SUFFIX_REPO:-testing}
 
 osc="osc -c ~/.oscrc"
 # build.opensuse.org
@@ -62,13 +63,13 @@ for v in $VERSIONS; do
     pkg=$(echo $name | tr _ -)
 
     # checkout or upate the obs checkout
-    if [ -d "$prj$prjsuffix" ]; then
-      pushd "$prj$prjsuffix/$pkg"
+    if [ -d "$prj:$prjsuffix" ]; then
+      pushd "$prj:$prjsuffix/$pkg"
       $osc up
     else
       # no checkout dir, do new checkout
-      $osc co $prj$prjsuffix $pkg
-      pushd $prj$prjsuffix/$pkg
+      $osc co $prj:$prjsuffix $pkg
+      pushd $prj:$prjsuffix/$pkg
     fi
 
     $do_d_o_o/$d_o_o_path/$name-$v$prerel.tar.bz2
@@ -115,8 +116,8 @@ for v in $VERSIONS; do
   esac
   for name in $names; do
     pkg=$(echo $name | tr _ -)
-    $osc co $prj$prjsuffix $pkg
-    pushd $prj$prjsuffix/$pkg
+    $osc co $prj:$prjsuffix $pkg
+    pushd $prj:$prjsuffix/$pkg
     test -n "$manual" && echo wget https://doc.owncloud.org/server/$v/$manual -O $manual
 
     # download the fil
