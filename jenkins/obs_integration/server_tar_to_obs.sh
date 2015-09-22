@@ -57,6 +57,9 @@ for v in $VERSIONS; do
   8.1*)
     prj=isv:ownCloud:community:8.1
     ;;
+  8.2*)
+    prj=isv:ownCloud:community:8.2
+    ;;
   esac
   for name in owncloud; do
     # Clean the package name to be debian compatible
@@ -112,6 +115,11 @@ for v in $VERSIONS; do
     manual=ownCloudServerAdminManual.pdf
     names="owncloud_enterprise"
     prj=ee:8.1
+    ;;
+  8.2*)
+    manual=ownCloudServerAdminManual.pdf
+    names="owncloud_enterprise"
+    prj=ee:8.2
     ;;
   esac
   for name in $names; do
