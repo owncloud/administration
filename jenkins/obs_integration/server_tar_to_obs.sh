@@ -25,7 +25,7 @@ if [ -z "$VERSIONS" ]; then
     exit 1
 fi
 
-cmd="./obs-new-tar.py -e $username "
+cmd="../obs-new-tar.py -e $username "
 submitreq=0	# switch to 1, to also create submitrequests from $prj$prjsuffix to $prj
 ########### End edit section
 
@@ -129,7 +129,7 @@ for v in $VERSIONS; do
     pkg=$(echo $name | tr _ -)
     $osc co $prj:$prjsuffix $pkg
     pushd $prj:$prjsuffix/$pkg
-    test -n "$manual" && wget https://doc.owncloud.org/server/$manual_sub/$manual -O $manual
+    test -n "$manual" && wget -nv https://doc.owncloud.org/server/$manual_sub/$manual -O $manual
 
     # download the fil
     eval "$do_d_o_c/$d_o_c_path/$v$prerel/$name-$v$prerel.tar.bz2"
