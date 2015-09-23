@@ -107,17 +107,20 @@ for v in $VERSIONS; do
     manual=""
     ;;
   8.0*)
-    manual=ownCloudServerAdminManual.pdf
+    manual="ownCloud_Server_Administration_Manual.pdf"
+    manual_sub="8.0"
     names="owncloud_enterprise"
     prj=ee:8.0
     ;;
   8.1*)
-    manual=ownCloudServerAdminManual.pdf
+    manual="ownCloud_Server_Administration_Manual.pdf"
+    manual_sub="8.1"
     names="owncloud_enterprise"
     prj=ee:8.1
     ;;
   8.2*)
-    manual=ownCloudServerAdminManual.pdf
+    manual_sub="8.2"
+    manual="ownCloud_Server_Administration_Manual.pdf"
     names="owncloud_enterprise"
     prj=ee:8.2
     ;;
@@ -126,7 +129,7 @@ for v in $VERSIONS; do
     pkg=$(echo $name | tr _ -)
     $osc co $prj:$prjsuffix $pkg
     pushd $prj:$prjsuffix/$pkg
-    test -n "$manual" && wget https://doc.owncloud.org/server/$v/$manual -O $manual
+    test -n "$manual" && wget https://doc.owncloud.org/server/$manual_sub/$manual -O $manual
 
     # download the fil
     eval "$do_d_o_c/$d_o_c_path/$v$prerel/$name-$v$prerel.tar.bz2"
