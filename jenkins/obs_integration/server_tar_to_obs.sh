@@ -17,7 +17,7 @@
 # SUFFIX_REPO: Repository suffix, usually testing, but can be devel 
 #
 prerel="${PREREL:-}"
-username="${USERNAME:-'jenkins@owncloud.com'}"
+username="${USERNAME:-jenkins@owncloud.com}"
 
 # version string like this: versions="7.0.10   8.0.8   8.1.3"
 if [ -z "$VERSIONS" ]; then

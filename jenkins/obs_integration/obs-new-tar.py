@@ -292,16 +292,16 @@ if data['name'] != cwd_pkg:
   print("You are trying to commit tar %s into a checkout of package '%s'\n" % (data['name'], cwd_pkg))
   sys.exit()
 
+addremove_tars(newtarfile)
+
 if os.path.exists('obs_check_deb_spec.sh'):
   run(["sh", "obs_check_deb_spec.sh"], redirect=False)
-
 
 parse_osc_user(data)
 edit_specfile(data['name']+".spec", data, args.url)
 edit_dscfile(data['name']+".dsc", data)
 edit_debchangelog("debian.changelog", data)
 edit_changes(data['name']+".changes", data)
-addremove_tars(newtarfile)
 
 if args.commit or args.submitreq:
   if args.commit and args.commit > 1:
