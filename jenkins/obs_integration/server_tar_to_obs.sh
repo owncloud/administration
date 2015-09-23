@@ -25,7 +25,7 @@ if [ -z "$VERSIONS" ]; then
     exit 1
 fi
 
-cmd="../obs-new-tar.py -e $username "
+cmd="../../obs-new-tar.py -e $username "
 submitreq=0	# switch to 1, to also create submitrequests from $prj$prjsuffix to $prj
 ########### End edit section
 
