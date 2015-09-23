@@ -302,7 +302,7 @@ if data['name'] != cwd_pkg:
 addremove_tars(newtarfile)
 
 if os.path.exists('obs_check_deb_spec.sh'):
-  run(["sh", "-x", "obs_check_deb_spec.sh"], redirect=False)
+  run(["sh", "obs_check_deb_spec.sh"], redirect=False)
 
 parse_osc_user(data)
 edit_specfile(data['name']+".spec", data, args.url)
