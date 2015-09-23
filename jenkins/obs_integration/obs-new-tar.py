@@ -270,7 +270,7 @@ run(["osc", "up"], redirect=False)
 newtarfile=args.url
 if re.search(r'://', args.url):
   newtarfile=re.sub(r'.*/','', args.url)
-  r=run(["wget", args.url,"-O",newtarfile], redirect=False, return_code=True)
+  r=run(["wget", args.url,"-O",newtarfile,"-nv"], redirect=False, return_code=True)
   if r: sys.exit()
 
 tar = parse_tarname(newtarfile, None)
