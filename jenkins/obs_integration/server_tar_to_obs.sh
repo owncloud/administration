@@ -94,6 +94,10 @@ fi
 do_d_o_c='$cmd $INT_URL_WITH_CREDS'
 osc="osc -c ~/.ocoscrc"
 
+# export an environment parameter to point osc to the correct profile
+# for the internal buildservice.
+export OSCPARAM="-c ~/.ocoscrc"
+
 for v in $VERSIONS; do
   case $v in
   6*)

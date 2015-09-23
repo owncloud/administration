@@ -79,6 +79,13 @@ def run(args, input=None, redirect=None, redirect_stdout=True, redirect_stderr=T
   if err:          return "STDERROR: " + err
   return out
 
+
+def run_osc(args, redirect=False):
+  osc = ['osc']
+  if os.environ['OSCPARAM'] is not None: 
+    osc += os.environ['OSCPARAM'].split(' ') 
+  return run( osc + args, redirect=redirect )
+
 def parse_tarname(tarname, tarversion):
   """
     derive a package name from owncloud_enterprise_apps-6.0.6RC2.tar.bz2"
@@ -229,7 +236,7 @@ def parse_osc_user(data):
     osc user
     jw: "Juergen Weigert" <jw@owncloud.com>
   """
-  txt=run(["osc","user"],redirect=True)
+  txt=run_osc(["user"],redirect=True)
   m = re.match(r'(.*?):\s"(.*?)"\s+<(.*?)>', txt)
   if m is None:
     print("Error: osc user failed.")
@@ -245,8 +252,8 @@ def addremove_tars(tarname):
   for file in os.listdir("."):
     if re.match(".*[\._-]tar.*", file):
       if file != tarname:
-        run(["osc", "del", file], redirect=False)
-  run(["osc", "add", tarname], redirect=False)
+        run_osc(["del", file], redirect=False)
+  run_osc(["add", tarname], redirect=False)
 
 ##################################################################
 
@@ -265,7 +272,7 @@ else:
 
 print(cwd, cwd_ver, cwd_testing)
 
-run(["osc", "up"], redirect=False)
+run_osc(["up"], redirect=False)
 
 newtarfile=args.url
 if re.search(r'://', args.url):
@@ -295,7 +302,7 @@ if data['name'] != cwd_pkg:
 addremove_tars(newtarfile)
 
 if os.path.exists('obs_check_deb_spec.sh'):
-  run(["sh", "obs_check_deb_spec.sh"], redirect=False)
+  run(["sh", "-x", "obs_check_deb_spec.sh"], redirect=False)
 
 parse_osc_user(data)
 edit_specfile(data['name']+".spec", data, args.url)
@@ -306,18 +313,18 @@ edit_changes(data['name']+".changes", data)
 if args.commit or args.submitreq:
   if args.commit and args.commit > 1:
     msg = "Update to version %s via %s" % (debian_version(data, None), argv0)
-    run(["osc", "ci", "-m", msg], redirect=False)
+    run_osc(["ci", "-m", msg], redirect=False)
   else:
-    run(["osc", "ci"], redirect=False)
+    run_osc(["ci"], redirect=False)
 
   if args.submitreq:
     print("Waiting for slow source services on the server to finish before submitreq")
     time.sleep(10)
-    run(["osc", "submitreq", args.submitreq], redirect=False)
+    run_osc(["submitreq", args.submitreq], redirect=False)
 else:
-  run(["osc", "diff"], redirect=False)
+  run_osc(["diff"], redirect=False)
 
-info=run(["osc", "info", "."], redirect=True)
+info=run_osc(["info", "."], redirect=True)
 src=re.search('Source URL:\s(.*)$', info, re.M)
 dst=re.search('link to project\s([^,]*),', info, re.M)
 
