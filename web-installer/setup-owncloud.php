@@ -89,7 +89,7 @@ class Setup {
 		}
 		foreach (self::$requirements[0]['defined'] as $defined => $module) {
 			if (!defined($defined)) {
-				$missingDependencies[] = $module;
+				$missingDependencies[] = array($module);
 			}
 		}
 
