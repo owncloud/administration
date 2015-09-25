@@ -82,8 +82,8 @@ def run(args, input=None, redirect=None, redirect_stdout=True, redirect_stderr=T
 
 def run_osc(args, redirect=False):
   osc = ['osc']
-  if os.environ.get('OSCPARAM') is not None:
-    osc += os.environ.get('OSCPARAM').split(' ')
+  if os.environ['OSCPARAM'] is not None: 
+    osc += os.environ['OSCPARAM'].split(' ') 
   return run( osc + args, redirect=redirect )
 
 def parse_tarname(tarname, tarversion):
