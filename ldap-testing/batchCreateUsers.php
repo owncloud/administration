@@ -44,11 +44,14 @@
     $entry['userPassword'] = $uid;
     $entry['gidNumber'] = 5000;
     $entry['uidNumber'] = $uidStart + $i + 1;
+    $entry['mail'] = $uid . '@example.org';
 
 
     $ok = ldap_add($cr, $newDN, $entry);
     if($ok) {
       echo('created ' . $uid . ': ' . $entry['displayName'] . PHP_EOL);
+    } else {
+      echo('failed ' . $uid . ': ' . $entry['displayName'] . PHP_EOL);
     }
   }
 
