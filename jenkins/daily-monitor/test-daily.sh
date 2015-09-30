@@ -2,7 +2,7 @@
 
 if [ "$#" -ne 1 ]; then
     echo "Usage: test-daily <from-version>"
-    echo "Example: test-upgrade master"
+    echo "Example: test-daily master"
     exit
 fi
 
