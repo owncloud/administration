@@ -26,7 +26,7 @@ if [ -z "$VERSIONS" ]; then
 fi
 
 # cmd="../../obs-new-tar.py -e $username "
-cmd="../../obs-new-tar.py --commit -e $username "
+cmd="../../obs-new-tar.py --commit --commit -e $username "	# Hack: using --commit twice is non-interactive.
 submitreq=0	# switch to 1, to also create submitrequests from $prj$prjsuffix to $prj
 test -z "$prerel"  && submitreq=1
 
