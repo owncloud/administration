@@ -233,7 +233,7 @@ $configDocumentationOutput .= "DEFAULT_SECTION_START\n\n";
 // append first paragraph
 $configDocumentationOutput .= $outputFirstParagraph;
 // append end placeholder
-$configDocumentationOutput .= ".. DEFAULT_SECTION_END";
+$configDocumentationOutput .= "\n.. DEFAULT_SECTION_END";
 
 $tmp = explode('DEFAULT_SECTION_END', $tmp[1]);
 if(count($tmp) !== 2) {
