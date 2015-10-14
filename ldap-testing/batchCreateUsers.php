@@ -6,8 +6,11 @@ $cr = ldap_connect($host, $port);
 ldap_set_option($cr, LDAP_OPT_PROTOCOL_VERSION, 3);
 ldap_bind($cr, $adn, $apwd);
 
+$configCreateOU = true;
+$configAddImage = true;
+
 //creates on OU
-if (true) {
+if ($configCreateOU) {
 	$ouDN = 'ou=Zombies,' . $bdn;
 	$entry['objectclass'][] = 'top';
 	$entry['objectclass'][] = 'organizationalunit';
@@ -46,6 +49,9 @@ for ($i = $start; $i < ($amount + $start); $i++) {
 	$entry['uidNumber'] = $uidStart + $i + 1;
 	$entry['mail'] = $uid . '@example.org';
 
+	if ($configAddImage) {
+		$entry['jpegPhoto'] = file_get_contents('zombie.jpg');
+	}
 
 	$ok = ldap_add($cr, $newDN, $entry);
 	if ($ok) {
