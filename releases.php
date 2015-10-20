@@ -178,6 +178,16 @@ foreach($repositories as $name => $repository) {
 		}
 	}
 
+	foreach($config->deleteLabels as $label) {
+		if(array_key_exists($label, $repository['labels'])) {
+			print($COLOR_RED . $config->org . '/' . $name . ': delete label ' . $label . $NO_COLOR . PHP_EOL);
+			continue; // comment this to DELETE LABELS
+			// TODO ask for the update
+			$client->api('issue')->labels()->deleteLabel($config->org, $name, $label);
+
+		}
+	}
+
 	foreach($config->addLabels as $label) {
 		if(!array_key_exists($label, $repository['labels'])) {
 			if(isset($config->versionAdded->$name) && skipBecauseOfVersionConstraint($config->versionAdded->$name, $label)) {

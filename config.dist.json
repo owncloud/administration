@@ -17,6 +17,9 @@
   "addLabels": [
     "shiny-new-label"
   ],
+  "deleteLabels": [
+    "old-label"
+  ],
   "renameMilestones": {
     "old-milestone": "new-milestone"
   },
