@@ -7,7 +7,7 @@ in the same way. It's main purpose is to rename i.e. a milestone
 
 The same applies for labels and it can also update due dates of milestones across multiple repos.
 
-Whom to ask if something is unclear: (Morris Jobke)[https://github.com/morrisjobke]
+Whom to ask if something is unclear: [Morris Jobke](https://github.com/morrisjobke)
 
 ### How to run it
 
