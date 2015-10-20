@@ -1,0 +1,32 @@
+{
+  "org": "organisation",
+  "repos": [
+    "repo1",
+    "repo2",
+    "repo3"
+  ],
+  "skipLabels": [
+    "repo3"
+  ],
+  "dueDates": {
+    "my-milestone": "2015-08-04"
+  },
+  "renameLabels": {
+    "old-label": "new-label"
+  },
+  "addLabels": [
+    "shiny-new-label"
+  ],
+  "deleteLabels": [
+    "old-label"
+  ],
+  "renameMilestones": {
+    "old-milestone": "new-milestone"
+  },
+  "addMilestones": [
+    "shiny-new-milestone"
+  ],
+  "versionAdded": {
+    "repo2": "2.4"
+  }
+}
