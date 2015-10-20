@@ -92,16 +92,21 @@ foreach($config->repos as $repo) {
 		if($label['name'][1] === '.') {
 			$repositories[$repo]['labels'][$label['name']] = null;
 
-			if(strpos($label['name'], '-current') === false) {
-				if($SHOW_LABEL) print($COLOR_GRAY);
-			}
 			$repositories[$repo]['labels'][$label['name']] = [
 				'color' => $label['color']
 			];
 			if(strpos($label['name'], '-current') !== false) {
 				$issues = $client->api('issue')->all($config->org, $repo, ['labels' => $label['name']]);
 				$openCount = count($issues);
-				if($SHOW_LABEL) print("    " . $label['name'] . ' ' . $openCount . $NO_COLOR . PHP_EOL);
+
+				if($SHOW_LABEL) {
+					if($openCount === 0) {
+						print($COLOR_GRAY);
+					} else {
+						print($COLOR_RED);
+					}
+					print("    " . $label['name'] . ' ' . $openCount . $NO_COLOR . PHP_EOL);
+				}
 				$repositories[$repo]['labels'][$label['name']] = [
 					'color' => $label['color'],
 					'open' => $openCount,
