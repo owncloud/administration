@@ -117,7 +117,7 @@ foreach($config->repos as $repo) {
 }
 
 $response = $client->getHttpClient()->get("rate_limit");
-print(\Github\HttpClient\Message\ResponseMediator::getContent($response)['rate']['remaining'] . PHP_EOL);
+print("Remaining requests to GitHub this hour: " . \Github\HttpClient\Message\ResponseMediator::getContent($response)['rate']['remaining'] . PHP_EOL);
 
 foreach($repositories as $name => $repository) {
 	foreach($repository['milestones'] as $milestone => $info) {
@@ -136,7 +136,7 @@ foreach($repositories as $name => $repository) {
 			if(strpos($config->renameMilestones->$milestone, '-') === false && $info['open_issues'] === 0) {
 				$data['state'] = 'closed';
 			}
-			continue;
+			continue; // comment this to RENAME MILESTONES
 			// TODO ask for the update
 			$client->api('issue')->milestones()->update($config->org, $name, $info['number'], $data);
 		}
@@ -156,7 +156,7 @@ foreach($repositories as $name => $repository) {
 			if(array_key_exists($milestone, $config->dueDates)) {
 				$data['due_on'] = $config->dueDates->$milestone . 'T04:00:00Z';
 			}
-			continue;
+			continue; // comment this to ADD MILESTONES
 			// TODO ask for the update
 			$client->api('issue')->milestones()->create($config->org, $name, $data);
 
@@ -170,7 +170,7 @@ foreach($repositories as $name => $repository) {
 	foreach($repository['labels'] as $label => $info) {
 		if(array_key_exists($label, $config->renameLabels)) {
 			print($COLOR_RED . $config->org . '/' . $name . ': rename label ' . $label . ' -> ' . $config->renameLabels->$label . $NO_COLOR . PHP_EOL);
-			continue;
+			continue; // comment this to RENAME LABELS
 			// TODO ask for the update
 			$client->api('issue')->labels()->update($config->org, $name, $label, $config->renameLabels->$label, $info['color']);
 		}
@@ -183,7 +183,7 @@ foreach($repositories as $name => $repository) {
 				continue;
 			}
 			print($COLOR_RED . $config->org . '/' . $name . ': add label ' . $label . $NO_COLOR . PHP_EOL);
-			continue;
+			continue; // comment this to ADD LABELS
 			// TODO ask for the update
 			$client->api('issue')->labels()->create($config->org, $name, [ 'name' => $label, 'color' => '996633' ]);
 
@@ -196,7 +196,7 @@ if(count($updateDueDate)) {
 
 	foreach($updateDueDate as $date) {
 		print($COLOR_RED . $date['org'] . '/' . $date['repo'] . ' ' . $date['title'] . ' from ' . $date['oldDueDate'] . ' to ' . $date['newDueDate'] . $NO_COLOR . PHP_EOL);
-		continue;
+		continue; // comment this to UPDATE DUE DATES
 		// TODO ask for the update
 		$client->api('issue')->milestones()->update($date['org'], $date['repo'], $date['number'], [
 			'title' => $date['title'],
