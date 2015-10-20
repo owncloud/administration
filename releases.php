@@ -94,24 +94,18 @@ foreach($config->repos as $repo) {
 			if(strpos($label['name'], '-current') === false) {
 				if($SHOW_LABEL) print($COLOR_GRAY);
 			}
-			if($SHOW_LABEL) print("    " . $label['name']);
 			$repositories[$repo]['labels'][$label['name']] = [
 				'color' => $label['color']
 			];
 			if(strpos($label['name'], '-current') !== false) {
 				$issues = $client->api('issue')->all($config->org, $repo, ['labels' => $label['name']]);
 				$openCount = count($issues);
-				if($SHOW_LABEL) print(' ' . $openCount);
-				$issues = $client->api('issue')->all($config->org, $repo, ['labels' => $label['name'], 'state' => 'closed']);
-				$closedCount = count($issues);
-				if($SHOW_LABEL) print(' ' . $closedCount);
+				if($SHOW_LABEL) print("    " . $label['name'] . ' ' . $openCount . $NO_COLOR . PHP_EOL);
 				$repositories[$repo]['labels'][$label['name']] = [
 					'color' => $label['color'],
 					'open' => $openCount,
-					'closed' => $closedCount,
 				];
 			}
-			if($SHOW_LABEL) print($NO_COLOR . PHP_EOL);
 		}
 	}
 }
@@ -169,7 +163,7 @@ foreach($repositories as $name => $repository) {
 
 	foreach($repository['labels'] as $label => $info) {
 		if(array_key_exists($label, $config->renameLabels)) {
-			print($COLOR_RED . $config->org . '/' . $name . ': rename label ' . $label . ' -> ' . $config->renameLabels->$label . $NO_COLOR . PHP_EOL);
+			print($COLOR_RED . $config->org . '/' . $name . ': rename label ' . $label . ' -> ' . $config->renameLabels->$label . ' (open issues: ' . $info['open'] . ')' . $NO_COLOR . PHP_EOL);
 			continue; // comment this to RENAME LABELS
 			// TODO ask for the update
 			$client->api('issue')->labels()->update($config->org, $name, $label, $config->renameLabels->$label, $info['color']);
