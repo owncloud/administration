@@ -6,6 +6,7 @@ $COLOR_GRAY = "\033[0;37m";
 $COLOR_RED = "\033[0;31m";
 $NO_COLOR = "\033[0m";
 $STRIKE_THROUGH = "\033[9m";
+$BOLD = "\033[1m";
 
 $client = new \Github\Client(
 	new \Github\HttpClient\CachedHttpClient([
@@ -116,19 +117,21 @@ print("Remaining requests to GitHub this hour: " . \Github\HttpClient\Message\Re
 foreach($repositories as $name => $repository) {
 	foreach($repository['milestones'] as $milestone => $info) {
 		if(array_key_exists($milestone, $config->renameMilestones)) {
-			print($COLOR_RED . $config->org . '/' . $name . ': rename milestone ' . $milestone . ' -> ' . $config->renameMilestones->$milestone . $NO_COLOR . PHP_EOL);
 			$data = [
 				"title" => $config->renameMilestones->$milestone,
 				"state" => $info['state'],
 				"description" => $info['description'] ,
 				"due_on" => $info['due_on']
 			];
+			if(strpos($config->renameMilestones->$milestone, '-') === false && $info['open_issues'] === 0) {
+				$data['state'] = 'closed';
+			}
+			$textStyle = $data['state'] === 'open' ? $BOLD : '';
+			print($COLOR_RED . $config->org . '/' . $name . ': rename milestone ' . $milestone . ' -> ' . $config->renameMilestones->$milestone . ' - state: ' . $textStyle . $data['state'] . $NO_COLOR . PHP_EOL);
+
 			if(array_key_exists($config->renameMilestones->$milestone, $config->dueDates)) {
 				$newName = $config->renameMilestones->$milestone;
 				$data['due_on'] = $config->dueDates->$newName . 'T04:00:00Z';
-			}
-			if(strpos($config->renameMilestones->$milestone, '-') === false && $info['open_issues'] === 0) {
-				$data['state'] = 'closed';
 			}
 			continue; // comment this to RENAME MILESTONES
 			// TODO ask for the update
