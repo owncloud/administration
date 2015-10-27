@@ -11,7 +11,7 @@ fi
 git clone -q git@github.com:owncloud/documentation.git /tmp/owncloud-documentation
 cd /tmp/owncloud-documentation
 
-for branch in stable7 stable8 stable8.1 master
+for branch in stable7 stable8 stable8.1 stable8.2 master
 do
 	git checkout -q $branch
 	cd $currentDir
