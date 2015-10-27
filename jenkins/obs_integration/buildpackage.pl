@@ -115,8 +115,8 @@ sub doBuild( $$ ) {
 
   if (1) {	# $do_add) {      
     print(" >> Adding tarball $tarFileName\n");
-    my @osca = ("add", $tarFileName);
-    doOSC( @osca ) or return 0;
+    doOSC( "del", $tarFileName);	 # make readding the same file not an error.
+    doOSC( "add", $tarFileName) or return 0;
   }
 
 
