@@ -114,8 +114,9 @@ sub doBuild( $$ ) {
   }
 
   if (1) {	# $do_add) {      
-    print(" >> Adding tarball $tarFileName\n");
+    print(" >> Adding tarball $tarFileName ...\n");
     doOSC( "del", $tarFileName);	 # make readding the same file not an error.
+    print(" >> Adding tarball $tarFileName\n");
     doOSC( "add", $tarFileName) or return 0;
   }
 
