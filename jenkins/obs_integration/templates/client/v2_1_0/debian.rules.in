@@ -32,9 +32,9 @@ override_dh_auto_configure:
 
 	dh_auto_configure -- -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_DOCDIR=/usr/share/doc/[% shortname %]-client -DSYSCONF_INSTALL_DIR=/etc -DWITH_DOC=FALSE -DCMAKE_SKIP_RPATH=FALSE -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE -DOEM_THEME_DIR=$(CURDIR)/[% themename_deb %]/[% oem_sub_dir %]
 
-override_dh_install:
-	dh_install -Xdebian
-	mkdir -p	$(DROOT)-doc/usr/share/doc
-	chmod 770 	$(DROOT)-doc/usr/share/doc
+# override_dh_install:
+# 	dh_install -Xdebian
+# 	mkdir -p	$(DROOT)-doc/usr/share/doc
+# 	chmod 770 	$(DROOT)-doc/usr/share/doc
 
 
