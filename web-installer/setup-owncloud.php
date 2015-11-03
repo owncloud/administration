@@ -77,6 +77,11 @@ class Setup {
 			$error.='PHP 5.4.0 is required. Please ask your server administrator to update PHP to version 5.4.0 or higher.<br/>';
 		}
 
+		// running oC on windows is unsupported since 8.1
+		if(substr(PHP_OS, 0, 3) === "WIN")) {
+			$error.='ownCloud Server does not support Microsoft Windows.<br/>';
+		}
+
 		foreach (self::$requirements[0]['classes'] as $class => $module) {
 			if (!class_exists($class)) {
 				$missingDependencies[] = array($module);
