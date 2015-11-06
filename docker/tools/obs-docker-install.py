@@ -76,12 +76,13 @@
 # V2.20 -- 2016-08-20, jw  Moving ADD further down to allow more caching.
 #                          Added run_nocache using image_name.
 # V2.21 -- 2015-09-17, jw  Option -S prints out the dockerfile as a plain shell script.
+# V2.22 -- 2015-11-05, jw  format DNF added, used with Fedora_22
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="2.21"
+__VERSION__="2.22"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import yaml, sys, os, re, time, tempfile
@@ -217,14 +218,8 @@ target:
       '': |
         service httpd start
 
-  Fedora_21:
-    aufs_hack: |
-      RUN rpm --import http://download.opensuse.org/repositories/isv:/ownCloud:/devel/Fedora_21/repodata/repomd.xml.key
-      RUN wget -nv http://download.opensuse.org/repositories/isv:/ownCloud:/devel/Fedora_21/isv:ownCloud:devel.repo -O /etc/yum.repos.d/isv:ownCloud:devel.repo
-      RUN yum install -y --nogpgcheck libcap-dummy      # workaround aufs issue with cpio.
-    fmt: YUM
-    from: fedora:21
-    inst: [wget]
+  Fedora_21: { base: [Fedora_20], fmt: YUM, from: 'fedora:21' }
+  Fedora_22: { base: [Fedora_20], fmt: DNF, from: 'fedora:22' }
 
   Debian_6.0:
     fmt: APT
@@ -1031,6 +1026,26 @@ if docker["fmt"] == "APT":
   dockerfile += run_nocache +" apt-get -q -y update && apt-get -q -y -V install "+args.package
   dockerfile_tail += "RUN zcat /usr/share/doc/"+args.package+"/changelog*.gz  | head -20"+d_endl
   # dockerfile_tail += "RUN echo 'apt-get -V install "+args.package+"' >> ~/.bash_history"+d_endl
+
+
+elif docker["fmt"] == "DNF":
+  dnf_install = 'dnf install -y'
+  if args.nogpgcheck: dnf_install += ' --nogpgcheck'
+  dockerfile += "RUN dnf clean all"+d_endl 	#expire-cache"+d_endl
+  if "inst" in docker and len(docker["inst"]):
+    dockerfile += "RUN "+dnf_install+" "+" ".join(docker["inst"])+d_endl
+
+  if docker_on_aufs() and 'aufs' in docker:
+    dockerfile += docker['aufs']
+    if not re.search(r'\n$', dockerfile): dockerfile += "\n"
+  
+  dockerfile += "RUN rpm --import "+download["url_cred"]+"/"+obs_target+"/repodata/repomd.xml.key"+d_endl
+  dockerfile += "RUN "+wget_cmd+obs_target+'/'+args.project+".repo -O /etc/yum.repos.d/"+args.project+".repo"+d_endl
+  if extra_packages:	dockerfile += "RUN "+dnf_install+" "+" ".join(extra_packages)+d_endl
+  if extra_docker_cmd:	dockerfile += d_endl.join(extra_docker_cmd)+d_endl
+  dockerfile += run_nocache+" "+dnf_install+" "+args.package
+  dockerfile_tail += "RUN rpm -q --changelog "+args.package+" | head -20"+d_endl
+  # dockerfile_tail += "RUN echo '"+dnf_install+" "+args.package+"' >> ~/.bash_history"+d_endl
 
 
 elif docker["fmt"] == "YUM":
