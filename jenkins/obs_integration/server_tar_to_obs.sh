@@ -12,9 +12,10 @@
 # PREREL: a suffix like rc1 or beta1
 # VERSIONS: A space separated list of versions.
 # USERNAME: The person who changed it
-# INT_URL_WITH_CREDS: Internal url to download packages with credentials
+# INT_URL_WITH_CREDS: Internal url to download enterprise packages with credentials
 #                     something like http://owncloud:secret@download.owncloud.com
 # SUFFIX_REPO: Repository suffix, usually testing, but can be devel 
+# TAR_D_O_O_URL: Optional, defaults to http://download.owncloud.org/\$d_o_o_path
 #
 prerel="${PREREL:-}"
 username="${USERNAME:-jenkins@owncloud.com}"
@@ -42,28 +43,51 @@ d_o_c_path=internal		# beta,rc,final tars are all ther.
 
 prjsuffix=${SUFFIX_REPO:-testing}
 
-osc="osc -c ~/.oscrc"
-# build.opensuse.org
-echo "do_d_o_o='$cmd http://download.owncloud.org'"
-do_d_o_o="$cmd http://download.owncloud.org"
+## FIXME: use -A ??
+obs_osc="osc -c ~/.oscrc"
+s2_osc="osc -c ~/.ocoscrc"
+obs_OSCPARAM="-c ~/.oscrc"
+s2_OSCPARAM="-c ~/.ocoscrc"
+
+# community
+
+tar_d_o_o_url="${TAR_D_O_O_URL:-http://download.owncloud.org/$d_o_o_path}"
+
+do_d_o_o="$cmd $tar_d_o_o_url"
+echo "do_d_o_o='$do_d_o_o'"
+
 for v in $VERSIONS; do
   case $v in
   6*)
     prj=isv:ownCloud:community:6.0
+    api=obs
     ;;
   7*)
     prj=isv:ownCloud:community:7.0
+    api=obs
     ;;
   8.0*)
     prj=isv:ownCloud:community:8.0
+    api=obs
     ;;
   8.1*)
     prj=isv:ownCloud:community:8.1
+    api=obs
     ;;
   8.2*)
-    prj=isv:ownCloud:community:8.2
+    prj=ce:8.2
+    api=s2
     ;;
   esac
+
+  if [ "$api" == "obs" ]; then
+    osc=$obs_osc
+    export OSCPARAM="$obs_OSCPARAM"
+  else
+    osc=$s2_osc
+    export OSCPARAM="$s2_OSCPARAM"
+  fi
+
   for name in owncloud; do
     # Clean the package name to be debian compatible
     pkg=$(echo $name | tr _ -)
@@ -78,28 +102,28 @@ for v in $VERSIONS; do
       pushd $prj:$prjsuffix/$pkg
     fi
 
-    $do_d_o_o/$d_o_o_path/$name-$v$prerel.tar.bz2
-    test $submitreq -ne 0 && echo "sleep 10; osc submitreq $prj"
+    $do_d_o_o/$name-$v$prerel.tar.bz2
+    test $submitreq -ne 0 && echo "sleep 10; $osc submitreq $prj"
     popd
   done
 done
 
 echo "==> Community package done."
-#s2.owncloud.com
+# enterprise
 
 # internal url with credentials: http://user:secret@download.owncloud.com
 # Set this through environment: $INT_URL_WITH_CREDS
 if [ -z "$INT_URL_WITH_CREDS" ]; then
-    echo "Bad download url for internal source archives."
+    echo "Bad download url for internal enterprise source archives."
     exit 1
 fi
 
 do_d_o_c='$cmd $INT_URL_WITH_CREDS'
-osc="osc -c ~/.ocoscrc"
+osc="$s2_osc"
 
 # export an environment parameter to point osc to the correct profile
-# for the internal buildservice.
-export OSCPARAM="-c ~/.ocoscrc"
+# for the internal buildservice. FIXME: why no longer use -A ??
+export OSCPARAM="$obs_OSCPARAM"
 
 for v in $VERSIONS; do
   case $v in
@@ -140,7 +164,7 @@ for v in $VERSIONS; do
 
     # download the fil
     eval "$do_d_o_c/$d_o_c_path/$v$prerel/$name-$v$prerel.tar.bz2"
-    test $submitreq -ne 0 && echo "sleep 10; osc submitreq $prj"
+    test $submitreq -ne 0 && echo "sleep 10; $osc submitreq $prj"
     popd
   done
 done

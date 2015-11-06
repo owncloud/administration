@@ -108,15 +108,20 @@ sub doBuild( $$ ) {
         print "  >> Removing old source file $remFile\n";
         if( -e $remFile ) {
   	  my @oscr = ("remove", $remFile);
-	  doOSC( @oscr );
+	  doOSC( @oscr ) or return 0;
       }
     }
   }
 
   if (1) {	# $do_add) {      
-    print(" >> Adding tarball $tarFileName\n");
-    my @osca = ("add", $tarFileName);
-    doOSC( @osca );
+    print(" >> Adding tarball $tarFileName ...\n");
+    if ( -f $tarFileName)
+      {
+        rename $tarFileName, "$tarFileName.away";
+        doOSC( "del", $tarFileName);	 # make readding the same file not an error.
+        rename "$tarFileName.away", $tarFileName;
+      }
+    doOSC( "add", $tarFileName) or return 0;
   }
 
 
@@ -170,7 +175,7 @@ sub doBuild( $$ ) {
 
   my @builds = split( /\s*,\s*/, $b );
 
-  my $re = 1;
+  my $re = 1;	# 1 ok. 0 error
 
   my $changelog = "  * Update to nightly version $debversion";
   addDebChangelog( $packName, $changelog, $debversion );
@@ -198,7 +203,7 @@ sub doBuild( $$ ) {
   if( $re && $opt_p) {
     my @osc = ( "commit", "-m", "Update by Mr. Jenkins nightly build.", "--noservice" );
     print("DOING the push to OBS\n");
-    doOSC( @osc );
+    doOSC( @osc ) or return 0;
   }
 
   return $re;

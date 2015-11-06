@@ -1,0 +1,9 @@
+[Desktop Entry]
+# Caution: The contents of this file is mostly(?) overwritten by the
+# suse_update_desktop_file macro.
+Categories=Utility
+Type=Application
+Exec=[% APPLICATION_EXECUTABLE %]
+Name=[% desktopdescription %]
+GenericName=Folder Sync
+Icon=[% APPLICATION_EXECUTABLE %]
