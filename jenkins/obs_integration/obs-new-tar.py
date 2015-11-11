@@ -17,13 +17,14 @@
 # Version 1.4: updating Source0: in the Specfiles.
 # Version 1.5: allow final commits into testing. just remind of submitrequests then.
 #              pamper slow source services with a sleep(10)
+# Version 1.6: Advertise OSCPARAM for ocoscrc switching for rotor setup.
 
 
 import sys, time, argparse, subprocess, os, re
 
 argv0 = 'obs_integration/obs-new-tar.py'
 verbose=1
-ap=argparse.ArgumentParser(description='obs package updater, run from a checked out working copy. Usually called from internal/update_all_tars.sh')
+ap=argparse.ArgumentParser(description='obs package updater, run from a checked out working copy. Usually called from internal/update_all_tars.sh . Use environment variable OSCPARAM to change osc configuration.')
 ap.add_argument('url', type=str, help="tar ball (file or) url to put into this package")
 ap.add_argument('-c', '--commit', '--checkin', action='count', help="call 'osc ci' after updating the working copy; use -c -c to skip editing the commit message")
 ap.add_argument('-S', '--submitreq', '--sr', metavar='TARGETPRJ', help="call 'osc ci; osc submitreq TARGETPRJ' after updating the working copy")

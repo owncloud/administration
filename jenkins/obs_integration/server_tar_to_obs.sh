@@ -17,6 +17,9 @@
 # SUFFIX_REPO: Repository suffix, usually testing, but can be devel 
 # TAR_D_O_O_URL: Optional, defaults to http://download.owncloud.org/\$d_o_o_path
 #
+
+# 2015-11-11, jw@owncloud: patching to use .ocoscrc for ee
+
 prerel="${PREREL:-}"
 username="${USERNAME:-jenkins@owncloud.com}"
 
@@ -163,6 +166,8 @@ for v in $VERSIONS; do
     test -n "$manual" && wget -nv https://doc.owncloud.org/server/$manual_sub/$manual -O $manual
 
     # download the fil
+    echo   OSCPARAM="$s2_OSCPARAM"
+    export OSCPARAM="$s2_OSCPARAM"
     eval "$do_d_o_c/$d_o_c_path/$v$prerel/$name-$v$prerel.tar.bz2"
     test $submitreq -ne 0 && echo "sleep 10; $osc submitreq $prj"
     popd
