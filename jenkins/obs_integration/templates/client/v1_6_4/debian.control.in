@@ -24,8 +24,8 @@ Architecture: all
 Section: devel
 Depends: [% themename_deb %]-client (= ${binary:Version}), ${misc:Depends}, lib[% themename_deb %]sync0
 Breaks: [% themename_deb %]-client (<= 1.5.0)
-Description: Internationalisation files for [% displayname %]
- Internationalisation files for [% displayname %].
+Description: Internationalization files for [% displayname %]
+ Internationalization files for [% displayname %].
  .
  This package contains the translation packages.
 
