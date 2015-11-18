@@ -84,7 +84,7 @@ Patch1:         autostart_use_wrapper.diff
 %define _prefix /opt/qt-4.8
 # cernbox/CentOS6 produces /opt/etc/ownCloud/cernbox/ if CMAKE_INSTALL_SYSCONFDIR=/opt/etc/ownCloud
 # Must be all in one line:
-%define cmake_args -DCMAKE_INCLUDE_PATH=%{_prefix}/include -DCMAKE_LIBRARY_PATH=%{_prefix}/%{_lib} -DNEON_INCLUDE_DIRS=/opt/neon-0.30.0/include/ -DNEON_LIBRARIES=/opt/neon-0.30.0/%{_lib}/libneon.so.27 -DSYSCONF_INSTALL_DIR=/opt/etc -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE
+%define cmake_args -DCMAKE_INCLUDE_PATH=%{_prefix}/include -DCMAKE_LIBRARY_PATH=%{_prefix}/%{_lib} -DSYSCONF_INSTALL_DIR=/opt/etc -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE
 %else
 %define opt_hack 0
 %define qtprefix %{nil}
@@ -96,15 +96,9 @@ Patch1:         autostart_use_wrapper.diff
 
 # prepare stuff for qt5
 # If Qt5 is available, we use it. Also, if the Qt-Version is 5.4 or higher
-# no neon is needed any more!
 %define use_qt5 0
-%define require_neon 1
 %if 0%{?suse_version} > 1310 || 0%{?fedora_version} > 20
   %define use_qt5 1
-%if 0%{?suse_version} > 1320 || 0%{?fedora_version} > 21
-  # Qt version is smaller 5.4 that means we still need neon
-  %define require_neon 0
-%endif
 %endif
 # Check for SLE12 -> it does not have qt5 obviously.
 %if 0%{?suse_version}==1315
@@ -172,21 +166,14 @@ BuildRequires:  %{qtprefix}libQtWebKit4
 
 # SUSE specific stuff
 %if 0%{?suse_version}
-%if %require_neon
-BuildRequires:  libneon-devel
-%endif
-
 BuildRequires:  update-desktop-files
 BuildRequires:  libopenssl-devel
 %endif
 
 # The opt-hack to use the packages installed in /opt on CentOS
 %if %opt_hack
-BuildRequires:  oc-neon-devel
+
 %else
-%if %require_neon
-BuildRequires:  neon-devel
-%endif
 %if 0%{?suse_version} || 0%{?fedora_version} || 0%{?rhel_version} > 600 || 0%{?centos_version} > 600
 # sphinx at centos6 just fails
 %define have_doc 1
@@ -223,7 +210,6 @@ Requires:       %{qtprefix}libQtWebKit4
 # libqt4-sql is implicitly pulled by libqt4-sql-sqlite
 Requires:       %{qtprefix}libqt4-sql
 Requires:       %{qtprefix}libqt4-sql-sqlite
-Requires:       oc-neon
 %endif
 %if 0%{?fedora_version} > 20 || 0%{?centos_version} > 700 || 0%{?suse_version} || 0%{?rhel_version} > 700
 # Fedora-19 and -20, CentOS-6, CentOS-7, RHEL_6,7 don't have Suggests.
@@ -332,8 +318,6 @@ echo fedora_version 0%{?fedora_version}
 echo suse_version   0%{?suse_version}
 
 %if %opt_hack
-export PKG_CONFIG_PATH=/opt/neon-0.30.0/%{_lib}/pkgconfig
-export PATH=/opt/neon-0.30.0/bin:$PATH
 %endif
 export LD_LIBRARY_PATH=%{_prefix}/%{_lib}
 export PATH=%{_prefix}/bin:$PATH
@@ -495,10 +479,6 @@ fi
 %files -n lib[% shortname %]sync-devel
 %defattr(-,root,root,-)
 %{_libdir}/lib[% APPLICATION_EXECUTABLE %]sync.so
-%if %require_neon
-%{_libdir}/libhttpbf.a
-%{_includedir}/httpbf.h
-%endif
 %{_libdir}/[% APPLICATION_EXECUTABLE %]/libocsync.so
 %{_includedir}/[% APPLICATION_EXECUTABLE %]sync/
 

@@ -2,13 +2,13 @@ Source: [% shortname %]-client
 Section: devel
 Priority: optional
 Maintainer: [% maintainer_person %]
-Build-Depends: debhelper (>= 9), cmake, libqt4-dev (>= 4.7), libqtwebkit-dev (>= 2.2.0), qtkeychain-dev, libneon27-dev, libsqlite3-dev, python-sphinx | python3-sphinx
+Build-Depends: debhelper (>= 9), cmake, libqt4-dev (>= 4.7), libqtwebkit-dev (>= 2.2.0), qtkeychain-dev, libsqlite3-dev, python-sphinx | python3-sphinx
 Standards-Version: 3.9.6
 
 Package: [% shortname %]-client
 Architecture: any
 Multi-Arch: same
-Depends: ${misc:Depends}, ${shlibs:Depends}, lib[% shortname %]sync0 (= ${binary:Version}), [% shortname %]-client-l10n, libqt4-sql-sqlite
+Depends: ${misc:Depends}, ${shlibs:Depends}, lib[% shortname %]sync0 (= ${binary:Version}), libqt4-sql-sqlite, [% shortname %]-client-l10n
 Description: [% pkgdescription_debian %]
 Package: [% shortname %]-client-doc
 Architecture: all
