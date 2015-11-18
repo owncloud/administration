@@ -45,6 +45,10 @@ Name:           [% shortname %]-client
 %define is_owncloud_client 0
 %endif
 
+# Use translations from an external tarball in the package, or build them
+# using the Qt tools? For distros where we do not have the tools, disable.
+%define ext_translations 0
+
 %if 0%{?centos_version} == 600 || 0%{?rhel_version} == 600 || 0%{?fedora_version} || "%{prerelease}" == ""
 # For beta and rc versions we use the ~ notation, as documented in
 # http://en.opensuse.org/openSUSE:Package_naming_guidelines
@@ -73,7 +77,7 @@ Source2:        [% APPLICATION_EXECUTABLE %]cmd.sh
 Patch1:         autostart_use_wrapper.diff
 %endif
 
-%if (0%{?rhel_version} && 0%{?rhel_version}<700) || (0%{?centos_version} && 0%{?centos_version}<700) || 0%{?suse_version} == 1110
+%if (0%{?rhel_version}<700) || 0%{?centos_version} || 0%{?suse_version} == 1110
 %if 0%{?suse_version} == 1110
 # SLES 11 calls make_install makeinstall
 %define make_install %{makeinstall}
@@ -81,10 +85,13 @@ Patch1:         autostart_use_wrapper.diff
 # We need a more recent, prefixed Qt for SLE11
 %define opt_hack 1
 %define qtprefix opt-
-%define _prefix /opt/qt-4.8
+%define _prefix /opt/qt-5.4
 # cernbox/CentOS6 produces /opt/etc/ownCloud/cernbox/ if CMAKE_INSTALL_SYSCONFDIR=/opt/etc/ownCloud
 # Must be all in one line:
 %define cmake_args -DCMAKE_INCLUDE_PATH=%{_prefix}/include -DCMAKE_LIBRARY_PATH=%{_prefix}/%{_lib} -DSYSCONF_INSTALL_DIR=/opt/etc -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE
+
+# external translations because we do not have the Linguist tools
+%define ext_translations 1
 %else
 %define opt_hack 0
 %define qtprefix %{nil}
@@ -97,7 +104,7 @@ Patch1:         autostart_use_wrapper.diff
 # prepare stuff for qt5
 # If Qt5 is available, we use it. Also, if the Qt-Version is 5.4 or higher
 %define use_qt5 0
-%if 0%{?suse_version} > 1310 || 0%{?fedora_version} > 20
+%if 0%{?suse_version} > 1310 || 0%{?fedora_version} > 20 || 0%{?centos_version}
   %define use_qt5 1
 %endif
 # Check for SLE12 -> it does not have qt5 obviously.
@@ -110,7 +117,7 @@ Patch1:         autostart_use_wrapper.diff
 BuildRequires:  cmake >= 2.8.11
 BuildRequires:  gcc gcc-c++
 %if %use_qt5
-BuildRequires:  libqt5keychain-devel libqt5keychain0
+BuildRequires:  %{qtprefix}libqt5keychain-devel %{qtprefix}libqt5keychain0
 %else
 BuildRequires:  %{qtprefix}libqtkeychain-devel
 %endif
@@ -121,16 +128,11 @@ BuildRequires:  %{qtprefix}libqtkeychain-devel
 
 %if %use_qt5
 
-BuildRequires:  qt5-qtbase
-BuildRequires:  qt5-qtbase-devel
-BuildRequires:  qt5-qtbase-gui
-BuildRequires:  qt5-qtwebkit-devel
-BuildRequires:  qt5-qtxmlpatterns-devel
-BuildRequires:  qt5-qttools qt5-qttools-devel
-
-# BuildRequires:  libQt5PrintSupport-devel
-# BuildRequires:  libQt5DBus-devel
-# BuildRequires:  libQt5Network-devel
+BuildRequires:  %{qtprefix}qt5-qtbase
+BuildRequires:  %{qtprefix}qt5-qtbase-devel
+BuildRequires:  %{qtprefix}qt5-qtbase-gui
+BuildRequires:  %{qtprefix}qt5-qtwebkit-devel
+# BuildRequires:  qt5-qtxmlpatterns-devel
 
 %else # no qt5
 BuildRequires:  qt4 qt4-devel >= 4.7
@@ -171,13 +173,8 @@ BuildRequires:  libopenssl-devel
 %endif
 
 # The opt-hack to use the packages installed in /opt on CentOS
-%if %opt_hack
-
-%else
 %if 0%{?suse_version} || 0%{?fedora_version} || 0%{?rhel_version} > 600 || 0%{?centos_version} > 600
-# sphinx at centos6 just fails
 %define have_doc 1
-%endif
 %endif
 
 # no documents on SLE12
@@ -357,21 +354,24 @@ pushd build
 
 if [ %{have_doc} != 0 ];
 then
-  mkdir -p ${RPM_BUILD_ROOT}%{_docdir}/%{name}
-  mv ${RPM_BUILD_ROOT}/usr/share/doc/client/* ${RPM_BUILD_ROOT}%{_docdir}/%{name}
-  rmdir ${RPM_BUILD_ROOT}/usr/share/doc/client
-  rm ${RPM_BUILD_ROOT}%{_docdir}/%{name}/html/unthemed/.buildinfo
-  mv ${RPM_BUILD_ROOT}%{_docdir}/%{name}/html/unthemed/* ${RPM_BUILD_ROOT}%{_docdir}/%{name}/html/
-  rmdir ${RPM_BUILD_ROOT}%{_docdir}/%{name}/html/unthemed
+  # the use of explicit /usr/share is intended, as the _prefix is set to a
+  # different path in case it is built to /opt. Still, docs should go to
+  # /usr/share/doc
+  mkdir -p ${RPM_BUILD_ROOT}/usr/share/doc/%{name}
+  rm ${RPM_BUILD_ROOT}%{_docdir}/client/html/unthemed/.buildinfo
+  mkdir -p ${RPM_BUILD_ROOT}/usr/share/doc/%{name}/html/
+  mv ${RPM_BUILD_ROOT}%{_docdir}/client/html/unthemed/* ${RPM_BUILD_ROOT}/usr/share/doc/%{name}/html/
+  rmdir ${RPM_BUILD_ROOT}%{_docdir}/client/html/unthemed
 fi
 popd
 
 if [ -d ${RPM_BUILD_ROOT}%{_mandir}/man1 ]; then
 %if ! %{is_owncloud_client}
-  mv ${RPM_BUILD_ROOT}%{_mandir}/man1/{owncloud.1,[% APPLICATION_EXECUTABLE %].1}
-  mv ${RPM_BUILD_ROOT}%{_mandir}/man1/{owncloudcmd.1,[% APPLICATION_EXECUTABLE %]cmd.1}
+  mkdir -p ${RPM_BUILD_ROOT}/usr/share/man/man1
+  mv ${RPM_BUILD_ROOT}%{_mandir}/man1/owncloud.1 $RPM_BUILD_ROOT/usr/share/man/man1/testpilotcloud.1
+  mv ${RPM_BUILD_ROOT}%{_mandir}/man1/owncloudcmd.1 $RPM_BUILD_ROOT/usr/share/man/man1/testpilotcloudcmd.1
 %endif
-  gzip ${RPM_BUILD_ROOT}%{_mandir}/man1/*.1
+  gzip ${RPM_BUILD_ROOT}/usr/share/man1/*.1
 fi
 
 %define extdir ${RPM_BUILD_ROOT}%{_datadir}/nautilus-python/extensions
@@ -388,6 +388,17 @@ mv $RPM_BUILD_ROOT%{_datadir}/icons/hicolor/* $RPM_BUILD_ROOT/usr/share/icons/hi
 mkdir -p $RPM_BUILD_ROOT/usr/bin
 install -m 755 %{SOURCE1} $RPM_BUILD_ROOT/usr/bin/[% APPLICATION_EXECUTABLE %]
 install -m 755 %{SOURCE2} $RPM_BUILD_ROOT/usr/bin/[% APPLICATION_EXECUTABLE %]cmd
+
+# move the natuilus extension to the /usr/share path
+mkdir -p ${RPM_BUILD_ROOT}/usr/share/nautilus-python/extensions
+mv %{extdir}/* ${RPM_BUILD_ROOT}/usr/share/nautilus-python/extensions
+rmdir ${RPM_BUILD_ROOT}/%{_datadir}/nautilus-python/extensions
+%endif
+
+# have a translation pack packaged aside?
+%if %{?ext_translations}
+mkdir -p $RPM_BUILD_ROOT/%{_datadir}/testpilotcloud/i18n
+tar xzf %{SOURCE3} -C ${RPM_BUILD_ROOT}/%{_datadir}/testpilotcloud/i18n
 %endif
 
 %if %{?suse_version:1}0
@@ -438,7 +449,7 @@ fi
 %{_datadir}/applications/[% APPLICATION_EXECUTABLE %].desktop
 %{_datadir}/icons/hicolor
 %if 0%{have_doc}
-%{_mandir}/man1/[% APPLICATION_EXECUTABLE %]*
+/usr/share/man/man1/[% APPLICATION_EXECUTABLE %]*
 %endif
 
 %if 0%{?suse_version} == 1110
@@ -456,14 +467,13 @@ fi
 %dir /opt/etc
 %else
 %config /etc/[% shortname_etc %]
-%dir /etc
 %endif
 
 %files -n %{name}-doc
 %defattr(-,root,root,-)
 %doc README.md COPYING
 %if 0%{have_doc}
-%doc %{_docdir}/%{name}
+%doc /usr/share/doc/%{name}
 %endif
 
 %files -n %{name}-l10n
@@ -486,7 +496,6 @@ fi
 %defattr(-,root,root,-)
 # Fedora also has *.pyc and *.pyo files here.
 %{_datadir}/nautilus-python/extensions/syncstate.py*
-%dir %{_datadir}/nautilus-python/extensions
-%dir %{_datadir}/nautilus-python
+/usr/share/nautilus-python/extensions/*
 
 %changelog
