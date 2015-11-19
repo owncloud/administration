@@ -40,7 +40,7 @@ Depends: ${misc:Depends}, ${shlibs:Depends}, libqtkeychain0 (>= 0.3)
 Pre-Depends: ${misc:Pre-Depends}
 Breaks: libocsync0
 Replaces: libocsync0
-Description: ownCloud sync library.
+Description: the ownCloud sync library
  [% displayname %] uses this as a sync engine implementation.
  .
  This package contains the library.
@@ -49,7 +49,7 @@ Package: lib[% themename_deb %]sync-dev
 Architecture: any
 Section: devel
 Depends: lib[% themename_deb %]sync0, ${misc:Depends}
-Description: [% displayname %] sync library development files.
+Description: development files for the [% displayname %] sync library
  [% displayname %] uses this as a sync engine implementation.
  .
  This package contains the development files.
@@ -58,7 +58,7 @@ Package: [% themename_deb %]-client-nautilus
 Architecture: all
 Section: devel
 Depends: [% themename_deb %]-client (= ${binary:Version}), ${misc:Depends}, lib[% themename_deb %]sync0, python-nautilus, nautilus
-Description: [% displayname %] nautilus plugin 
+Description: nautilus plugin for [% displayname %]
  This package contains a nautilus plugin to display overlay icons. 
  .
  This is a nice gui feature.
