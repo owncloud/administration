@@ -1,0 +1,18 @@
+---
+- hosts: performance
+  remote_user: root
+
+  tasks:
+  - name: setup authorized keys
+    authorized_key: user=root key=https://github.com/{{ item.name }}.keys
+    with_items:
+      - { name: 'MorrisJobke' }
+
+  - name: update packages cache
+    apt: update_cache=yes cache_valid_time=3600
+
+  - name: install packages
+    apt: name={{ item.name }}
+    with_items:
+      - { name: 'git' }
+      - { name: 'python' }
