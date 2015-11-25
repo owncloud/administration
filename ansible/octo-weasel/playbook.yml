@@ -16,3 +16,71 @@
     with_items:
       - { name: 'git' }
       - { name: 'python' }
+      - { name: 'sudo' }
+      - { name: 'apache2' }
+      - { name: 'php5' }
+      - { name: 'php5-curl' }
+      - { name: 'php5-gd' }
+      - { name: 'php5-intl' }
+      - { name: 'php5-json' }
+      - { name: 'php5-mcrypt' }
+      - { name: 'php5-sqlite' }
+      - { name: 'libapache2-mod-php5' }
+    notify:
+      - restart apache
+
+
+  - name: enable apache modules
+    apache2_module: name={{ item.name }}
+    with_items:
+      - { name: 'rewrite' }
+      - { name: 'headers' }
+      - { name: 'env' }
+      - { name: 'dir' }
+      - { name: 'mime' }
+    notify:
+      - restart apache
+
+  - name: write apache's owncloud.conf
+    template: src=owncloud.conf.j2 dest=/etc/apache2/sites-available/owncloud.conf
+
+  - name: disable default site
+    command: a2dissite 000-default
+    args:
+      removes: /etc/apache2/sites-enabled/000-default.conf
+    notify:
+      - restart apache
+
+  - name: enable owncloud site
+    command: a2ensite owncloud
+    args:
+      creates: /etc/apache2/sites-enabled/owncloud.conf
+    notify:
+      - restart apache
+
+  - name: remove old ownCloud directory
+    file: path=/var/www/owncloud state=absent
+
+  - name: clone git repo
+    git: repo=https://github.com/owncloud/core.git dest=/var/www/owncloud track_submodules=yes depth=1
+
+  - name: write trusted_domains.config.php
+    template: src=trusted_domains.config.php.j2 dest=/var/www/owncloud/config/trusted_domains.config.php
+
+  - name: ownCloud config dir
+    file: path=/var/www/owncloud/config state=directory owner=www-data group=www-data recurse=yes
+
+  - name: ownCloud apps dir
+    file: path=/var/www/owncloud/apps state=directory owner=www-data group=www-data
+
+  - name: ownCloud data dir
+    file: path=/var/www/owncloud/data state=directory owner=www-data group=www-data mode="u=rwx,g=rwx,o="
+
+  - name: install ownCloud
+    command: sudo -u www-data php occ maintenance:install --admin-pass=admin
+    args:
+      chdir: /var/www/owncloud
+
+  handlers:
+    - name: restart apache
+      service: name=apache2 state=restarted

@@ -1,0 +1,14 @@
+<VirtualHost *:80>
+
+  ServerAdmin webmaster@example.org
+  DocumentRoot /var/www/owncloud
+
+  ErrorLog ${APACHE_LOG_DIR}/error.log
+  CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+  <Directory /var/www/owncloud/>
+    Options +FollowSymlinks
+    AllowOverride All
+  </Directory>
+
+</VirtualHost>
