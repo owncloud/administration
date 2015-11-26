@@ -47,7 +47,6 @@ Name:           [% shortname %]-client
 
 # Use translations from an external tarball in the package, or build them
 # using the Qt tools? For distros where we do not have the tools, disable.
-%define ext_translations 0
 
 %if 0%{?centos_version} == 600 || 0%{?rhel_version} == 600 || 0%{?fedora_version} || "%{prerelease}" == ""
 # For beta and rc versions we use the ~ notation, as documented in
@@ -89,9 +88,6 @@ Patch1:         autostart_use_wrapper.diff
 # cernbox/CentOS6 produces /opt/etc/ownCloud/cernbox/ if CMAKE_INSTALL_SYSCONFDIR=/opt/etc/ownCloud
 # Must be all in one line:
 %define cmake_args -DCMAKE_INCLUDE_PATH=%{_prefix}/include -DCMAKE_LIBRARY_PATH=%{_prefix}/%{_lib} -DSYSCONF_INSTALL_DIR=/opt/etc -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE
-
-# external translations because we do not have the Linguist tools
-%define ext_translations 1
 %else
 %define opt_hack 0
 %define qtprefix %{nil}
@@ -127,12 +123,11 @@ BuildRequires:  %{qtprefix}libqtkeychain-devel
 %if 0%{?fedora_version} || 0%{?centos_version} == 700 || 0%{?rhel_version} == 700
 
 %if %use_qt5
-
+BuildRequires:  %{qtprefix}qt5-qttools-devel
 BuildRequires:  %{qtprefix}qt5-qtbase
 BuildRequires:  %{qtprefix}qt5-qtbase-devel
 BuildRequires:  %{qtprefix}qt5-qtbase-gui
 BuildRequires:  %{qtprefix}qt5-qtwebkit-devel
-# BuildRequires:  qt5-qtxmlpatterns-devel
 
 %else # no qt5
 BuildRequires:  qt4 qt4-devel >= 4.7
@@ -397,12 +392,6 @@ install -m 755 %{SOURCE2} $RPM_BUILD_ROOT/usr/bin/[% APPLICATION_EXECUTABLE %]cm
 mkdir -p ${RPM_BUILD_ROOT}/usr/share/nautilus-python/extensions
 mv %{extdir}/* ${RPM_BUILD_ROOT}/usr/share/nautilus-python/extensions
 rmdir ${RPM_BUILD_ROOT}/%{_datadir}/nautilus-python/extensions
-%endif
-
-# have a translation pack packaged aside?
-%if %{?ext_translations}
-mkdir -p $RPM_BUILD_ROOT/%{_datadir}/testpilotcloud/i18n
-tar xzf %{SOURCE3} -C ${RPM_BUILD_ROOT}/%{_datadir}/testpilotcloud/i18n
 %endif
 
 %if %{?suse_version:1}0
