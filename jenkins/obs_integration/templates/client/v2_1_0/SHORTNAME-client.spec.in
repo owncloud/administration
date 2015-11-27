@@ -88,10 +88,10 @@ Patch1:         autostart_use_wrapper.diff
 # We need a more recent, prefixed Qt for SLE11
 %define opt_hack 1
 %define qtprefix opt-
-%define _prefix /opt/qt-5.4
-# cernbox/CentOS6 produces /opt/etc/ownCloud/cernbox/ if CMAKE_INSTALL_SYSCONFDIR=/opt/etc/ownCloud
+%define optdir /opt/qt-5.4
+
 # Must be all in one line:
-%define cmake_args -DCMAKE_INCLUDE_PATH=%{_prefix}/include -DCMAKE_LIBRARY_PATH=%{_prefix}/%{_lib} -DSYSCONF_INSTALL_DIR=/opt/etc -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE
+%define cmake_args -DCMAKE_INCLUDE_PATH=%{_prefix}/include -DCMAKE_LIBRARY_PATH=%{_prefix}/%{_lib} -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE
 %else
 %define opt_hack 0
 %define qtprefix %{nil}
@@ -319,8 +319,8 @@ echo suse_version   0%{?suse_version}
 
 %if %opt_hack
 %endif
-export LD_LIBRARY_PATH=%{_prefix}/%{_lib}
-export PATH=%{_prefix}/bin:$PATH
+export LD_LIBRARY_PATH=%{optdir}/%{_lib}
+export PATH=%{optdir}/bin:$PATH
 
 mkdir build
 pushd build
@@ -337,6 +337,10 @@ cmake .. -DWITH_DOC=TRUE \
 %if ! %{is_owncloud_client}
   -DOEM_THEME_DIR=$PWD/../[% themename %]/[% oem_sub_dir %] \
 %endif
+%if %{opt_hack}
+  -DQTKEYCHAIN_INCLUDE_DIR=%{optdir}/include/qt5keychain \
+  -DQTKEYCHAIN_LIBRARY=%{optdir}/%{_lib}/libqt5keychain.so \
+%endif 
   %cmake_args
 
 # documentation here?
@@ -357,24 +361,22 @@ pushd build
 
 if [ %{have_doc} != 0 ];
 then
-  # the use of explicit /usr/share is intended, as the _prefix is set to a
-  # different path in case it is built to /opt. Still, docs should go to
-  # /usr/share/doc
-  mkdir -p ${RPM_BUILD_ROOT}/usr/share/doc/%{name}
-  rm ${RPM_BUILD_ROOT}/usr/share/doc/client/html/unthemed/.buildinfo
-  mkdir -p ${RPM_BUILD_ROOT}/usr/share/doc/%{name}/html/
-  mv ${RPM_BUILD_ROOT}/usr/share/doc/client/html/unthemed/* ${RPM_BUILD_ROOT}/usr/share/doc/%{name}/html/
-  rmdir ${RPM_BUILD_ROOT}/usr/share/doc/client/html/unthemed
+  mkdir -p ${RPM_BUILD_ROOT}%{_docdir}/%{name}
+  mv ${RPM_BUILD_ROOT}/usr/share/doc/client/* ${RPM_BUILD_ROOT}%{_docdir}/%{name}
+  rmdir ${RPM_BUILD_ROOT}/usr/share/doc/client
+  rm ${RPM_BUILD_ROOT}%{_docdir}/%{name}/html/unthemed/.buildinfo
+  mv ${RPM_BUILD_ROOT}%{_docdir}/%{name}/html/unthemed/* ${RPM_BUILD_ROOT}%{_docdir}/%{name}/html/
+  rmdir ${RPM_BUILD_ROOT}%{_docdir}/%{name}/html/unthemed
 fi
 popd
 
 if [ -d ${RPM_BUILD_ROOT}%{_mandir}/man1 ]; then
 %if ! %{is_owncloud_client}
-  mkdir -p ${RPM_BUILD_ROOT}/usr/share/man/man1
-  mv ${RPM_BUILD_ROOT}%{_mandir}/man1/owncloud.1 $RPM_BUILD_ROOT/usr/share/man/man1/testpilotcloud.1
-  mv ${RPM_BUILD_ROOT}%{_mandir}/man1/owncloudcmd.1 $RPM_BUILD_ROOT/usr/share/man/man1/testpilotcloudcmd.1
+  mkdir -p ${RPM_BUILD_ROOT}%{_mandir}man1
+  mv ${RPM_BUILD_ROOT}%{_mandir}/man1/{owncloud.1,[% APPLICATION_EXECUTABLE %].1}
+  mv ${RPM_BUILD_ROOT}%{_mandir}/man1/{owncloudcmd.1,[% APPLICATION_EXECUTABLE %]cmd.1}
 %endif
-  gzip ${RPM_BUILD_ROOT}/usr/share/man/man1/*.1
+  gzip ${RPM_BUILD_ROOT}%{_mandir}/man1/*.1
 fi
 
 %define extdir ${RPM_BUILD_ROOT}%{_datadir}/nautilus-python/extensions
@@ -383,12 +385,9 @@ test -f %{extdir}/ownCloud.pyo && mv %{extdir}/ownCloud.pyo %{extdir}/[% APPLICA
 test -f %{extdir}/ownCloud.pyc && mv %{extdir}/ownCloud.pyc %{extdir}/[% APPLICATION_EXECUTABLE %].pyc || true
 
 %if %opt_hack
-mkdir -p $RPM_BUILD_ROOT/usr/share/applications/
-cat $RPM_BUILD_ROOT%{_datadir}/applications/[% APPLICATION_EXECUTABLE %].desktop |sed "s,Exec=.*,Exec=/usr/bin/[% APPLICATION_EXECUTABLE %]," > $RPM_BUILD_ROOT/usr/share/applications/[% APPLICATION_EXECUTABLE %].desktop
-# rm $RPM_BUILD_ROOT%{_datadir}/applications/[% APPLICATION_EXECUTABLE %].desktop
-mkdir -p $RPM_BUILD_ROOT/usr/share/icons/hicolor
-mv $RPM_BUILD_ROOT%{_datadir}/icons/hicolor/* $RPM_BUILD_ROOT/usr/share/icons/hicolor
-mkdir -p $RPM_BUILD_ROOT/usr/bin
+install -d ${RPM_BUILD_ROOT}/%{optdir}/bin
+mv ${RPM_BUILD_ROOT}/%{_bindir}/[% APPLICATION_EXECUTABLE %]* ${RPM_BUILD_ROOT}/%{optdir}/bin/
+
 install -m 755 %{SOURCE1} $RPM_BUILD_ROOT/usr/bin/[% APPLICATION_EXECUTABLE %]
 install -m 755 %{SOURCE2} $RPM_BUILD_ROOT/usr/bin/[% APPLICATION_EXECUTABLE %]cmd
 
@@ -443,16 +442,16 @@ fi
 %defattr(-,root,root,-)
 %{_bindir}/[% APPLICATION_EXECUTABLE %]
 %{_bindir}/[% APPLICATION_EXECUTABLE %]cmd
+
+%if %{opt_hack}
+%{optdir}/bin/[% APPLICATION_EXECUTABLE %]
+%{optdir}/bin/[% APPLICATION_EXECUTABLE %]cmd
+%endif
+
 %{_datadir}/applications/[% APPLICATION_EXECUTABLE %].desktop
 %{_datadir}/icons/hicolor
 %if 0%{have_doc}
-/usr/share/man/man1/[% APPLICATION_EXECUTABLE %]*
-%endif
-
-%if 0%{?suse_version} == 1110
-# needed for SLES11 SP3. Not sure why all others can do without...
-%{_prefix}/share/*
-%dir /opt/etc
+%{_mandir}/man1/[% APPLICATION_EXECUTABLE %]*
 %endif
 
 %if %opt_hack
@@ -460,17 +459,14 @@ fi
 /usr/share/applications/[% APPLICATION_EXECUTABLE %].desktop
 /usr/bin/[% APPLICATION_EXECUTABLE %]
 /usr/bin/[% APPLICATION_EXECUTABLE %]cmd
-%config /opt/etc/[% shortname_etc %]
-%dir /opt/etc
-%else
-%config /etc/[% shortname_etc %]
 %endif
+%config /opt/etc/[% shortname_etc %]
 
 %files -n %{name}-doc
 %defattr(-,root,root,-)
 %doc README.md COPYING
 %if 0%{have_doc}
-%doc /usr/share/doc/%{name}
+%doc %{_docdir}/%{name}
 %endif
 
 %files -n %{name}-l10n
@@ -492,8 +488,8 @@ fi
 %files -n %{name}-nautilus
 %defattr(-,root,root,-)
 # Fedora also has *.pyc and *.pyo files here.
-/usr/share/nautilus-python/extensions/syncstate.py*
-%dir /usr/share/nautilus-python
-%dir /usr/share/nautilus-python/extensions/
+%{_datadir}/nautilus-python/extensions/syncstate.py*
+%dir %{_datadir}/nautilus-python
+%dir %{_datadir}/nautilus-python/extensions/
 
 %changelog
