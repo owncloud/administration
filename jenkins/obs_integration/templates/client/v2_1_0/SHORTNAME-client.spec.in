@@ -460,7 +460,7 @@ fi
 /usr/bin/[% APPLICATION_EXECUTABLE %]
 /usr/bin/[% APPLICATION_EXECUTABLE %]cmd
 %endif
-%config /opt/etc/[% shortname_etc %]
+%config /etc/[% shortname_etc %]
 
 %files -n %{name}-doc
 %defattr(-,root,root,-)
