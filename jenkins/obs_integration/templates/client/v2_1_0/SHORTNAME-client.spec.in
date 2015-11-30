@@ -384,11 +384,6 @@ mv ${RPM_BUILD_ROOT}/%{_bindir}/[% APPLICATION_EXECUTABLE %]* ${RPM_BUILD_ROOT}/
 
 install -m 755 %{SOURCE1} $RPM_BUILD_ROOT/usr/bin/[% APPLICATION_EXECUTABLE %]
 install -m 755 %{SOURCE2} $RPM_BUILD_ROOT/usr/bin/[% APPLICATION_EXECUTABLE %]cmd
-
-# move the natuilus extension to the /usr/share path
-mkdir -p ${RPM_BUILD_ROOT}/usr/share/nautilus-python/extensions
-mv %{extdir}/* ${RPM_BUILD_ROOT}/usr/share/nautilus-python/extensions
-rmdir ${RPM_BUILD_ROOT}/%{_datadir}/nautilus-python/extensions
 %endif
 
 %if %{?suse_version:1}0
