@@ -223,6 +223,7 @@ Obsoletes: libocsync-plugin-[% APPLICATION_EXECUTABLE %]
 Obsoletes: libocsync-devel-doc
 Obsoletes: libocsync-doc
 Obsoletes: [% APPLICATION_EXECUTABLE %]-client
+Obsoletes: opt-[% APPLICATION_EXECUTABLE %]-client
 
 # Obsolete the experimental Qt5 packages if this is the unbranded client.
 %if %{is_owncloud_client}
@@ -240,6 +241,7 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 Summary:        Documentation for [% displayname %]
 Group:          Development/Libraries/C and C++
 Requires: %{name}%{?_isa} = %{version}-%{release}
+Obsoletes:      opt-%{name}-doc
 
 %description -n %{name}-doc
 Documentation about the [% displayname %] desktop application.
@@ -248,6 +250,7 @@ Documentation about the [% displayname %] desktop application.
 Summary:        Localization for [% displayname %]
 Group:          Development/Libraries/C and C++
 Requires: %{name}%{?_isa} = %{version}-%{release}
+Obsoletes:      opt-%{name}-l10n
 
 %description -n %{name}-l10n
 Localization files for the [% displayname %] desktop application.
@@ -258,6 +261,8 @@ Requires:       %{qtprefix}libqt5keychain0
 %else
 Requires:       %{qtprefix}libqtkeychain0 >= 0.3
 %endif
+Obsoletes:      opt-lib[% shortname %]sync0
+
 Summary:        The [% displayname %] sync library
 Group:          Development/Libraries/C and C++
 
@@ -268,6 +273,7 @@ The [% displayname %] sync library.
 Summary:        Development files for the [% displayname %] sync library
 Group:          Development/Libraries/C and C++
 Requires: lib[% shortname %]sync0 = %{version}
+Obsoletes:      opt-lib[% shortname %]sync-devel
 
 %description -n lib[% shortname %]sync-devel
 Development files for the [% displayname %] sync library.
@@ -282,6 +288,7 @@ Requires:       nautilus-python
 Requires:       python-nautilus
 %endif
 Requires:       %{name}%{?_isa} = %{version}-%{release}
+Obsoletes:      opt-%{name}-nautilus
 
 %description -n %{name}-nautilus
 This package provides overlay icons to visualize the sync state
