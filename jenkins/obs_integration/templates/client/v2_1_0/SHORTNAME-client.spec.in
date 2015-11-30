@@ -201,27 +201,14 @@ BuildRequires:  update-desktop-files
 
 %if %opt_hack
 Requires:       %{qtprefix}qt5-qtbase
-Requires:       %{qtprefix}qt5-gui
+Requires:       %{qtprefix}qt5-qtbase-gui
 # libQtWebKit4 is implicitly pulled by libowncloudsync0
-Requires:       %{qtprefix}qt5-qtwebKit
+Requires:       %{qtprefix}qt5-qtwebkit
 # libqt4-sql is implicitly pulled by libqt4-sql-sqlite
 %endif
 %if 0%{?fedora_version} > 20 || 0%{?centos_version} > 700 || 0%{?suse_version} || 0%{?rhel_version} > 700
 # Fedora-19 and -20, CentOS-6, CentOS-7, RHEL_6,7 don't have Suggests.
 Suggests:	%{name}-nautilus
-%endif
-
-%if 0%{?use_qt5}
-# what?
-%else
-# qt4 requires
-%if 0%{?suse_version}
-Requires: 	%{qtprefix}libqt4-sql-sqlite
-%endif
-
-%if  0%{?fedora_version}
-Requires: 	%{qtprefix}qt4-sqlite
-%endif
 %endif
 
 Requires: %{name}-l10n
@@ -267,7 +254,7 @@ Localization files for the [% displayname %] desktop application.
 
 %package -n lib[% shortname %]sync0
 %if %use_qt5
-Requires:       libqt5keychain0
+Requires:       %{qtprefix}libqt5keychain0
 %else
 Requires:       %{qtprefix}libqtkeychain0 >= 0.3
 %endif
