@@ -13,3 +13,5 @@ Package-List:
  [% shortname %]-client deb net optional
  [% shortname %]-client-doc deb doc optional
  [% shortname %]-client-l10n deb localization optional
+# https://github.com/openSUSE/obs-build/pull/147
+DEBTRANSFORM-RELEASE: 1
