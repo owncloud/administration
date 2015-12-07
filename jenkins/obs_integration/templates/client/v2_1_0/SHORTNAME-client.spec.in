@@ -75,12 +75,12 @@ Url:            [% projecturl %]
 Group:          Productivity/Networking/Other
 Source0:        [% tarball %].tar.bz2
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
-Source1:        [% APPLICATION_EXECUTABLE %].sh
-Source2:        [% APPLICATION_EXECUTABLE %]cmd.sh
 Patch1:         autostart_use_wrapper.diff
+Patch2:         fixnullptr.diff
+Patch3:         nolambda.diff
 %endif
 
-%if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
+%if 0%{?rhel_version} >= 600 || 0%{?centos_version} >= 600 || 0%{?suse_version} == 1110
 %if 0%{?suse_version} == 1110
 # SLES 11 calls make_install makeinstall
 %define make_install %{makeinstall}
@@ -88,7 +88,11 @@ Patch1:         autostart_use_wrapper.diff
 # We need a more recent, prefixed Qt for SLE11
 %define opt_hack 1
 %define qtprefix opt-
+%if 0%{?rhel_version} == 600 || 0%{?centos_version} == 600
+%define optdir /opt/qt-4.8
+%else
 %define optdir /opt/qt-5.4
+%endif
 
 # Must be all in one line:
 %define cmake_args -DCMAKE_INCLUDE_PATH=%{_prefix}/include -DCMAKE_LIBRARY_PATH=%{_prefix}/%{_lib} -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE
@@ -124,7 +128,7 @@ BuildRequires:  %{qtprefix}libqtkeychain-devel
 
 # This is for all modern Fedora and CentOS 7
 # These ship Qt in a decent version and do not need the opt-hack
-%if 0%{?fedora_version} || 0%{?centos_version} == 700 || 0%{?rhel_version} == 700
+%if 0%{?fedora_version} >= 700 || 0%{?centos_version} >= 700 || 0%{?rhel_version} == 700
 
 %if %use_qt5
 BuildRequires:  %{qtprefix}qt5-qttools-devel
@@ -299,6 +303,8 @@ in the nautilus file manager.
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 # autostart_use_wrapper.diff
 %patch1 -p1
+%patch2 -p1
+%patch3 -p1
 %endif
 
 %if 0%{?rhel_version} == 600 || 0%{?centos_version} == 600
@@ -332,9 +338,14 @@ cmake .. -DWITH_DOC=TRUE \
   -DOEM_THEME_DIR=$PWD/../[% themename %]/[% oem_sub_dir %] \
 %endif
 %if %{opt_hack}
+%if 0%{?rhel_version} == 600 || 0%{?centos_version} == 600
+  -DQTKEYCHAIN_INCLUDE_DIR=%{optdir}/include/qtkeychain \
+  -DQTKEYCHAIN_LIBRARY=%{optdir}/%{_lib}/libqtkeychain.so \
+%else
   -DQTKEYCHAIN_INCLUDE_DIR=%{optdir}/include/qt5keychain \
   -DQTKEYCHAIN_LIBRARY=%{optdir}/%{_lib}/libqt5keychain.so \
 %endif 
+%endif
   %cmake_args
 
 # documentation here?
@@ -384,6 +395,17 @@ mv ${RPM_BUILD_ROOT}/%{_bindir}/[% APPLICATION_EXECUTABLE %]* ${RPM_BUILD_ROOT}/
 
 install -m 755 %{SOURCE1} $RPM_BUILD_ROOT/usr/bin/[% APPLICATION_EXECUTABLE %]
 install -m 755 %{SOURCE2} $RPM_BUILD_ROOT/usr/bin/[% APPLICATION_EXECUTABLE %]cmd
+
+echo "#!/bin/sh" > ${RPM_BUILD_ROOT}/usr/bin/owncloud
+echo "source %{optdir}/bin/qt*-env.sh" >> ${RPM_BUILD_ROOT}/usr/bin/owncloud
+echo "exec %{optdir}/bin/owncloud \"\$@\"" >> ${RPM_BUILD_ROOT}/usr/bin/owncloud
+
+echo "#!/bin/sh" > ${RPM_BUILD_ROOT}/usr/bin/owncloudcmd
+echo "source %{optdir}/bin/qt*-env.sh" >> ${RPM_BUILD_ROOT}/usr/bin/owncloudcmd
+echo "exec %{optdir}/bin/owncloudcmd \"\$@\"" >> ${RPM_BUILD_ROOT}/usr/bin/owncloudcmd
+
+chmod 775 $RPM_BUILD_ROOT/usr/bin/owncloud $RPM_BUILD_ROOT/usr/bin/owncloudcmd
+
 %endif
 
 %if %{?suse_version:1}0
@@ -450,6 +472,7 @@ fi
 /usr/bin/[% APPLICATION_EXECUTABLE %]cmd
 %endif
 %config /etc/[% shortname_etc %]
+%dir /etc
 
 %files -n %{name}-doc
 %defattr(-,root,root,-)
