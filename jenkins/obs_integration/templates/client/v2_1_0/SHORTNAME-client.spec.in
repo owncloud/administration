@@ -108,7 +108,7 @@ Patch3:         nolambda.diff
 # prepare stuff for qt5
 # If Qt5 is available, we use it. Also, if the Qt-Version is 5.4 or higher
 %define use_qt5 0
-%if 0%{?suse_version} > 1310 || 0%{?fedora_version} > 20 || 0%{?centos_version}
+%if 0%{?suse_version} > 1310 || 0%{?fedora_version} > 20 || 0%{?rhel_version} >= 700 || 0%{?centos_version} >= 700
   %define use_qt5 1
 %endif
 # Check for SLE12 -> it does not have qt5 obviously.
