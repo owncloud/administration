@@ -128,7 +128,7 @@ BuildRequires:  %{qtprefix}libqtkeychain-devel
 
 # This is for all modern Fedora and CentOS 7
 # These ship Qt in a decent version and do not need the opt-hack
-%if 0%{?fedora_version} >= 22 || 0%{?centos_version} >= 700 || 0%{?rhel_version} == 700
+%if 0%{?fedora_version} >= 21 || 0%{?centos_version} >= 700 || 0%{?rhel_version} == 700
 
 %if %use_qt5
 BuildRequires:  %{qtprefix}qt5-qttools-devel
