@@ -393,9 +393,6 @@ test -f %{extdir}/ownCloud.pyc && mv %{extdir}/ownCloud.pyc %{extdir}/[% APPLICA
 install -d ${RPM_BUILD_ROOT}/%{optdir}/bin
 mv ${RPM_BUILD_ROOT}/%{_bindir}/[% APPLICATION_EXECUTABLE %]* ${RPM_BUILD_ROOT}/%{optdir}/bin/
 
-install -m 755 %{SOURCE1} $RPM_BUILD_ROOT/usr/bin/[% APPLICATION_EXECUTABLE %]
-install -m 755 %{SOURCE2} $RPM_BUILD_ROOT/usr/bin/[% APPLICATION_EXECUTABLE %]cmd
-
 echo "#!/bin/sh" > ${RPM_BUILD_ROOT}/usr/bin/owncloud
 echo "source %{optdir}/bin/qt*-env.sh" >> ${RPM_BUILD_ROOT}/usr/bin/owncloud
 echo "exec %{optdir}/bin/owncloud \"\$@\"" >> ${RPM_BUILD_ROOT}/usr/bin/owncloud
