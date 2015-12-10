@@ -48,7 +48,7 @@ fi
 #
 # running pre-proc step
 #
-if [[ ! -f l10n/preproc.sh ]]; then
+if [[ -f l10n/preproc.sh ]]; then
 	bash l10n/preproc.sh
 fi
 
