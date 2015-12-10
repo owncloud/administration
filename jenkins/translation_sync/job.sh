@@ -46,6 +46,13 @@ EOL
 fi
 
 #
+# running pre-proc step
+#
+if [[ ! -f l10n/preproc.sh ]]; then
+	bash l10n/preproc.sh
+fi
+
+#
 # update translations
 #
 cd l10n/ 
