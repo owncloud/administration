@@ -17,8 +17,11 @@
 # SUFFIX_REPO: Repository suffix, usually testing, but can be devel 
 # TAR_D_O_O_URL: Optional, defaults to http://download.owncloud.org/\$d_o_o_path
 #
+# ATTENTION:
+#  - keep in sync with administration-internal/update_all_tars.sh 
 
 # 2015-11-11, jw@owncloud: patching to use .ocoscrc for ee
+# 2015-12.16, jw@owncloud: no more underscore in enterprise package names.
 
 prerel="${PREREL:-}"
 username="${USERNAME:-jenkins@owncloud.com}"
