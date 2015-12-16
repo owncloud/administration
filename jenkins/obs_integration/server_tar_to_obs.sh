@@ -136,26 +136,28 @@ for v in $VERSIONS; do
     manual=""
     ;;
   7*)
-    names="owncloud_enterprise owncloud_enterprise_3rdparty owncloud_enterprise_apps owncloud_enterprise_core owncloud_enterprise_unsupported"
+    # Only one package since 7.0.12
+    # names="owncloud_enterprise owncloud_enterprise_3rdparty owncloud_enterprise_apps owncloud_enterprise_core owncloud_enterprise_unsupported"
+    names=owncloud-enterprise
     prj=ee:7.0
     manual=""
     ;;
   8.0*)
     manual="ownCloud_Server_Administration_Manual.pdf"
     manual_sub="8.0"
-    names="owncloud_enterprise"
+    names="owncloud-enterprise"
     prj=ee:8.0
     ;;
   8.1*)
     manual="ownCloud_Server_Administration_Manual.pdf"
     manual_sub="8.1"
-    names="owncloud_enterprise"
+    names="owncloud-enterprise"
     prj=ee:8.1
     ;;
   8.2*)
     manual_sub="8.2"
     manual="ownCloud_Server_Administration_Manual.pdf"
-    names="owncloud_enterprise"
+    names="owncloud-enterprise"
     prj=ee:8.2
     ;;
   esac

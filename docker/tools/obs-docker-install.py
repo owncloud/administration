@@ -79,6 +79,14 @@
 # V2.22 -- 2015-11-05, jw  format DNF added, used with Fedora_22
 #
 # FIXME: yum install returns success, if one package out of many was installed.
+#
+#
+# Dependcies for OSX:
+#  brew install python
+#  brew install libyaml
+#  pip install pyyaml
+#  pip install requests
+#
 
 from __future__ import print_function	# must appear at beginning of file.
 
