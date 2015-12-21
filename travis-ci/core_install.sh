@@ -96,7 +96,7 @@ cat > ./tests/autoconfig-oracle.php <<DELIM
   'directory' => '$DATADIR',
   'dbuser' => '$DATABASENAME',
   'dbname' => 'XE',
-  'dbhost' => 'localhost',
+  'dbhost' => '$DATABASEHOST',
   'dbpass' => 'owncloud',
   'loglevel' => 0,
 );
@@ -119,23 +119,6 @@ function execute_tests {
 	if [ "$1" == "oracle" ] ; then
 		echo "Load Oracle environment variables so that we can run 'sqlplus'."
 		. $ORACLE_HOME/bin/oracle_env.sh
-
-		echo "create the database"
-		sqlplus -s -l / as sysdba <<EOF
-			create user $DATABASENAME identified by owncloud;
-			alter user $DATABASENAME default tablespace users
-			temporary tablespace temp
-			quota unlimited on users;
-			grant create session
-			, create table
-			, create procedure
-			, create sequence
-			, create trigger
-			, create view
-			, create synonym
-			, alter session
-			to $DATABASENAME;
-			exit;
 EOF
 	fi
 
