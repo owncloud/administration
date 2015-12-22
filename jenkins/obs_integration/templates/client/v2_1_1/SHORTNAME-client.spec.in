@@ -76,8 +76,6 @@ Group:          Productivity/Networking/Other
 Source0:        [% tarball %].tar.bz2
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 Patch1:         autostart_use_wrapper.diff
-Patch2:         fixnullptr.diff
-Patch3:         nolambda.diff
 %endif
 
 %if 0%{?rhel_version} >= 600 || 0%{?centos_version} >= 600 || 0%{?suse_version} == 1110
@@ -320,8 +318,6 @@ in the nemo file manager.
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 # autostart_use_wrapper.diff
 %patch1 -p1
-%patch2 -p1
-%patch3 -p1
 %endif
 
 %if 0%{?rhel_version} == 600 || 0%{?centos_version} == 600
