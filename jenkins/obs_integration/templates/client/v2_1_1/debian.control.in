@@ -1,0 +1,62 @@
+Source: [% shortname %]-client
+Section: devel
+Priority: optional
+Maintainer: [% maintainer_person %]
+Build-Depends: debhelper (>= 9), cmake, libqt4-dev (>= 4.7), libqtwebkit-dev (>= 2.2.0), qtkeychain-dev, libssl-dev, libsqlite3-dev, python-sphinx | python3-sphinx
+Standards-Version: 3.9.6
+
+Package: [% shortname %]-client
+Architecture: any
+Multi-Arch: same
+Depends: ${misc:Depends}, ${shlibs:Depends}, lib[% shortname %]sync0 (= ${binary:Version}), libqt4-sql-sqlite, [% shortname %]-client-l10n
+Description: [% pkgdescription_debian %]
+Package: [% shortname %]-client-doc
+Architecture: all
+Section: devel
+Depends: [% shortname %]-client (= ${binary:Version}), ${misc:Depends}, lib[% shortname %]sync0
+Suggests: [% shortname %]-client-nautilus
+Description: development files for the [% displayname %] sync lib
+ Main package for [% displayname %].
+ .
+ This package contains the library development files.
+
+Package: [% shortname %]-client-l10n
+Architecture: all
+Section: devel
+Depends: [% shortname %]-client (>= ${binary:Version}), ${misc:Depends}, lib[% shortname %]sync0
+Breaks: [% shortname %]-client (<= 1.5.0)
+Description: Internationalization files for [% displayname %]
+ Internationalization for [% displayname %] desktop sync client.
+ .
+ This package contains the translation packages.
+
+Package: lib[% shortname %]sync0
+Architecture: any
+Multi-Arch: same
+Section: devel
+Depends: ${misc:Depends}, ${shlibs:Depends}, libqtkeychain0 (>= 0.3)
+Pre-Depends: ${misc:Pre-Depends}
+Breaks: libocsync0
+Replaces: libocsync0
+Description: the ownCloud sync library
+ [% displayname %] uses this as a sync engine implementation.
+ .
+ This package contains the library.
+
+Package: lib[% shortname %]sync-dev
+Architecture: any
+Section: devel
+Depends: lib[% shortname %]sync0 (= ${binary:Version}), ${misc:Depends}
+Description: development files for the [% displayname %] sync library
+ [% displayname %] uses this as a sync engine implementation.
+ .
+ This package contains the development files.
+
+Package: [% shortname %]-client-nautilus
+Architecture: all
+Section: devel
+Depends: [% shortname %]-client (= ${binary:Version}), ${misc:Depends}, lib[% shortname %]sync0, python-nautilus, nautilus
+Description: nautilus plugin for [% displayname %]
+ This package contains a nautilus plugin to display overlay icons.
+ .
+ This is a nice gui feature.

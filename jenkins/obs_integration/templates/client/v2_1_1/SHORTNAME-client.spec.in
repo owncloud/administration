@@ -1,0 +1,528 @@
+#
+# spec file for package [% shortname %]-client
+#
+# Copyright (c) 2012 ownCloud, inc.; Nuernberg, Germany.
+#
+# All modifications and additions to the file contributed by third parties
+# remain the property of their copyright owners, unless otherwise agreed
+# upon. The license for this file, and modifications and additions to the
+# file, is the same license as for the pristine package itself (unless the
+# license for the pristine package is not an Open Source License, in which
+# case the license is the MIT License). An "Open Source License" is a
+# license that conforms to the Open Source Definition (Version 1.9)
+# published by the Open Source Initiative.
+
+# Please submit bugfixes, issues or comments via http://github.com/owncloud/
+#
+
+## Caution: This spec file exists in multiple locations. Keep in sync:
+##  isv:ownCloud:desktop
+##  isv:ownCloud:community:nightly
+##  isv:ownCloud:community:testing
+##  github.com/owncloud/administration/jenkins/obs_integration/templates/client/v1_8_1/SHORTNAME-client.spec.in
+##  -> you can modify it in testing, and play around for a while, but then merge into the copy on
+##     github, which is authorative for the branded clients.
+##
+## [% create_msg %]
+
+## One specfile to rule them all:
+##  versions 1.6.x or 1.7.x, released or prerelease versions. All rpm based platforms.
+##  testing, branding, whatever.
+##
+## Caution: do not change the names of the following three defines.
+## prerelease, base_version, tar_version are the interface into buildpackage.pl
+## used in rotor.o.c job owncloud-client-linux
+## define prerelease as %nil, if this is not a prerelease.
+%define prerelease [% prerelease %]
+%define base_version [% version %]
+%define tar_version %{base_version}%{prerelease}
+
+Name:           [% shortname %]-client
+
+%if "%{name}" == "owncloud-client"
+%define is_owncloud_client 1
+%else
+%define is_owncloud_client 0
+%endif
+
+# Use translations from an external tarball in the package, or build them
+# using the Qt tools? For distros where we do not have the tools, disable.
+
+%if 0%{?centos_version} == 600 || 0%{?rhel_version} == 600 || 0%{?fedora_version} || "%{prerelease}" == ""
+# For beta and rc versions we use the ~ notation, as documented in
+# http://en.opensuse.org/openSUSE:Package_naming_guidelines
+# Some distro's (centos_6) don't allow ~ characters. There we follow the Fedora guidelines,
+# which suggests massaging the buildrelease number.
+# Otoh: for openSUSE, this technique is discouraged by the package naming guidelines.
+Version:       	%{base_version}
+%if "%{prerelease}" == ""
+Release:        0
+%else
+Release:       	0.<CI_CNT>.<B_CNT>.%{prerelease}
+%endif
+%else
+Version:       	%{base_version}~%{prerelease}
+Release:        0
+%endif
+
+License:        GPL-2.0+
+Summary:        [% summary %]
+%if %{is_owncloud_client}
+Url:            https://www.[% projecturl %]
+%else
+Url:            [% projecturl %]
+%endif
+Group:          Productivity/Networking/Other
+Source0:        [% tarball %].tar.bz2
+%if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
+Patch1:         autostart_use_wrapper.diff
+Patch2:         fixnullptr.diff
+Patch3:         nolambda.diff
+%endif
+
+%if 0%{?rhel_version} >= 600 || 0%{?centos_version} >= 600 || 0%{?suse_version} == 1110
+%if 0%{?suse_version} == 1110
+# SLES 11 calls make_install makeinstall
+%define make_install %{makeinstall}
+%endif
+# We need a more recent, prefixed Qt for SLE11
+%define opt_hack 1
+%define qtprefix opt-
+%if 0%{?rhel_version} == 600 || 0%{?centos_version} == 600
+%define optdir /opt/qt-4.8
+%else
+%define optdir /opt/qt-5.4
+%endif
+
+# Must be all in one line:
+%define cmake_args -DCMAKE_INCLUDE_PATH=%{_prefix}/include -DCMAKE_LIBRARY_PATH=%{_prefix}/%{_lib} -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE
+%else
+%define opt_hack 0
+%define qtprefix %{nil}
+%define cmake_args -DSYSCONF_INSTALL_DIR=%{_sysconfdir}
+%endif
+
+# default to have no docs. Cannot be built with old distros.
+%define have_doc 0
+
+# prepare stuff for qt5
+# If Qt5 is available, we use it. Also, if the Qt-Version is 5.4 or higher
+%define use_qt5 0
+%if 0%{?suse_version} > 1310 || 0%{?fedora_version} > 20 || 0%{?rhel_version} >= 700 || 0%{?centos_version} >= 700
+  %define use_qt5 1
+%endif
+# Check for SLE12 -> it does not have qt5 obviously.
+%if 0%{?suse_version}==1315
+  %define use_qt5 0
+%endif
+
+######################################################################### BuildRequires only below here.
+
+BuildRequires:  cmake >= 2.8.11
+BuildRequires:  gcc gcc-c++
+%if %use_qt5
+BuildRequires:  %{qtprefix}libqt5keychain-devel %{qtprefix}libqt5keychain0
+%else
+BuildRequires:  %{qtprefix}libqtkeychain-devel
+%endif
+
+# This is for all modern Fedora and CentOS 7
+# These ship Qt in a decent version and do not need the opt-hack
+%if 0%{?fedora_version} >= 21 || 0%{?centos_version} >= 700 || 0%{?rhel_version} == 700
+
+%if %use_qt5
+BuildRequires:  %{qtprefix}qt5-qttools-devel
+BuildRequires:  %{qtprefix}qt5-qtbase
+BuildRequires:  %{qtprefix}qt5-qtbase-devel
+BuildRequires:  %{qtprefix}qt5-qtbase-gui
+BuildRequires:  %{qtprefix}qt5-qtwebkit-devel
+
+%else # no qt5
+BuildRequires:  qt4 qt4-devel >= 4.7
+BuildRequires:  qtwebkit >= 2.2
+BuildRequires:  qtwebkit-devel >= 2.2
+%endif
+
+BuildRequires:  openssl-devel
+BuildRequires:  inetd desktop-file-utils
+%else
+# This is for all SUSE and RHEL6 and CentOS 6
+%if %use_qt5
+
+BuildRequires:  libQt5Core-devel
+BuildRequires:  libQt5Gui-devel
+BuildRequires:  libQt5Network-devel
+BuildRequires:  libQt5WebKitWidgets-devel
+BuildRequires:  libQt5Xml-devel
+BuildRequires:  libQt5PrintSupport-devel
+BuildRequires:  libQt5DBus-devel
+BuildRequires:  libQt5Concurrent-devel
+BuildRequires:  libqt5-linguist-devel
+
+%else # no qt5
+
+BuildRequires:  %{qtprefix}libqt4-devel >= 4.7
+BuildRequires:  %{qtprefix}libQtWebKit-devel
+BuildRequires:  %{qtprefix}libQtWebKit4
+
+%endif
+
+%endif
+
+# SUSE specific stuff
+%if 0%{?suse_version}
+BuildRequires:  update-desktop-files
+BuildRequires:  libopenssl-devel
+%endif
+
+# The opt-hack to use the packages installed in /opt on CentOS
+%if 0%{?suse_version} || 0%{?fedora_version} || 0%{?rhel_version} > 600 || 0%{?centos_version} > 600
+%define have_doc 1
+%endif
+
+# no documents on SLE12
+%if 0%{?suse_version} == 1315
+%define have_doc 0
+%endif
+
+# Version independant package name mapping between suse and fedora/centos
+%if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
+BuildRequires:  sqlite-devel
+BuildRequires:  inetd desktop-file-utils
+%if 0%{?fedora_version} || 0%{?rhel_version} > 600 || 0%{?centos_version} > 600
+BuildRequires:  python-sphinx
+%endif
+%else
+%if 0%{have_doc}
+BuildRequires:  python-Sphinx
+%endif
+BuildRequires:  sqlite3-devel
+BuildRequires:  update-desktop-files
+%endif
+
+
+######################################################################### Requires only below here.
+
+%if %opt_hack
+Requires:       %{qtprefix}qt5-qtbase
+Requires:       %{qtprefix}qt5-qtbase-gui
+# libQtWebKit4 is implicitly pulled by libowncloudsync0
+Requires:       %{qtprefix}qt5-qtwebkit
+# libqt4-sql is implicitly pulled by libqt4-sql-sqlite
+%endif
+%if 0%{?fedora_version} > 20 || 0%{?centos_version} > 700 || 0%{?suse_version} || 0%{?rhel_version} > 700
+# Fedora-19 and -20, CentOS-6, CentOS-7, RHEL_6,7 don't have Suggests.
+Suggests:	%{name}-nautilus
+Suggests:       %{name}-nemo
+%endif
+
+Requires: %{name}-l10n
+Requires: lib[% shortname %]sync0 = %{version}
+
+######################################################################### Obsoletes only below here.
+
+Obsoletes: libocsync0
+Obsoletes: libocsync-devel
+Obsoletes: libocsync-plugin-[% shortname %]
+Obsoletes: libocsync-plugin-[% APPLICATION_EXECUTABLE %]
+Obsoletes: libocsync-devel-doc
+Obsoletes: libocsync-doc
+Obsoletes: [% APPLICATION_EXECUTABLE %]-client
+Obsoletes: opt-[% APPLICATION_EXECUTABLE %]-client
+
+# Obsolete the experimental Qt5 packages if this is the unbranded client.
+%if %{is_owncloud_client}
+Obsoletes: libowncloudqt5sync0 libowncloudqt5sync-devel owncloud-client-qt5 owncloud-client-qt5-doc owncloud-client-qt5-l10n
+%endif
+
+######################################################################### Package Descriptions start here.
+
+BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+
+%description
+[% pkgdescription %]
+
+%package -n %{name}-doc
+Summary:        Documentation for [% displayname %]
+Group:          Development/Libraries/C and C++
+Requires: %{name}%{?_isa} = %{version}-%{release}
+Obsoletes:      opt-%{name}-doc
+
+%description -n %{name}-doc
+Documentation about the [% displayname %] desktop application.
+
+%package -n %{name}-l10n
+Summary:        Localization for [% displayname %]
+Group:          Development/Libraries/C and C++
+Requires: %{name}%{?_isa} = %{version}-%{release}
+Obsoletes:      opt-%{name}-l10n
+
+%description -n %{name}-l10n
+Localization files for the [% displayname %] desktop application.
+
+%package -n lib[% shortname %]sync0
+%if %use_qt5
+Requires:       %{qtprefix}libqt5keychain0
+%else
+Requires:       %{qtprefix}libqtkeychain0 >= 0.3
+%endif
+Obsoletes:      opt-lib[% shortname %]sync0
+
+Summary:        The [% displayname %] sync library
+Group:          Development/Libraries/C and C++
+
+%description -n lib[% shortname %]sync0
+The [% displayname %] sync library.
+
+%package -n lib[% shortname %]sync-devel
+Summary:        Development files for the [% displayname %] sync library
+Group:          Development/Libraries/C and C++
+Requires: lib[% shortname %]sync0 = %{version}
+Obsoletes:      opt-lib[% shortname %]sync-devel
+
+%description -n lib[% shortname %]sync-devel
+Development files for the [% displayname %] sync library.
+
+%package -n %{name}-nautilus
+Summary:        Nautilus overlay icons
+Group:          Productivity/Networking/Other
+Requires:       nautilus
+%if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
+Requires:       nautilus-python
+%else
+Requires:       python-nautilus
+%endif
+Requires:       %{name}%{?_isa} = %{version}-%{release}
+Obsoletes:      opt-%{name}-nautilus
+
+%description -n %{name}-nautilus
+This package provides overlay icons to visualize the sync state
+in the nautilus file manager.
+
+%package -n %{name}-nemo
+Summary:        Nemo overlay icons
+Group:          Productivity/Networking/Other
+Requires:       nemo
+%if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
+Requires:       nemo-python
+%else
+Requires:       python-nemo
+%endif
+Requires:       %{name}%{?_isa} = %{version}-%{release}
+Obsoletes:      opt-%{name}-nemo
+
+%description -n %{name}-nemo
+This package provides overlay icons to visualize the sync state
+in the nemo file manager.
+
+%prep
+%setup -q -n [% tarball %]
+%if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
+# autostart_use_wrapper.diff
+%patch1 -p1
+%patch2 -p1
+%patch3 -p1
+%endif
+
+%if 0%{?rhel_version} == 600 || 0%{?centos_version} == 600
+sed -i -e 's/OVERRIDE=override/OVERRIDE=/' cmake/modules/QtVersionAbstraction.cmake
+%endif
+
+%build
+echo centos_version 0%{?centos_version}
+echo rhel_version   0%{?rhel_version}
+echo fedora_version 0%{?fedora_version}
+echo suse_version   0%{?suse_version}
+
+%if %opt_hack
+%endif
+export LD_LIBRARY_PATH=%{optdir}/%{_lib}
+export PATH=%{optdir}/bin:$PATH
+
+mkdir build
+pushd build
+# http://www.cmake.org/Wiki/CMake_RPATH_handling#Default_RPATH_settings
+cmake .. -DWITH_DOC=TRUE \
+  -DCMAKE_C_FLAGS:STRING="%{optflags}" \
+  -DCMAKE_CXX_FLAGS:STRING="%{optflags}" \
+  -DCMAKE_SKIP_RPATH=OFF \
+  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+  -DCMAKE_INSTALL_PREFIX=%{_prefix} \
+%if %{_lib} == lib64
+  -DLIB_SUFFIX=64 \
+%endif
+%if ! %{is_owncloud_client}
+  -DOEM_THEME_DIR=$PWD/../[% themename %]/[% oem_sub_dir %] \
+%endif
+%if %{opt_hack}
+%if 0%{?rhel_version} == 600 || 0%{?centos_version} == 600
+  -DQTKEYCHAIN_INCLUDE_DIR=%{optdir}/include/qtkeychain \
+  -DQTKEYCHAIN_LIBRARY=%{optdir}/%{_lib}/libqtkeychain.so \
+%else
+  -DQTKEYCHAIN_INCLUDE_DIR=%{optdir}/include/qt5keychain \
+  -DQTKEYCHAIN_LIBRARY=%{optdir}/%{_lib}/libqt5keychain.so \
+%endif 
+%endif
+  %cmake_args
+
+# documentation here?
+if [ -e conf.py ];
+then
+  # for old cmake versions we need to move the conf.py.
+  mv conf.py doc/
+fi
+
+env LD_RUN_PATH=%{_libdir}/[% APPLICATION_EXECUTABLE %]:%{_libdir}/[% shortname %] make %{?_smp_mflags} VERBOSE=1
+
+make doc
+popd
+
+%install
+pushd build
+%make_install
+
+if [ %{have_doc} != 0 ];
+then
+  mkdir -p ${RPM_BUILD_ROOT}%{_docdir}/%{name}
+  mv ${RPM_BUILD_ROOT}/usr/share/doc/client/* ${RPM_BUILD_ROOT}%{_docdir}/%{name}
+  rmdir ${RPM_BUILD_ROOT}/usr/share/doc/client
+  rm ${RPM_BUILD_ROOT}%{_docdir}/%{name}/html/unthemed/.buildinfo
+  mv ${RPM_BUILD_ROOT}%{_docdir}/%{name}/html/unthemed/* ${RPM_BUILD_ROOT}%{_docdir}/%{name}/html/
+  rmdir ${RPM_BUILD_ROOT}%{_docdir}/%{name}/html/unthemed
+fi
+popd
+
+if [ -d ${RPM_BUILD_ROOT}%{_mandir}/man1 ]; then
+%if ! %{is_owncloud_client}
+  mkdir -p ${RPM_BUILD_ROOT}%{_mandir}man1
+  mv ${RPM_BUILD_ROOT}%{_mandir}/man1/{owncloud.1,[% APPLICATION_EXECUTABLE %].1}
+  mv ${RPM_BUILD_ROOT}%{_mandir}/man1/{owncloudcmd.1,[% APPLICATION_EXECUTABLE %]cmd.1}
+%endif
+  gzip ${RPM_BUILD_ROOT}%{_mandir}/man1/*.1
+fi
+
+%define extdir ${RPM_BUILD_ROOT}%{_datadir}/nautilus-python/extensions
+test -f %{extdir}/ownCloud.py  && mv %{extdir}/ownCloud.py  %{extdir}/[% APPLICATION_EXECUTABLE %].py  || true
+test -f %{extdir}/ownCloud.pyo && mv %{extdir}/ownCloud.pyo %{extdir}/[% APPLICATION_EXECUTABLE %].pyo || true
+test -f %{extdir}/ownCloud.pyc && mv %{extdir}/ownCloud.pyc %{extdir}/[% APPLICATION_EXECUTABLE %].pyc || true
+
+%if %opt_hack
+install -d ${RPM_BUILD_ROOT}/%{optdir}/bin
+mv ${RPM_BUILD_ROOT}/%{_bindir}/[% APPLICATION_EXECUTABLE %]* ${RPM_BUILD_ROOT}/%{optdir}/bin/
+
+echo "#!/bin/sh" > ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]
+echo "source %{optdir}/bin/qt*-env.sh" >> ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]
+echo "exec %{optdir}/bin/owncloud \"\$@\"" >> ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]
+
+echo "#!/bin/sh" > ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]cmd
+echo "source %{optdir}/bin/qt*-env.sh" >> ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]cmd
+echo "exec %{optdir}/bin/owncloudcmd \"\$@\"" >> ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]cmd
+
+chmod 775 $RPM_BUILD_ROOT/usr/bin/[% APPLICATION_EXECUTABLE %] $RPM_BUILD_ROOT/usr/bin/[% APPLICATION_EXECUTABLE %]cmd
+
+%endif
+
+%if %{?suse_version:1}0
+%suse_update_desktop_file -n [% APPLICATION_EXECUTABLE %]
+# workaround for https://github.com/owncloud/ownbrander/issues/322
+for desktop_icon_dir in $RPM_BUILD_ROOT/usr/share/icons/hicolor/*/apps; do
+  # copy shortname to executable name, if missing.
+  if [ -f $desktop_icon_dir/[% shortname %].png -a ! -f $desktop_icon_dir/[% APPLICATION_EXECUTABLE %].png ]; then
+    cp $desktop_icon_dir/[% shortname %].png $desktop_icon_dir/[% APPLICATION_EXECUTABLE %].png
+  fi
+done
+%endif
+
+%check
+## use exit 0 instead of exit 1 to turn this into warnings:
+if [ "%{name}" != "testpilotcloud-client" ]; then
+  if [ "%{prerelease}" == "" ]; then
+    expr match '%{distribution}' '.*:community:\(testing\|nightly\)' && { echo "Error: Need a prerelease here, not %{version}"; exit 1; }
+  else
+    expr match '%{distribution}' '.*:community:desktop' && { echo "Error: Must not have a prerelease here, not %{version}"; exit 1; }
+  fi
+fi
+
+%if 0%{?fedora_version}
+%post
+/bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
+
+%postun
+if [ $1 -eq 0 ] ; then
+    /bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null
+    /usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
+fi
+
+%posttrans
+/usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
+%endif
+
+%post -n lib[% shortname %]sync0
+/sbin/ldconfig
+
+%postun -n lib[% shortname %]sync0
+/sbin/ldconfig
+
+%files
+%defattr(-,root,root,-)
+%{_bindir}/[% APPLICATION_EXECUTABLE %]
+%{_bindir}/[% APPLICATION_EXECUTABLE %]cmd
+
+%if %{opt_hack}
+%{optdir}/bin/[% APPLICATION_EXECUTABLE %]
+%{optdir}/bin/[% APPLICATION_EXECUTABLE %]cmd
+%endif
+
+%{_datadir}/applications/[% APPLICATION_EXECUTABLE %].desktop
+%{_datadir}/icons/hicolor
+%if 0%{have_doc}
+%{_mandir}/man1/[% APPLICATION_EXECUTABLE %]*
+%endif
+
+%if %opt_hack
+/usr/share/icons/hicolor
+/usr/share/applications/[% APPLICATION_EXECUTABLE %].desktop
+/usr/bin/[% APPLICATION_EXECUTABLE %]
+/usr/bin/[% APPLICATION_EXECUTABLE %]cmd
+%endif
+%config /etc/[% shortname_etc %]
+%dir /etc
+
+%files -n %{name}-doc
+%defattr(-,root,root,-)
+%doc README.md COPYING
+%if 0%{have_doc}
+%doc %{_docdir}/%{name}
+%endif
+
+%files -n %{name}-l10n
+%defattr(-,root,root,-)
+%{_datadir}/[% APPLICATION_EXECUTABLE %]
+
+%files -n lib[% shortname %]sync0
+%defattr(-,root,root,-)
+%{_libdir}/lib[% APPLICATION_EXECUTABLE %]sync.so.*
+%{_libdir}/[% APPLICATION_EXECUTABLE %]/libocsync.so.*
+%dir %{_libdir}/[% APPLICATION_EXECUTABLE %]
+
+%files -n lib[% shortname %]sync-devel
+%defattr(-,root,root,-)
+%{_libdir}/lib[% APPLICATION_EXECUTABLE %]sync.so
+%{_libdir}/[% APPLICATION_EXECUTABLE %]/libocsync.so
+%{_includedir}/[% APPLICATION_EXECUTABLE %]sync/
+
+%files -n %{name}-nautilus
+%defattr(-,root,root,-)
+# Fedora also has *.pyc and *.pyo files here.
+%{_datadir}/nautilus-python/extensions/syncstate.py*
+%dir %{_datadir}/nautilus-python
+%dir %{_datadir}/nautilus-python/extensions/
+
+%files -n %{name}-nemo
+%defattr(-,root,root,-)
+# Fedora also has *.pyc and *.pyo files here.
+%{_datadir}/nemo-python/extensions/syncstate.py*
+%dir %{_datadir}/nemo-python
+%dir %{_datadir}/nemo-python/extensions/
+
+%changelog
