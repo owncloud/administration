@@ -23,7 +23,7 @@
 #  For each packge in the obs tree
 #   - check all enabled targets for binary packages with the given build token number.
 #     if a package has them all ready. Generate the linux package binary tar ball.
-#   - run administration/s2.owncloud.com/bin pack_client_oem (including check_packed_client_oem.pl)
+#   - run administration/obs.int.owncloud.com/bin pack_client_oem (including check_packed_client_oem.pl)
 #     to consistently publish the client.
 #
 # CAUTION:
