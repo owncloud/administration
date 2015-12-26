@@ -19,7 +19,7 @@ sub list_obs_pkg;
 my @src_pkgs = qw{ neon libqt4 cmake libqt4 libqt4-sql-plugins qtwebkit qt5keychain qtkeychain };
 my $src_prj = 'desktop';
 my $dest_prj_prefix = 'oem:';
-my $obs_api = 'https://s2.owncloud.com';
+my $obs_api = 'https://obs.int.owncloud.com';
 my $osc_cmd = $ENV{'OSC_CMD'} || 'osc';
 
 my $client_name = $ARGV[0];

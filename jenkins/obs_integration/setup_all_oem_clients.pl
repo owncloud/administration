@@ -23,7 +23,7 @@
 #  For each packge in the obs tree
 #   - check all enabled targets for binary packages with the given build token number.
 #     if a package has them all ready. Generate the linux package binary tar ball.
-#   - run administration/s2.owncloud.com/bin pack_client_oem (including check_packed_client_oem.pl)
+#   - run administration/obs.int.owncloud.com/bin pack_client_oem (including check_packed_client_oem.pl)
 #     to consistently publish the client.
 #
 # CAUTION:
@@ -98,7 +98,7 @@ my $client_filter	= shift || "";
 my @client_filter	= split(/[,\|\s]/, $client_filter);
 my %client_filter = map { $_ => 1 } @client_filter;
 
-my $obs_api             = shift || 'https://s2.owncloud.com';
+my $obs_api             = shift || 'https://obs.int.owncloud.com';
 my $template_prj 	= shift || 'desktop';
 my $template_pkg 	= shift || 'owncloud-client';
 my $create_msg 		= $ENV{OBS_INTEGRATION_MSG} || "created by: $0 @ARGV; template=$template_prj/$template_pkg";

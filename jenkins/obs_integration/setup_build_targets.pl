@@ -18,7 +18,7 @@ use XML::Simple;
 
 my $version = '0.6';
 my $verbose = 1;
-my $obs_api = $ENV{'OBS_API'} || 'https://s2.owncloud.com';
+my $obs_api = $ENV{'OBS_API'} || 'https://obs.int.owncloud.com';
 my $osc_cmd = $ENV{'OSC_CMD'} || 'osc';
 my $template_prj = $ENV{'TEMPLATE_PRJ'} || 'desktop';
 
