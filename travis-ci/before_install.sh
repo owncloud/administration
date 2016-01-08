@@ -37,7 +37,7 @@ fi
 
 if [ "$DB" == "oracle" ] ; then
   if [ ! -f before_install_oracle.sh ]; then
-    wget https://raw.githubusercontent.com/owncloud/administration/alternative-oracle-approach/travis-ci/before_install_oracle.sh
+    wget https://raw.githubusercontent.com/owncloud/administration/alternative-oracle-approach2/travis-ci/before_install_oracle.sh
   fi
   bash ./before_install_oracle.sh
 fi
@@ -56,7 +56,7 @@ fi
 #
 cd ../core
 if [ ! -f core_install.sh ]; then
-    wget https://raw.githubusercontent.com/owncloud/administration/alternative-oracle-approach/travis-ci/core_install.sh
+    wget https://raw.githubusercontent.com/owncloud/administration/alternative-oracle-approach2/travis-ci/core_install.sh
 fi
 
 bash ./core_install.sh $DB
