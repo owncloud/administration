@@ -17,7 +17,7 @@ DBCONFIGS="sqlite mysql pgsql oracle"
 PHPUNIT=$(which phpunit)
 
 # set oracle home if it is not set
-TRAVIS_ORACLE_HOME="/usr/lib/oracle/xe/app/oracle/product/10.2.0/server"
+TRAVIS_ORACLE_HOME="/usr/lib/oracle/xe/app/oracle/product/11.2.0/server"
 [ -z "$ORACLE_HOME" ] && ORACLE_HOME=$TRAVIS_ORACLE_HOME
 
 if [ $1 ]; then
@@ -115,6 +115,12 @@ function execute_tests {
 	mkdir $DATADIR
 
 	cp tests/preseed-config.php config/config.php
+
+	if [ "$1" == "oracle" ] ; then
+		echo "Load Oracle environment variables so that we can run 'sqlplus'."
+		. $ORACLE_HOME/bin/oracle_env.sh
+EOF
+	fi
 
 	# copy autoconfig
 	cp $BASEDIR/tests/autoconfig-$1.php $BASEDIR/config/autoconfig.php
