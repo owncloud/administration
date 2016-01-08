@@ -225,7 +225,6 @@ Obsoletes: libocsync-plugin-[% shortname %]
 Obsoletes: libocsync-plugin-[% APPLICATION_EXECUTABLE %]
 Obsoletes: libocsync-devel-doc
 Obsoletes: libocsync-doc
-Obsoletes: [% APPLICATION_EXECUTABLE %]-client
 Obsoletes: opt-[% APPLICATION_EXECUTABLE %]-client
 
 # Obsolete the experimental Qt5 packages if this is the unbranded client.
