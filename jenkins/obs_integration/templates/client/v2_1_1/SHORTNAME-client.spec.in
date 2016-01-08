@@ -339,6 +339,10 @@ mkdir build
 pushd build
 # http://www.cmake.org/Wiki/CMake_RPATH_handling#Default_RPATH_settings
 cmake .. -DWITH_DOC=TRUE \
+%if "%{prerelease}" != ""
+  -DMIRALL_VERSION_SUFFIX="%{prerelease}" \
+  -DMIRALL_VERSION_BUILD="%{release}" \
+%endif
   -DCMAKE_C_FLAGS:STRING="%{optflags}" \
   -DCMAKE_CXX_FLAGS:STRING="%{optflags}" \
   -DCMAKE_SKIP_RPATH=OFF \
