@@ -116,12 +116,6 @@ function execute_tests {
 
 	cp tests/preseed-config.php config/config.php
 
-	if [ "$1" == "oracle" ] ; then
-		echo "Load Oracle environment variables so that we can run 'sqlplus'."
-		. $ORACLE_HOME/bin/oracle_env.sh
-EOF
-	fi
-
 	# copy autoconfig
 	cp $BASEDIR/tests/autoconfig-$1.php $BASEDIR/config/autoconfig.php
 
