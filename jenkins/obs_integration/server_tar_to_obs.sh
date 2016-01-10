@@ -17,6 +17,12 @@
 # SUFFIX_REPO: Repository suffix, usually testing, but can be devel 
 # TAR_D_O_O_URL: Optional, defaults to http://download.owncloud.org/\$d_o_o_path
 #
+# ATTENTION:
+#  - keep in sync with administration-internal/update_all_tars.sh 
+
+# 2015-11-11, jw@owncloud: patching to use .ocoscrc for ee
+# 2015-12.16, jw@owncloud: no more underscore in enterprise package names.
+
 prerel="${PREREL:-}"
 username="${USERNAME:-jenkins@owncloud.com}"
 
@@ -133,26 +139,28 @@ for v in $VERSIONS; do
     manual=""
     ;;
   7*)
-    names="owncloud_enterprise owncloud_enterprise_3rdparty owncloud_enterprise_apps owncloud_enterprise_core owncloud_enterprise_unsupported"
+    # Only one package since 7.0.12
+    # names="owncloud_enterprise owncloud_enterprise_3rdparty owncloud_enterprise_apps owncloud_enterprise_core owncloud_enterprise_unsupported"
+    names=owncloud-enterprise
     prj=ee:7.0
     manual=""
     ;;
   8.0*)
     manual="ownCloud_Server_Administration_Manual.pdf"
     manual_sub="8.0"
-    names="owncloud_enterprise"
+    names="owncloud-enterprise"
     prj=ee:8.0
     ;;
   8.1*)
     manual="ownCloud_Server_Administration_Manual.pdf"
     manual_sub="8.1"
-    names="owncloud_enterprise"
+    names="owncloud-enterprise"
     prj=ee:8.1
     ;;
   8.2*)
     manual_sub="8.2"
     manual="ownCloud_Server_Administration_Manual.pdf"
-    names="owncloud_enterprise"
+    names="owncloud-enterprise"
     prj=ee:8.2
     ;;
   esac
@@ -163,6 +171,8 @@ for v in $VERSIONS; do
     test -n "$manual" && wget -nv https://doc.owncloud.org/server/$manual_sub/$manual -O $manual
 
     # download the fil
+    echo   OSCPARAM="$s2_OSCPARAM"
+    export OSCPARAM="$s2_OSCPARAM"
     eval "$do_d_o_c/$d_o_c_path/$v$prerel/$name-$v$prerel.tar.bz2"
     test $submitreq -ne 0 && echo "sleep 10; $osc submitreq $prj"
     popd

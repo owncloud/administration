@@ -263,12 +263,12 @@ Requires: %{name}%{?_isa} = %{version}-%{release}
 Documentation about the [% displayname %] desktop application.
 
 %package -n %{name}-l10n
-Summary:        Localisation for [% displayname %]
+Summary:        Localization for [% displayname %]
 Group:          Development/Libraries/C and C++
 Requires: %{name}%{?_isa} = %{version}-%{release}
 
 %description -n %{name}-l10n
-Localisation files for the [% displayname %] desktop application.
+Localization files for the [% displayname %] desktop application.
 
 %package -n lib[% APPLICATION_EXECUTABLE %]sync0
 %if %use_qt5

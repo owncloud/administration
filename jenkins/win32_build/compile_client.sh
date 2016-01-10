@@ -110,12 +110,14 @@ sign_package() {
     pushd build
     installer_file=$(echo *-setup.exe)
     unsigned_file=`basename ${installer_file} .exe`-unsigned.exe
+#   ts_service="-ts http://www.startssl.com/timestamp" # Times out
+    ts_service="-t http://timestamp.verisign.com/scripts/timstamp.dll" # -t here, not ts!
     mv ${installer_file} ${unsigned_file}
     osslsigncode -pkcs12 $pkcs_file -h sha1 \
                -pass $pkcs_password \
                -n "ownCloud Client" \
                -i "http://owncloud.com" \
-               -ts "http://www.startssl.com/timestamp" \
+               ${ts_service} \
                -in ${unsigned_file} \
                -out ${installer_file}
     rm ${unsigned_file}

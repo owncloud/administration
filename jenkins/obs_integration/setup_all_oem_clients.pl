@@ -98,7 +98,7 @@ my $client_filter	= shift || "";
 my @client_filter	= split(/[,\|\s]/, $client_filter);
 my %client_filter = map { $_ => 1 } @client_filter;
 
-my $obs_api             = shift || 'https://s2.owncloud.com';
+my $obs_api             = shift || 'https://obs.int.owncloud.com';
 my $template_prj 	= shift || 'desktop';
 my $template_pkg 	= shift || 'owncloud-client';
 my $create_msg 		= $ENV{OBS_INTEGRATION_MSG} || "created by: $0 @ARGV; template=$template_prj/$template_pkg";

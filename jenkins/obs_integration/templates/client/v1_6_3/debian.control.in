@@ -14,7 +14,7 @@ Package: [% themename_deb %]-client-doc
 Architecture: all
 Section: devel
 Depends: [% themename_deb %]-client (= ${binary:Version}), ${misc:Depends}, lib[% themename_deb %]sync0
-Description: development files for the [% displayname %] sync lib.
+Description: development files for the [% displayname %] sync lib
  Main package for [% displayname %].
  .
  This package contains the library development files.
@@ -24,8 +24,8 @@ Architecture: all
 Section: devel
 Depends: [% themename_deb %]-client (= ${binary:Version}), ${misc:Depends}, lib[% themename_deb %]sync0
 Breaks: [% themename_deb %]-client (<= 1.5.0)
-Description: Internationalisation files for [% displayname %]
- Internationalisation files for [% displayname %].
+Description: Internationalization files for [% displayname %]
+ Internationalization files for [% displayname %].
  .
  This package contains the translation packages.
 
@@ -37,7 +37,7 @@ Depends: ${misc:Depends}, ${shlibs:Depends}, libqtkeychain0 (>= 0.3)
 Pre-Depends: ${misc:Pre-Depends}
 Breaks: libocsync0
 Replaces: libocsync0
-Description: ownCloud sync library.
+Description: the ownCloud sync library
  [% displayname %] uses this as a sync engine implementation.
  .
  This package contains the library.
@@ -46,7 +46,7 @@ Package: lib[% themename_deb %]sync-dev
 Architecture: any
 Section: devel
 Depends: lib[% themename_deb %]sync0, ${misc:Depends}
-Description: [% displayname %] sync library development files.
+Description: development files for the [% displayname %] sync library
  [% displayname %] uses this as a sync engine implementation.
  .
  This package contains the development files.

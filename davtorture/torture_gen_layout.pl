@@ -9,13 +9,13 @@ use vars qw($opt_h $opt_n);
 # Which extensions to randomly assign
 my @exts = ('txt', 'pdf', 'html', 'docx', 'xlsx', 'pptx', 'odt', 'ods', 'odp');
 # Maximum depth of the target structure
-my $maxdepth = 5;
+my $maxdepth = 7;
 # Maximum amount of subfolders within a folder
-my $max_subfolders = 8;
+my $max_subfolders =3;
 # Maximum amount of files within a folder
-my $max_files_per_folder = 60;
-# Maximum file size 
-my $max_file_size = 1024**2;
+my $max_files_per_folder = 35;
+# Maximum file size
+my $max_file_size = 512**2;
 
 ############################################################################
 
@@ -30,11 +30,11 @@ sub help
 print<<ENDHELP
 
   torture_gen_layout.pl - generate a torture file list.
-  
+
   This script prints a file list to stdout which can be saved and feeded
   into the torture_create_files.pl script to actually generate the file
   tree. This makes it easy to create reproducable file trees for tests.
-  
+
   Options:
   -h:        This help text
   -n:        Use numeric file names rather than random words (faster).
