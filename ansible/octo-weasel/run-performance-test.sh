@@ -6,7 +6,7 @@ echo "$(date '+%Y-%m-%d %H-%M-%S') Starting ..."
 function execute_tests {
 
   echo "$(date '+%Y-%m-%d %H-%M-%S') Re-setup MySQL ..."
-  mysql -e "DROP DATABASE owncloud; CREATE DATABASE owncloud; SET GLOBAL log_slow_queries = $1;"
+  mysql -e "DROP DATABASE owncloud; CREATE DATABASE owncloud; SET GLOBAL general_log = $1;"
   rm -rf /var/www/owncloud/config/config.php /var/www/owncloud/data/*
 
   cd /var/www/owncloud
