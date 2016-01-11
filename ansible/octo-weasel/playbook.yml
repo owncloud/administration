@@ -26,6 +26,12 @@
       - { name: 'php5-mcrypt' }
       - { name: 'php5-sqlite' }
       - { name: 'libapache2-mod-php5' }
+      - { name: 'mysql-server' }
+      - { name: 'php5-mysql' }
+      - { name: 'python-mysqldb' }
+      - { name: 'qt5-default' }
+      - { name: 'make' }
+      - { name: 'g++' }
     notify:
       - restart apache
 
@@ -76,11 +82,57 @@
   - name: ownCloud data dir
     file: path=/var/www/owncloud/data state=directory owner=www-data group=www-data mode="u=rwx,g=rwx,o="
 
+  - name: configure general query log file for MySQL
+    replace: dest=/etc/mysql/my.cnf regexp='^#general_log_file' replace='general_log_file'
+    notify:
+      - restart mysql
+
+  - name: configure slow query log file for MySQL
+    replace: dest=/etc/mysql/my.cnf regexp='^#slow_query_log_file' replace='slow_query_log_file'
+    notify:
+      - restart mysql
+
+  - name: configure slow query log for MySQL
+    replace: dest=/etc/mysql/my.cnf regexp='^#slow_query_log' replace='slow_query_log'
+    notify:
+      - restart mysql
+
+  - name: remove anonymous MySQL user account
+    mysql_user: name='' host=localhost state=absent
+
+  - name: drop MySQL database
+    mysql_db: name=owncloud state=absent
+
+  - name: setup MySQL database
+    mysql_db: name=owncloud state=present
+
+  - name: setup MySQL user
+    mysql_user: name=owncloud password=owncloud priv=owncloud.*:ALL host=localhost state=present
+
   - name: install ownCloud
-    command: sudo -u www-data php occ maintenance:install --admin-pass=admin
+    command: sudo -u www-data php occ maintenance:install --admin-pass=admin --database=mysql --database-name=owncloud --database-user=owncloud --database-pass=owncloud
     args:
       chdir: /var/www/owncloud
+
+  - name: fetch administration repo
+    git: repo=https://github.com/owncloud/administration dest=/root/administration
+
+  - name: benchmark - run qmake
+    command: qmake
+    args:
+      chdir: /root/administration/performance-tests-c++
+
+  - name: benchmark - run make
+    command: make
+    args:
+      chdir: /root/administration/performance-tests-c++
+
+  - name: upload run-performance-test.sh
+    copy: src=run-performance-test.sh dest=/root/run-performance-test.sh owner=root group=root mode=0755
 
   handlers:
     - name: restart apache
       service: name=apache2 state=restarted
+
+    - name: restart mysql
+      service: name=mysql state=restarted
