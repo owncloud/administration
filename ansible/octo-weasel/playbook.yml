@@ -64,6 +64,11 @@
     notify:
       - restart apache
 
+  - name: Don't listen on public port
+    replace: dest=/etc/apache2/ports.conf regexp='^Listen 80' replace='#Listen 80'
+    notify:
+      - restart apache
+
   - name: remove old ownCloud directory
     file: path=/var/www/owncloud state=absent
 

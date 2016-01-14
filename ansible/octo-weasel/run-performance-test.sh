@@ -5,6 +5,8 @@ echo "$(date '+%Y-%m-%d %H-%M-%S') Starting ..."
 
 function execute_tests {
 
+  rm /var/log/apache2/access.log /var/log/mysql/mysql.log /var/log/mysql/mysql-slow.log
+
   echo "$(date '+%Y-%m-%d %H-%M-%S') Re-setup MySQL ..."
   mysql -e "DROP DATABASE owncloud; CREATE DATABASE owncloud; SET GLOBAL general_log = $1;"
   rm -rf /var/www/owncloud/config/config.php /var/www/owncloud/data/*
@@ -19,6 +21,7 @@ function execute_tests {
   mv /var/log/mysql/mysql.log /tmp/performance-tests/mysql-general-query-$currentTime.log
   mv /var/log/mysql/mysql-slow.log /tmp/performance-tests/mysql-slow-query-$currentTime.log
 
+  mv /var/log/apache2/access.log /tmp/performance-tests/access-$currentTime.log
 }
 
 echo "$(date '+%Y-%m-%d %H-%M-%S') Running WITHOUT general query logger ... "
