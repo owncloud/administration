@@ -1,0 +1,6 @@
+		 4093 Query	SELECT `appid`, `configkey`, `configvalue` FROM `oc_preferences` WHERE `userid` = 'admin'
+		 4093 Query	SELECT `appid`, `configkey`, `configvalue` FROM `oc_preferences` WHERE `userid` = 'admin'
+		 4095 Query	SELECT `appid`, `configkey`, `configvalue` FROM `oc_preferences` WHERE `userid` = 'admin'
+		 4095 Query	SELECT `appid`, `configkey`, `configvalue` FROM `oc_appconfig` WHERE `userid` = 'admin'
+		 4093 Query	SELECT `appid`, `configkey`, `configvalue` FROM `oc_preferences` WHERE `userid` = 'admin'
+		 4096 Query	SELECT `appid`, `configkey`, `configvalue` FROM `oc_preferences` WHERE `userid` = 'admin'

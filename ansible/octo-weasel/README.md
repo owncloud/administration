@@ -21,3 +21,10 @@ ssh 1.2.3.4
 ```
 
 Test results can be found in `/tmp/performance-tests` and have the time stamp of the start in it's name.
+
+Parse the query log (will print not parseable lines and write the result to `results.json`):
+
+```
+cd /root
+php process.php /PATH/TO/QUERY.log results.json
+```

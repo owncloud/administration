@@ -1,0 +1,19 @@
+/usr/sbin/mysqld, Version: 5.5.46-0+deb8u1-log ((Debian)). started with:
+Tcp port: 3306  Unix socket: /var/run/mysqld/mysqld.sock
+Time                 Id Command    Argument
+160111 10:18:20	 4091 Quit
+		 4092 Connect	owncloud@localhost on
+		 4092 Query	SET NAMES utf8
+		 4092 Query	SET SESSION AUTOCOMMIT=1
+		 4092 Query	SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED
+		 4095 Query	START TRANSACTION
+		 4095 Query	commit
+		 5118 Quit
+		 4093 Query	CREATE TABLE `oc_appconfig` (`appid` VARCHAR(32) DEFAULT '' NOT NULL, `configkey` VARCHAR(64) DEFAULT '' NOT NULL, `configvalue` LONGTEXT DEFAULT NULL, INDEX appconfig_config_key_index (`configkey`), INDEX appconfig_appid_key (`appid`), PRIMARY KEY(`appid`, `configkey`)) DEFAULT CHARACTER SET utf8 COLLATE utf8_bin ENGINE = InnoDB
+		 4092 Query	SELECT user FROM mysql.user WHERE user='oc_admin'
+		 4092 Query	CREATE DATABASE IF NOT EXISTS `owncloud` CHARACTER SET utf8 COLLATE utf8_bin
+		 4093 Query	SELECT `appid`, `configkey`, `configvalue` FROM `oc_preferences` WHERE `userid` = 'admin'
+		 4095 Query	UPDATE `oc_preferences` SET `configvalue` = '1452503905' WHERE `userid` = 'admin' AND `appid` = 'login' AND `configkey` = 'lastLogin'
+		 4095 Query	INSERT INTO `oc_filecache` (`mimepart`,`mimetype`,`mtime`,`size`,`etag`,`storage_mtime`,`permissions`,`path_hash`,`path`,`parent`,`name`,`storage`) SELECT '1','2','1452503905','-1','5693736193310','1452503905','31','0fea6a13c52b4d4725368f24b045ca84','cache','1','cache','1' FROM `oc_filecache` WHERE `storage` = '1' AND `path_hash` = '0fea6a13c52b4d4725368f24b045ca84' HAVING COUNT(*) = 0
+		 4102 Query	SELECT `oc_share`.`id`, `item_type`, `item_source`, `item_target`,`oc_share`.`parent`, `share_type`, `share_with`, `uid_owner`,`file_source`, `path`, `file_target`, `oc_share`.`permissions`,`stime`, `expiration`, `token`, `storage`, `mail_send`,`oc_storages`.`id` AS `storage_id`, `oc_filecache`.`parent` as `file_parent` FROM `oc_share` INNER JOIN `oc_filecache` ON `file_source` = `oc_filecache`.`fileid`  AND `file_target` IS NOT NULL INNER JOIN `oc_storages` ON `numeric_id` = `oc_filecache`.`storage`  AND ((`share_type` in ('0', '2') AND `share_with` = 'admin')  OR (`share_type` = '1' AND `share_with` IN ('admin')) ) AND `uid_owner` != 'admin' ORDER BY `oc_share`.`id` ASC
+		 4095 Query	DELETE FROM `oc_file_locks` WHERE `ttl` < '1452503905'
