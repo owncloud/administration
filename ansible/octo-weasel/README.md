@@ -26,5 +26,5 @@ Parse the query log (will print not parseable lines and write the result to `res
 
 ```
 cd /root
-php process.php /PATH/TO/QUERY.log results.json
+php process.php /PATH/TO/QUERY.log /PATH/TO/ACCESS.log results.json
 ```

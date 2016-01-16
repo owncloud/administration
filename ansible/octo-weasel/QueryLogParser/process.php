@@ -20,17 +20,37 @@
  */
 
 require_once 'QueryLogParser.php';
+require_once 'AccessLogParser.php';
 
-$q = new \OctoWeasel\QueryLogParser();
-$r = $q->parseFile($argv[1]);
+$results = [];
+$failures = [];
 
-$fh = fopen($argv[2], 'w');
-fwrite($fh, json_encode($r['results'], JSON_PRETTY_PRINT));
+$queryParser = new \OctoWeasel\QueryLogParser();
+$qr = $queryParser->parseFile($argv[1]);
+
+$results['queries'] = $qr['results'];
+if($qr['failures'] !== []) {
+    $failures['queries'] = $qr['failures'];
+}
+
+$accessParser = new \OctoWeasel\AccessLogParser();
+$ar = $accessParser->parseFile($argv[2]);
+
+$results['requests'] = $ar['results'];
+if($ar['failures'] !== []) {
+    $failures['requests'] = $ar['failures'];
+}
+
+$fh = fopen($argv[3], 'w');
+fwrite($fh, json_encode($results, JSON_PRETTY_PRINT));
 fclose($fh);
 
-echo count($r['results']);
+echo json_encode([
+    'queries' => count($results['queries']),
+    'requests' => count($results['requests']),
+]);
 
-if($r['failures'] !== []) {
-    echo json_encode($r['failures'], JSON_PRETTY_PRINT);
+if($failures !== []) {
+    echo json_encode($failures, JSON_PRETTY_PRINT);
     exit(1);
 }

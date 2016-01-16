@@ -135,9 +135,11 @@
   - name: upload run-performance-test.sh
     copy: src=run-performance-test.sh dest=/root/run-performance-test.sh owner=root group=root mode=0755
   - name: upload process.php
-    copy: src=process.php dest=/root/process.php owner=root group=root mode=0644
+    copy: src=QueryLogParser/process.php dest=/root/process.php owner=root group=root mode=0644
   - name: upload QueryLogParser.php
-    copy: src=QueryLogParser.php dest=/root/QueryLogParser.php owner=root group=root mode=0644
+    copy: src=QueryLogParser/QueryLogParser.php dest=/root/QueryLogParser.php owner=root group=root mode=0644
+  - name: upload AccessLogParser.php
+    copy: src=QueryLogParser/AccessLogParser.php dest=/root/AccessLogParser.php owner=root group=root mode=0644
 
   handlers:
     - name: restart apache
