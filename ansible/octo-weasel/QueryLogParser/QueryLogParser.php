@@ -28,11 +28,17 @@ class QueryLogParser {
     private function parseQuery($query) {
         if(strpos($query, 'SET NAMES') === 0 ||
             strpos($query, 'SET SESSION') === 0 ||
+            strpos($query, 'SET GLOBAL') === 0 ||
+            strpos($query, 'set autocommit') === 0 ||
             strpos($query, 'commit') === 0 ||
             strpos($query, 'START TRANSACTION') === 0 ||
             strpos($query, 'CREATE DATABASE') === 0 ||
+            strpos($query, 'DROP DATABASE') === 0 ||
+            strpos($query, 'SHOW DATABASE') === 0 ||
             strpos($query, 'CREATE TABLE') === 0 ||
             strpos($query, 'GRANT') === 0 ||
+            strpos($query, 'SHOW GRANTS') === 0 ||
+            strpos($query, 'select @@') === 0 ||
             strpos($query, 'SELECT user FROM mysql.user') === 0 ||
             strpos($query, 'select count(*) from information_schema.tables') === 0) {
             throw new SkipException('Unrelevant query' . $query);
