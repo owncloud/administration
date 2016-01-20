@@ -410,12 +410,16 @@ install -d ${RPM_BUILD_ROOT}/%{optdir}/bin
 mv ${RPM_BUILD_ROOT}/%{_bindir}/[% APPLICATION_EXECUTABLE %]* ${RPM_BUILD_ROOT}/%{optdir}/bin/
 
 echo "#!/bin/sh" > ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]
+%if ! %use_qt5
 echo "source %{optdir}/bin/qt*-env.sh" >> ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]
-echo "exec %{optdir}/bin/owncloud \"\$@\"" >> ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]
+%endif
+echo "exec %{optdir}/bin/[% APPLICATION_EXECUTABLE %] \"\$@\"" >> ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]
 
 echo "#!/bin/sh" > ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]cmd
+%if ! %use_qt5
 echo "source %{optdir}/bin/qt*-env.sh" >> ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]cmd
-echo "exec %{optdir}/bin/owncloudcmd \"\$@\"" >> ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]cmd
+%endif
+echo "exec %{optdir}/bin/[% APPLICATION_EXECUTABLE %]cmd \"\$@\"" >> ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]cmd
 
 chmod 775 $RPM_BUILD_ROOT/usr/bin/[% APPLICATION_EXECUTABLE %] $RPM_BUILD_ROOT/usr/bin/[% APPLICATION_EXECUTABLE %]cmd
 
