@@ -74,6 +74,9 @@ Url:            [% projecturl %]
 %endif
 Group:          Productivity/Networking/Other
 Source0:        [% tarball %].tar.bz2
+Source1:        owncloud.sh
+Source2:        owncloudcmd.sh
+
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 Patch1:         autostart_use_wrapper.diff
 %endif
@@ -409,20 +412,8 @@ test -f %{extdir}/ownCloud.pyc && mv %{extdir}/ownCloud.pyc %{extdir}/[% APPLICA
 install -d ${RPM_BUILD_ROOT}/%{optdir}/bin
 mv ${RPM_BUILD_ROOT}/%{_bindir}/[% APPLICATION_EXECUTABLE %]* ${RPM_BUILD_ROOT}/%{optdir}/bin/
 
-echo "#!/bin/sh" > ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]
-%if ! %use_qt5
-echo "source %{optdir}/bin/qt*-env.sh" >> ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]
-%endif
-echo "exec %{optdir}/bin/[% APPLICATION_EXECUTABLE %] \"\$@\"" >> ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]
-
-echo "#!/bin/sh" > ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]cmd
-%if ! %use_qt5
-echo "source %{optdir}/bin/qt*-env.sh" >> ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]cmd
-%endif
-echo "exec %{optdir}/bin/[% APPLICATION_EXECUTABLE %]cmd \"\$@\"" >> ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]cmd
-
-chmod 775 $RPM_BUILD_ROOT/usr/bin/[% APPLICATION_EXECUTABLE %] $RPM_BUILD_ROOT/usr/bin/[% APPLICATION_EXECUTABLE %]cmd
-
+mv ${SOURCE1} ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]
+mv ${SOURCE2} ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]cmd
 %endif
 
 %if %{?suse_version:1}0
