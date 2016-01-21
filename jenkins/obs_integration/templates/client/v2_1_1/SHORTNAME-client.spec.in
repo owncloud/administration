@@ -343,7 +343,7 @@ pushd build
 cmake .. -DWITH_DOC=TRUE \
 %if "%{prerelease}" != ""
   -DMIRALL_VERSION_SUFFIX="%{prerelease}" \
-  -DMIRALL_VERSION_BUILD=$RPM_PACKAGE_RELEASE \
+  -DMIRALL_VERSION_BUILD=0 \
 %endif
   -DCMAKE_C_FLAGS:STRING="%{optflags}" \
   -DCMAKE_CXX_FLAGS:STRING="%{optflags}" \
