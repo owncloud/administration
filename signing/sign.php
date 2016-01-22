@@ -24,9 +24,8 @@ echo(shell_exec($sourcePath . $cmd));
 // Now sign all apps in the app folder
 $apps = array_filter(glob($sourcePath . 'apps/*'), 'is_dir');
 foreach($apps as $app) {
-	$app = basename($app);
 	$cmd = sprintf(
-		'occ integrity:sign-app --privateKey=%s --certificate=%s/resources/codesigning/core.crt --appId=%s',
+		'occ integrity:sign-app --privateKey=%s --certificate=%s/resources/codesigning/core.crt --path=%s',
 		$privateKey, $sourcePath, $app
 	);
 	echo(shell_exec($sourcePath . $cmd));
