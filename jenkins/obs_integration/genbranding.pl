@@ -12,7 +12,7 @@
 # 2014-06-12 jw@owncloud.com, v1.1
 #	- added  OBS_INTEGRATION_VERBOSE, OBS_INTEGRATION_OSC for
 #	  debugging and more flexibility when calling osc. Suggested usage:
-#	  env OBS_INTEGRATION_OSC='osc -Ahttps://s2.owncloud.com' ./genbranding.pl ...
+#	  env OBS_INTEGRATION_OSC='osc -Ahttps://obs.int.owncloud.com' ./genbranding.pl ...
 #       - added OBS_INTEGRATION_PRODUCT to overwrite the default product openSUSE_13.1
 #       - added '--download-api-only' per default to avoid issues with download.o.c.
 #	- fixed the year in changelog entries.

@@ -23,7 +23,7 @@ fi
 
 pkgurl=$obsapi/package/show/
 statsbase=/var/www/html/monitor/$obsproj-stats
-api=https://s2.owncloud.com
+api=https://obs.int.owncloud.com
 opt_r=--retrigger-failed
 test 0$NO_TRIGGER -gt 0 && opt_r=
 
