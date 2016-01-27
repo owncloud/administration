@@ -74,8 +74,8 @@ Url:            [% projecturl %]
 %endif
 Group:          Productivity/Networking/Other
 Source0:        [% tarball %].tar.bz2
-Source1:        owncloud.sh
-Source2:        owncloudcmd.sh
+Source1:        [% APPLICATION_EXECUTABLE %].sh
+Source2:        [% APPLICATION_EXECUTABLE %]cmd.sh
 
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 Patch1:         autostart_use_wrapper.diff
@@ -412,8 +412,8 @@ test -f %{extdir}/ownCloud.pyc && mv %{extdir}/ownCloud.pyc %{extdir}/[% APPLICA
 install -d ${RPM_BUILD_ROOT}/%{optdir}/bin
 mv ${RPM_BUILD_ROOT}/%{_bindir}/[% APPLICATION_EXECUTABLE %]* ${RPM_BUILD_ROOT}/%{optdir}/bin/
 
-install ${SOURCE1} ${RPM_BUILD_ROOT}/usr/bin/
-install ${SOURCE2} ${RPM_BUILD_ROOT}/usr/bin/
+install %{SOURCE1} ${RPM_BUILD_ROOT}/usr/bin/
+install %{SOURCE2} ${RPM_BUILD_ROOT}/usr/bin/
 %endif
 
 %if %{?suse_version:1}0
