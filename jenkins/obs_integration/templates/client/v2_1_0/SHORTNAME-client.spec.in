@@ -203,7 +203,7 @@ BuildRequires:  update-desktop-files
 
 ######################################################################### Requires only below here.
 
-%if %opt_hack
+%if %use_qt5
 Requires:       %{qtprefix}qt5-qtbase
 Requires:       %{qtprefix}qt5-qtbase-gui
 # libQtWebKit4 is implicitly pulled by libowncloudsync0
