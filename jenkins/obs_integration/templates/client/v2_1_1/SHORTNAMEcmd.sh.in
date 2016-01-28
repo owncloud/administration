@@ -7,7 +7,7 @@ if [ -d /opt/qt-4.8 ]; then
   source /opt/$qtdir/bin/$qtdir-env.sh
 fi
 
-exec /opt/$qtdir/bin/[% APPLICATION_EXECUTABLE %] "$@"
+exec /opt/$qtdir/bin/[% APPLICATION_EXECUTABLE %]cmd "$@"
 
 # end
 
