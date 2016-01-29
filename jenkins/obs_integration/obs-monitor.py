@@ -113,9 +113,10 @@ def pkg_status(apiurl, proj_pack, ignore_re=None):
 success_re = r'(excluded|succeeded|\(unpublished\))'
 mapped = {
   'good': [ 'succeeded', '(unpublished)', 'succeeded*' ],
-  'ignore': [ 'excluded', 'disabled' ],
-  'outdated': [ 'excluded*', 'disabled*', '*' ]
+  'ignore': [ 'excluded', 'disabled', '*'],
+  'outdated': [ 'excluded*', 'disabled*' ]
 }
+# The simple '*' is same as '(unpublished)', which is a ignore terminal state.
 
 retrigger_states = ['failed', 'unresolvable', 'broken']
 # dont list the outdated (*) entries as ignore. They often hang infinite. Retrigger them too.
