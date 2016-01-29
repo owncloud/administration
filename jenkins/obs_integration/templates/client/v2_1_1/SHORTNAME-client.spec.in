@@ -217,6 +217,11 @@ Suggests:	%{name}-nautilus
 Suggests:       %{name}-nemo
 %endif
 
+%if 0%{?rhel_version} == 600 || 0%{?centos_version} == 600
+# https://github.com/owncloud/client/issues/4400#issuecomment-176686729
+Requires:	%{qtprefix}libqt4-sql
+%endif
+
 Requires: %{name}-l10n
 Requires: lib[% shortname %]sync0 = %{version}
 

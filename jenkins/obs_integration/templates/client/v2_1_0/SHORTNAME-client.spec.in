@@ -214,6 +214,10 @@ Requires:       %{qtprefix}qt5-qtwebkit
 # Fedora-19 and -20, CentOS-6, CentOS-7, RHEL_6,7 don't have Suggests.
 Suggests:	%{name}-nautilus
 %endif
+%if 0%{?rhel_version} == 600 || 0%{?centos_version} == 600
+# https://github.com/owncloud/client/issues/4400#issuecomment-176686729
+Requires:	%{qtprefix}libqt4-sql
+%endif
 
 Requires: %{name}-l10n
 Requires: lib[% shortname %]sync0 = %{version}
