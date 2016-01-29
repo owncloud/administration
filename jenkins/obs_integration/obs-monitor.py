@@ -8,6 +8,7 @@
 # 2015-06-12, v1.1, jw -- supports html output
 # 2015-06-22, v1.2, jw -- move excluded* into the ignore class. Refactored output code from collector code.
 # 2015-07-01, v1.3, jw -- retrigger_failed also for 'broken'
+# 2016-01-29, v1.4, jw -- retrigger_failed also for 'outdated (was: ...)'
 
 import argparse, subprocess, os, re
 import sys, time
@@ -15,6 +16,7 @@ import sys, time
 verbose=0
 def_apiurl="https://api.opensuse.org"
 weburl="https://build.opensuse.org"
+retrigger_outdated = True		# set to False, if --retrigger-failed should not include state outdated.
 
 ap=argparse.ArgumentParser(description='Monitor build service results')
 ap.add_argument('-r', '--retrigger-failed', action='store_true', help="Retrigger a build for all failed packages")
@@ -111,8 +113,14 @@ def pkg_status(apiurl, proj_pack, ignore_re=None):
 success_re = r'(excluded|succeeded|\(unpublished\))'
 mapped = {
   'good': [ 'succeeded', '(unpublished)', 'succeeded*' ],
-  'ignore': [ 'excluded', 'excluded*', 'disabled', 'disabled*', '*' ]
+  'ignore': [ 'excluded', 'disabled' ],
+  'outdated': [ 'excluded*', 'disabled*', '*' ]
 }
+
+retrigger_states = ['failed', 'unresolvable', 'broken']
+# dont list the outdated (*) entries as ignore. They often hang infinite. Retrigger them too.
+if (retrigger_outdated):
+  retrigger_states += ['outdated']
 
 ret={}
 tot={}
@@ -147,6 +155,8 @@ for p in all_pkgs:
     if not v in cnt:   cnt[v] = 0
     rstat[v].append(k)
     cnt[v] +=1
+  # if (p == 'ownbrander:msttapplicationshortname/msttapplicationshortname-client'):
+  # 	print "pkg", p, "rstat: ", rstat, "pkg_status: ",  st
 
   if 'ignore' in cnt: del(cnt['ignore'])	# don't count what we do not want
   for t in cnt.keys():
@@ -163,7 +173,7 @@ for p in all_pkgs:
     out_html  += '<tr><td><a href="%s/%s">%s</a></td><td>%s</td></tr>\n' % (pkg_url, p, p, stats)
     out_plain += "%-*s  %s\n" % (w, p, cnt)
 
-  for retrigger in ['failed', 'unresolvable', 'broken']:
+  for retrigger in retrigger_states:
     if retrigger in rstat:
       if not retrigger in ret: ret[retrigger] = 0
       ret[retrigger] += cnt[retrigger]
