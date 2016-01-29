@@ -77,6 +77,7 @@
 #                          Added run_nocache using image_name.
 # V2.21 -- 2015-09-17, jw  Option -S prints out the dockerfile as a plain shell script.
 # V2.22 -- 2015-11-05, jw  format DNF added, used with Fedora_22
+# V2.23 -- 2016-01-29, jw  use liberation-sans-fonts for -X with centos_6
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 #
@@ -90,7 +91,7 @@
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="2.22"
+__VERSION__="2.23"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import yaml, sys, os, re, time, tempfile
@@ -903,7 +904,8 @@ if args.xauth:
 
   # add basic fonts, so that a GUI becomes readable.
   if re.search(r'suse', obs_target, re.I): 			extra_packages.extend(['xorg-x11-fonts-core'])
-  if re.search(r'centos|rhel|fedora', obs_target, re.I): 	extra_packages.extend(['gnu-free-sans-fonts'])
+  if re.search(r'centos_7|rhel_7|fedora', obs_target, re.I): 	extra_packages.extend(['gnu-free-sans-fonts'])
+  if re.search(r'centos_6|rhel_6', obs_target, re.I): 		extra_packages.extend(['liberation-sans-fonts'])
   if re.search(r'ubuntu_1[4567]', obs_target, re.I):		extra_packages.extend(['fonts-dejavu-core'])
 
 if args.ssh_server:
