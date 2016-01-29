@@ -919,15 +919,15 @@ if args.ssh_server:
   # add ssh server to start.sh and run cmd.
   start_script_post.extend(['chmod 700 /root/.ssh', 'chmod go-w /root', 'chmod 600 /root/.ssh/authorized_keys || true', 'cat /authorized_keys >> /root/.ssh/authorized_keys || true' ])
   if re.search(r'suse', obs_target, re.I):
-    extra_packages.extend(['openssh'])
+    extra_packages.extend(['openssh', 'xauth'])
     docker_cmd_cmd='cat /authorized_keys >> /root/.ssh/authorized_keys || true; service sshd start ; ip a | grep global ; exec /bin/bash'
     start_script_post.extend(['service sshd start'])
   if re.search(r'centos|rhel|fedora', obs_target, re.I):
-    extra_packages.extend(['openssh-server'])
+    extra_packages.extend(['openssh-server', 'xauth'])
     docker_cmd_cmd='cat /authorized_keys >> /root/.ssh/authorized_keys || true; service sshd start ; ip a | grep global ; exec /bin/bash'
     start_script_post.extend(['service sshd start'])
   if re.search(r'ubuntu|debian', obs_target, re.I):
-    extra_packages.extend(['openssh-server'])
+    extra_packages.extend(['openssh-server', 'xauth'])
     docker_cmd_cmd='cat /authorized_keys >> /root/.ssh/authorized_keys || true; mkdir -p /var/run/sshd; /usr/sbin/sshd; ip a | grep global ; exec /bin/bash'
     start_script_post.extend(['mkdir -p /var/run/sshd', '/usr/sbin/sshd'])
   start_script_post.extend(['ip a | grep global'])
