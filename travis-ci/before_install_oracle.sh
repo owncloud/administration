@@ -7,10 +7,10 @@
 # Modified by Mateusz Loskot <mateusz@loskot.net>
 # Changes:
 # - Add fake swap support (backup /usr/bin/free manually anyway!)
-# 
+#
 # Modified by Peter Butkovic <butkovic@gmail.com> to enable i386 install on amd64 architecture (precise 64)
 # based on: http://www.ubuntugeek.com/how-to-install-oracle-10g-xe-in-64-bit-ubuntu.html
-# 
+#
 # set -ex
 
 #
@@ -75,7 +75,7 @@ sudo apt-get autoremove -qq
 mkdir /tmp/oracle_unpack
 dpkg-deb -x /var/cache/apt/archives/oracle-xe-universal_10.2.0.1-1.1_i386.deb /tmp/oracle_unpack
 cd /tmp/oracle_unpack
-dpkg-deb --control /var/cache/apt/archives/oracle-xe-universal_10.2.0.1-1.1_i386.deb 
+dpkg-deb --control /var/cache/apt/archives/oracle-xe-universal_10.2.0.1-1.1_i386.deb
 sed -i "s/,\ bc//g" /tmp/oracle_unpack/DEBIAN/control
 mkdir /tmp/oracle_repack
 dpkg -b /tmp/oracle_unpack /tmp/oracle_repack/oracle-xe-universal_fixed_10.2.0.1-1.1_i386.deb
@@ -127,11 +127,13 @@ sudo mkdir -p /usr/lib/oracle/11.2/client64/rdbms/
 sudo ln -s /usr/include/oracle/11.2/client64/ /usr/lib/oracle/11.2/client64/rdbms/public
 
 sudo apt-get install -qq --force-yes libaio1
-printf "/usr/lib/oracle/11.2/client64\n" | pecl install oci8
+if [ "$TRAVIS_PHP_VERSION" == "7" ] ; then
+  printf "/usr/lib/oracle/11.2/client64\n" | pecl install oci8
+else
+  printf "/usr/lib/oracle/11.2/client64\n" | pecl install oci8-2.0.10
+fi
 
 cat ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
 
 # add travis user to oracle user group - necessary for execution of sqlplus
 sudo adduser travis dba
-
-
