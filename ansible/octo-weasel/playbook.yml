@@ -73,7 +73,7 @@
     file: path=/var/www/owncloud state=absent
 
   - name: clone git repo
-    git: repo=https://github.com/owncloud/core.git dest=/var/www/owncloud track_submodules=yes depth=1
+    git: repo=https://github.com/owncloud/core.git dest=/var/www/owncloud track_submodules=yes
 
   - name: write trusted_domains.config.php
     template: src=trusted_domains.config.php.j2 dest=/var/www/owncloud/config/trusted_domains.config.php

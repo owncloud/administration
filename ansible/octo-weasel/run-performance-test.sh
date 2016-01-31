@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 echo "$(date '+%Y-%m-%d %H-%M-%S') Starting ..."
 
@@ -17,7 +17,13 @@ function execute_tests {
   mysql -e "DROP DATABASE owncloud; CREATE DATABASE owncloud; SET GLOBAL general_log = $1;"
   rm -rf /var/www/owncloud/config/config.php /var/www/owncloud/data/*
 
+  echo "$(date '+%Y-%m-%d %H-%M-%S') Checkout commit $2 ..."
   cd /var/www/owncloud
+  git fetch
+  git checkout -q $2 || exit 1
+  git submodule update
+
+  echo "$(date '+%Y-%m-%d %H-%M-%S') Install owncloud ..."
   sudo -u www-data php occ maintenance:install --admin-pass=admin --database=mysql --database-name=owncloud --database-user=owncloud --database-pass=owncloud
 
   mkdir -p /tmp/performance-tests
@@ -35,9 +41,14 @@ function execute_tests {
   cp /var/log/apache2/access.log /tmp/performance-tests/access-$currentTime.log
 }
 
+if [ -z "$1" ]; then
+    echo "Please specify the commit to test"
+    exit 1;
+fi
+
 echo "$(date '+%Y-%m-%d %H-%M-%S') Running WITHOUT general query logger ... "
-execute_tests 0
+execute_tests 0 $1
 echo "$(date '+%Y-%m-%d %H-%M-%S') Running WITH general query logger ... "
-execute_tests 1
+execute_tests 1 $1
 
 echo "$(date '+%Y-%m-%d %H-%M-%S') Finished"
