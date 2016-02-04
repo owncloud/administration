@@ -38,7 +38,7 @@ Depends: ${misc:Depends}, ${shlibs:Depends}, libqtkeychain0 (>= 0.3)
 Pre-Depends: ${misc:Pre-Depends}
 Breaks: libocsync0
 Replaces: libocsync0
-Description: the ownCloud sync library
+Description: the [% displayname %] sync library
  [% displayname %] uses this as a sync engine implementation.
  .
  This package contains the library.
