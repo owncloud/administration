@@ -206,7 +206,7 @@ else
 print Dumper \@candidates;
 
 ## make sure the top project is there in obs
-obs_prj_from_template($osc_cmd, $template_prj, $container_project, "OwnCloud Desktop Client OEM Container project");
+obs_prj_from_template($osc_cmd, $template_prj, $container_project, "Desktop Client OEM Container project");
 chdir($scriptdir) if defined $scriptdir;
 
 for my $branding (@candidates)
@@ -235,7 +235,7 @@ for my $branding (@candidates)
       }
 
     ## generate the individual container projects
-    obs_prj_from_template($osc_cmd, $template_prj, $project, "OwnCloud Desktop Client project $branding");
+    obs_prj_from_template($osc_cmd, $template_prj, $project, "Desktop Client project $branding");
 
     ## create an empty package, so that genbranding is happy.
     obs_pkg_from_template($osc_cmd, $template_prj, $template_pkg, $project, "$branding-client", "$branding Desktop Client");
