@@ -29,9 +29,13 @@ do
 
 	cd /tmp/owncloud-documentation
 	# invokes an output if something has changed
-	git status -s
+	status=$(git status -s)
 
-	git commit --allow-empty -qam 'generate documentation from config.sample.php'
+	if [ -n "$status" ]; then
+		echo "Push $branch"
+		git commit -qam 'generate documentation from config.sample.php'
+		git push
+	fi
 
 	# cleanup
 	rm -rf /tmp/config.sample.php
