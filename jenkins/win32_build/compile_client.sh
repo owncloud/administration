@@ -113,7 +113,7 @@ sign_package() {
 #   ts_service="-ts http://www.startssl.com/timestamp" # Times out
     ts_service="-t http://timestamp.verisign.com/scripts/timstamp.dll" # -t here, not ts!
     mv ${installer_file} ${unsigned_file}
-    osslsigncode -pkcs12 $pkcs_file -h sha1 \
+    osslsigncode -pkcs12 $pkcs_file -h sha256 \
                -pass $pkcs_password \
                -n "ownCloud Client" \
                -i "http://owncloud.com" \
