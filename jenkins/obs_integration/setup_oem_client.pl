@@ -12,11 +12,12 @@
 #                 See setup_all_oem_client.pl for the semantics.
 # 2015-01-19, jw, return failure, when osc copypac fails.
 # 2015-01-22, jw, honor env OSC_CMD -- needed for rotor publish-oem-client-linux
+# 2016-02-08, jw, add qt5-qt* packages for centosius.
 #
 use Data::Dumper;
 sub list_obs_pkg;
 
-my @src_pkgs = qw{ neon libqt4 cmake libqt4 libqt4-sql-plugins qtwebkit qt5keychain qtkeychain };
+my @src_pkgs = qw{ neon libqt4 cmake libqt4 libqt4-sql-plugins qtwebkit qt5keychain qtkeychain qt5-qtwebkit qt5-qttools qt5-qtbase };
 my $src_prj = 'desktop';
 my $dest_prj_prefix = 'oem:';
 my $obs_api = 'https://obs.int.owncloud.com';
