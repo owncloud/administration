@@ -205,13 +205,16 @@ BuildRequires:  update-desktop-files
 
 ######################################################################### Requires only below here.
 
-%if %use_qt5
+%if %use_qt5 && 0%{?suse_version} == 0
+# suse finds the libs via autoreqprov 
+# https://github.com/owncloud/client/issues/4431
 Requires:       %{qtprefix}qt5-qtbase
 Requires:       %{qtprefix}qt5-qtbase-gui
 # libQtWebKit4 is implicitly pulled by libowncloudsync0
 Requires:       %{qtprefix}qt5-qtwebkit
 # libqt4-sql is implicitly pulled by libqt4-sql-sqlite
 %endif
+
 %if 0%{?fedora_version} > 20 || 0%{?centos_version} > 700 || 0%{?suse_version} || 0%{?rhel_version} > 700
 # Fedora-19 and -20, CentOS-6, CentOS-7, RHEL_6,7 don't have Suggests.
 Suggests:	%{name}-nautilus
