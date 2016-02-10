@@ -1,0 +1,2 @@
+usr/include/[% APPLICATION_EXECUTABLE %]sync
+usr/lib*/lib[% APPLICATION_EXECUTABLE %]sync.so
