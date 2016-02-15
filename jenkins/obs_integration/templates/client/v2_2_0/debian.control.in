@@ -2,7 +2,7 @@ Source: [% shortname %]-client
 Section: devel
 Priority: optional
 Maintainer: [% maintainer_person %]
-Build-Depends: debhelper (>= 9), cmake, libqt4-dev (>= 4.7), libqtwebkit-dev (>= 2.2.0), qtkeychain-dev, libssl-dev, libsqlite3-dev, python-sphinx | python3-sphinx
+Build-Depends: debhelper (>= 9), cmake, sed, libqt4-dev (>= 4.7), libqtwebkit-dev (>= 2.2.0), qtkeychain-dev, libssl-dev, libsqlite3-dev, python-sphinx | python3-sphinx
 Standards-Version: 3.9.6
 
 Package: [% shortname %]-client
@@ -58,5 +58,14 @@ Section: devel
 Depends: [% shortname %]-client (= ${binary:Version}), ${misc:Depends}, lib[% shortname %]sync0, python-nautilus, nautilus
 Description: nautilus plugin for [% displayname %]
  This package contains a nautilus plugin to display overlay icons.
+ .
+ This is a nice gui feature.
+
+Package: [% shortname %]-client-nemo
+Architecture: all
+Section: devel
+Depends: [% shortname %]-client (= ${binary:Version}), ${misc:Depends}, lib[% shortname %]sync0, python-nemo, nemo
+Description: Nemo plugin for [% displayname %]
+ This package contains a nemo plugin to display overlay icons.
  .
  This is a nice gui feature.

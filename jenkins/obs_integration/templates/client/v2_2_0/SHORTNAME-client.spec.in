@@ -76,10 +76,9 @@ Group:          Productivity/Networking/Other
 Source0:        [% tarball %].tar.bz2
 Source1:        [% APPLICATION_EXECUTABLE %].sh
 Source2:        [% APPLICATION_EXECUTABLE %]cmd.sh
+
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 Patch1:         autostart_use_wrapper.diff
-Patch2:         fixnullptr.diff
-Patch3:         nolambda.diff
 %endif
 
 %if 0%{?rhel_version} >= 600 || 0%{?centos_version} >= 600 || 0%{?suse_version} == 1110
@@ -114,7 +113,7 @@ Patch3:         nolambda.diff
   %define use_qt5 1
 %endif
 # Check for SLE12 -> it does not have qt5 obviously.
-%if 0%{?suse_version}==1315
+%if ! 0%{?is_opensuse} && 0%{?suse_version}==1315
   %define use_qt5 0
 %endif
 
@@ -205,20 +204,19 @@ BuildRequires:  update-desktop-files
 
 ######################################################################### Requires only below here.
 
-%if %use_qt5 && 0%{?suse_version} == 0
-# suse finds the libs via autoreqprov 
-# https://github.com/owncloud/client/issues/4431
+%if %use_qt5
 Requires:       %{qtprefix}qt5-qtbase
 Requires:       %{qtprefix}qt5-qtbase-gui
 # libQtWebKit4 is implicitly pulled by libowncloudsync0
 Requires:       %{qtprefix}qt5-qtwebkit
 # libqt4-sql is implicitly pulled by libqt4-sql-sqlite
 %endif
-
 %if 0%{?fedora_version} > 20 || 0%{?centos_version} > 700 || 0%{?suse_version} || 0%{?rhel_version} > 700
 # Fedora-19 and -20, CentOS-6, CentOS-7, RHEL_6,7 don't have Suggests.
 Suggests:	%{name}-nautilus
+Suggests:       %{name}-nemo
 %endif
+
 %if 0%{?rhel_version} == 600 || 0%{?centos_version} == 600
 # https://github.com/owncloud/client/issues/4400#issuecomment-176686729
 Requires:	%{qtprefix}libqt4-sql
@@ -235,7 +233,6 @@ Obsoletes: libocsync-plugin-[% shortname %]
 Obsoletes: libocsync-plugin-[% APPLICATION_EXECUTABLE %]
 Obsoletes: libocsync-devel-doc
 Obsoletes: libocsync-doc
-Obsoletes: [% APPLICATION_EXECUTABLE %]-client
 Obsoletes: opt-[% APPLICATION_EXECUTABLE %]-client
 
 # Obsolete the experimental Qt5 packages if this is the unbranded client.
@@ -307,13 +304,27 @@ Obsoletes:      opt-%{name}-nautilus
 This package provides overlay icons to visualize the sync state
 in the nautilus file manager.
 
+%package -n %{name}-nemo
+Summary:        Nemo overlay icons
+Group:          Productivity/Networking/Other
+Requires:       nemo
+%if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
+Requires:       nemo-python
+%else
+Requires:       python-nemo
+%endif
+Requires:       %{name}%{?_isa} = %{version}-%{release}
+Obsoletes:      opt-%{name}-nemo
+
+%description -n %{name}-nemo
+This package provides overlay icons to visualize the sync state
+in the nemo file manager.
+
 %prep
 %setup -q -n [% tarball %]
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 # autostart_use_wrapper.diff
 %patch1 -p1
-%patch2 -p1
-%patch3 -p1
 %endif
 
 %if 0%{?rhel_version} == 600 || 0%{?centos_version} == 600
@@ -335,6 +346,10 @@ mkdir build
 pushd build
 # http://www.cmake.org/Wiki/CMake_RPATH_handling#Default_RPATH_settings
 cmake .. -DWITH_DOC=TRUE \
+%if "%{prerelease}" != ""
+  -DMIRALL_VERSION_SUFFIX="%{prerelease}" \
+  -DMIRALL_VERSION_BUILD=0 \
+%endif
   -DCMAKE_C_FLAGS:STRING="%{optflags}" \
   -DCMAKE_CXX_FLAGS:STRING="%{optflags}" \
   -DCMAKE_SKIP_RPATH=OFF \
@@ -353,7 +368,7 @@ cmake .. -DWITH_DOC=TRUE \
 %else
   -DQTKEYCHAIN_INCLUDE_DIR=%{optdir}/include/qt5keychain \
   -DQTKEYCHAIN_LIBRARY=%{optdir}/%{_lib}/libqt5keychain.so \
-%endif 
+%endif
 %endif
   %cmake_args
 
@@ -501,5 +516,12 @@ fi
 %{_datadir}/nautilus-python/extensions/syncstate.py*
 %dir %{_datadir}/nautilus-python
 %dir %{_datadir}/nautilus-python/extensions/
+
+%files -n %{name}-nemo
+%defattr(-,root,root,-)
+# Fedora also has *.pyc and *.pyo files here.
+%{_datadir}/nemo-python/extensions/syncstate.py*
+%dir %{_datadir}/nemo-python
+%dir %{_datadir}/nemo-python/extensions/
 
 %changelog

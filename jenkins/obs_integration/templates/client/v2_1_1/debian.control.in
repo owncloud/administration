@@ -2,7 +2,7 @@ Source: [% shortname %]-client
 Section: devel
 Priority: optional
 Maintainer: [% maintainer_person %]
-Build-Depends: debhelper (>= 9), cmake, libqt4-dev (>= 4.7), libqtwebkit-dev (>= 2.2.0), qtkeychain-dev, libssl-dev, libsqlite3-dev, python-sphinx | python3-sphinx
+Build-Depends: debhelper (>= 9), cmake, sed, libqt4-dev (>= 4.7), libqtwebkit-dev (>= 2.2.0), qtkeychain-dev, libssl-dev, libsqlite3-dev, python-sphinx | python3-sphinx
 Standards-Version: 3.9.6
 
 Package: [% shortname %]-client
@@ -38,7 +38,7 @@ Depends: ${misc:Depends}, ${shlibs:Depends}, libqtkeychain0 (>= 0.3)
 Pre-Depends: ${misc:Pre-Depends}
 Breaks: libocsync0
 Replaces: libocsync0
-Description: the ownCloud sync library
+Description: the [% displayname %] sync library
  [% displayname %] uses this as a sync engine implementation.
  .
  This package contains the library.
