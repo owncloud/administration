@@ -113,9 +113,22 @@ Patch1:         autostart_use_wrapper.diff
   %define use_qt5 1
 %endif
 # Check for SLE12 -> it does not have qt5 obviously.
-%if ! 0%{?is_opensuse} && 0%{?suse_version}==1315
+%if 0%{?sle_version} && !0%{?is_opensuse}
   %define use_qt5 0
 %endif
+
+# The infamous SUSE matrix:
+# -------------------------
+#
+#                      	is_opensuse 	suse_version	sle_version
+# openSUSE_13.1				1310
+# SLE_12				1315		120000
+# SLE_12_SP1				1315		120100
+# openSUSE_Leap_42.1	1		1315		120100
+# openSUSE_13.2				1320
+# openSUSE_Factory	1		1330
+# openSUSE_Tumbleweed	1		1330
+
 
 ######################################################################### BuildRequires only below here.
 
