@@ -10,4 +10,3 @@ fi
 exec /opt/$qtdir/bin/[% APPLICATION_EXECUTABLE %]cmd "$@"
 
 # end
-
