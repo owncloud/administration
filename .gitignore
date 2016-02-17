@@ -1,3 +1,10 @@
 *.gem
+*.o
+*.moc
+
 jenkins/daily-monitor/owncloud-daily-*.tar.bz2
 jenkins/daily-monitor/owncloud/
+
+performance-tests-c++/Makefile
+performance-tests-c++/webdav-benchmark
+performance-tests-c++/webdav-benchmark.app
