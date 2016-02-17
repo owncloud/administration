@@ -25,7 +25,7 @@ function execute_tests {
   if [ "$1" -eq "1" ]; then
     rm /tmp/performance-tests/$currentTime.csv
   else
-    mv /tmp/performance-tests/$currentTime.csv /tmp/performance-tests/result.$1.$shaSum.$currentTime.csv
+    mv /tmp/performance-tests/$currentTime.csv /tmp/performance-tests/result.$2.$shaSum.$currentTime.csv
   fi
 
   if [ -f /var/log/mysql/mysql.log -a "$1" -eq "1" ]; then
@@ -50,7 +50,7 @@ currentTime=$(date +%Y-%m-%d.%H-%M-%S)
 echo "$(date '+%Y-%m-%d %H-%M-%S') Checkout commit $2 ..."
 cd /var/www/owncloud
 git fetch
-git checkout -q $2 || exit 1
+git checkout -q $1 || exit 1
 shaSum=$(git rev-parse HEAD)
 echo "SHA sum: $shaSum"
 git submodule update
