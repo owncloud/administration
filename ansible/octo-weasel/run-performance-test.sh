@@ -25,7 +25,7 @@ function execute_tests {
   if [ "$1" -eq "1" ]; then
     rm /tmp/performance-tests/$currentTime.csv
   else
-    mv /tmp/performance-tests/$currentTime.csv /tmp/performance-tests/result.$currentTime.csv
+    mv /tmp/performance-tests/$currentTime.csv /tmp/performance-tests/result.$1.$shaSum.$currentTime.csv
   fi
 
   if [ -f /var/log/mysql/mysql.log -a "$1" -eq "1" ]; then
@@ -62,7 +62,7 @@ execute_tests 1 $1
 
 echo "$(date '+%Y-%m-%d %H-%M-%S') Aggregate query and access logs ..."
 cd /root
-php process.php /tmp/performance-tests/mysql-general-query-$currentTime.log /tmp/performance-tests/access-$currentTime.log /tmp/performance-tests/results-$currentTime.json
+php process.php /tmp/performance-tests/mysql-general-query-$currentTime.log /tmp/performance-tests/access-$currentTime.log /tmp/performance-tests/stats.$1.$shaSum.$currentTime.json
 
 # TODO push the results to weasel API
 
