@@ -78,6 +78,7 @@
 # V2.21 -- 2015-09-17, jw  Option -S prints out the dockerfile as a plain shell script.
 # V2.22 -- 2015-11-05, jw  format DNF added, used with Fedora_22
 # V2.23 -- 2016-01-29, jw  use liberation-sans-fonts for -X with centos_6
+# V2.24 -- 2016-02-22, jw  support bad ssl certs via -k. E.g. for owncloud.org vs owncloud.com clashes.
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 #
@@ -91,7 +92,7 @@
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="2.23"
+__VERSION__="2.24"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import yaml, sys, os, re, time, tempfile
@@ -313,10 +314,12 @@ docker_volumes=[]
 # import github/owncloud/administration/jenkins/obs_integration/ListUrl.py
 class ListUrl:
 
-  def _apache_index(self, url):
+  def _apache_index(self, url, noverify=False):
     verify='/etc/ssl/ca-bundle.pem'
     if not os.path.exists(verify): verify='/etc/ssl/certs/ca-certificates.crt'	# seen in https://urllib3.readthedocs.org/en/latest/security.html
     if not os.path.exists(verify): verify=True
+
+    if noverify: verify=False
 
     r = requests.get(url, verify=verify) 	# default verify=True fails on python3@openSUSE-13.1 with DEFAULT_CA_BUNDLE_PATH=/etc/ssl/cersts/ EISDIR
 
@@ -345,9 +348,9 @@ class ListUrl:
           r.files.append([m1, m3])
     return r
 
-  def apache(self, url, pre=''):
+  def apache(self, url, pre='', noverify=False):
     if not url.endswith('/'): url += '/'        # directory!
-    l = self._apache_index(url)
+    l = self._apache_index(url, noverify)
     r = []
     for f in l.files:
       if self.callback: self.callback(url, pre, f[0], f[1])
@@ -356,7 +359,7 @@ class ListUrl:
       if self.callback: self.callback(url, pre, d[0], d[1])
       r.append([pre+d[0], d[1]])
       if self.recursive:
-        r.extend(self.apache(url+d[0], pre+d[0]))
+        r.extend(self.apache(url+d[0], pre+d[0], noverify))
     return r
 
   def __init__(self, callback=None, recursive=True):
@@ -528,11 +531,11 @@ def obs_fetch_bin_version(api, download_item, prj, pkg, target, retry=True):
   lu = ListUrl()
   bin_seen = ''
   try:
-    downloads = lu.apache(cfg['url_cred']+'/'+target)
+    downloads = lu.apache(cfg['url_cred']+'/'+target, noverify=args.keep_going)
     for line in downloads:
       bin_seen += re.sub(".*/", "", line[0]) + "\n"
-  except:
-    pass
+  except Exception as e:
+    print("Error: ", str(e))
 
   # osc ls -b obsoleted by the above ListUrl()
   # bin_seen = run(["osc", "-A"+api, "ls", "-b", args.project, args.package, target], input="")
