@@ -13,6 +13,8 @@
 # 2015-01-19, jw, return failure, when osc copypac fails.
 # 2015-01-22, jw, honor env OSC_CMD -- needed for rotor publish-oem-client-linux
 # 2016-02-08, jw, add qt5-qt* packages for centosius.
+# 2016-02-25, jw, https://github.com/owncloud/ownbrander/issues/540 
+#                 switches added: use_aggregates, re_use_existing_packages.
 #
 use Data::Dumper;
 sub list_obs_pkg;
@@ -22,6 +24,9 @@ my $src_prj = 'desktop';
 my $dest_prj_prefix = 'oem:';
 my $obs_api = 'https://obs.int.owncloud.com';
 my $osc_cmd = $ENV{'OSC_CMD'} || 'osc';
+
+my $use_aggregates = 1;			# 1: do aggregatepac instead of copypac
+my $re_use_existing_packages = 0;	# 0: always from scratch
 
 my $client_name = $ARGV[0];
 die qq{
@@ -57,9 +62,22 @@ for my $pkg (@src_pkgs)
     if ($existing_pkg{$pkg})
       {
         print STDERR "exists: $dest_prj $pkg\n";
-	next;
+	if ($re_use_existing_packages)
+	  {
+	    next;
+	  }
+	else
+	  {
+            my $cmd = "$osc_cmd -A$obs_api rdelete $dest_prj $pkg";
+            print STDERR "+ $cmd\n";
+            system($cmd);
+	  }
       }
     my $cmd = "$osc_cmd -A$obs_api copypac $src_prj $pkg $dest_prj";
+    if ($use_aggregates)
+      {
+        my $cmd = "$osc_cmd -A$obs_api aggregatepac $src_prj $pkg $dest_prj";
+      }
     print STDERR "+ $cmd\n";
     system($cmd) and exit(1);
   }
