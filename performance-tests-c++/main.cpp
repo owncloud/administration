@@ -6,6 +6,7 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QSignalSpy>
+#include <QTime>
 #include <QUrl>
 #include <qtest.h>
 
@@ -54,6 +55,8 @@ private slots:
     void propfindFolderSizes();
     void copyFolder_data();
     void copyFolder();
+    void chunkedPutFile_data();
+    void chunkedPutFile();
 
 private:
     QNetworkReply *reqPropfind(const QUrl &url, QIODevice *body = 0);
@@ -134,6 +137,39 @@ void Test::putFile()
     QNetworkRequest req{requestUri};
     QBENCHMARK {
         QVERIFY(waitForReply(qnam.put(req, fileContents)));
+    }
+}
+
+void Test::chunkedPutFile_data() {  
+    QTest::addColumn<int>("chunkSize");
+    QTest::addColumn<int>("chunkCount");
+    QTest::newRow("5mb-10") << 5*1024*1024 << 10;
+    QTest::newRow("5mb-100") << 5*1024*1024 << 100;
+    QTest::newRow("10mb-5") << 10*1024*1024 << 5;
+    QTest::newRow("10mb-50") << 10*1024*1024 << 50;
+}
+
+void Test::chunkedPutFile() {
+    QFETCH(int, chunkSize);
+    QFETCH(int, chunkCount);
+
+    QByteArray fileContents(chunkSize, 'W');
+    QString path = "/test-" +
+        QString(QTest::currentDataTag()) +
+        ".dat-chunking-" +
+        QString::number(QTime::currentTime().msec()) +
+        "-" +
+        QString::number(chunkCount) +
+        "-";
+
+    QBENCHMARK {
+        for(int i = 0; i < chunkCount; i++) {
+            QUrl requestUri{testDataUri};
+            requestUri.setPath(requestUri.path() + path + QString::number(i));
+            QNetworkRequest req{requestUri};
+            req.setRawHeader("OC-Chunked", "1");
+            QVERIFY(waitForReply(qnam.put(req, fileContents)));
+        }
     }
 }
 
