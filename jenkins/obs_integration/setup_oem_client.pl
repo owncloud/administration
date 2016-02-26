@@ -77,7 +77,7 @@ for my $pkg (@src_pkgs)
     my $cmd = "$osc_cmd -A$obs_api copypac $src_prj $pkg $dest_prj";
     if ($use_aggregates)
       {
-        my $cmd = "$osc_cmd -A$obs_api aggregatepac $src_prj $pkg $dest_prj";
+        $cmd = "$osc_cmd -A$obs_api aggregatepac $src_prj $pkg $dest_prj";
       }
     print STDERR "+ $cmd\n";
     system($cmd) and exit(1);
