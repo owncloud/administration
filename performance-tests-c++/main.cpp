@@ -2,6 +2,7 @@
 #include <QBuffer>
 #include <QCoreApplication>
 #include <QNetworkAccessManager>
+#include <QNetworkCookieJar>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QSignalSpy>
@@ -36,6 +37,8 @@ public:
                 authenticator->setUser(user);
                 authenticator->setPassword(password);
         });
+     
+        qnam.setCookieJar(&jar);
     }
 
 private slots:
@@ -60,6 +63,7 @@ private:
     QMap<int, QUrl> initSubdirUris;
     QMap<int, QUrl> copiedSubdirUris;
     QNetworkAccessManager qnam;
+    QNetworkCookieJar jar;
 };
 
 QNetworkReply *Test::reqPropfind(const QUrl &url, QIODevice *body)
@@ -84,7 +88,6 @@ void Test::initTestCase()
 {
     // waitForReply(qnam.sendCustomRequest(QNetworkRequest{testDataUri}, "DELETE"));
 
-    QNetworkRequest req{testDataUri};
     auto r = reqPropfind(testDataUri);
     waitForReply(r, false);
     if (r->error()) {
