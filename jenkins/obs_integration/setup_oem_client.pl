@@ -15,6 +15,7 @@
 # 2016-02-08, jw, add qt5-qt* packages for centosius.
 # 2016-02-25, jw, https://github.com/owncloud/ownbrander/issues/540 
 #                 switches added: use_aggregates, re_use_existing_packages.
+# 2016-02-26, jw, rdelete with -m !!!
 #
 use Data::Dumper;
 sub list_obs_pkg;
@@ -68,7 +69,7 @@ for my $pkg (@src_pkgs)
 	  }
 	else
 	  {
-            my $cmd = "$osc_cmd -A$obs_api rdelete $dest_prj $pkg";
+            my $cmd = "$osc_cmd -A$obs_api rdelete -m 'remove old copy' $dest_prj $pkg";
             print STDERR "+ $cmd\n";
             system($cmd);
 	  }
