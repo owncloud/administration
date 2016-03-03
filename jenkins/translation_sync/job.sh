@@ -69,6 +69,10 @@ cd ..
 #
 rm -rf l10n/l10n.pl
 git rm -rf l10n/l10n.pl || true
+git rm -rf l10n/uz.* || true
+git rm -rf l10n/yo.* || true
+git rm -rf l10n/ne.* || true
+git rm -rf l10n/or_IN.* || true
 
 
 #
