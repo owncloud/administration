@@ -14,6 +14,8 @@
 #
 # 2014-08-06: remove *all* old tar balls to make deb happy.
 # 
+# 2016-03-04: also recognize prealpha as a prerelease name.
+#
 use Getopt::Std;
 use Config::IniFiles;
 use File::Copy;
@@ -129,7 +131,7 @@ sub doBuild( $$ ) {
   my $debversion = $version;
   $debversion =~ s/_/-/;
   # prerelease numbers need a '~'
-  $debversion =~ s{[_.-]*(nightly|daily|alpha|beta|rc)}{~$1};
+  $debversion =~ s{[_.-]*(nightly|daily|prealpha|alpha|beta|rc)}{~$1};
   if ($debversion =~ m{^(.*)~(.*)$})
     {
       my ($base_version, $prerelease) = ($1,$2);
