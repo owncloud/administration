@@ -140,6 +140,8 @@
     copy: src=QueryLogParser/QueryLogParser.php dest=/root/QueryLogParser.php owner=root group=root mode=0644
   - name: upload AccessLogParser.php
     copy: src=QueryLogParser/AccessLogParser.php dest=/root/AccessLogParser.php owner=root group=root mode=0644
+  - name: upload sendResults.php
+    copy: src=sendResults.php dest=/root/sendResults.php owner=root group=root mode=0644
 
   handlers:
     - name: restart apache

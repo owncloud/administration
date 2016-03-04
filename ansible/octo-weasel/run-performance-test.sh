@@ -64,6 +64,15 @@ echo "$(date '+%Y-%m-%d %H-%M-%S') Aggregate query and access logs ..."
 cd /root
 php process.php /tmp/performance-tests/mysql-general-query-$currentTime.log /tmp/performance-tests/access-$currentTime.log /tmp/performance-tests/stats.$1.$shaSum.$currentTime.json
 
-# TODO push the results to weasel API
+if [ -f api ]; then
+    source api
+fi
+
+if [ -z API_URL ]; then
+    echo "API url specified - will try to send data"
+    php sendResults.php $1 $shaSum $currentTime /tmp/performance-tests/result.$1.$shaSum.$currentTime.csv /tmp/performance-tests/stats.$1.$shaSum.$currentTime.json
+else
+    echo "No API url specified - please expose this in /root/api"
+fi
 
 echo "$(date '+%Y-%m-%d %H-%M-%S') Finished"

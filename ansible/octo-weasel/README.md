@@ -22,9 +22,9 @@ ssh 1.2.3.4
 
 Test results can be found in `/tmp/performance-tests` and have the time stamp of the start in it's name.
 
-Parse the query log (will print not parseable lines and write the result to `results.json`):
+Place a file `/root/api` with the API URL and credentials to automatically upload the results:
 
 ```
-cd /root
-php process.php /PATH/TO/QUERY.log /PATH/TO/ACCESS.log results.json
+export API_URL='https://api.example.org/'
+export API_TOKEN='abcdefghi123456789'
 ```
