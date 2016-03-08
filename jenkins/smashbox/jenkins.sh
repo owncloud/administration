@@ -41,7 +41,8 @@ fi
 function cleanup() {
 	if [ ! -z "$DOCKER_CONTAINER_ID" ]; then
 		echo "Kill the docker $DOCKER_CONTAINER_ID"
-		docker rm -f "$DOCKER_CONTAINER_ID"
+		docker stop "$DOCKER_CONTAINER_ID"
+		docker rm -rf "$DOCKER_CONTAINER_ID"
 	fi
 }
 
