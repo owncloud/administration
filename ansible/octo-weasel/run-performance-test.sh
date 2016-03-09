@@ -49,8 +49,9 @@ currentTime=$(date +%Y-%m-%d.%H-%M-%S)
 
 echo "$(date '+%Y-%m-%d %H-%M-%S') Checkout commit $2 ..."
 cd /var/www/owncloud
-git fetch
+git fetch -q
 git checkout -q $1 || exit 1
+git pull -q
 shaSum=$(git rev-parse HEAD)
 echo "SHA sum: $shaSum"
 git submodule update
@@ -68,7 +69,7 @@ if [ -f api ]; then
     source api
 fi
 
-if [ -z API_URL ]; then
+if [ -n "$API_URL" ]; then
     echo "API url specified - will try to send data"
     php sendResults.php $1 $shaSum $currentTime /tmp/performance-tests/result.$1.$shaSum.$currentTime.csv /tmp/performance-tests/stats.$1.$shaSum.$currentTime.json
 else
