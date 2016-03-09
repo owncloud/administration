@@ -670,7 +670,7 @@ def obs_download_cfg(config, download_item, prj_path, urltest_target=None, verbo
 
 def matched_package_run_script(package_name, platform_name, pat_dict):
   """ pat_dict.key() '' is a special case. 
-      It is the default that matches only when nothing lese matches.
+      It is the default that matches only when nothing else matches.
   """ 
   match_list = []
   ret = None
