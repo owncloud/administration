@@ -79,6 +79,7 @@
 # V2.22 -- 2015-11-05, jw  format DNF added, used with Fedora_22
 # V2.23 -- 2016-01-29, jw  use liberation-sans-fonts for -X with centos_6
 # V2.24 -- 2016-02-22, jw  support bad ssl certs via -k. E.g. for owncloud.org vs owncloud.com clashes.
+# V2.25 -- 2016-03-10, jw  obs repo mapping. Used to play with Ubuntu_16.04 before obs offers this.
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 #
@@ -92,7 +93,7 @@
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="2.24"
+__VERSION__="2.25"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import yaml, sys, os, re, time, tempfile
@@ -105,7 +106,7 @@ except ImportError:
   import urllib2			# python2
 
 
-target="Ubuntu_14.10"		# default value
+target="Ubuntu_14.04"		# default value
 
 default_obs_config_yaml = "# Written by "+sys.argv[0]+""" -- edit also the builtin template
 obs:
@@ -261,6 +262,8 @@ target:
   Ubuntu_14.04: { base: [Debian_6.0], from: 'ubuntu:14.04' }
   Ubuntu_14.10: { base: [Debian_6.0], from: 'ubuntu:14.10' }
   Ubuntu_15.04: { base: [Debian_6.0], from: 'ubuntu:15.04' }
+  Ubuntu_15.10: { base: [Debian_6.0], from: 'ubuntu:15.10' }
+  Ubuntu_16.04: { base: [Debian_6.0], from: 'ubuntu:16.04', repo: 'Ubuntu_15.10' }
 
   # xUbuntu* are simply aliases for Ubuntu*
   xUbuntu_12.04: { base: [Ubuntu_12.04] }
@@ -270,6 +273,8 @@ target:
   xUbuntu_14.04: { base: [Ubuntu_14.04] }
   xUbuntu_14.10: { base: [Ubuntu_14.10] }
   xUbuntu_15.04: { base: [Ubuntu_15.04] }
+  xUbuntu_15.10: { base: [Ubuntu_15.10] }
+  xUbuntu_16.04: { base: [Ubuntu_16.04] }
 
   openSUSE_13.1:
     fmt: ZYPP
@@ -840,6 +845,9 @@ if args.dump:
     if not args.quiet:
       print("ERROR: " + args.dump + " not in 'target->" + target + "', try one of these:\n", cfg.keys(), file=sys.stderr)
   sys.exit(0)
+
+if 'repo' in obs_config['target'][target]:
+  obs_target = obs_config['target'][target]['repo']
 
 obs_api=guess_obs_api(args.project, args.obs_api, not args.quiet)
 try:
