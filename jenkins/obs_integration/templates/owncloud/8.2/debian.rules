@@ -1,0 +1,16 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# (C) 2016 jw@owncloud.com
+#
+# see qtkeychain/debian.rules for a nice one.
+
+export DH_VERBOSE=1
+SHELL=/bin/bash
+
+
+%:
+	dh $@
+
+override_dh_install:
+	dh_install -Xdebian
+

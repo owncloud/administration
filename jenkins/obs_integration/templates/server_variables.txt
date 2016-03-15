@@ -1,0 +1,6 @@
+[% PACKNAME %]		owncloud, owncloud-enterprise, owncloud-files, owncloud-enterprise-files
+[% PRERELEASE %]	%nil, beta1, RC2, ... (even prealpha1)
+[% VERSION %]		8.2.3 or later
+[% VERSION_MM %]	Two digit major.minor version number: 8.2 or later
+[% VERSION_DEB %]	Same as [% VERSION %] or [% VERSION %]~[% PRERELEASE %], but guaranteed without _
+[% BUILDRELEASE_DEB %]	1 (or more, if specified...)
