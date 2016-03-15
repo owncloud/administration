@@ -1,0 +1,60 @@
+			jw, Di 24. Nov 19:13:28 CET 2015 
+=================================================
+Structure of Linux packages for ownCloud server 9
+=================================================
+
+New offer
+---------
+
+With 9.0, we offer simplified and more universal packaging.
+The owncloud package cover a recommended installation 
+scenario with all platform specific dependencies 
+(database, webserver, php-modules) to make the server run.
+
+The owncloud-files package is mostly platform independant
+and does not include a standard set of dependencies. This gives
+users choice of environment, especially suited for clustered
+scenarios, where e.g. databases live on different machines. 
+
+
+First Installation
+------------------
+The ownCloud server files (code base) are installed in the web space. 
+Depending on the Linux operating system the main ownCloud directory is here:
+
+Debian/Ubuntu: 		/var/www/owncloud/
+Fedora/RHEL/CentOS:	/var/www/html/owncloud
+openSUSE/SLES:		/srv/www/htdocs/owncloud
+Others:			/var/www/owncloud)
+
+Depending on any previous webserver configuration, tha files may or may not be
+readable through the webspace. Or php may or may not execute properly.
+Sysadmin is advised to prevent unintended user access during installation.
+
+You may notice, this also puts more burden on the sysadmin.
+But we prepared things for you. An apache config file named owncloud-config-apache.conf.default can be found in the 
+'etc' folder under the main the main ownCloud directory.
+
+These steps should get you going with an Apache webserver:
+
+ - Copy the apache config to your /etc/apache/conf.d directory
+   and restart apache. 
+ - Review the config, edit as needed. Without editing working defaults are chosen.
+ - reload apache. With an unmodified config file, this will add an /ownloud/ web-route.
+
+
+Migration / Upgrade
+-------------------
+The new package owncloud-files obsoletes the owncloud-server package. 
+Depending on your owncloud-deps package, the following items need 
+administrator attention:
+ - some neeed dependencies (php-modules) may have been installed
+   as requirements of owncloud-server and will be candidates for 
+   autodeletion, as soon as owncloud-enterprise is un-installed.
+ - backup your database and config files as usual.
+ - use occ (or its new /usr/bin/owncloud_occ wrapper) to check for
+   missing dependencies.
+ - use occ (or its new /usr/bin/owncloud_occ wrapper) to perform the
+   upgrade.
+
+

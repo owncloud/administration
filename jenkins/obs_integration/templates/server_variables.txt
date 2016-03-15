@@ -4,3 +4,5 @@
 [% VERSION_MM %]	Two digit major.minor version number: 8.2 or later
 [% VERSION_DEB %]	Same as [% VERSION %] or [% VERSION %]~[% PRERELEASE %], but guaranteed without _
 [% BUILDRELEASE_DEB %]	1 (or more, if specified...)
+[% SOURCE_TAR_URL %]	http://.../owncloud-enterprise-complete-8.2.3.tar.bz2 or just a filename.
+[% SOURCE_TAR_TOP_DIR %] owncloud	(needs to be enterprise for some strange tar archives)
