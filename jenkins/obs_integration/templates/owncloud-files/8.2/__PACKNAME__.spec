@@ -48,9 +48,6 @@
  
 Name:           [% PACKNAME %]
 
-# Downloaded from http://download.owncloud.com/internal/8.2.1/owncloud-complete-8.2.1.tar.bz2
-# Downloaded from http://download.owncloud.com/internal/8.2.2RC1/owncloud-complete-8.2.2RC1.tar.bz2
-
 ## define prerelease % nil, if this is *not* a prerelease.
 %define prerelease [% PRERELEASE %]
 %define base_version [% VERSION %]
@@ -69,7 +66,7 @@ Version:       	%{base_version}~%{prerelease}
 Release:        0
 %endif
 
-# http://owncloud:owncloud42@download.owncloud.com/internal/8.2.2/owncloud-complete-8.2.2.tar.bz2
+# http://download.owncloud.org/community/testing/owncloud-8.2.2RC1.tar.bz2
 Source0:        [% SOURCE_TAR_URL %]
 Source1:        apache_conf_default
 Source2:        README
