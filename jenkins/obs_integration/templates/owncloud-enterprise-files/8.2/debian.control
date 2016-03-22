@@ -9,17 +9,19 @@ Package: [% PACKNAME %]
 Architecture: all
 Suggests: owncloud-deps
 Depends: ${misc:Depends}
-Replaces: owncloud 		(<= 8.2.2),
+Replaces: owncloud-enterprise 		(<= 8.2.2),
+	owncloud-enterprise-theme 	(<= 8.99.99),
 	owncloud-config-apache	(<= 8.99.99),
 	owncloud-server		(<= 8.99.99),
 	owncloud		(<= 8.99.99)
-Conflicts: owncloud 		(<= 8.2.2),
+Conflicts: owncloud-enterprise 		(<= 8.2.2),
+	owncloud-enterprise-theme 	(<= 8.99.99),
 	owncloud-config-apache	(<= 8.99.99),
 	owncloud-server		(<= 8.99.99),
 	owncloud 		(<= 8.99.99)
 #
 #
-Description: ownCloud - Server
+Description: ownCloud - Server Enterprise Edition
  The [% PACKNAME %] package installs the codebase. To make it 
  functional, it should be installed with one of the platform specific 
  owncloud-deps-* packages to include a standard set of dependencies. 

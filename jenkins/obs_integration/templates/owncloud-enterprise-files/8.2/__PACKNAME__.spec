@@ -91,12 +91,27 @@ Recommends: %{name}-deps
 BuildRequires:        -rpmlint -rpmlint-mini
 %endif
 
+Obsoletes:	owncloud-enterprise	<= 8.2.2
+Obsoletes:	owncloud-enterprise-theme <= 8.2.2
+Obsoletes:	owncloud-enterprise-app-files_antivirus	<= 8.2.2
+Obsoletes:	owncloud-enterprise-app-files_ldap_home	<= 8.2.2
+Obsoletes:	owncloud-enterprise-app-admin_audit	<= 8.2.2
+Obsoletes:	owncloud-enterprise-app-windows_network_drive	<= 8.2.2
+Obsoletes:	owncloud-enterprise-app-files_drop	<= 8.2.2
+Obsoletes:	owncloud-enterprise-app-files_sharing_log	<= 8.2.2
+Obsoletes:	owncloud-enterprise-app-enterprise_key	<= 8.2.2
+Obsoletes:	owncloud-enterprise-app-password_policy	<= 8.2.2
+Obsoletes:	owncloud-enterprise-app-user_shibboleth	<= 8.2.2
+Obsoletes:	owncloud-enterprise-app-firewall	<= 8.2.2
+Obsoletes:	owncloud-enterprise-app-sharepoint	<= 8.2.2
+Obsoletes:	owncloud-enterprise-app-objectstore	<= 8.2.2
+
 Obsoletes:	owncloud-server 	<= 8.2.2
 Obsoletes:	owncloud-config-apache 	<= 8.2.2
 Obsoletes:	owncloud		<= 8.2.2
 
 %description
-ownCloud Server provides you a private file sync and share
+ownCloud Server Enterprise Edition provides you a private file sync and share
 cloud. Host this server to easily sync business or private documents
 across all your devices, and share those documents with other users of
 your ownCloud server on their devices.
