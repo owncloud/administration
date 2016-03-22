@@ -258,8 +258,14 @@ if m:
   if not 'PACKNAME'   in define: define['PACKNAME']   = m.group(2)
   if not 'VERSION'    in define: define['VERSION']    = m.group(3)
   if not 'PRERELEASE' in define: define['PRERELEASE'] = m.group(4)
+  if define['VERSION'] != m.group(3):
+    print("Warning: Version number in tar '"+m.group(3)+"' differs from VERSION="+define['VERSION'])
+    print("Waiting 3 seconds for CTRL-C")
+    time.sleep(5)
 else:
   print("Warning: cannot parse PACKNAME, VERSION, PRERELEASE from tar-name: "+args.url)
+  print("Waiting 3 seconds for CTRL-C")
+  time.sleep(5)
 
 # print m.groups()
 
