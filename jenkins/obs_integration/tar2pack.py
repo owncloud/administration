@@ -32,6 +32,7 @@
 #                       added -[% BUILDRELEASE_DEB %] to builtin changelog entry template.
 #                       added which() to allow a helpful error, when svn is not there.
 #                       Ignoring bogus directories in outdir, instead of failing during removal.
+# 2016-03-22: V0.6  jw: parse nightly tar names correctly.
 #
 ## TODO: refresh version in dsc file, to be in sync with changelog.
 ## FIXME: should have a mode to grab all the define variables from an existing specfile.
@@ -245,15 +246,21 @@ if args.define:
 if not 'PACKNAME' in define and args.outdir:
   define['PACKNAME'] = args.outdir
 
+# owncloud-9.1.0prealpha.20160322.tar.bz2
+# (None, 'owncloud', '9.1.0', 'prealpha.20160322', 'tar.bz2', '.bz2')
+#
 # http://download.owncloud.org/community/owncloud-9.0.0RC1.tar.bz2
 # ('http://download.owncloud.org/community/', 'owncloud', '9.0.0', 'rc1', 'tar.bz2', '.bz2')
-#              1              2                  3          4   5
-m = re.match(r'(.*/)?(.*?)[_-](\d[\d\.]*?)[\.~-]?([a-z]+\d+)?\.(tar(\.\w+)?|tgz|zip)$', args.url, flags=re.IGNORECASE)
+#              1              2                  3                 4   5
+m = re.match(r'(.*/)?(.*?)[_-](\d[\d\.]*?)[\.~-]?([a-z]+[\d\.]+)?\.(tar(\.\w+)?|tgz|zip)$', args.url, flags=re.IGNORECASE)
 if m:
   if not 'SOURCE_TAR_TOP_DIR' in define: define['SOURCE_TAR_TOP_DIR'] = m.group(2)
   if not 'PACKNAME'   in define: define['PACKNAME']   = m.group(2)
   if not 'VERSION'    in define: define['VERSION']    = m.group(3)
   if not 'PRERELEASE' in define: define['PRERELEASE'] = m.group(4)
+else:
+  print("Warning: cannot parse PACKNAME, VERSION, PRERELEASE from tar-name: "+args.url)
+
 # print m.groups()
 
 if not 'PRERELEASE' in define or define['PRERELEASE'] == None or define['PRERELEASE'] == '': 
