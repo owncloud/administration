@@ -100,6 +100,7 @@ ownCloud - Your Cloud, Your Data, Your Way!  www.owncloud.org
 %define oc_config_dir 	%{oc_apache_web_dir}/config
 %define oc_data_dir 	%{oc_apache_web_dir}/data
 %define oc_data_pdir 	%{oc_apache_web_dir}
+%define oc_doc_dir	/usr/share/doc/owncloud
 
 %define ocphp		php
 %define ocphp_bin	/usr/bin
@@ -226,10 +227,10 @@ perl -pani -e 's@^(APACHE_MODULES=")@${1}php5 @' /etc/sysconfig/apache2
 fi
 
 # install our apache config
-if [ -f %{oc_dir}/etc/owncloud-config-apache.conf.default ]; then
+if [ -f "%{oc_doc_dir}*/owncloud-config-apache.conf.default" ]; then
   echo "install owncloud.conf into apache, if missing"
   if [ -d %{apache_confdir} -a ! -f %{apache_confdir}/owncloud.conf ]; then  
-    cp %{oc_dir}/etc/owncloud-config-apache.conf.default %{apache_confdir}/owncloud.conf
+    cp %{oc_doc_dir}*/owncloud-config-apache.conf.default %{apache_confdir}/owncloud.conf
     chown root:root %{apache_confdir}/owncloud.conf
     chmod 644 %{apache_confdir}/owncloud.conf
   fi
@@ -268,7 +269,12 @@ if [ -s %{statedir}/occ_maintenance_mode_during_owncloud_install ]; then
 fi
 rm -f %{statedir}/occ_maintenance_mode_during_owncloud_install
 
-
+if [ $1 -eq 1 ]; then
+    echo "Asserting file permission during first install"
+    # CAUTION: if owncloud-files was installed before httpd, everything belongs to root:root.
+    # Mimic here again, what the files section there would have done:
+    chown -R %{oc_user}:%{oc_group} %{oc_config_dir} %{oc_data_dir} %{oc_dir}/apps
+fi
 
 
 # no binary packages are generated without a files section.

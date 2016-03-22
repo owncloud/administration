@@ -35,7 +35,7 @@ Depends: ${misc:Depends}, php5 (>= 5.4.0),
 	php5-common, php5-gd, php-xml-parser, php5-intl, php5-mcrypt, php5-curl, php5-json, 
 	php5-mysqlnd | php5-mysql, php5-sqlite, php5-pgsql, 
 	php5-cgi | php5-fpm | libapache2-mod-php5,
-	apache2 | httpd
+	apache2 (>= 2.4.0) | httpd
 # Don't recommend php5-apcu for Ubuntu-14.04 https://github.com/owncloud/core/issues/14188
 # Don't use apcu before 4.0.6 https://github.com/owncloud/core/issues/14175
 # php5-imagick is needed by apps/files-versions
