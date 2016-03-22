@@ -36,7 +36,7 @@
 #
 ## TODO: refresh version in dsc file, to be in sync with changelog.
 ## FIXME: should have a mode to grab all the define variables from an existing specfile.
-## FIXME: SOURCE_TAR_TOP_DIR from SOURCE_TAR_URL is derived too late for templates.
+## FIXME: SOURCE_TAR_TOP_DIR from args.url is derived too late for templates.
 
 
 
@@ -234,6 +234,7 @@ except:
   pass	# survive without osc too.
 
 # shortcut define options
+if args.define is None: args.define = []
 if args.name: args.define.append("PACKNAME=" + args.name)
 if args.email: args.define.append("MAINTAINER_EMAIL=" + args.email)
 
@@ -285,10 +286,12 @@ if not 'DATE_RPM' in define: define['DATE_RPM'] = time.strftime("%a %b %e %H:%M:
 #                         					"Tue, 02 Jun 2015 14:30:50 +0200"
 if not 'DATE_DEB' in define: define['DATE_DEB'] = time.strftime("%a, %d %b %Y %H:%M:%S %z")
 
+# so that we can override it with -d SOURCE_TAR_URL=owncloud-%{base_version}%{prerelease}.tar.bz2
+if not 'SOURCE_TAR_URL' in define: define['SOURCE_TAR_URL'] = args.url
+
 
 # automatic variables that cannot be overwritten:
 define['VERSION_MM'] = re.sub(r'^([^\.]+\.[^\.]+).*$', "\g<1>", define['VERSION'])
-define['SOURCE_TAR_URL'] = args.url
 
 if verbose: print define
 
