@@ -28,6 +28,14 @@
 # 2016-03-16: V0.3  jw: templatizing done.
 # 2016-03-17: V0.4  jw: added more command line options, copied more code from obs-new-tar.
 #                       Code complete. Ready for testing!
+# 2016-03-21: V0.5  jw: added -O, -m -- no more implicit outdir creation.
+#                       added -[% BUILDRELEASE_DEB %] to builtin changelog entry template.
+#                       added which() to allow a helpful error, when svn is not there.
+#                       Ignoring bogus directories in outdir, instead of failing during removal.
+#
+## TODO: refresh version in dsc file, to be in sync with changelog.
+## FIXME: Source0: should keep its url, if a path is given
+## FIXME: SOURCE_TAR_TOP_DIR should be properly inspected from tar-archive.
 
 
 
@@ -35,6 +43,7 @@ import sys, time, argparse, subprocess, os, re, tempfile, shutil
 
 argv0 = 'obs_integration/tar2pack.py'
 def_template_dir = 'http://github.com/owncloud/administration/tree/master/jenkins/obs_integration/templates'
+def_msg="Update to version [% VERSION_DEB %]"
 
 def subst_variables(text, subst, filename=False):
   def subst_cb(m):
@@ -97,7 +106,7 @@ def edit_debchangelog(file, data, msg="Update to version [% VERSION_DEB %]"):
     If an identical entry (except for the timestamp) is already there,
     we just update the timestamp.
   """
-  entry_fmt = """[% PACKNAME %] ([% VERSION_DEB %]) stable; urgency=low
+  entry_fmt = """[% PACKNAME %] ([% VERSION_DEB %]-[% BUILDRELEASE_DEB %]) stable; urgency=low
 
   * """+msg+"""
 
@@ -140,6 +149,25 @@ def run_osc(args, redirect=False):
     osc += os.environ.get('OSCPARAM').split(' ')
   return run( osc + args, redirect=redirect )
 
+def which(program):
+    """
+      FROM: http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python#377028
+    """
+    import os
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            path = path.strip('"')
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+    return None
 
 # Keep in sync with obs-new-tar.py internal_tar2obs.py obs_docker_install.py
 def run(args, input=None, redirect=None, redirect_stdout=True, redirect_stderr=True, return_tuple=False, return_code=False, tee=False):
@@ -184,14 +212,16 @@ def run(args, input=None, redirect=None, redirect_stdout=True, redirect_stderr=T
   return out
 
 
-ap=argparse.ArgumentParser(description='deb/rpm package generator, using a tar-archive and templates. The result is written to a subdirectory named after the variable PACKNAME')
+ap=argparse.ArgumentParser(description='deb/rpm package generator, using a tar-archive and templates. PACKNAME and VERSION are derived from the tar-archive name unless explicitly specified.')
 ap.add_argument('url', type=str, help="tar archive (file or) url to put into this package")
 ap.add_argument('-d', '--define', action="append", metavar="KEY=VALUE", help="Specify name=value for template variables. Default: derive from url")
-ap.add_argument('-n', '--name', metavar="PACKNAME", help="same as -d PACKNAME=... This defines the name of the.")
+ap.add_argument('-n', '--name', metavar="PACKNAME", help="same as -d PACKNAME=... This defines the name of the package. Default: If no explicit PACKNAME is given, it is derived from -O (if available) or from the tar-archive name.")
 ap.add_argument('-e', '--email', metavar="MAINTAINER_EMAIL", help="same as -d MAINTAINER_EMAIL=...; used when updating changelogs. Default: from osc user, if available.")
 ap.add_argument('-t', '--template-dir', metavar="TEMPLATE-DIR", default=def_template_dir, help="directory where templates are. Also supports a github repository URL or '../tree/master/..' subdirectory URL")
 ap.add_argument('-v', '--verbose', action='store_true', help="Be more verbose. Default: quiet")
 ap.add_argument('-k', '--keepfiles', action='store_true', help="Keep unknown files in package. Default: remove them.")
+ap.add_argument('-O', '--outdir', help="Define output directory. This also provides a default for PACKNAME. Default: subdirectoy PACKNAME and PACKNAME derived fro tar-archive name.")
+ap.add_argument('-m', '--message', help="Define the commit and changelog message. Default: "+re.sub('%', '%%', def_msg), default=def_msg)
 args=ap.parse_args()
 print args
 
@@ -207,15 +237,20 @@ if args.name: args.define.append("PACKNAME=" + args.name)
 if args.email: args.define.append("MAINTAINER_EMAIL=" + args.email)
 
 # all -d define options
-for d in args.define:
-  (key,val) = d.split('=')
-  define[key] = val
+if args.define:
+  for d in args.define:
+    (key,val) = d.split('=')
+    define[key] = val
+
+if not 'PACKNAME' in define and args.outdir:
+  define['PACKNAME'] = args.outdir
 
 # http://download.owncloud.org/community/owncloud-9.0.0RC1.tar.bz2
 # ('http://download.owncloud.org/community/', 'owncloud', '9.0.0', 'rc1', 'tar.bz2', '.bz2')
 #              1              2                  3          4   5
 m = re.match(r'(.*/)?(.*?)[_-](\d[\d\.]*?)[\.~-]?([a-z]+\d+)?\.(tar(\.\w+)?|tgz|zip)$', args.url, flags=re.IGNORECASE)
 if m:
+  if not 'SOURCE_TAR_TOP_DIR' in define: define['SOURCE_TAR_TOP_DIR'] = m.group(2)
   if not 'PACKNAME'   in define: define['PACKNAME']   = m.group(2)
   if not 'VERSION'    in define: define['VERSION']    = m.group(3)
   if not 'PRERELEASE' in define: define['PRERELEASE'] = m.group(4)
@@ -224,6 +259,7 @@ if m:
 if not 'PRERELEASE' in define or define['PRERELEASE'] == None or define['PRERELEASE'] == '': 
   define['PRERELEASE'] = '%nil'
 
+# fallback for SOURCE_TAR_TOP_DIR if it cannot be derived from tar archive name.
 if not 'SOURCE_TAR_TOP_DIR' in define: define['SOURCE_TAR_TOP_DIR'] = define['PACKNAME']
 if not 'BUILDRELEASE_DEB' in define: define['BUILDRELEASE_DEB'] = '1'
 if not 'VERSION_DEB' in define:
@@ -252,6 +288,10 @@ if re.match('^https?://', args.template_dir):
   svn_url = re.sub('/tree/master/', '/trunk/', args.template_dir)
   svn_co = ['svn', 'co', '--non-interactive']
   if not verbose: svn_co.append('--quiet')
+  if not which(svn_co[0]):
+    print "Error: cannot find svn binary in path. Do you have package subversion installed?"
+    print "       (or use -t with a local copy of the templates)"
+    sys.exit(0)
   run(svn_co + [svn_url, template_base])
 
 template_dir = template_base
@@ -269,8 +309,6 @@ for d in os.listdir(template_dir):
     print(template_dir + " is not a template directory: contains subdirectory '"+d+"'")
     print("... or template base '"+template_base+"' had no match for "+define['PACKNAME']+"-"+define['VERSION'])
     exit(1)
-
-outdir=define['PACKNAME']
 
 ## bring in the tar archive
 newtarfile=args.url
@@ -296,15 +334,19 @@ if re.match('https?://', args.template_dir):
 
 
 ## create destination directory if missing
-if not os.path.isdir(outdir): os.mkdir(outdir)
+outdir=args.outdir
+if outdir is None: outdir = define['PACKNAME']
+if not os.path.isdir(outdir):
+  print("ERROR: output directory '"+outdir+"' not there.\nPlease create or try changing with -O")
+  sys.exit(1)
+
 if re.search(r'://', args.url):
   r=run(["wget", args.url,"-O",outdir + '/' + newtarfile,"-nv"], redirect=False, return_code=True)
   if r: sys.exit()
 else:
-  try:
+  if os.path.abspath(args.url) != os.path.abspath(outdir + '/' + newtarfile):
+    # ignore SameFileError. (Without waiting for pyhton 3.4)
     shutil.copyfile(args.url, outdir + '/' + newtarfile)
-  except shutil.SameFileError:
-    pass
 
 ## add meta from template
 for file in fileslist:
@@ -318,14 +360,18 @@ for file in fileslist:
 if not args.keepfiles:
   for file in os.listdir(outdir):
     if not file in fileslist:
-      if verbose: print("removing old "+file)
-      unlink(outdir+'/'+file)
+      if os.path.isfile(outdir+'/'+file):
+        if verbose: print(outdir + ": removing old "+file)
+        os.unlink(outdir+'/'+file)
+      else:
+        print "Ignoring bogus directory: "+file
 
 ## TODO: set SOURCE_TAR_TOP_DIR (inspecting tar archive, instead of defaulting to PACKNAME above)
 ## TODO:refresh other sources listed in spec, if url specified
+## TODO:refresh dsc file
 
-edit_debchangelog(outdir+'/'+"debian.changelog", define)
-edit_changes(outdir+'/'+define['PACKNAME']+".changes", define)
+edit_debchangelog(outdir+'/'+"debian.changelog", define, args.message)
+edit_changes(outdir+'/'+define['PACKNAME']+".changes", define, args.message)
 
 exit(0)
 
