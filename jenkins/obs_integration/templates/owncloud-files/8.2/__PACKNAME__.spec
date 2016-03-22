@@ -167,7 +167,9 @@ test ! -d %{apache_confdir} && getent passwd %{oc_user} | grep -q "Dummy for %{n
 %attr(0775,%{oc_user},%{oc_group}) %{oc_dir}/apps
 %attr(0775,%{oc_user},%{oc_group}) %{oc_data_dir}
 %attr(0775,%{oc_user},%{oc_group}) %{oc_config_dir}
-# FIXME: is there an exclude possible to avoid packaged duplicate warnings here?
+# BUMMER: exclude excludes globally, not just below. It cannot be used to avoid duplicate warnings?
+# FIXME: only cure against the duplicate warnings is a -f file-list
+
 %{oc_dir}
 
 %changelog
