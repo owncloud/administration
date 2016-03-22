@@ -11,12 +11,10 @@ Suggests: owncloud-deps
 Depends: ${misc:Depends}
 Replaces: owncloud 		(<= 8.2.2),
 	owncloud-config-apache	(<= 8.2.2),
-	owncloud-server		(<= 8.2.2),
-	owncloud		(<= 8.2.2)
+	owncloud-server		(<= 8.2.2)
 Conflicts: owncloud 		(<= 8.2.2),
 	owncloud-config-apache	(<= 8.2.2),
-	owncloud-server		(<= 8.2.2),
-	owncloud 		(<= 8.2.2)
+	owncloud-server		(<= 8.2.2)
 #
 #
 Description: ownCloud - Server

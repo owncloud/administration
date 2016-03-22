@@ -10,15 +10,15 @@ Architecture: all
 Suggests: owncloud-deps
 Depends: ${misc:Depends}
 Replaces: owncloud-enterprise 		(<= 8.2.2),
-	owncloud-enterprise-theme 	(<= 8.99.99),
-	owncloud-config-apache	(<= 8.99.99),
-	owncloud-server		(<= 8.99.99),
-	owncloud		(<= 8.99.99)
+	owncloud-enterprise-theme 	(<= 8.2.2),
+	owncloud-config-apache	(<= 8.2.2),
+	owncloud-server		(<= 8.2.2),
+	owncloud		(<= 8.2.2)
 Conflicts: owncloud-enterprise 		(<= 8.2.2),
-	owncloud-enterprise-theme 	(<= 8.99.99),
-	owncloud-config-apache	(<= 8.99.99),
-	owncloud-server		(<= 8.99.99),
-	owncloud 		(<= 8.99.99)
+	owncloud-enterprise-theme 	(<= 8.2.2),
+	owncloud-config-apache	(<= 8.2.2),
+	owncloud-server		(<= 8.2.2),
+	owncloud 		(<= 8.2.2)
 #
 #
 Description: ownCloud - Server Enterprise Edition
