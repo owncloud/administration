@@ -34,8 +34,8 @@
 #                       Ignoring bogus directories in outdir, instead of failing during removal.
 #
 ## TODO: refresh version in dsc file, to be in sync with changelog.
-## FIXME: Source0: should keep its url, if a path is given
-## FIXME: SOURCE_TAR_TOP_DIR should be properly inspected from tar-archive.
+## FIXME: should have a mode to grab all the define variables from an existing specfile.
+## FIXME: SOURCE_TAR_TOP_DIR from SOURCE_TAR_URL is derived too late for templates.
 
 
 
@@ -347,6 +347,16 @@ else:
   if os.path.abspath(args.url) != os.path.abspath(outdir + '/' + newtarfile):
     # ignore SameFileError. (Without waiting for pyhton 3.4)
     shutil.copyfile(args.url, outdir + '/' + newtarfile)
+
+topdir = run(['sh', '-c', 'tar tf ' + outdir + '/' + newtarfile + ' | head'], redirect=True)
+topdir = topdir.split('/', 1)[0]
+if define['SOURCE_TAR_TOP_DIR'] != topdir:
+  print("ERROR: topdir seen in '" + newtarfile + "' differs: "+topdir)
+  print("We currently have SOURCE_TAR_TOP_DIR="+define['SOURCE_TAR_TOP_DIR'])
+  print("Please use\n\t -d SOURCE_TAR_TOP_DIR="+topdir)
+  sys.exit(1)
+else:
+  print("SOURCE_TAR_TOP_DIR="+topdir+" matches, good.")
 
 ## add meta from template
 for file in fileslist:
