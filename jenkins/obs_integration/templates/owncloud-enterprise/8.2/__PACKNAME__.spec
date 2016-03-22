@@ -139,6 +139,7 @@ Requires:	%{ocphp}-ldap
 %if 0%{?fedora_version} || 0%{?rhel} || 0%{?rhel_version} || 0%{?centos_version}
 Requires:       %{ochttpd}
 Requires:       sqlite
+Requires:       %{ocphp}-mysql
 Requires:       %{ocphp} >= 5.4.0
 Requires:       %{ocphp}-json %{ocphp}-mbstring %{ocphp}-process %{ocphp}-xml %{ocphp}-zip
 # core#13357, core#13944
@@ -154,6 +155,8 @@ Requires:       %{ocphp}-pdo
 Requires:       php-fileinfo
 Requires:       php5 >= 5.4.0  php5-mbstring  php5-zip  php5-json  php5-posix  php5-curl  php5-gd  php5-ctype  php5-xmlreader  php5-xmlwriter  php5-zlib php5-pear php5-iconv php5-pdo
 Requires:       apache2 apache2-mod_php5
+Requires:       sqlite3 php5-sqlite
+Recommends:     php5-mysql mysql
 %endif
 
 Summary: Dependencies for php5
