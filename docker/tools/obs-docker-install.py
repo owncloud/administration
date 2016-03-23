@@ -80,6 +80,7 @@
 # V2.23 -- 2016-01-29, jw  use liberation-sans-fonts for -X with centos_6
 # V2.24 -- 2016-02-22, jw  support bad ssl certs via -k. E.g. for owncloud.org vs owncloud.com clashes.
 # V2.25 -- 2016-03-10, jw  obs repo mapping. Used to play with Ubuntu_16.04 before obs offers this.
+# V2.26 -- 2016-03-23, jw  support full url in prj_path mapping.
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 #
@@ -93,7 +94,7 @@
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="2.25"
+__VERSION__="2.26"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import yaml, sys, os, re, time, tempfile
@@ -613,14 +614,17 @@ def obs_download_cfg(config, download_item, prj_path, urltest_target=None, verbo
     else:
       prj_path = re.sub(':',':/',prj_path)
 
-    ## if our mapping or prj_path is a rooted path, strip
-    ## path components from url_cred, if any.
     if re.match(r'/',prj_path):
+      ## if our mapping or prj_path is a rooted path, strip
+      ## path components from url_cred, if any.
       m=re.match(r'(.*://[^/]+)', url_cred)
       if m: url_cred = m.group(1)
-
-    if not re.search(r'/$', url_cred) and not re.match(r'/', prj_path): url_cred += '/'
-    url_cred += prj_path
+    if re.match(r'https?://',prj_path):
+      ## if our mapping or prj_path is a a full url, just take it as is.
+      url_cred = prj_path
+    else:
+      if not re.search(r'/$', url_cred) and not re.match(r'/', prj_path): url_cred += '/'
+      url_cred += prj_path
   if not re.search(r'/$', url_cred): url_cred += '/'
   data = { "url_cred":url_cred }
 
