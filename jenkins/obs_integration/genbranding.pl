@@ -102,6 +102,7 @@ sub help() {
     OBS_INTEGRATION_OSC='/usr/bin/osc'
     OBS_INTEGRATION_PRODUCT='openSUSE_13.1'
     OBS_INTEGRATION_ARCH='x86_64'
+    OBS_INTEGRATION_BUILDJOBID='0'
 
 ENDHELP
 ;
@@ -526,6 +527,7 @@ $substs->{themename} = $theme;
 $substs->{themename_deb} = debian_filename($theme);	# debian packaging guide allows no upper case. (e.g. SURFdrive).
 $substs->{create_msg} = $create_msg || '' unless defined $substs->{create_msg};
 $substs->{summary} = "The $theme client";	# prevent shdbox to die with empty summary.
+$substs->{buildjobid} = $ENV{OBS_INTEGRATION_BUILDJOBID} || '0';	# used since templates/client/v2_2_0
 
 # Automatically derive version number from the client tarball.
 # It is used in the spec file to find the tar ball anyway, so this should be safe.
@@ -542,8 +544,17 @@ unless( defined $substs->{version} )
         $substs->{version_deb} = $vers . '~' . $prerel;
     } elsif( $vers =~ /(\d+\.\d+\.\d+)git$/ ) {
         $vers = $1;
-        $prerel = 'git';
-        $substs->{version_deb} = $vers . '~git';
+	if ( $substs->{buildjobid} )
+	  {
+	    # https://github.com/owncloud/client/issues/4289
+	    $prerel = POSIX::strftime("nightly%Y%m%d\n", localtime());
+            $substs->{version_deb} = $vers . '~' . $prerel;
+	  }
+	else
+	  {
+            $prerel = 'git';
+            $substs->{version_deb} = $vers . '~git';
+	  }
     } elsif( $vers =~ /(\d+\.\d+\.\d+)/ ) {
         $vers = $1;
         $prerel = '%nil';
