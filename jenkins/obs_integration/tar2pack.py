@@ -33,10 +33,10 @@
 #                       added which() to allow a helpful error, when svn is not there.
 #                       Ignoring bogus directories in outdir, instead of failing during removal.
 # 2016-03-22: V0.6  jw: parse nightly tar names correctly.
+# 2016-03-23: V0.7  jw: SOURCE_TAR_TOP_DIR derived from inspecting tar-archive.
 #
 ## TODO: refresh version in dsc file, to be in sync with changelog.
 ## FIXME: should have a mode to grab all the define variables from an existing specfile.
-## FIXME: SOURCE_TAR_TOP_DIR from args.url is derived too late for templates.
 
 
 
@@ -255,10 +255,10 @@ if not 'PACKNAME' in define and args.outdir:
 #              1     2        3                  4                 5   6
 m = re.match(r'(.*/)?(.*?)[_-](\d[\d\.]*?)[\.~-]?([a-z]+[\d\.]*)?\.(tar(\.\w+)?|tgz|zip)$', args.url, flags=re.IGNORECASE)
 if m:
-  if not 'SOURCE_TAR_TOP_DIR' in define: define['SOURCE_TAR_TOP_DIR'] = m.group(2)
-  if not 'PACKNAME'   in define: define['PACKNAME']   = m.group(2)
-  if not 'VERSION'    in define: define['VERSION']    = m.group(3)
-  if not 'PRERELEASE' in define: define['PRERELEASE'] = m.group(4)
+  if not 'SOURCE_BASE' in define: define['SOURCE_BASE'] = m.group(2)
+  if not 'PACKNAME'    in define: define['PACKNAME']    = m.group(2)
+  if not 'VERSION'     in define: define['VERSION']     = m.group(3)
+  if not 'PRERELEASE'  in define: define['PRERELEASE']  = m.group(4)
   if define['VERSION'] != m.group(3):
     print("Warning: Version number in tar '"+m.group(3)+"' differs from VERSION="+define['VERSION'])
     print("Waiting 3 seconds for CTRL-C")
@@ -273,8 +273,6 @@ else:
 if not 'PRERELEASE' in define or define['PRERELEASE'] == None or define['PRERELEASE'] == '': 
   define['PRERELEASE'] = '%nil'
 
-# fallback for SOURCE_TAR_TOP_DIR if it cannot be derived from tar archive name.
-if not 'SOURCE_TAR_TOP_DIR' in define: define['SOURCE_TAR_TOP_DIR'] = define['PACKNAME']
 if not 'BUILDRELEASE_DEB' in define: define['BUILDRELEASE_DEB'] = '1'
 if not 'VERSION_DEB' in define:
   version_deb = define['VERSION']
@@ -287,7 +285,9 @@ if not 'DATE_RPM' in define: define['DATE_RPM'] = time.strftime("%a %b %e %H:%M:
 if not 'DATE_DEB' in define: define['DATE_DEB'] = time.strftime("%a, %d %b %Y %H:%M:%S %z")
 
 # so that we can override it with -d SOURCE_TAR_URL=owncloud-%{base_version}%{prerelease}.tar.bz2
-if not 'SOURCE_TAR_URL' in define: define['SOURCE_TAR_URL'] = args.url
+if not 'SOURCE_TAR_URL' in define:
+  # make sure we have no credentials in SOURCE_TAR_URL
+  define['SOURCE_TAR_URL'] = re.sub('://[^@]+@', '://', args.url)
 
 
 # automatic variables that cannot be overwritten:
@@ -336,14 +336,7 @@ fileslist = { 'debian.changelog':None, define['PACKNAME']+'.changes':None, newta
 for file in os.listdir(template_dir):
   if verbose: print("loading template file "+template_dir+"/"+file)
   templ = open(template_dir + '/' + file).read()
-  body = subst_variables(templ, define)
-  fileslist[subst_variables(file, define, filename=True)] = body
-  ## also register known sources in the fileslist, so that we can keep them too.
-  if (re.search('\.spec$', file)):
-    for src in known_sources_spec(body):
-      if verbose: print(file+": seen source "+src)
-      if not src in fileslist:
-        fileslist[src] = None
+  fileslist[subst_variables(file, define, filename=True)] = templ
 
 if re.match('https?://', args.template_dir):
   shutil.rmtree(template_base)
@@ -366,20 +359,34 @@ else:
 
 topdir = run(['sh', '-c', 'tar tf ' + outdir + '/' + newtarfile + ' | head'], redirect=True)
 topdir = topdir.split('/', 1)[0]
-if define['SOURCE_TAR_TOP_DIR'] != topdir:
-  print("ERROR: topdir seen in '" + newtarfile + "' differs: "+topdir)
-  print("We currently have SOURCE_TAR_TOP_DIR="+define['SOURCE_TAR_TOP_DIR'])
-  print("Please use\n\t -d SOURCE_TAR_TOP_DIR="+topdir)
-  sys.exit(1)
-else:
-  print("SOURCE_TAR_TOP_DIR="+topdir+" matches, good.")
+if not 'SOURCE_TAR_TOP_DIR' in define:
+  if topdir:
+    define['SOURCE_TAR_TOP_DIR'] = topdir
+  else:
+    # fallback for SOURCE_TAR_TOP_DIR if it cannot be derived from tar archive contents
+    if 'SOURCE_BASE' in define: define['SOURCE_TAR_TOP_DIR'] = define['PACKNAME']
+    if not 'SOURCE_TAR_TOP_DIR' in define: define['SOURCE_TAR_TOP_DIR'] = define['PACKNAME']
 
-## add meta from template
+if verbose:
+  print("Template variable definitions:")
+  for d in sorted(define):
+    print("\t"+d+"="+define[d])
+
+## add meta from template,
+## templatize after pulling tar source, so that we have its SOURCE_TAR_TOP_DIR.
 for file in fileslist:
   if fileslist[file] is not None:
     f = open(outdir + '/' + file, 'w')
-    f.write(fileslist[file])
+    body = subst_variables(fileslist[file], define)
+    f.write(body)
     f.close()
+
+    ## also register known sources in the fileslist, so that we can keep them too.
+    if (re.search('\.spec$', file)):
+      for src in known_sources_spec(body):
+        if verbose: print(file+": seen source "+src)
+        if not src in fileslist:
+          fileslist[src] = None
 
 
 ## clean out all old metafiles.
@@ -392,7 +399,6 @@ if not args.keepfiles:
       else:
         print "Ignoring bogus directory: "+file
 
-## TODO: set SOURCE_TAR_TOP_DIR (inspecting tar archive, instead of defaulting to PACKNAME above)
 ## TODO:refresh other sources listed in spec, if url specified
 ## TODO:refresh dsc file
 
