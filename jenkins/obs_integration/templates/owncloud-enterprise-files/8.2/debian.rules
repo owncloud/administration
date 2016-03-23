@@ -35,7 +35,6 @@ override_dh_install:
 	install -m 644 $(SRCDIR)/README              $(DROOT)/usr/share/doc/$(NAME)/README
 	install -m 644 $(SRCDIR)/README.packaging    $(DROOT)/usr/share/doc/$(NAME)/README.packaging
 	install -m 644 .htaccess          	     $(DROOT)/$(OC_DIR)/.htaccess
-	## why is this added? Debian hates .files
 	install -m 644 .user.ini          	     $(DROOT)/$(OC_DIR)/.user.ini
 	##
 	## https://github.com/owncloud/core/issues/22257

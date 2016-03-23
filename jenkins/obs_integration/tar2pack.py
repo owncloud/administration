@@ -252,8 +252,8 @@ if not 'PACKNAME' in define and args.outdir:
 #
 # http://download.owncloud.org/community/owncloud-9.0.0RC1.tar.bz2
 # ('http://download.owncloud.org/community/', 'owncloud', '9.0.0', 'rc1', 'tar.bz2', '.bz2')
-#              1              2                  3                 4   5
-m = re.match(r'(.*/)?(.*?)[_-](\d[\d\.]*?)[\.~-]?([a-z]+[\d\.]+)?\.(tar(\.\w+)?|tgz|zip)$', args.url, flags=re.IGNORECASE)
+#              1     2        3                  4                 5   6
+m = re.match(r'(.*/)?(.*?)[_-](\d[\d\.]*?)[\.~-]?([a-z]+[\d\.]*)?\.(tar(\.\w+)?|tgz|zip)$', args.url, flags=re.IGNORECASE)
 if m:
   if not 'SOURCE_TAR_TOP_DIR' in define: define['SOURCE_TAR_TOP_DIR'] = m.group(2)
   if not 'PACKNAME'   in define: define['PACKNAME']   = m.group(2)

@@ -75,7 +75,7 @@ Source5:	disable-updatechecker.config.php
 Url:            http://www.owncloud.org
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 BuildArch:      noarch
-Summary:        The ownCloud Server - Private file sync and share server
+Summary:        The ownCloud Server Enterprise Edition - Private file sync and share server
 License:        AGPL-3.0 and MIT
 Group:          Productivity/Networking/Web/Utilities
 
