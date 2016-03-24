@@ -236,6 +236,9 @@ Suggests:       %{name}-nemo
 %if 0%{?rhel_version} == 600 || 0%{?centos_version} == 600
 # https://github.com/owncloud/client/issues/4400#issuecomment-176686729
 Requires:	%{qtprefix}libqt4-sql
+# https://github.com/owncloud/client/issues/4560
+Requires:	%{qtprefix}libqt4
+Requires:	%{qtprefix}libqt4-x11
 %endif
 
 Requires: %{name}-l10n
