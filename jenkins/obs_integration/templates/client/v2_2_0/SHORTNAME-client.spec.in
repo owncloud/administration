@@ -114,7 +114,7 @@ Patch1:         autostart_use_wrapper.diff
 %if 0%{?suse_version} > 1310 || 0%{?fedora_version} > 20 || 0%{?rhel_version} >= 700 || 0%{?centos_version} >= 700
   %define use_qt5 1
   
-  if 0%{?suse_version} > 1310 || 0%{?fedora_version} > 21
+  %if 0%{?suse_version} > 1310 || 0%{?fedora_version} > 21
   %define build_dolphin_overlays 1
   %endif
 %endif
