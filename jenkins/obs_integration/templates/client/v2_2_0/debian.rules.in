@@ -34,7 +34,7 @@ override_dh_auto_configure:
 	if [ -n "[% prerelease %]" ]; then \
 	  git_devs="-DMIRALL_VERSION_SUFFIX='[% prerelease %]' -DMIRALL_VERSION_BUILD='[% buildjobid %]'"; \
 	fi; \
-	dh_auto_configure -- $git_defs -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_DOCDIR=/usr/share/doc/[% shortname %]-client -DSYSCONF_INSTALL_DIR=/etc -DWITH_DOC=FALSE -DCMAKE_SKIP_RPATH=FALSE -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE -DOEM_THEME_DIR=$(CURDIR)/[% themename_deb %]/[% oem_sub_dir %]
+	dh_auto_configure -- \$git_defs -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_DOCDIR=/usr/share/doc/[% shortname %]-client -DSYSCONF_INSTALL_DIR=/etc -DWITH_DOC=FALSE -DCMAKE_SKIP_RPATH=FALSE -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE -DOEM_THEME_DIR=$(CURDIR)/[% themename_deb %]/[% oem_sub_dir %]
 
 # override_dh_install:
 # 	dh_install -Xdebian
