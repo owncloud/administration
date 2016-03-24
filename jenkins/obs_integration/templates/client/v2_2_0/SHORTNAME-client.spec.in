@@ -109,8 +109,14 @@ Patch1:         autostart_use_wrapper.diff
 # prepare stuff for qt5
 # If Qt5 is available, we use it. Also, if the Qt-Version is 5.4 or higher
 %define use_qt5 0
+%define %define build_dolphin_overlays 0
+
 %if 0%{?suse_version} > 1310 || 0%{?fedora_version} > 20 || 0%{?rhel_version} >= 700 || 0%{?centos_version} >= 700
   %define use_qt5 1
+  
+  if 0%{?suse_version} > 1310 || 0%{?fedora_version} > 21
+  %define build_dolphin_overlays 1
+  %endif
 %endif
 # Check for SLE12 -> it does not have qt5 obviously.
 %if 0%{?sle_version} && !0%{?is_opensuse}
@@ -151,6 +157,10 @@ BuildRequires:  %{qtprefix}qt5-qtbase-devel
 BuildRequires:  %{qtprefix}qt5-qtbase-gui
 BuildRequires:  %{qtprefix}qt5-qtwebkit-devel
 
+%if %build_dolphin_overlays
+BuildRequires:  kf5-kio-devel
+%endif
+
 %else # no qt5
 BuildRequires:  qt4 qt4-devel >= 4.7
 BuildRequires:  qtwebkit >= 2.2
@@ -172,6 +182,10 @@ BuildRequires:  libQt5PrintSupport-devel
 BuildRequires:  libQt5DBus-devel
 BuildRequires:  libQt5Concurrent-devel
 BuildRequires:  libqt5-linguist-devel
+
+%if %build_dolphin_overlays
+BuildRequires:  kio-devel
+%endif
 
 %else # no qt5
 
@@ -332,6 +346,23 @@ Obsoletes:      opt-%{name}-nemo
 %description -n %{name}-nemo
 This package provides overlay icons to visualize the sync state
 in the nemo file manager.
+
+%if 0%{build_dolphin_overlays}
+%package -n %{name}-dolphin
+Summary:        Dolphin overlay icons
+Group:          Productivity/Networking/Other
+%if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
+Requires:       dolphin
+%else
+Requires:       dolphin
+%endif
+Requires:       %{name}%{?_isa} = %{version}-%{release}
+
+%description -n %{name}-dolphin
+This package provides the neccessary plugin libraries for KDE
+Framework 5 based dolphin filemanager to display overlay icons.
+
+%endif
 
 %prep
 %setup -q -n [% tarball %]
@@ -537,4 +568,16 @@ fi
 %dir %{_datadir}/nemo-python
 %dir %{_datadir}/nemo-python/extensions/
 
+%if 0%{build_dolphin_overlays}
+%files -n %{name}-dolphin
+%defattr(-,root,root,-)
+%{_libdir}/*dolphinpluginhelper.so
+%{_libdir}/plugins/kf5/overlayicon/*dolphinoverlayplugin.so
+%{_libdir}/plugins/*dolphinactionplugin.so
+
+%{_datadir}/kservices5/*dolphinactionplugin.desktop
+%dir %{_libdir}/plugins
+%dir %{_libdir}/plugins/kf5
+%dir %{_libdir}/plugins/kf5/overlayicon
+%endif # build_dolphin_overlays
 %changelog
