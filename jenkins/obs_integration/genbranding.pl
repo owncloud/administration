@@ -43,6 +43,7 @@
 # 2015-05-15, jw, V1.10 use shortname in addSpecChangelog() too.
 # 2015-05-15, jw, V1.11 fix substitution of SHORTNAME_DEB
 # 2015-05-15, jw, V1.12 Also support EXECUTABLE_DEB and EXECUTABLE. needed for the autostart wrapper in centos and rhel.
+# 2016-03-23, jw, V1.13 {buildjobid} = $ENV{OBS_INTEGRATION_BUILDJOBID} || '0'
 
 use Getopt::Std;
 use Config::IniFiles;
@@ -55,7 +56,7 @@ use Cwd;
 use Template;
 use Data::Dumper;
 
-my $version = '1.12';
+my $version = '1.13';
 my $msg_def = "created by: $0 (V$version) @ARGV";
 
 use strict;
