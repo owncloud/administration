@@ -109,7 +109,7 @@ Patch1:         autostart_use_wrapper.diff
 # prepare stuff for qt5
 # If Qt5 is available, we use it. Also, if the Qt-Version is 5.4 or higher
 %define use_qt5 0
-%define %define build_dolphin_overlays 0
+%define build_dolphin_overlays 0
 
 %if 0%{?suse_version} > 1310 || 0%{?fedora_version} > 20 || 0%{?rhel_version} >= 700 || 0%{?centos_version} >= 700
   %define use_qt5 1
