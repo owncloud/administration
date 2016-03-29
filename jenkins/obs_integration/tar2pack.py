@@ -34,6 +34,7 @@
 #                       Ignoring bogus directories in outdir, instead of failing during removal.
 # 2016-03-22: V0.6  jw: parse nightly tar names correctly.
 # 2016-03-23: V0.7  jw: SOURCE_TAR_TOP_DIR derived from inspecting tar-archive.
+# 2016-03-29: V0.8  jw: With -O we default PACKNAME to the last component of its realpath.
 #
 ## TODO: refresh version in dsc file, to be in sync with changelog.
 ## FIXME: should have a mode to grab all the define variables from an existing specfile.
@@ -213,7 +214,17 @@ def run(args, input=None, redirect=None, redirect_stdout=True, redirect_stderr=T
   return out
 
 
-ap=argparse.ArgumentParser(description='deb/rpm package generator, using a tar-archive and templates. PACKNAME and VERSION are derived from the tar-archive name unless explicitly specified.')
+ap=argparse.ArgumentParser(description="""deb/rpm package generator, using a tar-archive and templates. 
+PACKNAME and VERSION are derived from the tar-archive name unless explicitly specified.
+""", epilog="""Typical usage with obs checkouts
+--------------------------------
+
+cd ce:9.0:testing/owncloud-files
+osc up
+"""+sys.argv[0]+""" -v -O . https://download.owncloud.org/community/testing/owncloud-9.0.1RC1.tar.bz2
+osc diff
+osc ci
+""", formatter_class=argparse.RawDescriptionHelpFormatter)
 ap.add_argument('url', type=str, help="tar archive (file or) url to put into this package")
 ap.add_argument('-d', '--define', action="append", metavar="KEY=VALUE", help="Specify name=value for template variables. Default: derive from url")
 ap.add_argument('-n', '--name', metavar="PACKNAME", help="same as -d PACKNAME=... This defines the name of the package. Default: If no explicit PACKNAME is given, it is derived from -O (if available) or from the tar-archive name.")
@@ -224,7 +235,7 @@ ap.add_argument('-k', '--keepfiles', action='store_true', help="Keep unknown fil
 ap.add_argument('-O', '--outdir', help="Define output directory. This also provides a default for PACKNAME. Default: subdirectoy PACKNAME and PACKNAME derived fro tar-archive name.")
 ap.add_argument('-m', '--message', help="Define the commit and changelog message. Default: "+re.sub('%', '%%', def_msg), default=def_msg)
 args=ap.parse_args()
-print args
+# print args
 
 verbose = args.verbose
 define = {}
@@ -245,7 +256,8 @@ if args.define:
     define[key] = val
 
 if not 'PACKNAME' in define and args.outdir:
-  define['PACKNAME'] = args.outdir
+  full = os.path.abspath(args.outdir)
+  define['PACKNAME'] = full.split('/')[-1]
 
 # owncloud-9.1.0prealpha.20160322.tar.bz2
 # (None, 'owncloud', '9.1.0', 'prealpha.20160322', 'tar.bz2', '.bz2')
