@@ -26,19 +26,16 @@ Name:           [% PACKNAME %]
 %if 0%{?centos_version} == 600 || 0%{?fedora_version} || "%{prerelease}" == ""
 # For beta and rc versions we use the ~ notation, as documented in
 # http://en.opensuse.org/openSUSE:Package_naming_guidelines
-%define oc_version %{base_version}
+Version:       	%{base_version}
 %if "%{prerelease}" == ""
-%define oc_release 0
+Release:        0
 %else
-%define oc_release 0.<CI_CNT>.<B_CNT>.%{prerelease}
+Release:       	0.<CI_CNT>.<B_CNT>.%{prerelease}
 %endif
 %else
-%define oc_version %{base_version}~%{prerelease}
-%define oc_release 0
+Version:       	%{base_version}~%{prerelease}
+Release:        0
 %endif
-
-Version:	%{oc_version}
-Release:	%{oc_release}
 
 Url:            http://www.owncloud.org
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
