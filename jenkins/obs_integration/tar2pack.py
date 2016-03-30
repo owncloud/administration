@@ -51,7 +51,7 @@ def subst_variables(text, subst, filename=False):
   def subst_cb(m):
     var = m.group(1)
     if not var in subst:
-      print "ERROR: '"+ text + "' refers undefined variable [% "+var+" %], please try with -d"
+      print("ERROR: '"+ text + "' refers undefined variable [% "+var+" %], please try with -d")
     return subst[var]
   if filename:
     text = re.sub(r'__([A-Z][A-Z_\d]+)__', subst_cb, text)
@@ -197,7 +197,7 @@ def run(args, input=None, redirect=None, redirect_stdout=True, redirect_stderr=T
     in_fd = subprocess.PIPE
     in_redirect=" (<< '%s')" % input
 
-  if verbose: print "+ %s%s" % (args, in_redirect)
+  if verbose: print("+ %s%s" % (args, in_redirect))
   p = subprocess.Popen(args, stdin=in_fd, stdout=redirect_stdout, stderr=redirect_stderr)
  
   (out,err) = p.communicate(input=input)
@@ -305,20 +305,20 @@ if not 'SOURCE_TAR_URL' in define:
 # automatic variables that cannot be overwritten:
 define['VERSION_MM'] = re.sub(r'^([^\.]+\.[^\.]+).*$', "\g<1>", define['VERSION'])
 
-if verbose: print define
+if verbose: print(define)
 
 ## find templates
 template_base = args.template_dir
 if re.match('^https?://', args.template_dir):
   # it is an url
   template_base = tempfile.mkdtemp(prefix='tar2pack_')
-  if verbose: print args.template_dir, "->", template_base
+  if verbose: print(args.template_dir, "->", template_base)
   svn_url = re.sub('/tree/master/', '/trunk/', args.template_dir)
   svn_co = ['svn', 'co', '--non-interactive']
   if not verbose: svn_co.append('--quiet')
   if not which(svn_co[0]):
-    print "Error: cannot find svn binary in path. Do you have package subversion installed?"
-    print "       (or use -t with a local copy of the templates)"
+    print("Error: cannot find svn binary in path. Do you have package subversion installed?")
+    print("       (or use -t with a local copy of the templates)")
     sys.exit(0)
   run(svn_co + [svn_url, template_base])
 
@@ -331,7 +331,7 @@ for d in (define['PACKNAME'], define['VERSION_MM'], define['VERSION'], 'v'+re.su
   else:
     if verbose: print(" -> not found.")
 
-if verbose: print template_dir
+if verbose: print(template_dir)
 for d in os.listdir(template_dir):
   if os.path.isdir(template_dir+'/'+d):
     print(template_dir + " is not a template directory: contains subdirectory '"+d+"'")
@@ -409,7 +409,7 @@ if not args.keepfiles:
         if verbose: print(outdir + ": removing old "+file)
         os.unlink(outdir+'/'+file)
       else:
-        print "Ignoring bogus directory: "+file
+        print("Ignoring bogus directory: "+file)
 
 ## TODO:refresh other sources listed in spec, if url specified
 ## TODO:refresh dsc file
