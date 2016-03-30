@@ -732,7 +732,7 @@ ap.add_argument("-P", "--print-config-only", default=False, action="store_true",
 ap.add_argument("-T", "--list-targets-only", default=False, action="store_true", help="show a list of configured build target names and exit after printing")
 ap.add_argument("-e", "--extra-packages", help="Comma separated list of packages to pre-install. Default: only per 'inst' in the config file")
 ap.add_argument("-q", "--quiet", default=False, action="store_true", help="Print less information while working. Default: babble a lot")
-ap.add_argument("-k", "--keep-going", default=False, action="store_true", help="Continue after errors. Default: abort on error")
+ap.add_argument("-k", "--keep-going", default=False, action="store_true", help="Continue after errors. Also 'hostname does not match' Errors! Default: abort on error")
 ap.add_argument("-N", "--no-operation", default=False, action="store_true", help="Print docker commands and instructions to create an image only. Default: create an image")
 ap.add_argument("-D", "--dockerfile", default=False, action="store_true", help="Output dockerfile to stdout. Default: create an image")
 ap.add_argument("-S", "--shell-script", "--script", default=False, action="store_true", help="Print out a shell script. Similar to the --dockerfile output.")
