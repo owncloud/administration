@@ -1,8 +1,8 @@
-#! /usr/bin/python
+#! /usr/bin/python3
 #
 # (C) 2016 jw@owncloud.com
 #
-# tar2package.py automates package generation for the openbuildservice.
+# tar2pack.py automates package generation for the openbuildservice.
 # It populates a folder (named after the pakcage PACKNAME) with downloaded tar archive and 
 # metadata generated from the templates.
 #
