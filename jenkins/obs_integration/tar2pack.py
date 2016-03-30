@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#! /usr/bin/python
 #
 # (C) 2016 jw@owncloud.com
 #
@@ -45,6 +45,8 @@
 
 
 import sys, time, argparse, subprocess, os, re, tempfile, shutil
+# so that we can have encoding='latin-1' spelled out in both python2 and python3
+from io import open
 
 argv0 = 'obs_integration/tar2pack.py'
 def_template_dir = 'http://github.com/owncloud/administration/tree/master/jenkins/obs_integration/templates'
