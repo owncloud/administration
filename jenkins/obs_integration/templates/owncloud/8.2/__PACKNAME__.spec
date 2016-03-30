@@ -27,6 +27,7 @@ Name:           [% PACKNAME %]
 # For beta and rc versions we use the ~ notation, as documented in
 # http://en.opensuse.org/openSUSE:Package_naming_guidelines
 Version:       	%{base_version}
+%define oc_version %{base_version}
 %if "%{prerelease}" == ""
 Release:        0
 %else
@@ -34,6 +35,7 @@ Release:       	0.<CI_CNT>.<B_CNT>.%{prerelease}
 %endif
 %else
 Version:       	%{base_version}~%{prerelease}
+%define oc_version %{base_version}~%{prerelease}
 Release:        0
 %endif
 
