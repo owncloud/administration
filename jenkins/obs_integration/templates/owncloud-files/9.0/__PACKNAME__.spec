@@ -125,6 +125,11 @@ cp %{SOURCE4} .
 %build
 
 %install
+# We had silently skipped files under %{_docdir} on both SUSE and CentOS. Do not use that for our
+# apache template. Prefer /usr/share/lib, it always installs flawlessly.
+%define oc_docdir_base /usr/share/lib
+%define oc_docdir %{oc_docdir_base}/%{name}-%{base_version}
+
 # no server side java code contained, alarm is false
 export NO_BRP_CHECK_BYTECODE_VERSION=true
 idir=$RPM_BUILD_ROOT/%{oc_dir}
@@ -139,6 +144,9 @@ rm -f $idir/debian.*{install,rules,control}
 rm -f $idir/README{,.SELinux,.packaging}
 sed -e 's@/var/www/owncloud@%{oc_dir}/owncloud@' < $idir/apache_conf_default > owncloud-config-apache.conf.default
 rm -f $idir/apache_conf_default
+
+mkdir -p $RPM_BUILD_ROOT/%{oc_docdir}
+mv README README.packaging owncloud-config-apache.conf.default $RPM_BUILD_ROOT/%{oc_docdir}
 
 ## https://github.com/owncloud/core/issues/22257
 # disable-updatechecker.config.php
@@ -158,8 +166,10 @@ getent passwd %{oc_user}  > /dev/null || sh -x -c "useradd  -r -u %{oc_user_id} 
 test ! -d %{apache_confdir} && getent passwd %{oc_user} | grep -q "Dummy for %{name}" && sh -x -c "userdel %{oc_user}" || true
 
 %files
-%defattr(-,root,root,-)
-%doc README README.packaging owncloud-config-apache.conf.default
+%defattr(0644,root,root,0755)
+%dir %{oc_docdir_base}
+%dir %{oc_docdir}
+%{oc_docdir}/*
 
 # is there any security to be gained here? Easier to chown everthing to % {oc_user}
 %defattr(0644,root,%{oc_group},0755)
