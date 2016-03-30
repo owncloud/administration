@@ -35,6 +35,9 @@
 # 2016-03-22: V0.6  jw: parse nightly tar names correctly.
 # 2016-03-23: V0.7  jw: SOURCE_TAR_TOP_DIR derived from inspecting tar-archive.
 # 2016-03-29: V0.8  jw: With -O we default PACKNAME to the last component of its realpath.
+# 2016-03-30: V0.9  jw: ported to python3:
+#                        - all print() with parens,
+#                        - all data read/write as binary open(file, encoding="latin-1")
 #
 ## TODO: refresh version in dsc file, to be in sync with changelog.
 ## FIXME: should have a mode to grab all the define variables from an existing specfile.
@@ -87,7 +90,7 @@ def edit_changes(file, data, msg="Update to version [% VERSION_DEB %]"):
 
   txt = ''
   if os.path.isfile(file):
-    txt = open(file).read()
+    txt = open(file, encoding="latin-1").read()
 
   txt2 = re.sub(r'^.*\n','', txt)
   txt2 = re.sub(r'^.*\n','', txt2)	# cut away first 2 lines.
@@ -96,7 +99,7 @@ def edit_changes(file, data, msg="Update to version [% VERSION_DEB %]"):
   if txt2.startswith(ent2):
     txt = txt2[len(ent2):]
   txt = entry + txt
-  out=open(file, "w")
+  out=open(file, "w", encoding="latin-1")
   out.write(txt)
   out.close()
 
@@ -117,7 +120,7 @@ def edit_debchangelog(file, data, msg="Update to version [% VERSION_DEB %]"):
 
   txt = ''
   if os.path.isfile(file):
-    txt = open(file).read()
+    txt = open(file, encoding="latin-1").read()
 
   if txt.startswith(entry):
     txt = txt[len(entry):]
@@ -125,7 +128,7 @@ def edit_debchangelog(file, data, msg="Update to version [% VERSION_DEB %]"):
     txt = re.sub(r'^[\s*\n]*','', txt, re.M)	# zap leading newlines and whitespaces
   entry += data['DATE_DEB'] + "\n\n"
   txt = entry + txt
-  out=open(file, "w")
+  out=open(file, "w", encoding="latin-1")
   out.write(txt)
   out.close()
 
@@ -201,6 +204,21 @@ def run(args, input=None, redirect=None, redirect_stdout=True, redirect_stderr=T
   p = subprocess.Popen(args, stdin=in_fd, stdout=redirect_stdout, stderr=redirect_stderr)
  
   (out,err) = p.communicate(input=input)
+  # It comes as bytes[] in python3. We want utf-8 or latin-1 strings. 
+  # Today latin-1, FIXME: that should be a parameter.
+  if out: 
+    try:
+      out = out.decode('latin-1', errors='backslashreplace')
+    except:
+      out = repr(out)
+  if err: 
+    try:
+      err = err.decode('latin-1', errors='backslashreplace')
+    except:
+      err = repr(err)
+
+  # Note. repr() uses backslashreplace, and could be reverted like this:
+  #   txt = txt.replace('\\xc3\\xbc', '\xc3\xbc')
 
   if tee:
     if tee == True: tee=sys.stdout
@@ -347,7 +365,8 @@ fileslist = { 'debian.changelog':None, define['PACKNAME']+'.changes':None, newta
 ## read them in all, before writing out one. This way we can print errors before we clobber files.
 for file in os.listdir(template_dir):
   if verbose: print("loading template file "+template_dir+"/"+file)
-  templ = open(template_dir + '/' + file).read()
+  # need to handle binaries and unknown encodings!
+  templ = open(template_dir + '/' + file, encoding='latin-1').read()
   fileslist[subst_variables(file, define, filename=True)] = templ
 
 if re.match('https?://', args.template_dir):
@@ -372,7 +391,7 @@ else:
 topdir = run(['sh', '-c', 'tar tf ' + outdir + '/' + newtarfile + ' | head'], redirect=True)
 topdir = topdir.split('/', 1)[0]
 if not 'SOURCE_TAR_TOP_DIR' in define:
-  if topdir:
+  if topdir and not "STDERROR: " in topdir:
     define['SOURCE_TAR_TOP_DIR'] = topdir
   else:
     # fallback for SOURCE_TAR_TOP_DIR if it cannot be derived from tar archive contents
@@ -388,7 +407,7 @@ if verbose:
 ## templatize after pulling tar source, so that we have its SOURCE_TAR_TOP_DIR.
 for file in fileslist:
   if fileslist[file] is not None:
-    f = open(outdir + '/' + file, 'w')
+    f = open(outdir + '/' + file, 'w', encoding="latin-1")
     body = subst_variables(fileslist[file], define)
     f.write(body)
     f.close()
