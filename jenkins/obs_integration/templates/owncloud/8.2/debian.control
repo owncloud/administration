@@ -49,11 +49,13 @@ Package: [% PACKNAME %]-deps-php7.0
 Architecture: all
 Provides: [% PACKNAME %]-deps
 # From https://github.com/owncloud/core/issues/20963
+# From https://github.com/owncloud/core/issues/23644
 Depends: libapache2-mod-php7.0,
         php7.0-common,
         php7.0-mysql,
         php7.0-intl,
         php7.0-mcrypt,
+        php7.0-mbstring,
         php7.0-imap,
         php7.0-cli,
         php7.0-gd,
