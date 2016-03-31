@@ -1,4 +1,4 @@
-# 
+#
 # spec file for package [% PACKNAME %]
 #
 # Copyright (c) 2012-2016 ownCloud, Inc.
@@ -105,21 +105,21 @@ ownCloud - Your Cloud, Your Data, Your Way!  www.owncloud.org
 %define ocphp_deps_name	%{name}-deps-php5
 %define ochttpd		httpd
 
-%if "%_repository" == "CentOS_6_SCL_PHP54" || "%_repository" == "RHEL_6_SCL_PHP54"
+%if "%_repository" == "CentOS_6_SCL_PHP54" || "%_repository" == "RHEL_6_SCL_PHP54" || "%_repository" == "CentOS_6_PHP54" || "%_repository" == "RHEL_6_PHP54"
 %define ocphp		php54-php
 %define ocphp_bin	/opt/rh/php54/root/usr/bin
 %define ocphp_deps_name	%{name}-deps-scl-php54
 %define ochttpd		httpd
 %endif
 
-%if "%_repository" == "CentOS_6_SCL_PHP55" || "%_repository" == "RHEL_6_SCL_PHP55" 
+%if "%_repository" == "CentOS_6_SCL_PHP55" || "%_repository" == "RHEL_6_SCL_PHP55" || "%_repository" == "CentOS_6_PHP55" || "%_repository" == "RHEL_6_PHP55"
 %define ocphp		php55-php
 %define ocphp_bin	/opt/rh/php55/root/usr/bin
 %define ocphp_deps_name	%{name}-deps-scl-php55
 %define ochttpd		httpd24-httpd
 %endif
 
-%if "%_repository" == "CentOS_6_SCL_PHP56" || "%_repository" == "RHEL_6_SCL_PHP56"
+%if "%_repository" == "CentOS_6_SCL_PHP56" || "%_repository" == "RHEL_6_SCL_PHP56" || "%_repository" == "CentOS_6_PHP56" || "%_repository" == "RHEL_6_PHP56"
 %define ocphp		rh-php56-php
 %define ocphp_bin	/opt/rh/php56/root/usr/bin
 %define ocphp_deps_name	%{name}-deps-scl-php56
@@ -232,7 +232,7 @@ fi
 # install our apache config
 if [ -f "%{oc_docdir}/owncloud-config-apache.conf.default" ]; then
   echo "install owncloud.conf into apache, if missing"
-  if [ -d %{apache_confdir} -a ! -f %{apache_confdir}/owncloud.conf ]; then  
+  if [ -d %{apache_confdir} -a ! -f %{apache_confdir}/owncloud.conf ]; then
     cp %{oc_docdir}/owncloud-config-apache.conf.default %{apache_confdir}/owncloud.conf
     chown root:root %{apache_confdir}/owncloud.conf
     chmod 644 %{apache_confdir}/owncloud.conf

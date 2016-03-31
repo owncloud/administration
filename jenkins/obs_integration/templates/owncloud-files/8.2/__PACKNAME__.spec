@@ -1,4 +1,4 @@
-# 
+#
 # spec file for package [% PACKNAME %]
 #
 # Copyright (c) 2012-2016 ownCloud, Inc.
@@ -45,7 +45,7 @@
 %define oc_config_dir 	%{oc_dir}/config
 %define oc_data_dir 	%{oc_dir}/data
 %define oc_data_pdir 	%{oc_dir}
- 
+
 Name:           [% PACKNAME %]
 
 ## define prerelease % nil, if this is *not* a prerelease.
