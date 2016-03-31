@@ -184,7 +184,7 @@ echo build
 # We had silently skipped files under %{_docdir} on both SUSE and CentOS. Do not use that for our
 # apache template. Prefer /usr/share/lib, it always installs flawlessly.
 %define oc_docdir_base /usr/share/lib
-%define oc_docdir %{oc_docdir_base}/%{name}-%{base_version}
+%define oc_docdir %{oc_docdir_base}/%{name}-files-%{base_version}
 
 echo install
 
