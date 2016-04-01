@@ -17,7 +17,7 @@
 
 Name:           [% PACKNAME %]
 
-## define prerelease % nil, if this is *not* a prerelease.
+## define prerelease % nil, if this is *not* a prerelease. Caution: always lower case beta rc.
 %define prerelease [% PRERELEASE %]
 %define base_version [% VERSION %]
 ## don't enable support_php7 for now, it takes precendence over scl_php54
