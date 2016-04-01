@@ -46,6 +46,7 @@ Summary:        The server - private file sync and share server
 License:        AGPL-3.0 and MIT
 Group:          Productivity/Networking/Web/Utilities
 # No Source0: needed when there are no prep setup build sections.
+Source100:	apache_conf_default
 
 Requires:	%{name}-deps  >= %{oc_version}
 Requires:	%{name}-files >= %{oc_version}
@@ -181,11 +182,8 @@ Summary: Dependencies for php7
 echo build
 
 %install
-# We had silently skipped files under %{_docdir} on both SUSE and CentOS. Do not use that for our
-# apache template. Prefer /usr/share/lib, it always installs flawlessly.
-%define oc_docdir_base /usr/share/lib
-%define oc_docdir %{oc_docdir_base}/%{name}-files-%{base_version}
-
+mkdir -p $RPM_BUILD_ROOT/%{apache_confdir}/
+sed -e 's@/var/www/owncloud@%{oc_dir}/owncloud@' < %{SOURCE100} > $RPM_BUILD_ROOT/%{apache_confdir}/owncloud.conf
 echo install
 
 %clean
@@ -283,8 +281,10 @@ fi
 # no binary packages are generated without a files section.
 %files
 %files -n %{ocphp_deps_name}
+%config(noreplace) %{apache_confdir}/owncloud.conf
 %if 0%{?support_php7}
 %files -n %{name}-deps-php7
+%config(noreplace) %{apache_confdir}/owncloud.conf
 %endif
 
 %changelog
