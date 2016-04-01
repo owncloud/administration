@@ -276,7 +276,7 @@ if [ $1 -eq 1 ]; then
     echo "Asserting file permission during first install"
     # CAUTION: if owncloud-files was installed before httpd, everything belongs to root:root.
     # Mimic here again, what the files section there would have done:
-    chown -R %{oc_user}:%{oc_group} %{oc_config_dir} %{oc_data_dir} %{oc_dir}/apps
+    chown -R %{oc_user}:%{oc_group} %{oc_config_dir} %{oc_data_dir} %{oc_dir}/apps || true
 fi
 
 
