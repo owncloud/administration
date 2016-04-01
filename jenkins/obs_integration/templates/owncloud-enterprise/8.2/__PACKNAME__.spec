@@ -157,6 +157,8 @@ Requires:       php5 >= 5.4.0  php5-mbstring  php5-zip  php5-json  php5-posix  p
 Requires:       apache2 apache2-mod_php5
 Requires:       sqlite3 php5-sqlite
 Recommends:     php5-mysql mysql
+# dir /etc/apache2 not owned, that is okay.
+BuildRequires:  -post-build-checks
 %endif
 
 Summary: Dependencies for php5
