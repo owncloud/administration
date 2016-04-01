@@ -229,16 +229,6 @@ perl -pani -e 's@^(APACHE_MODULES=")@${1}php5 @' /etc/sysconfig/apache2
   :
 fi
 
-# install our apache config
-if [ -f "%{oc_docdir}/owncloud-config-apache.conf.default" ]; then
-  echo "install owncloud.conf into apache, if missing"
-  if [ -d %{apache_confdir} -a ! -f %{apache_confdir}/owncloud.conf ]; then
-    cp %{oc_docdir}/owncloud-config-apache.conf.default %{apache_confdir}/owncloud.conf
-    chown root:root %{apache_confdir}/owncloud.conf
-    chmod 644 %{apache_confdir}/owncloud.conf
-  fi
-fi
-
 if [ ! -s %{statedir}/need_apache_reload_after_owncloud_install ]; then	
 %if 0%{?suse_version}
   (service apache2 status | grep running > %{statedir}/need_apache_reload_after_owncloud_install) || true
