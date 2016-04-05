@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 use strict;
+use version;
 use Locale::PO;
 use Cwd;
 use Data::Dumper;
@@ -53,6 +54,20 @@ sub getPluralInfo {
 
 	return $info;
 }
+
+sub init() {
+	my $out = `xgettext --version`;
+	$out = substr $out, 29, index($out, "\n")-29;
+	$out =~ s/^\s+|\s+$//g;
+	$out = "v" . $out;
+	my $actual = version->parse($out);
+	my $expected = version->parse('v0.18.3');
+	if ($actual < $expected) {
+		die( "Minimum expected version of xgettext is " . $expected . ". Detected: " . $actual );
+	}
+}
+
+init();
 
 my $app = shift( @ARGV );
 my $task = shift( @ARGV );
