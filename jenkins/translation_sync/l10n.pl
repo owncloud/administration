@@ -56,11 +56,14 @@ sub getPluralInfo {
 }
 
 sub init() {
+	# let's get the version from stdout of xgettext
 	my $out = `xgettext --version`;
+	# we assume the first line looks like this 'xgettext (GNU gettext-tools) 0.19.3'
 	$out = substr $out, 29, index($out, "\n")-29;
 	$out =~ s/^\s+|\s+$//g;
 	$out = "v" . $out;
 	my $actual = version->parse($out);
+	# 0.18.3 introduced JavaScript as a language option
 	my $expected = version->parse('v0.18.3');
 	if ($actual < $expected) {
 		die( "Minimum expected version of xgettext is " . $expected . ". Detected: " . $actual );
