@@ -115,7 +115,7 @@ if( $task eq 'read' ){
 			else{
 				$keywords = '--keyword=t --keyword=n:1,2';
 			}
-			my $language = ( $file =~ /\.js$/ ? 'Python' : 'PHP');
+			my $language = ( $file =~ /\.js$/ ? 'Javascript' : 'PHP');
 			my $joinexisting = ( -e $output ? '--join-existing' : '');
 			print "    Reading $file\n";
 			`xgettext --output="$output" $joinexisting $keywords --language=$language "$file" --add-comments=TRANSLATORS --from-code=UTF-8 --package-version="8.0.0" --package-name="$packageName" --msgid-bugs-address="translations\@owncloud.org"`;
