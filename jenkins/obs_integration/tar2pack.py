@@ -290,8 +290,8 @@ m = re.match(r'(.*/)?(.*?)[_-](\d[\d\.]*?)[\.~-]?([a-z]+[\d\.]*)?\.(tar(\.\w+)?|
 if m:
   if not 'SOURCE_BASE' in define: define['SOURCE_BASE'] = m.group(2)
   if not 'PACKNAME'    in define: define['PACKNAME']    = m.group(2)
-  if not 'VERSION'     in define: define['VERSION']     = m.group(3).lower()	# enforce lower case for safe version compare
-  if not 'PRERELEASE'  in define: define['PRERELEASE']  = m.group(4).lower()	# enforce lower case for safe version compare
+  if not 'VERSION'     in define: define['VERSION']     = (m.group(3) or '').lower()	# enforce lower case for safe version compare
+  if not 'PRERELEASE'  in define: define['PRERELEASE']  = (m.group(4) or '').lower()	# enforce lower case for safe version compare
   if define['VERSION'] != m.group(3):
     print("Warning: Version number in tar '"+m.group(3)+"' differs from VERSION="+define['VERSION'])
     print("Waiting 3 seconds for CTRL-C")
@@ -305,8 +305,8 @@ else:
 
 if not 'PRERELEASE' in define or define['PRERELEASE'] == None or define['PRERELEASE'] == '': 
   define['PRERELEASE'] = '%nil'
-
-if not 'BUILDRELEASE_DEB' in define: define['BUILDRELEASE_DEB'] = '1'
+if not 'BUILDRELEASE_DEB' in define:
+  define['BUILDRELEASE_DEB'] = '1'
 if not 'VERSION_DEB' in define:
   version_deb = define['VERSION']
   if define['PRERELEASE'] != '%nil': version_deb = define['VERSION'] + '~' + define['PRERELEASE']
