@@ -20,10 +20,6 @@ APPNAME=$2
 
 rm -rf job.sh
 
-git checkout $BRANCH
-git branch
-git pull --rebase
-
 mkdir -p l10n/.tx
 cd l10n
 rm -rf l10n.pl
@@ -81,6 +77,4 @@ git rm -rf l10n/or_IN.* || true
 git status
 git add l10n
 git commit -am "[tx-robot] updated from transifex" || true
-git push origin $BRANCH
-git status
 echo "done"
