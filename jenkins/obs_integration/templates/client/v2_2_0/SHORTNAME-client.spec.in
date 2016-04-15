@@ -231,7 +231,10 @@ BuildRequires:  update-desktop-files
 
 ######################################################################### Requires only below here.
 
-%if %use_qt5
+%if %use_qt5 && 0%{?suse_version} == 0
+# suse finds the libs via autoreqprov 
+# https://github.com/owncloud/client/issues/4431
+
 Requires:       %{qtprefix}qt5-qtbase
 Requires:       %{qtprefix}qt5-qtbase-gui
 # libQtWebKit4 is implicitly pulled by libowncloudsync0
@@ -397,6 +400,7 @@ cmake .. -DWITH_DOC=TRUE \
   -DMIRALL_VERSION_SUFFIX="%{prerelease}" \
   -DMIRALL_VERSION_BUILD="[% buildjobid %]" \
 %endif
+  -DKDE_INSTALL_USE_QT_SYS_PATHS=1 \
   -DCMAKE_C_FLAGS:STRING="%{optflags}" \
   -DCMAKE_CXX_FLAGS:STRING="%{optflags}" \
   -DCMAKE_SKIP_RPATH=OFF \
@@ -575,12 +579,10 @@ fi
 %files -n %{name}-dolphin
 %defattr(-,root,root,-)
 %{_libdir}/*dolphinpluginhelper.so
-%{_libdir}/plugins/kf5/overlayicon/*dolphinoverlayplugin.so
-%{_libdir}/plugins/*dolphinactionplugin.so
+%{_libdir}/qt5/plugins/kf5/overlayicon/*dolphinoverlayplugin.so
+%{_libdir}/qt5/plugins/*dolphinactionplugin.so
 
 %{_datadir}/kservices5/*dolphinactionplugin.desktop
-%dir %{_libdir}/plugins
-%dir %{_libdir}/plugins/kf5
-%dir %{_libdir}/plugins/kf5/overlayicon
+%dir %{_libdir}/qt5/plugins/kf5/overlayicon
 %endif # build_dolphin_overlays
 %changelog
