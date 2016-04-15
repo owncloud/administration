@@ -10,6 +10,9 @@ if [ "$#" -ne 1 ]; then
     exit
 fi
 
+git config --global user.email "owncloud-bot@tmit.eu"
+git config --global user.name "Jenkins for ownCloud"
+
 cd /workspace/
 
 # verbose and exit on error
