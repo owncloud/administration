@@ -549,7 +549,9 @@ unless( defined $substs->{version} )
 	  {
 	    # https://github.com/owncloud/client/issues/4289
             my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
-            $prerel = "nightly" . "$year+1900" . "$mon+1" . "$mday";
+	    $year += 1900;
+	    $mon += 1;
+            $prerel = "nightly" . "$year" . "$mon" . "$mday";
             $substs->{version_deb} = $vers . '~' . $prerel;
 	  }
 	else
