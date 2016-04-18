@@ -76,6 +76,7 @@ Group:          Productivity/Networking/Other
 Source0:        [% tarball %].tar.bz2
 Source1:        [% APPLICATION_EXECUTABLE %].sh
 Source2:        [% APPLICATION_EXECUTABLE %]cmd.sh
+Source3:        100-owncloud-inotify.conf
 
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 Patch1:         autostart_use_wrapper.diff
@@ -472,6 +473,9 @@ install %{SOURCE1} ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]
 install %{SOURCE2} ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]cmd
 %endif
 
+# https://github.com/owncloud/client/issues/4107
+install -m 0755 -D %{SOURCE3} ${RPM_BUILD_ROOT}/etc/sysctl.d/100-owncloud-inotify.conf
+
 %if %{?suse_version:1}0
 %suse_update_desktop_file -n [% APPLICATION_EXECUTABLE %]
 # workaround for https://github.com/owncloud/ownbrander/issues/322
@@ -537,6 +541,9 @@ fi
 %endif
 %config /etc/[% shortname_etc %]
 %dir /etc
+# https://github.com/owncloud/client/issues/4107
+%dir /etc/sysctl.d
+%config /etc/sysctl.d/*
 
 %files -n %{name}-doc
 %defattr(-,root,root,-)
