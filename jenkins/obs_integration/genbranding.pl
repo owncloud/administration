@@ -548,7 +548,8 @@ unless( defined $substs->{version} )
 	if ( $substs->{buildjobid} )
 	  {
 	    # https://github.com/owncloud/client/issues/4289
-	    $prerel = POSIX::strftime("nightly%Y%m%d\n", localtime());
+            ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
+            $prerel = "nightly" . "$year+1900" . "$mon+1" . "$mday";
             $substs->{version_deb} = $vers . '~' . $prerel;
 	  }
 	else
