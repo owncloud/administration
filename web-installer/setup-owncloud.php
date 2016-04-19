@@ -78,7 +78,7 @@ class Setup {
 		}
 
 		// running oC on windows is unsupported since 8.1
-		if(substr(PHP_OS, 0, 3) === "WIN")) {
+		if(substr(PHP_OS, 0, 3) === "WIN") {
 			$error.='ownCloud Server does not support Microsoft Windows.<br/>';
 		}
 
