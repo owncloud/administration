@@ -25,13 +25,6 @@ set -e
 #DEBHELPER#
 
 if type a2enconf >/dev/null 2>/dev/null; then
-  if [ -d $SPEC_apache_confdir_a -a ! -e $SPEC_apache_confdir_a/owncloud.conf ] ; then
-    cp $SPEC_oc_doc_dir*/owncloud-config-apache.conf.default $SPEC_apache_confdir_a/owncloud.conf || true
-    chown root:root $SPEC_apache_confdir_a/owncloud.conf || true
-    chmod 644 $SPEC_apache_confdir_a/owncloud.conf || true
-    echo "installing new $SPEC_apache_confdir_a/owncloud.conf"
-  fi
-
   # FIXME: configure case below pulls symlinks from conf-available manually.
   # FIXME: https://github.com/owncloud/core/issues/15200 
   #  we suspect a race condition, when doing things in rapid succession. Adding sleep 5.

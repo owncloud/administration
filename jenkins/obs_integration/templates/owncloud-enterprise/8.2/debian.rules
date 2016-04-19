@@ -6,6 +6,8 @@
 
 export DH_VERBOSE=1
 SHELL=/bin/bash
+export DROOT=$(CURDIR)/debian/[% PACKNAME %]
+export SRCDIR=/usr/src/packages/SOURCES
 
 
 %:
@@ -13,4 +15,6 @@ SHELL=/bin/bash
 
 override_dh_install:
 	dh_install -Xdebian
+	install -m 0644 -D $(SRCDIR)/apache_conf_default $(DROOT)-deps-php5/etc/apache2/conf-available/owncloud.conf
+	install -m 0644 -D $(SRCDIR)/apache_conf_default $(DROOT)-deps-php7/etc/apache2/conf-available/owncloud.conf
 
