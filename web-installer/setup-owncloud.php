@@ -321,21 +321,29 @@ class Setup {
 	}
 
 	/**
-	* Shows the redirect screen
-	*/
+	 * Shows the redirect screen
+	 */
 	static public function showRedirect() {
 		// delete own file
-		@unlink($_SERVER['SCRIPT_FILENAME']);
-
-		// redirect to ownCloud
-		header("Location: ".$_GET['directory']);
+		@unlink(__FILE__);
+		clearstatcache();
+		if (file_exists(__FILE__)){
+			Setup::showContent(
+				'Warning',
+				'Failed to remove installer script. Please remove ' . __FILE__ . ' manually',
+				3
+			);
+		} else {
+			// redirect to ownCloud
+			header("Location: " . $_GET['directory']);
+		}
 	}
 
 }
 
 
 // read the step get variable
-if(isset($_GET['step'])) $step=$_GET['step']; else $step=0;
+$step = isset($_GET['step']) ? $_GET['step'] : 0;
 
 // show the header
 Setup::showHeader();
