@@ -198,7 +198,7 @@ target:
     inst: [wget]
     pre: |
       RUN yum install -y --nogpgcheck wget
-      RUN wget -nv http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+      RUN wget -nv http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-6.noarch.rpm
       RUN rpm -ivh epel-release-7*.rpm
 
   CentOS_CentOS-7: { base: [CentOS_7] }
