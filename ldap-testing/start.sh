@@ -11,7 +11,7 @@ LDAP_ROOTPASS=admin
 LDAP_BASE_DN=dc=owncloud,dc=com
 LDAP_LOGIN_DN=cn=admin,dc=owncloud,dc=com
 
-docker pull nickstenning/slapd
+docker pull nickstenning/slapd > /dev/null
 
 # start containers
 docker run -p 127.0.0.1:$LDAP_LOCAL_PORT:389 \
@@ -21,7 +21,7 @@ docker run -p 127.0.0.1:$LDAP_LOCAL_PORT:389 \
 	--name docker-slapd \
 	-d nickstenning/slapd || exit 1
 
-docker pull osixia/phpldapadmin
+docker pull osixia/phpldapadmin > /dev/null
 
 #docker inspect docker-slapd | grep IP
 SLAPD_CONTAINER_IP=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" docker-slapd)
