@@ -78,7 +78,7 @@ class Setup {
 		}
 
 		// running oC on windows is unsupported since 8.1
-		if(substr(PHP_OS, 0, 3) === "WIN")) {
+		if(substr(PHP_OS, 0, 3) === "WIN") {
 			$error.='ownCloud Server does not support Microsoft Windows.<br/>';
 		}
 
@@ -253,13 +253,27 @@ class Setup {
 	*/
 	static public function showContent($title, $content, $nextpage=''){
 		echo('
+		<script>
+			var validateForm = function(){
+				if (typeof urlNotExists === "undefined"){
+					return true;
+				}
+				urlNotExists(
+					window.location.href, 
+					function(){
+						window.location.assign(document.forms["install"]["directory"].value);
+					}
+				);
+				return false;
+			}
+		</script>
 		<div id="login">
 			<header><div id="header">
 				<img src="https://owncloud.org/setupwizard/logo.png" alt="ownCloud" />
 			</div></header><br />
 			<p style="text-align:center; font-size:28px; color:#444; font-weight:bold;">'.$title.'</p><br />
 			<p style="text-align:center; font-size:13px; color:#666; font-weight:bold; ">'.$content.'</p>
-			<form method="get">
+			<form method="get" name="install" onsubmit="return validateForm();">
 				<input type="hidden" name="step" value="'.$nextpage.'" />
 		');
 
@@ -276,8 +290,29 @@ class Setup {
 		echo('
 		</form>
 		</div>
-
 		');
+	}
+
+	/**
+	 * JS function to check if user deleted this script
+	 * N.B. We can't reload the page to check this with PHP:
+	 * once script is deleted we end up with 404
+	 */
+	static public function showJsValidation(){
+		echo '
+		<script>
+			var urlNotExists = function(url, callback){
+				var xhr = new XMLHttpRequest();
+				xhr.open(\'HEAD\', encodeURI(url));
+				xhr.onload = function() {
+					if (xhr.status === 404){
+						callback();
+					}
+				};
+				xhr.send();
+			};
+		</script>
+		';
 	}
 
 
@@ -321,21 +356,30 @@ class Setup {
 	}
 
 	/**
-	* Shows the redirect screen
-	*/
+	 * Shows the redirect screen
+	 */
 	static public function showRedirect() {
 		// delete own file
-		@unlink($_SERVER['SCRIPT_FILENAME']);
-
-		// redirect to ownCloud
-		header("Location: ".$_GET['directory']);
+		@unlink(__FILE__);
+		clearstatcache();
+		if (file_exists(__FILE__)){
+			Setup::showJsValidation();
+			Setup::showContent(
+				'Warning',
+				'Failed to remove installer script. Please remove ' . __FILE__ . ' manually',
+				3
+			);
+		} else {
+			// redirect to ownCloud
+			header("Location: " . $_GET['directory']);
+		}
 	}
 
 }
 
 
 // read the step get variable
-if(isset($_GET['step'])) $step=$_GET['step']; else $step=0;
+$step = isset($_GET['step']) ? $_GET['step'] : 0;
 
 // show the header
 Setup::showHeader();
