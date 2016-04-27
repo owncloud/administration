@@ -184,7 +184,9 @@ echo build
 # We had silently skipped files under %{_docdir} on both SUSE and CentOS. Do not use that for our
 # apache template. Prefer /usr/share/lib, it always installs flawlessly.
 %define oc_docdir_base /usr/share/lib
-%define oc_docdir %{oc_docdir_base}/%{name}-files-%{base_version}
+%define oc_docdir %{oc_docdir_base}/%{name}-%{base_version}
+
+sed -e 's@/var/www/owncloud@%{oc_dir}/owncloud@' < apache_conf_default > $RPM_BUILD_ROOT/%{apache_confdir}/owncloud.conf
 
 echo install
 
@@ -283,8 +285,10 @@ fi
 # no binary packages are generated without a files section.
 %files
 %files -n %{ocphp_deps_name}
+%config(noreplace) %{apache_confdir}/owncloud.conf
 %if 0%{?support_php7}
 %files -n %{name}-deps-php7
+%config(noreplace) %{apache_confdir}/owncloud.conf
 %endif
 
 %changelog
