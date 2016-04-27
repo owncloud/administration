@@ -153,8 +153,9 @@ def edit_specfile(specfile, data, tarurl):
 def debian_version(data, buildrel=1):
   full_version = data['version']
   if "prerelease" in data and data['prerelease'] != '%nil': 
-    pre = data['prerelease'].capitalize()
-    pre = re.sub(r'^rc','RC', pre.lower(), re.I)	# re.I does not work???
+    pre = data['prerelease'].lower()
+    # pre = data['prerelease'].capitalize()
+    # pre = re.sub(r'^rc','RC', pre.lower(), re.I)	# re.I does not work???
     full_version += "~"+pre
   if buildrel is not None:
     full_version += "-" + str(buildrel)
