@@ -17,7 +17,7 @@
 
 Name:           [% PACKNAME %]
 
-## define prerelease % nil, if this is *not* a prerelease.
+## define prerelease % nil, if this is *not* a prerelease. Caution: always lower case beta rc.
 %define prerelease [% PRERELEASE %]
 %define base_version [% VERSION %]
 ## don't enable support_php7 for now, it takes precendence over scl_php54
@@ -46,6 +46,7 @@ Summary:        The server - private file sync and share server
 License:        AGPL-3.0 and MIT
 Group:          Productivity/Networking/Web/Utilities
 # No Source0: needed when there are no prep setup build sections.
+Source100:	apache_conf_default
 
 Requires:	%{name}-deps  >= %{oc_version}
 Requires:	%{name}-files >= %{oc_version}
@@ -155,7 +156,11 @@ Requires:       php-fileinfo
 Requires:       php5 >= 5.4.0  php5-mbstring  php5-zip  php5-json  php5-posix  php5-curl  php5-gd  php5-ctype  php5-xmlreader  php5-xmlwriter  php5-zlib php5-pear php5-iconv php5-pdo
 Requires:       apache2 apache2-mod_php5
 Requires:       sqlite3 php5-sqlite
-Recommends:     php5-mysql mysql
+# SLE_12:
+Recommends:     mysql
+Requires:       php5-mysql
+# dir /etc/apache2 not owned, that is okay.
+BuildRequires:  -post-build-checks
 %endif
 
 Summary: Dependencies for php5
@@ -186,8 +191,8 @@ echo build
 %define oc_docdir_base /usr/share/lib
 %define oc_docdir %{oc_docdir_base}/%{name}-%{base_version}
 
-sed -e 's@/var/www/owncloud@%{oc_dir}/owncloud@' < apache_conf_default > $RPM_BUILD_ROOT/%{apache_confdir}/owncloud.conf
-
+mkdir -p $RPM_BUILD_ROOT/%{apache_confdir}/
+sed -e 's@/var/www/owncloud@%{oc_dir}/owncloud@' < %{SOURCE100} > $RPM_BUILD_ROOT/%{apache_confdir}/owncloud.conf
 echo install
 
 %clean
@@ -231,16 +236,6 @@ perl -pani -e 's@^(APACHE_MODULES=")@${1}php5 @' /etc/sysconfig/apache2
   :
 fi
 
-# install our apache config
-if [ -f "%{oc_docdir}/owncloud-config-apache.conf.default" ]; then
-  echo "install owncloud.conf into apache, if missing"
-  if [ -d %{apache_confdir} -a ! -f %{apache_confdir}/owncloud.conf ]; then
-    cp %{oc_docdir}/owncloud-config-apache.conf.default %{apache_confdir}/owncloud.conf
-    chown root:root %{apache_confdir}/owncloud.conf
-    chmod 644 %{apache_confdir}/owncloud.conf
-  fi
-fi
-
 if [ ! -s %{statedir}/need_apache_reload_after_owncloud_install ]; then	
 %if 0%{?suse_version}
   (service apache2 status | grep running > %{statedir}/need_apache_reload_after_owncloud_install) || true
@@ -278,7 +273,7 @@ if [ $1 -eq 1 ]; then
     echo "Asserting file permission during first install"
     # CAUTION: if owncloud-files was installed before httpd, everything belongs to root:root.
     # Mimic here again, what the files section there would have done:
-    chown -R %{oc_user}:%{oc_group} %{oc_config_dir} %{oc_data_dir} %{oc_dir}/apps
+    chown -R %{oc_user}:%{oc_group} %{oc_config_dir} %{oc_data_dir} %{oc_dir}/apps || true
 fi
 
 

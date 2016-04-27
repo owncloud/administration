@@ -31,16 +31,18 @@ Package: [% PACKNAME %]-deps-php5
 Architecture: all
 Provides: [% PACKNAME %]-deps
 # https://github.com/owncloud/core/issues/21342
+# https://github.com/owncloud/core/issues/23878
 Depends: ${misc:Depends}, php5 (>= 5.4.0), 
 	php5-common, php5-gd, php-xml-parser, php5-intl, php5-mcrypt, php5-curl, php5-json, 
 	php5-mysqlnd | php5-mysql, php5-sqlite, php5-pgsql, 
 	php5-cgi | php5-fpm | libapache2-mod-php5,
-	apache2 (>= 2.4.0) | httpd
+	apache2 (>= 2.4.0) | httpd,
+	[% PACKNAME %]-files
 # Don't recommend php5-apcu for Ubuntu-14.04 https://github.com/owncloud/core/issues/14188
 # Don't use apcu before 4.0.6 https://github.com/owncloud/core/issues/14175
 # php5-imagick is needed by apps/files-versions
 # php5-ldap is needed by apps/user-ldap
-Suggests: php5-apcu (>= 4.0.6) | php-apc, php5-imagick, php5-ldap
+Suggests: php5-apcu (>= 4.0.6) | php-apc, php5-imagick, php5-ldap, php-smbclient | libsmbclient
 Recommends: mysql-server | mariadb-server | postgresql, curl, exim4 | mail-transport-agent
 Description: ownCloud - dependencies for php5
  .
@@ -50,6 +52,7 @@ Architecture: all
 Provides: [% PACKNAME %]-deps
 # From https://github.com/owncloud/core/issues/20963
 # From https://github.com/owncloud/core/issues/23644
+# https://github.com/owncloud/core/issues/23878
 Depends: libapache2-mod-php7.0,
         php7.0-common,
         php7.0-mysql,
@@ -64,7 +67,11 @@ Depends: libapache2-mod-php7.0,
         php7.0-sqlite3,
         php7.0-curl,
         php7.0-xml,
-        php7.0-zip
+        php7.0-zip,
+	apache2 (>= 2.4.0) | httpd,
+	[% PACKNAME %]-files
 Suggests: php7.0-ldap, php-smbclient | libsmbclient
+# https://github.com/owncloud/core/issues/23737
+Recommends: mysql-server | mariadb-server | postgresql, curl, exim4 | mail-transport-agent
 Description: ownCloud - dependencies for php7
  .

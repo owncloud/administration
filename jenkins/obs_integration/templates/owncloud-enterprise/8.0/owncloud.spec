@@ -96,7 +96,7 @@ Name:           owncloud
 # Downloaded from http://download.owncloud.org/community/owncloud-8.0.3.tar.bz2
 # Downloaded from http://download.owncloud.org/community/testing/owncloud-8.0.5beta.tar.bz2
 
-## define prerelease %nil, if this is *not* a prerelease.
+## define prerelease % nil, if this is *not* a prerelease. Caution: always lower case beta rc.
 %define prerelease RC1
 %define base_version 8.0.5
 %define tar_version %{base_version}%{prerelease}

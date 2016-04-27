@@ -48,7 +48,7 @@
 
 Name:           [% PACKNAME %]
 
-## define prerelease % nil, if this is *not* a prerelease.
+## define prerelease % nil, if this is *not* a prerelease. Caution: always lower case beta rc.
 %define prerelease [% PRERELEASE %]
 %define base_version [% VERSION %]
 

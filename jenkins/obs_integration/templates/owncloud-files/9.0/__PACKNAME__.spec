@@ -48,7 +48,7 @@
 
 Name:           [% PACKNAME %]
 
-## define prerelease % nil, if this is *not* a prerelease.
+## define prerelease % nil, if this is *not* a prerelease. Caution: always lower case beta rc.
 %define prerelease [% PRERELEASE %]
 %define base_version [% VERSION %]
 
@@ -142,7 +142,7 @@ mkdir -p $RPM_BUILD_ROOT/%{oc_dir}/core/skeleton
 cp -aRf .htaccess .user.ini * $idir
 rm -f $idir/debian.*{install,rules,control}
 rm -f $idir/README{,.SELinux,.packaging}
-sed -e 's@/var/www/owncloud@%{oc_dir}/owncloud@' < $idir/apache_conf_default > owncloud-config-apache.conf.default
+sed -e 's@/var/www/owncloud@%{oc_dir}@' < $idir/apache_conf_default > owncloud-config-apache.conf.default
 rm -f $idir/apache_conf_default
 
 mkdir -p $RPM_BUILD_ROOT/%{oc_docdir}

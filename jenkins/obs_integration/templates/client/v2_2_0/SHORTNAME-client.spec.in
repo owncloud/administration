@@ -76,6 +76,7 @@ Group:          Productivity/Networking/Other
 Source0:        [% tarball %].tar.bz2
 Source1:        [% APPLICATION_EXECUTABLE %].sh
 Source2:        [% APPLICATION_EXECUTABLE %]cmd.sh
+Source3:        100-owncloud-inotify.conf
 
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 Patch1:         autostart_use_wrapper.diff
@@ -114,7 +115,7 @@ Patch1:         autostart_use_wrapper.diff
 %if 0%{?suse_version} > 1310 || 0%{?fedora_version} > 20 || 0%{?rhel_version} >= 700 || 0%{?centos_version} >= 700
   %define use_qt5 1
   
-  %if 0%{?suse_version} > 1315 || 0%{?fedora_version} > 22
+  %if 0%{?suse_version} > 1315 || 0%{?fedora_version} > 23
   %define build_dolphin_overlays 1
   %endif
 %endif
@@ -231,7 +232,10 @@ BuildRequires:  update-desktop-files
 
 ######################################################################### Requires only below here.
 
-%if %use_qt5
+%if %use_qt5 && 0%{?suse_version} == 0
+# suse finds the libs via autoreqprov 
+# https://github.com/owncloud/client/issues/4431
+
 Requires:       %{qtprefix}qt5-qtbase
 Requires:       %{qtprefix}qt5-qtbase-gui
 # libQtWebKit4 is implicitly pulled by libowncloudsync0
@@ -397,6 +401,7 @@ cmake .. -DWITH_DOC=TRUE \
   -DMIRALL_VERSION_SUFFIX="%{prerelease}" \
   -DMIRALL_VERSION_BUILD="[% buildjobid %]" \
 %endif
+  -DKDE_INSTALL_USE_QT_SYS_PATHS=1 \
   -DCMAKE_C_FLAGS:STRING="%{optflags}" \
   -DCMAKE_CXX_FLAGS:STRING="%{optflags}" \
   -DCMAKE_SKIP_RPATH=OFF \
@@ -468,6 +473,9 @@ install %{SOURCE1} ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]
 install %{SOURCE2} ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]cmd
 %endif
 
+# https://github.com/owncloud/client/issues/4107
+install -m 0755 -D %{SOURCE3} ${RPM_BUILD_ROOT}/etc/sysctl.d/100-owncloud-inotify.conf
+
 %if %{?suse_version:1}0
 %suse_update_desktop_file -n [% APPLICATION_EXECUTABLE %]
 # workaround for https://github.com/owncloud/ownbrander/issues/322
@@ -533,6 +541,9 @@ fi
 %endif
 %config /etc/[% shortname_etc %]
 %dir /etc
+# https://github.com/owncloud/client/issues/4107
+%dir /etc/sysctl.d
+%config /etc/sysctl.d/*
 
 %files -n %{name}-doc
 %defattr(-,root,root,-)
@@ -575,12 +586,10 @@ fi
 %files -n %{name}-dolphin
 %defattr(-,root,root,-)
 %{_libdir}/*dolphinpluginhelper.so
-%{_libdir}/plugins/kf5/overlayicon/*dolphinoverlayplugin.so
-%{_libdir}/plugins/*dolphinactionplugin.so
+%{_libdir}/qt5/plugins/kf5/overlayicon/*dolphinoverlayplugin.so
+%{_libdir}/qt5/plugins/*dolphinactionplugin.so
 
 %{_datadir}/kservices5/*dolphinactionplugin.desktop
-%dir %{_libdir}/plugins
-%dir %{_libdir}/plugins/kf5
-%dir %{_libdir}/plugins/kf5/overlayicon
+%dir %{_libdir}/qt5/plugins/kf5/overlayicon
 %endif # build_dolphin_overlays
 %changelog

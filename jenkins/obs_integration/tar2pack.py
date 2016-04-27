@@ -38,6 +38,7 @@
 # 2016-03-30: V0.9  jw: ported to python3:
 #                        - all print() with parens,
 #                        - all data read/write as binary open(file, encoding="latin-1")
+# 2016-04-01: 0.10 jw: warn with uppercase in VERSION or PRERELEASE.
 #
 ## TODO: refresh version in dsc file, to be in sync with changelog.
 ## FIXME: should have a mode to grab all the define variables from an existing specfile.
@@ -289,8 +290,8 @@ m = re.match(r'(.*/)?(.*?)[_-](\d[\d\.]*?)[\.~-]?([a-z]+[\d\.]*)?\.(tar(\.\w+)?|
 if m:
   if not 'SOURCE_BASE' in define: define['SOURCE_BASE'] = m.group(2)
   if not 'PACKNAME'    in define: define['PACKNAME']    = m.group(2)
-  if not 'VERSION'     in define: define['VERSION']     = m.group(3)
-  if not 'PRERELEASE'  in define: define['PRERELEASE']  = m.group(4)
+  if not 'VERSION'     in define: define['VERSION']     = (m.group(3) or '').lower()	# enforce lower case for safe version compare
+  if not 'PRERELEASE'  in define: define['PRERELEASE']  = (m.group(4) or '').lower()	# enforce lower case for safe version compare
   if define['VERSION'] != m.group(3):
     print("Warning: Version number in tar '"+m.group(3)+"' differs from VERSION="+define['VERSION'])
     print("Waiting 3 seconds for CTRL-C")
@@ -304,12 +305,20 @@ else:
 
 if not 'PRERELEASE' in define or define['PRERELEASE'] == None or define['PRERELEASE'] == '': 
   define['PRERELEASE'] = '%nil'
-
-if not 'BUILDRELEASE_DEB' in define: define['BUILDRELEASE_DEB'] = '1'
+if not 'BUILDRELEASE_DEB' in define:
+  define['BUILDRELEASE_DEB'] = '1'
 if not 'VERSION_DEB' in define:
   version_deb = define['VERSION']
   if define['PRERELEASE'] != '%nil': version_deb = define['VERSION'] + '~' + define['PRERELEASE']
   define['VERSION_DEB'] = re.sub('-', '_', version_deb)
+
+if define['VERSION'].lower() != define['VERSION']:
+  print("Warning: Version comparison is case sensitive. Please use all lower case with VERSION")
+  time.sleep(5)
+
+if define['PRERELEASE'].lower() != define['PRERELEASE']:
+  print("Warning: Version comparison is case sensitive. Please use all lower case with PRERELEASE")
+  time.sleep(5)
 
 #								Thu Jun  4 17:14:46 UTC 2015
 if not 'DATE_RPM' in define: define['DATE_RPM'] = time.strftime("%a %b %e %H:%M:%S %Z %Y")

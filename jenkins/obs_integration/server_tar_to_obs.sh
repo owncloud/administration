@@ -22,6 +22,9 @@
 
 # 2015-11-11, jw@owncloud: patching to use .ocoscrc for ee
 # 2015-12.16, jw@owncloud: no more underscore in enterprise package names.
+# 2016-04-13, jw@owncloud.com: used for 8.2.4RC1 via maintenance_release.sh
+#             This always commits to :testing -- main projects need to accept submit requests.
+#             CAUTION: this cannot do 9.0.x with owncloud-files and friends.
 
 prerel="${PREREL:-}"
 username="${USERNAME:-jenkins@owncloud.com}"
@@ -32,8 +35,9 @@ if [ -z "$VERSIONS" ]; then
     exit 1
 fi
 
-# cmd="../../obs-new-tar.py -e $username "
-cmd="../../obs-new-tar.py --commit --commit -e $username "	# Hack: using --commit twice is non-interactive.
+bindir=$(dirname $0)
+# cmd="$bindir/obs-new-tar.py -e $username "
+cmd="$bindir/obs-new-tar.py --commit --commit -e $username "	# Hack: using --commit twice is non-interactive.
 submitreq=0	# switch to 1, to also create submitrequests from $prj$prjsuffix to $prj
 test -z "$prerel"  && submitreq=1
 
@@ -45,7 +49,7 @@ if [ -z "$prerel" ]; then
 else
   d_o_o_path=community/testing	# beta and RC tas are there.
 fi
-d_o_c_path=internal		# beta,rc,final tars are all ther.
+d_o_c_path=internal		# beta,rc,final tars are all there.
 
 prjsuffix=${SUFFIX_REPO:-testing}
 
@@ -62,57 +66,67 @@ tar_d_o_o_url="${TAR_D_O_O_URL:-http://download.owncloud.org/$d_o_o_path}"
 do_d_o_o="$cmd $tar_d_o_o_url"
 echo "do_d_o_o='$do_d_o_o'"
 
-for v in $VERSIONS; do
-  case $v in
-  6*)
-    prj=isv:ownCloud:community:6.0
-    api=obs
-    ;;
-  7*)
-    prj=isv:ownCloud:community:7.0
-    api=obs
-    ;;
-  8.0*)
-    prj=isv:ownCloud:community:8.0
-    api=obs
-    ;;
-  8.1*)
-    prj=isv:ownCloud:community:8.1
-    api=obs
-    ;;
-  8.2*)
-    prj=ce:8.2
-    api=s2
-    ;;
-  esac
-
-  if [ "$api" == "obs" ]; then
-    osc=$obs_osc
-    export OSCPARAM="$obs_OSCPARAM"
-  else
-    osc=$s2_osc
-    export OSCPARAM="$s2_OSCPARAM"
-  fi
-
-  for name in owncloud; do
-    # Clean the package name to be debian compatible
-    pkg=$(echo $name | tr _ -)
-
-    # checkout or upate the obs checkout
-    if [ -d "$prj:$prjsuffix" ]; then
-      pushd "$prj:$prjsuffix/$pkg"
-      $osc up
+names="owncloud"
+if true; then
+  for v in $VERSIONS; do
+    case $v in
+    6*)
+      prj=isv:ownCloud:community:6.0
+      api=obs
+      ;;
+    7*)
+      prj=isv:ownCloud:community:7.0
+      api=obs
+      ;;
+    8.0*)
+      prj=isv:ownCloud:community:8.0
+      api=obs
+      ;;
+    8.1*)
+      prj=isv:ownCloud:community:8.1
+      api=obs
+      ;;
+    8.2*)
+      prj=ce:8.2
+      api=s2
+      ;;
+    9.0*)
+      prj=ce:9.0
+      api=s2
+      names="owncloud-files"
+      echo "owncloud-files support not implemented in $0"
+      sleep 10
+      ;;
+    esac
+  
+    if [ "$api" == "obs" ]; then
+      osc=$obs_osc
+      export OSCPARAM="$obs_OSCPARAM"
     else
-      # no checkout dir, do new checkout
-      $osc co $prj:$prjsuffix $pkg
-      pushd $prj:$prjsuffix/$pkg
+      osc=$s2_osc
+      export OSCPARAM="$s2_OSCPARAM"
     fi
-
-    $do_d_o_o/$name-$v$prerel.tar.bz2
-    test $submitreq -ne 0 && echo "sleep 10; $osc submitreq $prj"
-    popd
+  
+    for name in $names; do
+      # Clean the package name to be debian compatible
+      pkg=$(echo $name | tr _ -)
+  
+      # checkout or upate the obs checkout
+      if [ -d "$prj:$prjsuffix" ]; then
+        pushd "$prj:$prjsuffix/$pkg"
+        $osc up
+      else
+        # no checkout dir, do new checkout
+        $osc co $prj:$prjsuffix $pkg
+        pushd $prj:$prjsuffix/$pkg
+      fi
+  
+      $do_d_o_o/$name-$v$prerel.tar.bz2
+      test $submitreq -ne 0 && echo "sleep 10; $osc submitreq $prj"
+      popd
+    done
   done
-done
+fi
 
 echo "==> Community package done."
 # enterprise
@@ -162,6 +176,14 @@ for v in $VERSIONS; do
     manual="ownCloud_Server_Administration_Manual.pdf"
     names="owncloud-enterprise"
     prj=ee:8.2
+    ;;
+  9.0*)
+    manual_sub="9.0"
+    manual="ownCloud_Server_Administration_Manual.pdf"
+    names="owncloud-enterprise-files"
+    prj=ee:9.0
+    echo "owncloud-files and friends support not implemented in $0"
+    sleep 10
     ;;
   esac
   for name in $names; do

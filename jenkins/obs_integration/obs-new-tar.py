@@ -3,6 +3,7 @@
 # (C) 2015 jw@owncloud.com
 #
 # Stuff tar balls from download url or local file into an obs package
+# called e.g. by internal_tar2obs.py
 #
 # CAVEATS: 
 # * this assumes, there is exactly one tar per package.
@@ -152,8 +153,9 @@ def edit_specfile(specfile, data, tarurl):
 def debian_version(data, buildrel=1):
   full_version = data['version']
   if "prerelease" in data and data['prerelease'] != '%nil': 
-    pre = data['prerelease'].capitalize()
-    pre = re.sub(r'^rc','RC', pre.lower(), re.I)	# re.I does not work???
+    pre = data['prerelease'].lower()
+    # pre = data['prerelease'].capitalize()
+    # pre = re.sub(r'^rc','RC', pre.lower(), re.I)	# re.I does not work???
     full_version += "~"+pre
   if buildrel is not None:
     full_version += "-" + str(buildrel)
@@ -299,6 +301,9 @@ else:
 if data['name'] != cwd_pkg:
   print("You are trying to commit tar %s into a checkout of package '%s'\n" % (data['name'], cwd_pkg))
   sys.exit()
+
+# transform RC1 to rc1.
+data['prerelease'] = data['prerelease'].lower()
 
 addremove_tars(newtarfile)
 
