@@ -8,8 +8,14 @@ buildrel=3build1
 arch=amd64
 
 deb_in_pkg_name=${name}_${version}-${buildrel}_${arch}.deb
+ar x $deb_in_pkg_name
+tar xf control.tar.xz
+rm control.tar.xz
+osc add data.tar.xz
+
 if [ ! -f debian.control ]; then
-  dpkg-deb -I $deb_in_pkg_name | sed -e 's@^ @@' -e 's@^ @       @' | sed -n -e '/^Package:/,$p' > debian.control
+#  dpkg-deb -I $deb_in_pkg_name | sed -e 's@^ @@' -e 's@^ @       @' | sed -n -e '/^Package:/,$p' > debian.control
+  mv control debian.control
   osc add debian.control
 fi
 
