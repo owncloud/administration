@@ -3,6 +3,7 @@
 # (C) 2015 jw@owncloud.com
 #
 # Stuff tar balls from download url or local file into an obs package
+# called e.g. by internal_tar2obs.py
 #
 # CAVEATS: 
 # * this assumes, there is exactly one tar per package.
@@ -299,6 +300,9 @@ else:
 if data['name'] != cwd_pkg:
   print("You are trying to commit tar %s into a checkout of package '%s'\n" % (data['name'], cwd_pkg))
   sys.exit()
+
+# transform RC1 to rc1.
+data['prerelease'] = data['prerelease'].lower()
 
 addremove_tars(newtarfile)
 
