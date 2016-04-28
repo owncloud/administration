@@ -34,6 +34,8 @@ if [ ! -f debian.control ]; then
 #  dpkg-deb -I $deb_in_pkg_name | sed -e 's@^ @@' -e 's@^ @       @' | sed -n -e '/^Package:/,$p' > debian.control
   echo "Source: $name" > debian.control
   grep '^Maintainer: ' < control >> debian.control
+  grep '^Section: ' < control >> debian.control
+  grep '^Priority: ' < control >> debian.control
   echo "" >> debian.control
   echo "Package: $name" >> debian.control
 
