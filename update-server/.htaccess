@@ -1,0 +1,6 @@
+# Rewrite all requests to "index.php"
+
+DirectoryIndex index.php
+RewriteEngine On
+
+RewriteRule ^ index.php [L]

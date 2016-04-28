@@ -1,0 +1,16 @@
+{
+  "config": {
+    "vendor-dir": "./vendor/",
+    "optimize-autoloader": true,
+    "classmap-authoritative": true
+  },
+  "autoload": {
+    "psr-4": {
+      "UpdateServer\\": "src/",
+      "Tests\\": "tests/unit"
+    }
+  },
+  "require-dev": {
+    "behat/behat": "~3.0.4"
+  }
+}
