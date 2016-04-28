@@ -37,15 +37,15 @@ if [ ! -f debian.control ]; then
   echo "" >> debian.control
   echo "Package: $name" >> debian.control
 
-  grep -v '^Source: ' < control | grep -v '^Maintainer: ' | grep -v '^Original-Maintainer: ' | grep -v '^Installed-Size: ' | grep -v '^Package: ' >> debian.control
+  grep -v '^Source: ' < control | grep -v '^Maintainer: ' | grep -v '^Original-Maintainer: ' | grep -v '^Installed-Size: ' | grep -v '^Package: ' | grep -v '^Version: ' >> debian.control
   osc add debian.control
 fi
 
 if [ ! -f $name.dsc ]; then
   echo "Format: 1.0" > $name.dsc
-  grep < debian.control >> $name.dsc "^Source: "
+  echo                  >> $name.dsc "Source: $name"
   echo                  >> $name.dsc "Binary: $name"
-  grep < debian.control >> $name.dsc "^Version: "
+  echo                  >> $name.dsc "Version: ${version}_${buildrel}"
   grep < debian.control >> $name.dsc "^Maintainer: "
   grep < debian.control >> $name.dsc "^Uploaders: "
   grep < debian.control >> $name.dsc "^Homepage: "
@@ -58,6 +58,7 @@ fi
 
 if [ ! -f debian.compat ]; then
   echo 9 > debian.compat
+  osc add debian.compat
 fi
 
 if [ ! -f debian.rules ]; then
@@ -70,7 +71,14 @@ SHELL=/bin/bash
 %:
 	dh \$@
 
+override_dh_auto_install:
+	mkdir -p \$(CURDIR)/debian/tmp
+	dh_auto_install -- INSTALL_ROOT=\$(CURDIR)/debian/tmp
+	tar xf /usr/src/packages/SOURCES/data.tar.gz -C \$(CURDIR)/debian/tmp
+
+
 EOF
+  osc add debian.rules
 fi
 
 rm -f control
