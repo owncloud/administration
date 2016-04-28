@@ -32,7 +32,12 @@ fi
 
 if [ ! -f debian.control ]; then
 #  dpkg-deb -I $deb_in_pkg_name | sed -e 's@^ @@' -e 's@^ @       @' | sed -n -e '/^Package:/,$p' > debian.control
-  mv control debian.control
+  echo "Source: $name" > debian.control
+  grep '^Maintainer: ' < control >> debian.control
+  echo "" >> debian.control
+  echo "Package: $name" >> debian.control
+
+  grep -v '^Source: ' < control | grep -v '^Maintainer: ' | grep -v '^Original-Maintainer: ' | grep -v '^Installed-Size: ' | grep -v '^Package: ' >> debian.control
   osc add debian.control
 fi
 
@@ -45,6 +50,7 @@ if [ ! -f $name.dsc ]; then
   grep < debian.control >> $name.dsc "^Uploaders: "
   grep < debian.control >> $name.dsc "^Homepage: "
   grep < debian.control >> $name.dsc "^Architecture: "
+  echo                  >> $name.dsc "Build-Depends: debhelper (>= 7)"
   echo                  >> $name.dsc "Standards-Version: 3.9.4"
   echo                  >> $name.dsc "# DEBTRANSFORM-RELEASE: 0"
   osc add $name.dsc
@@ -62,7 +68,7 @@ export DH_VERBOSE=1
 SHELL=/bin/bash
 
 %:
-	dh $@
+	dh \$@
 
 EOF
 fi
