@@ -105,6 +105,13 @@ if [ ! -f debian.compat ]; then
 fi
 
 if [ ! -f debian.rules ]; then
+  # override_dh_shlibdeps avoids dependency errors like this:
+  #  dpkg-shibdeps: error couldn't find library libQt5WebKit.so.5 ...
+  #
+  # override_dh_auto_install copies the data.tar
+  #
+  # TODO: check for more useless or problematic default actions.
+  #
   cat << EOF > debian.rules
 #!/usr/bin/make -f
 # -*- makefile -*-
@@ -114,7 +121,6 @@ SHELL=/bin/bash
 %:
 	dh \$@
 
-# Avoid dependency errors: dpkg-shibdeps: error couldn't find library libQt5WebKit.so.5 ...
 override_dh_shlibdeps:
 	echo skipping dh_shlibdeps
 
