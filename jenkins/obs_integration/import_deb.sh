@@ -47,7 +47,7 @@ if [ ! -f $name.dsc ]; then
   echo "Format: 1.0" > $name.dsc
   echo                  >> $name.dsc "Source: $name"
   echo                  >> $name.dsc "Binary: $name"
-  echo                  >> $name.dsc "Version: ${version}_${buildrel}"
+  echo                  >> $name.dsc "Version: ${version}-${buildrel}"
   grep < debian.control >> $name.dsc "^Maintainer: "
   grep < debian.control >> $name.dsc "^Uploaders: "
   grep < debian.control >> $name.dsc "^Homepage: "
