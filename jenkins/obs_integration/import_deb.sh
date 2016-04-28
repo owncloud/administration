@@ -114,6 +114,10 @@ SHELL=/bin/bash
 %:
 	dh \$@
 
+# Avoid dependency errors: dpkg-shibdeps: error couldn't find library libQt5WebKit.so.5 ...
+override_dh_shlibdeps:
+	echo skipping dh_shlibdeps
+
 override_dh_auto_install:
 	mkdir -p \$(CURDIR)/debian/tmp
 	dh_auto_install -- INSTALL_ROOT=\$(CURDIR)/debian/tmp
