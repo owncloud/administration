@@ -1,4 +1,8 @@
 #! /bin/sh
+# 
+# Requires:
+# sudo apt-get install libdistro-info-perl
+# sudo apt-get install osc
 
 #wget http://security.ubuntu.com/ubuntu/pool/universe/q/qttools-opensource-src/qttools5-dev_5.5.1-3build1_amd64.deb
 
@@ -9,9 +13,22 @@ arch=amd64
 
 deb_in_pkg_name=${name}_${version}-${buildrel}_${arch}.deb
 ar x $deb_in_pkg_name
-tar xf control.tar.xz
-rm control.tar.xz
-osc add data.tar.xz
+tar xf control.tar.gz
+rm -f control.tar.gz
+rm -f debian-binary
+xzcat < data.tar.xz | gzip > data.tar.gz
+rm -f data.tar.xz
+osc add data.tar.gz
+
+if [ ! -f debian.$name.install ]; then
+  tar tf data.tar.gz  | sed -e 's@^\./@@' -e 's@^/@@' > debian.$name.install
+  osc add debian.$name.install
+fi
+
+if [ ! -f debian.changelog ]; then
+  debchange -c debian.changelog --create --distribution stable  -v ${version}-${buildrel} --package $name "created with $0"
+  osc add debian.changelog
+fi
 
 if [ ! -f debian.control ]; then
 #  dpkg-deb -I $deb_in_pkg_name | sed -e 's@^ @@' -e 's@^ @       @' | sed -n -e '/^Package:/,$p' > debian.control
@@ -33,3 +50,22 @@ if [ ! -f $name.dsc ]; then
   osc add $name.dsc
 fi
 
+if [ ! -f debian.compat ]; then
+  echo 9 > debian.compat
+fi
+
+if [ ! -f debian.rules ]; then
+  cat << EOF > debian.rules
+#!/usr/bin/make -f
+# -*- makefile -*-
+export DH_VERBOSE=1
+SHELL=/bin/bash
+
+%:
+	dh $@
+
+EOF
+fi
+
+rm -f control
+#rm -f deb_in_pkg_name
