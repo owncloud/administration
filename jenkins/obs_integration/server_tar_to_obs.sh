@@ -6,7 +6,11 @@
 # into internal and external build service.
 # This is a version of the initial script called update_all_tar.sh that
 # is mainly to be used out of jenkins. That is why it reads its parameter
-# from the environment.
+# from the environment. Alternative non-jenkins use see maintenance_release.sh
+#
+# See also
+#  * https://github.com/owncloud/enterprise/wiki/Packaging-Jenkins-Jobs
+#  * https://rotor.int.owncloud.com/job/owncloud-server-release/
 #
 ########### The following variables should be set outside of this script:
 # PREREL: a suffix like rc1 or beta1
@@ -25,6 +29,7 @@
 # 2016-04-13, jw@owncloud.com: used for 8.2.4RC1 via maintenance_release.sh
 #             This always commits to :testing -- main projects need to accept submit requests.
 #             CAUTION: this cannot do 9.0.x with owncloud-files and friends.
+# 2016-05-02, jw@owncloud.com: handle relative path in $0.
 
 prerel="${PREREL:-}"
 username="${USERNAME:-jenkins@owncloud.com}"
@@ -36,6 +41,8 @@ if [ -z "$VERSIONS" ]; then
 fi
 
 bindir=$(dirname $0)
+test "$bindir" = '.' && bindir=$(pwd)
+
 # cmd="$bindir/obs-new-tar.py -e $username "
 cmd="$bindir/obs-new-tar.py --commit --commit -e $username "	# Hack: using --commit twice is non-interactive.
 submitreq=0	# switch to 1, to also create submitrequests from $prj$prjsuffix to $prj
