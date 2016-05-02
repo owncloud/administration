@@ -81,6 +81,7 @@
 # V2.24 -- 2016-02-22, jw  support bad ssl certs via -k. E.g. for owncloud.org vs owncloud.com clashes.
 # V2.25 -- 2016-03-10, jw  obs repo mapping. Used to play with Ubuntu_16.04 before obs offers this.
 # V2.26 -- 2016-03-23, jw  support full url in prj_path mapping.
+# V2.27 -- 2016-05-02, jw  The retry adter error now runs with --no-cache, to make caching errors disappear automatically.
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 #
@@ -94,7 +95,7 @@
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="2.26"
+__VERSION__="2.27"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import yaml, sys, os, re, time, tempfile
@@ -1168,9 +1169,10 @@ else:
       fd=open(context_dir+"/Dockerfile", "w")
       fd.write(dockerfile_ign) 		# fallback to the error-ignoring Dockerfile
       fd.close()
+      docker_build.insert(2, '--no-cache')	# 2: after 'docker build'. rebuilds are without caching!
       r2 = run(docker_build, redirect_stdout=False, redirect_stderr=False, return_code=True)
       if not r2:
-        print("\n\nERROR: Image build failed. Rebuilt ignoring errors.  Try to rerun the last command from the shell inside\n "+" ".join(docker_run)+"\n\n")
+        print("\n\nERROR: Image build failed. Rebuilt without caches and with errors ignored.  Try to rerun the last command from the shell inside\n "+" ".join(docker_run)+"\n\n")
 
     else:
       print("Image successfully created. Check for warnings in the above log.\n")
