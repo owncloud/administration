@@ -138,6 +138,8 @@ fi
 echo "==> Community package done."
 # enterprise
 
+# exit 0; 
+
 # internal url with credentials: http://user:secret@download.owncloud.com
 # Set this through environment: $INT_URL_WITH_CREDS
 if [ -z "$INT_URL_WITH_CREDS" ]; then
