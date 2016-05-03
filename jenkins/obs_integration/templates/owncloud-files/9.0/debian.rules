@@ -60,7 +60,10 @@ override_dh_fixperms:
 	# https://github.com/owncloud/core/issues/18222
 	chmod -R ug+rwx            $(DROOT)/$(OC_DIR)/config
 	chown -R www-data:www-data $(DROOT)/$(OC_DIR)/data
+
 	# https://github.com/owncloud/enterprise/issues/1306
 	chown www-data:www-data    $(DROOT)/$(OC_DIR)/.htaccess
 	chown www-data:www-data    $(DROOT)/$(OC_DIR)/.user.ini
+	chmod ug+rw                $(DROOT)/$(OC_DIR)/.htaccess
+	chmod ug+rw                $(DROOT)/$(OC_DIR)/.user.ini
 

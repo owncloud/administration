@@ -19,6 +19,8 @@
 # tar2pack.py http://download.owncloud.org/community/owncloud-9.0.0RC1.tar.bz2
 # (cd owncloud-files; osc addremove; osc ci)
 # (cd owncloud; osc addremove; osc ci)
+#
+# tar2pack.py http://owncloud:owncloud42@download.owncloud.com/internal/9.0.2/owncloud-enterprise-complete-9.0.2.tar.bz2 -d PACKNAME=owncloud-enterprise-files -d SOURCE_TAR_TOP_DIR=owncloud
 
 # Requires: python, wget, svn
 #
