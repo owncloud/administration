@@ -452,5 +452,6 @@ if not args.keepfiles:
 edit_debchangelog(outdir+'/'+"debian.changelog", define, args.message)
 edit_changes(outdir+'/'+define['PACKNAME']+".changes", define, args.message)
 
+print("next steps:\n\tosc addremove\n\tosc ci")
 exit(0)
 

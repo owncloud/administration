@@ -1,0 +1,17 @@
+Alias /owncloud "@@OC_DIR@@/"
+<Directory "@@OC_DIR@@">
+    Options +FollowSymLinks
+    AllowOverride All
+
+    <IfModule mod_dav.c>
+      Dav off
+    </IfModule>
+
+    SetEnv HOME @@OC_DIR@@
+    SetEnv HTTP_HOME @@OC_DIR@@
+</Directory>
+
+<Directory "@@OC_DIR@@/data/">
+  # just in case if .htaccess gets disabled
+  Require all denied
+</Directory>

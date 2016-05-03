@@ -1,0 +1,83 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# (C) 2015 jw@owncloud.com
+
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+
+export DROOT=$(CURDIR)/debian/owncloud
+export SRCDIR=/usr/src/packages/SOURCES
+
+export SPEC_owncloud=owncloud
+
+export SPEC_apache_serverroot=/var/www
+export SPEC_apache_confdir=/etc/apache2/conf.d
+export SPEC_apache_confdir_a=/etc/apache2/conf-available
+export SPEC_apache_user=www-data
+export SPEC_apache_group=www-data
+
+## only for backwards compatibility with our 7.0 package layout.
+export SPEC_oc_apache_web_dir=$(SPEC_apache_serverroot)/$(SPEC_owncloud)
+#
+
+# CAUTION: keep in sync with owncloud.spec
+export SPEC_oc_dir=$(SPEC_oc_apache_web_dir)
+export SPEC_oc_doc_dir=/usr/share/doc/$(SPEC_owncloud)
+export SPEC_oc_config_dir=$(SPEC_oc_apache_web_dir)/config
+export SPEC_oc_data_dir=$(SPEC_oc_apache_web_dir)/data
+export SPEC_oc_data_pdir=$(SPEC_oc_apache_web_dir)
+
+SHELL=/bin/bash
+
+%:	
+	dh $@
+
+override_dh_install:
+	sed < $(SRCDIR)/apache_secure_data -e"s|@@OC_DIR@@|$(SPEC_oc_dir)|g" > owncloud.conf
+	mkdir nginx
+	sed < $(SRCDIR)/nginx_owncloud.conf -e"s|@@OC_DIR@@|$(SPEC_oc_dir)|g" > nginx/owncloud.conf
+
+	cp $(SRCDIR)/README $(SRCDIR)/README.packaging .
+
+	ls -la $(DROOT)-config-apache/$(SPEC_apache_confdir) || true
+	ls -la $(DROOT)-config-apache/$(SPEC_apache_confdir_a) || true
+
+	dh_install -Xdebian
+
+	ls -la $(DROOT)-config-apache/$(SPEC_apache_confdir) || true
+	ls -la $(DROOT)-config-apache/$(SPEC_apache_confdir_a) || true
+
+	mkdir -p  $(DROOT)-server/$(SPEC_oc_data_dir)
+	chmod 770 $(DROOT)-server/$(SPEC_oc_data_dir)
+	# mkdir -p  $(DROOT)-config-apache/$(SPEC_apache_confdir)
+	# mkdir -p  $(DROOT)-config-apache/$(SPEC_apache_confdir_a)
+
+	## FIXME: all these files end up nowhere.
+	## whatever we can move up before dh_install will be picked up by the *.install files.
+	mkdir -p 				  $(DROOT)-server/$(SPEC_oc_dir)/apps
+	# https://github.com/owncloud/enterprise/issues/570
+	mkdir -p 				  $(DROOT)-server/$(SPEC_oc_dir)/assets
+	chmod 770 				  $(DROOT)-server/$(SPEC_oc_dir)/assets		# ineffective, unless dh_fixperms has -X for us.
+	mkdir -p 				  $(DROOT)/$(SPEC_oc_doc_dir)
+	install -m 644 $(CURDIR)/AUTHORS      	  $(DROOT)/$(SPEC_oc_doc_dir)/AUTHORS
+	install -m 644 $(CURDIR)/COPYING-AGPL 	  $(DROOT)/$(SPEC_oc_doc_dir)/COPYING-AGPL
+	# install -m 644 $(SRCDIR)/robots.txt   	  $(DROOT)-server/$(SPEC_oc_dir)/.htaccess
+	# install -m 644 $(SRCDIR)/robots.txt   	  $(DROOT)-server/$(SPEC_oc_dir)/robots.txt
+
+	## only for backwards compatibility with our 7.0 package layout.
+	mkdir -p             $(DROOT)-config-apache/$(SPEC_apache_serverroot)
+
+override_dh_fixperms:
+	dh_fixperms -X var/www/owncloud/data -X var/www/owncloud/config -X var/www/owncloud/assets
+	chmod a+x $(DROOT)-server/$(SPEC_oc_dir)/occ	# https://github.com/owncloud/core/issues/18508
+	# chown at the end to ensure everything is chown'ed
+	# We must chown all apps folders, in each app, to be independant of installation order.
+	chown www-data:www-data    $(DROOT)*/$(SPEC_oc_dir)/apps
+	chown www-data:www-data    $(DROOT)-server/$(SPEC_oc_dir)/assets
+	chown www-data:www-data    $(DROOT)-server/$(SPEC_oc_dir)/apps
+	chown -R www-data:www-data $(DROOT)-server/$(SPEC_oc_dir)/themes
+	chown -R www-data:www-data $(DROOT)-server/$(SPEC_oc_config_dir)
+	# https://github.com/owncloud/core/issues/18222
+	chmod -R ug+rwx            $(DROOT)-server/$(SPEC_oc_config_dir)
+	chown -R www-data:www-data $(DROOT)-server/$(SPEC_oc_data_dir)
+

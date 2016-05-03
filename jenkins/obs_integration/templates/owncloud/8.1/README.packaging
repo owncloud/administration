@@ -1,0 +1,183 @@
+			jw, Fr 23. Jan 14:46:43 CET 2015
+
+=================================================
+Structure of Linux packages for ownCloud server 8
+=================================================
+
+
+Motivation
+==========
+
+The packaging, as done with ownCloud server 7 was a had several issues.
+With ownCloud 8 we attempt to improve the situation.
+
+Dependencies
+------------
+ 
+  The owncloud Linux package had many dependencies.
+
+  Most dependencies are specific to one app only. To be prepared for all potentially enabled apps,
+  the package pulled in all their dependencies. Some of them were large or intrusive. 
+  (PDF renderer, imagemagick, libreoffice, clamav, ...)
+
+  Several other dependencies are related to a specific setup. The package assumed
+  that the webserver is apache (and pulled it in as a requirement, if not already installed)
+  and it pulled in mysql and sqlite database packages to be prepared for either choice.
+
+  With ownCloud 8.x we distinguish between core dependencies, and app dependencies, as well as between
+  hard and soft dependencies. The following files define the dependencies:
+
+  * https://build.opensuse.org/package/view_file/isv:ownCloud:community/owncloud/debian.control?expand=1
+  * https://build.opensuse.org/package/view_file/isv:ownCloud:community/owncloud/owncloud.spec?expand=1
+
+  Optional dependencies include:
+
+  * redis (https://github.com/owncloud/core/issues/16728#issuecomment-109908014)
+
+
+Isolation
+---------
+
+  Installing the owncloud package made several changes to the system with immediate effect.
+  Configuration of an apache webserver is changed. If running, it is shut down and restarted during install.
+  A mysql database engine is installed in the system and started.
+  Older versions also impacted several network settings, such as NTP.
+
+  While the all-in-one configuration may be usefull in small-scale or personal installation. 
+  It is a major drawback for larger setups or enterprises, often found intrusive.
+
+
+Source
+======
+
+The upstream source for our Linux packages is a tar ball. This is also sometimes refered to as a package.
+The tar ball package is generated from our github repositories. This contains most of the core repo, and 
+also a selection of apps is included. The contents changes from 7.0 to 8.0 as we e.g. now include the provisioning app,
+but no longer include the calender app in the tar ball. Most community apps will be published via apps.owncloud.com
+
+The directory structure of the tar ball is
+
+owncloud
+  -> /apps/*
+  -> /core/*
+  -> /3rdparty/*
+  -> /config/*
+  -> /data/
+
+
+Linux Package Concepts
+======================
+
+With ownCloud 8.0, the Linux packages rearrange and subdivide the contents of the tar ball in smaller building blocks.
+From a Filesystem Hierarchy Viewpoint we rearrange the contents, so that adheres to the FHS standards and also to the 
+rules of the target platform. This affects path names, where configuration, code and data is found, as well as naming
+conventions.
+
+Building blocks
+---------------
+
+ The following packages serve as building blocks
+
+ * owncloud-server
+   This package is the main building block for server installations. It comes without database or webserver configuration.
+   It contains not apps directly, but requires a a set of default apps, to match the advertised owncloud-server functionality.
+
+   Paths: 
+     - /usr/share/owncloud	(php code)
+     - /var/lib/owncloud	(data folder, including owncloud.log)
+     - /etc/owncloud		(config.php and other config files)
+     - /var/log/owncloud	(TBD, /var/lib/owncloud/data/owncloud.log temporarily)
+     
+   Dependencies: php Linux packages, list of default apps. (no apache config here!)
+   List of default apps: TBD
+
+ * owncloud-3rdparty
+   A sub-package of owncloud-server. This ships separate only for licensing reasons. 
+   TBD: check if these reasons still apply, merge back into owncloud-server.
+
+ * owncloud-config-apache
+   This package contains the configuration to access owncloud via an apache installation.
+   Path: 
+     - /etc/apache2/conf.d/owncloud.conf or other APACHE_CONF_D/owncloud.conf 	(config file exposing /owncloud route)
+     - /srv/www/htdocs/owncloud	or other APACHE_WEBROOT/owncloud	(compatibility symlink to /usr/share/owncloud)
+   Dependencies: owncloud-server apache
+
+
+ * owncloud-app-APPNAME
+   Each app found in the source tar ball, packaged by itself.
+   Path: /usr/share/owncloud/apps/APPNAME/*
+   Dependencies: exact list of extra Linux packages required by this app, if any. (TBD)
+
+
+ * owncloud-app-calendar (TBD)
+ * owncloud-app-contacts (TBD)
+   Single app packages built directly via github commit triggers or from every appstore upload.
+   These are useful to automate usage of the appstore with the linux system package installer (yum, yast, apt, ...)
+
+
+Scenarios and meta packages
+---------------------------
+
+ * owncloud
+   The package named 'owncloud' contains no code, it is a meta package.
+   Installing this package is recommended for the 'all-in-one' user experience, including 
+   default apps, apache and mysql configuration.
+ 
+ * owncloud-community (TBD, should 'owncloud' already pull contacts and calendar?)
+   Same as 'owncloud', but also pulls in a list of community apps.
+   Dependencies: owncloud-app-contacts owncloud-app-calendar ... (TBD)
+
+ * owncloud-config-mysql (TBD)
+   Prepare (install and configure) a local mysql (or mariadb) database server to be used with
+   with owncloud-server. This package pulls in owncloud-server and mysql packages and installs the needed
+   config files. Thus it can be used as an entry point for the mysql use case.
+
+ * owncloud-config-ngnx (TBD)
+   Prepare owncloud to run under the Ngnx web server. This package pulls in owncloud-server and nginx packages
+   as dependencies and installs the needed config files. Thus it can be used as an entry point for the nginx use case.
+
+By installing combinations of meta packages, a multitude of scenarios can be created. E.g. installing
+owncloud-config-nginx and owncloud-config-mysql starts the owncloud server with ngnx and mysql, but will not pull 
+apache or sqlite packages or change their configuration, if previously installed.
+
+
+Using OBS for Linux Packages
+============================
+
+The main repository for the server code is hosted at https://build.opensuse.org which is a public instance of the 
+openbuildservice.org infrastructure (short OBS). The build service converts the
+source (tar ball) into installable 'binary' packages (.deb and .rpm format) .
+
+URLs where our our server packages are built: 
+
+https://build.opensuse.org/package/show/isv:ownCloud:community:7.0/owncloud
+https://build.opensuse.org/package/show/isv:ownCloud:community:8.0/owncloud
+
+The build status for each platform is on the right hand side. 
+Packages can be downloaded from obs in several ways:
+
+ * 'Download package' at the top righthand side has a guided installation procedure.
+
+ * http://download.opensuse.org/repositories/isv:/ownCloud:/community:/7.0/
+   http://download.opensuse.org/repositories/isv:/ownCloud:/community:/8.0/
+   contain repo files to be registered with the linux system installers.
+
+
+FHS Compliance
+==============
+
+  Everything is installed under the webserver root.
+  The webserver root path differs between systems (/srv/www/htdocs /var/www/html ...)
+  and differs between webservers (apache, ngnx). 
+
+  Config files, data, and code are all inside the webserver root.
+
+  This disagrees with the Linux Filesystem Hierarchie standards as defined in 
+  https://wiki.linuxfoundation.org/en/FHS
+
+  E.g. sysadmins expect all config files under /etc/,
+  variable data should go into /var/, while code should be under /usr/, 
+  which the admin may chose to mount readonly.
+
+  We provide a package owncloud-fhs as an experimental (i.e. unmaintained/unsupported) variant of the main owncloud 
+  package. This is to identify migration issues when moving towards fhs compliance.

@@ -9,6 +9,7 @@
 # 2015-01-26, jw@owncloud.com, added generic debian.* vs *.spec checks.
 # 2015-04-21, jw@owncloud.com, added dependency test. Easy to fool but better than nothing.
 # 2015-05-13, jw@owncloud.com, handle critical=all and ignore owncloud-server-scl-php54 for debian.
+# 2015-08-05, jw@owncloud.com, merged apps back into owncloud-server. This obsoletes most of this script.
 # 
 #### Dependencies:
 # Requires: /usr/bin/rpmspec	# from rpm-4.x
@@ -43,8 +44,11 @@ for app in $(ls $tar_top/apps); do
     rpm_error=1
   fi
 
-  if ! grep -q "^Requires:.*-app-$app\\b" $specfile; then
-    echo "TODO: Please add to $pkgname.spec: Requires: %{name}-app-$app = %{version}"
+  ## FIXME: with https://github.com/owncloud/core/issues/18043
+  ## we have a valid reason for two way dependencies between server and apps.
+  ## This makes seperate app packages questionable.
+  if ! grep -q "^PreReq:.*-app-$app\\b" $specfile; then
+    echo "TODO: Please add to $pkgname.spec: PreReq: %{name}-app-$app = %{version}"
     rpm_error=1
   fi
 
@@ -93,6 +97,7 @@ Replaces: owncloud (<< 8.0.0)
 Break: owncloud (<< 8.0.0)
 Description: The $pkgname subpackage $sub_pkg
  .
+ requires owncloud-server
 EOF
     deb_error=1
   fi
@@ -128,4 +133,5 @@ rm -f  /tmp/_$$_control
 
 test "$critical" = 'all' && exit $deb_error$rpm_error
 test "$critical" = 'deb' && exit $deb_error
-exit $rpm_error
+test "$critical" = 'rpm' && exit $rpm_error
+exit 0

@@ -1,7 +1,7 @@
 #
 # spec file for package owncloud
 #
-# Copyright (c) 2012-2015 ownCloud, Inc.
+# Copyright (c) 2012-2016 ownCloud, Inc.
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -15,14 +15,17 @@
 # Please submit bugfixes, issues or comments via http://github.com/owncloud/
 #
 
-# 0, 1: switch here to change to an fhs compatible layout.
-%define fhs 0	
-
 # 0, 1: support nginx as alternative to apache
 %define have_nginx 0
 
 # name used as apache alias and topdir for php code.
 %define owncloud	owncloud	
+
+%if 0%{?rhel} == 6 || 0%{?rhel_version} == 600 || 0%{?centos_version} == 600
+%define statedir	/var/run
+%else
+%define statedir	/run
+%endif
 
 # CAUTION: keep in sync with debian.rules
 ### apache variables
@@ -33,7 +36,7 @@
 %define oc_user wwwrun
 %define oc_group www
 %else
-%if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
+%if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?rhel} || 0%{?centos_version}
 %define nginx_confdir /etc/nginx/conf.d
 %define apache_serverroot /var/www/html
 %define apache_confdir /etc/httpd/conf.d
@@ -52,56 +55,38 @@
 %define oc_apache_web_dir 	%{apache_serverroot}/%{owncloud}
 
 # CAUTION: keep in sync with debian.rules
-%if %{fhs}
-%define oc_dir		/usr/share/%{owncloud}
-%define oc_config_dir 	/etc/%{owncloud}
-%define oc_data_dir 	/var/lib/%{owncloud}/data
-%define oc_data_pdir 	/var/lib/%{owncloud}
-## Alternative FHS data location:
-# %%define oc_data_dir 	/srv/%%{owncloud}/data
-# %%define oc_data_pdir /srv/%%{owncloud}
-%else
 ## traditional layout
 %define oc_dir		%{oc_apache_web_dir}
 %define oc_config_dir 	%{oc_apache_web_dir}/config
 %define oc_data_dir 	%{oc_apache_web_dir}/data
 %define oc_data_pdir 	%{oc_apache_web_dir}
-%endif
 
-%define ocphp	php
-%define ochttpd	httpd
+%define ocphp		php
+%define ocphp_bin	/usr/bin
+%define ochttpd		httpd
 %if "%_repository" == "CentOS_6_PHP54" || "%_repository" == "RHEL_6_PHP54"
-%define ocphp	php54-php
-%define ochttpd	httpd
+%define ocphp		php54-php
+%define ocphp_bin	/opt/rh/php54/root/usr/bin
+%define ochttpd		httpd
 %endif
-%if "%_repository" == "CentOS_6_PHP55" || "%_repository" == "RHEL_6_PHP55"
-%define ocphp	php55-php
-%define ochttpd	httpd24-httpd
+%if "%_repository" == "CentOS_6_PHP55" || "%_repository" == "RHEL_6_PHP55" 
+%define ocphp		php55-php
+%define ocphp_bin	/opt/rh/php55/root/usr/bin
+%define ochttpd		httpd24-httpd
 %endif
 %if "%_repository" == "CentOS_6_PHP56" || "%_repository" == "RHEL_6_PHP56"
-%define ocphp	php56-php
-%define ochttpd	httpd24-httpd
+%define ocphp		rh-php56-php
+%define ocphp_bin	/opt/rh/php56/root/usr/bin
+%define ochttpd		httpd24-httpd
 %endif
 
-
-
-%if %{fhs}
 Name:           owncloud
-%else
-Name:           owncloud
-%endif
 
-# Downloaded from http://download.owncloud.org/owncloud-7.0.0.tar.bz2
-# Downloaded from http://download.owncloud.org/community/owncloud-7.0.1.tar.bz2
-# Downloaded from http://download.owncloud.org/community/owncloud-8.0.1.tar.bz2
-# Downloaded from http://download.owncloud.org/community/testing/owncloud-8.0.3RC2.tar.bz2
 # Downloaded from http://download.owncloud.org/community/testing/owncloud-8.1.0alpha2.tar.bz2
 
-## define prerelease % nil, if this is *not* a prerelease. Caution: always lower case beta rc.
-%define prerelease %nil
-%define base_version 8.1.0
-# % define tar_version % {base_version}% {prerelease}
-%define tar_version 8.1.0
+## define prerelease %nil, if this is *not* a prerelease.
+%define prerelease [% PRERELEASE %]
+%define base_version [% VERSION %]
 
 
 %if 0%{?centos_version} == 600 || 0%{?fedora_version} || "%{prerelease}" == ""
@@ -118,8 +103,7 @@ Version:       	%{base_version}~%{prerelease}
 Release:        0
 %endif
 
-# Source0:        http://download.owncloud.org/community/testing/owncloud-%{tar_version}.tar.bz2
-Source0:        http://download.owncloud.org/community/owncloud-%{tar_version}.tar.bz2
+Source0:        [% SOURCE_TAR_URL %]
 Source2:        README
 Source3:        README.SELinux
 Source4:        README.packaging
@@ -138,11 +122,8 @@ Group:          Productivity/Networking/Web/Utilities
 
 ###############################################
 ## All build requires go into the main package.
-%if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
-BuildRequires:  %{ochttpd}
-%endif
 
-%if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
+%if 0%{?fedora_version} || 0%{?rhel} || 0%{?rhel_version} || 0%{?centos_version}
 # https://github.com/owncloud/core/issues/11576
 # at CentOS6, we need policycoreutils-python for semanage.
 BuildRequires:	policycoreutils-python
@@ -155,7 +136,7 @@ BuildRequires: 	fdupes apache2 unzip
 ###############################################
 ## Misc unsorted preview and database requires also go into the main package.
 ## You can install owncloud-* subpackages only to avoid these dependencies.
-%if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
+%if 0%{?fedora_version} || 0%{?rhel} || 0%{?rhel_version} || 0%{?centos_version}
 Requires:       sqlite
 %endif
 
@@ -170,74 +151,38 @@ BuildRequires:  php-pear-MDB2-Driver-mysqli
 Requires:       php-fileinfo
 %if 0%{?suse_version} != 1110
 # For all SUSEs except SLES 11
-Requires:       sqlite3 php5-sqlite
+## PreReq instead of Requires here, to survive build check for idemnpotent scripts.
+## Requires(post):       sqlite3 php5-sqlite
 %else
 # SLES 11 requires
 # require mysql directly for SLES 11
-Requires:       mysql php54-sqlite
+## Requires(post):       mysql php54-sqlite
 %endif
 %endif
 
 %if 0%{?suse_version}
 %if 0%{?suse_version} != 1110
-Recommends:     php5-mysql mysql php5-imagick libreoffice-writer
+## Recommends:     php5-mysql mysql php5-imagick libreoffice-writer
 %else
-Recommends:     php54-mysql mysql php54-imagick
+## Recommends:     php54-mysql mysql php54-imagick
 %endif
-%else
-# FIXME: for CentOS7, owncloud-config-mysql should pull mariadb-server
-Requires:       mysql
-# don't be fooled by a versionless %{name}-server-core provides.
-# (fine with suse, but not good for centos, which has alternatives to owncloud-server)
-PreReq:       %{name}-server        = %{version}
 %endif
-
 Requires:       curl
-
-## FIXME: with https://github.com/owncloud/core/issues/18043
-## we have a valid reason for two way dependencies between server and apps.
-## This makes seperate app packages questionable.
-## PreReq asserts that all apps are installed, before the server runs its post scripts.
-PreReq:	%{name}-server-core   = %{version}
-PreReq:	%{name}-config-apache = %{version}
-
-# must have nil on the first line to survive source-validator.
-%define require_standard_apps %{nil}\
-PreReq:	%{name}-3rdparty              = %{version} \
-PreReq:	%{name}-app-activity          = %{version} \
-PreReq:	%{name}-app-files_pdfviewer   = %{version} \
-PreReq:	%{name}-app-files_trashbin    = %{version} \
-PreReq:	%{name}-app-firstrunwizard    = %{version} \
-PreReq:	%{name}-app-templateeditor    = %{version} \
-PreReq:	%{name}-app-user_ldap         = %{version} \
-PreReq:	%{name}-app-external          = %{version} \
-PreReq:	%{name}-app-files_external    = %{version} \
-PreReq:	%{name}-app-files_sharing     = %{version} \
-PreReq:	%{name}-app-files_versions    = %{version} \
-PreReq:	%{name}-app-gallery           = %{version} \
-PreReq:	%{name}-app-user_webdavauth   = %{version} \
-PreReq:	%{name}-app-files             = %{version} \
-PreReq:	%{name}-app-files_locking     = %{version} \
-PreReq:	%{name}-app-files_texteditor  = %{version} \
-PreReq:	%{name}-app-files_videoviewer = %{version} \
-PreReq:	%{name}-app-provisioning_api  = %{version} \
-PreReq:	%{name}-app-user_external     = %{version} \
-PreReq:	%{name}-app-encryption	      = %{version}
 
 
 ## not recommended for Linux packages.
-# Requires:	#{name}-app-updater           = #{version}
 Obsoletes:	%{name}-app-updater           < %{version}
+
 # ex-apps:
 Obsoletes:	%{name}-app-files_encryption  < %{version}
 
+# migrate from special *-scl-* packages to normal
+# https://github.com/owncloud/enterprise/issues/1077
+Obsoletes:  owncloud-server-scl-php54 < %{version}
 
-%if %{fhs}
-Conflicts:      owncloud
-%else
-Conflicts:      owncloud-fhs
-%endif
-
+# Finally require all subpackages to make a standalone system.
+Requires:       %{name}-server        = %{version}
+Requires:	%{name}-config-apache = %{version}
 
 %description
 ownCloud Server provides you a private file sync and share
@@ -245,9 +190,7 @@ cloud. Host this server to easily sync business or private documents
 across all your devices, and share those documents with other users of
 your ownCloud server on their devices.
 
-The owncloud-fhs* packages adhere to the Linux Filesystem Hierarchy Standards
-by installing in the expected locations. The traditional packages install all
-in the web server root.
+File system layout here is identical with tar or zip distributions.
 
 This package installs as follows:
 oc_dir:        %{oc_dir}
@@ -258,82 +201,24 @@ ownCloud - Your Cloud, Your Data, Your Way!  www.owncloud.org
 
 #####################################################
 
-%if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
-%package server-scl-php54
-License:      AGPL-3.0 and MIT
-Group:        Development/Libraries/PHP
-Summary:      Common code server for ownCloud
-%require_standard_apps
-
-# CAUTION: Keep in sync with core/lib/private/util.php: many dependencies are defined there.
-
-# In ownCloud 8.0, we use PHP 5.4 language features that 5.3 does not support
-# the php54 from centos6-scl has a wrong version number. 1.1 or so. We cannot require php54 (>= 5.4.0)
-Requires:       sqlite php54 php54-php-common php54-php-mbstring php54-php-process php54-php-xml php54-php-zip
-# core#13944
-Requires:	php54-php-gd
-# core#13917, apache module
-Requires:	php54-php
-# Class 'PDO' not found at /var/www/html/owncloud/3rdparty/doctrine/dbal/lib/Doctrine/DBAL/DriverManager.php#172
-Requires:	php54-php-pdo
-# core#13357, occ
-Requires:	php54-php-posix
-
-# https://github.com/owncloud/core/issues/11576
-# at CentOS6, we need policycoreutils-python for semanage.
-Requires:	policycoreutils-python
-
-# The server core is common code
-Provides:	owncloud-enterprise-server = %{version}
-Provides:	owncloud-enterprise-server
-#
-Provides:	owncloud-server-core = %{version}
-Provides:	owncloud-server-core
-
-%description  server-scl-php54
-The %{name}-server package contains the common owncloud server core.
-To run the servers, you either need to also install an ${name}-config-* package
-or configure the server yourself for your system.
-
-%{name}-server-scl-php54 provides an %{name}-server that is suitable for
-centos6 with php54 installed via software collections.
-
-The owncloud-fhs* packages adhere to the Linux Filesystem Hierarchy Standards
-by installing in the expected locations. The traditional packages install all
-in the web server root.
-
-This package installs as follows:
-oc_dir:        %{oc_dir}
-oc_data_dir:   %{oc_data_dir}
-oc_config_dir: %{oc_config_dir}
-
-%endif
-
-#####################################################
-
 %package server
 License:      AGPL-3.0 and MIT
 Group:        Development/Libraries/PHP
 Summary:      Common code server for ownCloud
-%require_standard_apps
 
 # CAUTION: Keep in sync with core/lib/private/util.php: many dependencies are defined there.
 
 # In ownCloud 8.0, we use PHP 5.4 language features that 5.3 does not support
-%if 0%{?fedora_version} || 0%{?rhel_version} >= 6 || 0%{?centos_version} >= 6
-Requires:       sqlite php-json php-mbstring php-process php-xml php-zip
-# core#13357
-Requires:	php-posix
-# core#13944
-Requires:	php-gd
-%if "%_repository" == "CentOS_6_PHP54" || "%_repository" == "RHEL_6_PHP54" || "%_repository" == "CentOS_6_PHP55" || "%_repository" == "RHEL_6_PHP55" || "%_repository" == "CentOS_6_PHP56" || "%_repository" == "RHEL_6_PHP56"
-## They name their php packages all different, and all have lousy version numbers.
-## We are happy, if they have a useless php 5.3.3 together with some php55w 1.2.x something.
-%else
-Requires:       php >= 5.4.0
-%endif
+%if 0%{?fedora_version} || 0%{?rhel} || 0%{?rhel_version} || 0%{?centos_version}
+Requires:       sqlite
+Requires:       %{ocphp} >= 5.4.0
+Requires:       %{ocphp}-json %{ocphp}-mbstring %{ocphp}-process %{ocphp}-xml %{ocphp}-zip
+# core#13357, core#13944
+Requires:	%{ocphp}-posix %{ocphp}-gd
 %endif
 
+# apps/user_ldap		
+Requires:	%{ocphp}-ldap
 
 %if 0%{?fedora_version}
 # missing at CentOS/RHEL: do we really need that?
@@ -341,19 +226,20 @@ Requires:       php >= 5.4.0
 ## BuildRequires:  php-pear-Net-Curl
 %endif
 
-%if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
+%if 0%{?fedora_version} || 0%{?rhel} || 0%{?rhel_version} || 0%{?centos_version}
 # https://github.com/owncloud/core/issues/11576
 # at CentOS6, we need policycoreutils-python for semanage.
 Requires:	policycoreutils-python
 # at centOS7 to avoid a blank page. Class 'PDO' not found at \/var\/www\/html\/owncloud\/3rdparty\/doctrine
-Requires:       php-pdo
+Requires:       %{ocphp}-pdo
 %endif
 
 %if 0%{?suse_version}
 %if 0%{?suse_version} != 1110
 # For all SUSEs except SLES 11
 # In ownCloud 8.0, we use PHP 5.4 language features that 5.3 does not support
-Requires:       php5 >= 5.4.0 sqlite3 php5-mbstring php5-zip php5-json php5-posix php5-curl php5-gd php5-ctype php5-xmlreader php5-xmlwriter php5-zlib php5-pear php5-iconv
+## Requires:       sqlite3
+Requires:       php5 >= 5.4.0 php5-mbstring php5-zip php5-json php5-posix php5-curl php5-gd php5-ctype php5-xmlreader php5-xmlwriter php5-zlib php5-pear php5-iconv
 %else
 # SLES 11 requires
 # require mysql directly for SLES 11
@@ -362,18 +248,39 @@ Requires:       php54 >= 5.4.0 php54-mbstring php54-zip php54-json php54-posix p
 %endif
 %endif
 
-# The server core is common code
-Provides:	owncloud-enterprise-server = %{version}
-Provides:	owncloud-server-core = %{version}
+# apps merged back into owncloud-server to resolve https://github.com/owncloud/core/issues/18043
+Obsoletes:      %{name}-app-activity		< %{version}
+Obsoletes:      %{name}-app-files_pdfviewer	< %{version}
+Obsoletes:      %{name}-app-files_trashbin	< %{version}
+Obsoletes:      %{name}-app-firstrunwizard	< %{version}
+Obsoletes:      %{name}-app-templateeditor	< %{version}
+Obsoletes:      %{name}-app-user_ldap		< %{version}
+Obsoletes:      %{name}-app-external		< %{version}
+Obsoletes:      %{name}-app-files_external	< %{version}
+Obsoletes:      %{name}-app-files_sharing	< %{version}
+Obsoletes:      %{name}-app-files_versions	< %{version}
+Obsoletes:      %{name}-app-gallery		< %{version}
+Obsoletes:      %{name}-app-user_webdavauth	< %{version}
+Obsoletes:      %{name}-app-files		< %{version}
+Obsoletes:      %{name}-app-files_locking	< %{version}
+Obsoletes:      %{name}-app-files_texteditor	< %{version}
+Obsoletes:      %{name}-app-files_videoviewer	< %{version}
+Obsoletes:      %{name}-app-provisioning_api	< %{version}
+Obsoletes:      %{name}-app-user_external	< %{version}
+Obsoletes:      %{name}-app-encryption		< %{version}
+# 3rdparty merged back into owncloud-server
+Obsoletes:      %{name}-3rdparty		< %{version}
 
 %description  server
-The %{name}-server package contains the common owncloud server core.
-To run the servers, you either need to also install an ${name}-config-* package
-or configure the server yourself for your system.
+The %{name}-server package contains the common owncloud server core and all bundled 
+community apps.
+To run the servers, you either need to also install ${name}-config-* packages
+or configure the web server and database yourself.
 
-The owncloud-fhs* packages adhere to the Linux Filesystem Hierarchy Standards
-by installing in the expected locations. The traditional packages install all
-in the web server root.
+The package %{name} requires %{name}-server and pulls in all required and recommended
+dependencies for running owncloud on a single system. Including webserver config and database.
+
+File system layout here is identical with tar or zip distributions.
 
 This package installs as follows:
 oc_dir:        %{oc_dir}
@@ -387,9 +294,9 @@ Obsoletes:    %{name} < 7.9.9
 License:      AGPL-3.0 and MIT
 Group:        Development/Libraries/PHP
 Summary:      Apache setup for ownCloud
-Requires:     %{name}-server-core = %{version}
+Requires:     %{name}-server = %{version}
 
-%if 0%{?fedora_version} || 0%{?rhel_version} >= 6 || 0%{?centos_version} >= 6
+%if 0%{?fedora_version} || 0%{?rhel} || 0%{?rhel_version} || 0%{?centos_version}
 Requires:       %{ochttpd}
 %endif
 
@@ -407,9 +314,7 @@ Requires:       apache2 apache2-mod_php54
 This sub-package configures an apache webserver for owncloud.
 Install only, if you us to make changes to your webserver setup.
 
-The owncloud-fhs* packages adhere to the Linux Filesystem Hierarchy Standards
-by installing in the expected locations. The traditional packages install all
-in the web server root.
+File system layout here is identical with tar or zip distributions.
 
 This package installs as follows:
 oc_dir:        %{oc_dir}
@@ -427,9 +332,9 @@ Obsoletes:    %{name} < 7.9.9
 License:      AGPL-3.0 and MIT
 Group:        Development/Libraries/PHP
 Summary:      Apache setup for ownCloud
-Requires:     %{name}-server-core = %{version}
+Requires:     %{name}-server = %{version}
 
-%if 0%{?fedora_version} || 0%{?rhel_version} >= 6 || 0%{?centos_version} >= 6
+%if 0%{?fedora_version} || 0%{?rhel} || 0%{?rhel_version} || 0%{?centos_version}
 # nginx is in the epel repository, register that first.
 # Oops: this fails at build time: PreReq:	epel-release
 Requires:       nginx
@@ -449,9 +354,7 @@ Requires:       nginx
 This sub-package configures an nginx webserver for owncloud.
 Install only, if you us to make changes to your webserver setup.
 
-The owncloud-fhs* packages adhere to the Linux Filesystem Hierarchy Standards
-by installing in the expected locations. The traditional packages install all
-in the web server root.
+File system layout here is identical with tar or zip distributions.
 
 This package installs as follows:
 oc_dir:        %{oc_dir}
@@ -465,44 +368,6 @@ apache_serverroot: %{apache_serverroot}
 
 #####################################################
 
-%package 3rdparty
-Obsoletes:    %{name} < 7.9.9
-License:      AGPL-3.0 and MIT and others
-Group:        Development/Libraries/PHP
-Summary:      3rdparty libraries for ownCloud
-Requires:     %{name}-server-core = %{version}
-%description 3rdparty
-3rdparty libraries needed for running ownCloud.
-Contained in separate package due to different source code licenses.
-
-#####################################################
-# oc_app_package
-#
-# Caution: This macro definition must be below the main package chunk.
-#          Otherwise the specfile parser in obs fails.
-#
-# Parameters:
-#  %%1	appname as seen in the file system
-#
-%define oc_app_package() 			\
-%package app-%{1}				\
-Obsoletes:      %{name} < 7.9.9 		\
-Summary:	The ownCloud application %{1} add-on for %{name}-server \
-Group:          Productivity/Networking/Web/Utilities	\
-Requires:	%{name}-server-core = %{version} \
-%{?2:%{2}} 					\
-%description app-%{1} 				\
-This package provides the ownCloud application %{1} for %{name}-server \
-						\
-oc_dir:        %{oc_dir} 			\
-						\
-%files app-%{1}					\
-%defattr(0644,%{oc_user},%{oc_group},0755)	\
-%dir %{oc_dir}/apps/%{1}			\
-%{oc_dir}/apps/%{1}/*				\
-%{nil}
-
-
 %prep
 %setup -q -n owncloud
 cp %{SOURCE2} .
@@ -513,11 +378,20 @@ cp %{SOURCE10} .
 
 # obs_check_deb_spec.sh
 pushd $RPM_SOURCE_DIR
-sh %{SOURCE100} all
+# TODO: since merge back of all apps: is this still needed?
+sh %{SOURCE100}
 popd
+
+echo "repository: |%{_repository}|"
+echo "Requires:       %{ocphp} >= 5.4.0"
 
 # remove .bower.json .bowerrc .gitattributes .gitmodules
 find . -name .bower\* -print -o -name .git\* -print | xargs rm
+
+if [ ! -d %{statedir} ]; then
+  echo ERROR: %{statedir} does not exist here.
+fi
+ls -la %{statedir}
 
 %build
 # obsolete stuff, to be removed from tar-balls.
@@ -540,18 +414,11 @@ cp -aRf * $idir
 rm -rf $idir/debian.*{install,rules,control}
 mv $idir/config/* $idir/config/.??* $RPM_BUILD_ROOT/%{oc_config_dir} || true
 cp -aRf .htaccess $idir
-%if %{fhs}
-rm -rf $idir/config $idir/data
-ln -s %{oc_config_dir} $idir/config
-%endif
 ## done in owncloud-server post install script
 # ln -s %{oc_data_dir} $idir/data
 
 # make oc_apache_web_dir a compatibility symlink
 mkdir -p $RPM_BUILD_ROOT/%{apache_serverroot}
-%if %{fhs}
-ln -s %{oc_dir} $RPM_BUILD_ROOT/%{apache_serverroot} || true
-%endif
 
 if [ ! -f $idir/robots.txt ]; then
   install -p -D -m 644 %{SOURCE10} $idir/robots.txt
@@ -574,7 +441,7 @@ sed -i -e"s|@@OC_DIR@@|%{oc_dir}|g" $RPM_BUILD_ROOT/%{nginx_confdir}/owncloud.co
 %endif
 
 # relabel data directory for SELinux to allow ownCloud write access on redhat platforms
-%if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
+%if 0%{?fedora_version} || 0%{?rhel} || 0%{?rhel_version} || 0%{?centos_version}
 if [ -x /usr/sbin/sestatus ] ; then \
   sestatus | grep -E '^(SELinux status|Current).*(enforcing|permissive)' > /dev/null && {
     semanage fcontext -a -t httpd_sys_rw_content_t '%{oc_data_dir}'
@@ -594,7 +461,7 @@ true
 %postun config-apache
 # remove SELinux ownCloud label if not updating
 [ $1 -eq 0 ] || exit 0
-%if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
+%if 0%{?fedora_version} || 0%{?rhel} || 0%{?rhel_version} || 0%{?centos_version}
 if [ -x /usr/sbin/sestatus ] ; then \
   sestatus | grep -E '^(SELinux status|Current).*(enforcing|permissive)' > /dev/null && {
     semanage fcontext -l | grep '%{oc_data_dir}' && {
@@ -631,25 +498,25 @@ true
 # We don't do this for new installs. Only for updates.
 # If the first argument to pre is 1, the RPM operation is an initial installation.
 # If the argument is 2, the operation is an upgrade from an existing version to a new one.
-if [ $1 -gt 1 -a ! -s /tmp/apache_stopped_during_owncloud_install ]; then	
+if [ $1 -gt 1 -a ! -s %{statedir}/apache_stopped_during_owncloud_install ]; then	
   echo "%{name} update: Checking for running Apache"
   # FIXME: this above should make it idempotent -- a requirement with openSUSE.
   # it does not work.
 %if 0%{?suse_version} && 0
 %if 0%{?suse_version} <= 1110
-  rcapache2 status       | grep running > /tmp/apache_stopped_during_owncloud_install
+  rcapache2 status       | grep running > %{statedir}/apache_stopped_during_owncloud_install
   rcapache2 stop || true
 %else
-  service apache2 status | grep running > /tmp/apache_stopped_during_owncloud_install
+  service apache2 status | grep running > %{statedir}/apache_stopped_during_owncloud_install
   service apache2 stop || true
 %endif
 %endif
-%if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
-  service %{ochttpd} status | grep running > /tmp/apache_stopped_during_owncloud_install
+%if 0%{?fedora_version} || 0%{?rhel} || 0%{?rhel_version} || 0%{?centos_version}
+  service %{ochttpd} status | grep running > %{statedir}/apache_stopped_during_owncloud_install
   service %{ochttpd} stop
 %endif
 fi
-if [ -s /tmp/apache_stopped_during_owncloud_install ]; then
+if [ -s %{statedir}/apache_stopped_during_owncloud_install ]; then
   echo "%{name} pre-install: Stopping Apache"
 fi
 
@@ -687,7 +554,7 @@ perl -pani -e 's@^(APACHE_MODULES=".*)\bphp5\b@$1@' /etc/sysconfig/apache2
 perl -pani -e 's@^(APACHE_MODULES=")@${1}php5 @' /etc/sysconfig/apache2
 %endif
 
-if [ -s /tmp/apache_stopped_during_owncloud_install ]; then
+if [ -s %{statedir}/apache_stopped_during_owncloud_install ]; then
   echo "%{name}-config-apache: Restarting"
   ## If we stopped apache in pre section, we now should restart. -- but *ONLY* then!
   ## Maybe delegate that task to occ upgrade? They also need to handle this, somehow.
@@ -699,12 +566,12 @@ if [ -s /tmp/apache_stopped_during_owncloud_install ]; then
   service apache2 start || true
 %endif
 %endif
-%if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
+%if 0%{?fedora_version} || 0%{?rhel} || 0%{?rhel_version} || 0%{?centos_version}
   service %{ochttpd} start
 %endif
 fi
 
-if [ ! -s /tmp/apache_stopped_during_owncloud_install ]; then
+if [ ! -s %{statedir}/apache_stopped_during_owncloud_install ]; then
   echo "%{name}-config-apache: Reloading"
 %if 0%{?suse_version}
 %if 0%{?suse_version} <= 1110 || 0%{?suse_version} == 1320
@@ -713,11 +580,11 @@ if [ ! -s /tmp/apache_stopped_during_owncloud_install ]; then
   service apache2 reload || true
 %endif
 %endif
-%if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
+%if 0%{?fedora_version} || 0%{?rhel} || 0%{?rhel_version} || 0%{?centos_version}
   service %{ochttpd} status && service %{ochttpd} reload || service %{ochttpd} start
 %endif
 fi
-rm -f /tmp/apache_stopped_during_owncloud_install
+rm -f %{statedir}/apache_stopped_during_owncloud_install
 
 %pre server
 #pre_oc_7_8_upgrade
@@ -728,47 +595,13 @@ else
     echo "%{name}-server: Upgrade starting"
 fi
 # https://github.com/owncloud/core/issues/12125
-if [ -x /usr/bin/php -a -f %{oc_dir}/occ ]; then
+if [ -x %{ocphp_bin}/php -a -f %{oc_dir}/occ ]; then
   echo "%{name}-server: occ maintenance:mode --on"
-  su %{oc_user} -s /bin/sh -c "%{oc_dir}/occ maintenance:mode --on"
-  echo yes > /tmp/occ_maintenance_mode_during_owncloud_install
+  su %{oc_user} -s /bin/sh -c "cd %{oc_dir}; PATH=%{ocphp_bin}:$PATH php ./occ maintenance:mode --on" || true
+  echo yes > %{statedir}/occ_maintenance_mode_during_owncloud_install
 fi
-
-%if %{fhs}
-# Assert that oc_apache_web_dir is available to become a symlink.
-# We move the folder out of the way, and place a symlink
-# at oc_data_pdir/data to link back to the moved contents.
-# Unless it is already a symlink.
-#
-# later in %post, the data folder is either created as a folder
-# or taken as the exising symlink.
-if [ ! -L "%{oc_apache_web_dir}" ]; then
-  if [ -e "%{oc_apache_web_dir}" ]; then
-    echo "moving existing %{oc_apache_web_dir} out of the way"
-    save=%{oc_apache_web_dir}.save
-    if [ -e "$save" ]; then
-      save=%oc_apache_web_dir.$(date +%Y%m%d%H%M%S)
-    fi
-    mv %{oc_apache_web_dir} $save
-    mkdir -p %{oc_data_pdir}
-    ln -s $save %{oc_data_dir} || true
-  fi
-fi
-%endif
 
 %preun server
-%if %{fhs}
-## downgrade ... ?
-if [ ! -L "%{oc_apache_web_dir}" ]; then
-  echo "Your webroot folder is a symbolic link. This may need manual adjustment now.\n"
-  ls -lL %{oc_apache_web_dir}
-fi
-if [ ! -L "%{oc_data_dir}" ]; then
-  echo "Your data folder is a symbolic link. This may need manual adjustment now."
-  ls -lL %{oc_data_dir}
-fi
-%endif
-
 
 %post server
 if [ $1 -eq 1 ]; then
@@ -776,35 +609,19 @@ if [ $1 -eq 1 ]; then
 else
     echo "%{name}-server Upgrade complete"
 fi
-%if %{fhs}
-if [ ! -d "%{oc_data_dir}" ]; then
-  mkdir -p %{oc_data_dir}
-fi
 
-if [ -L "%{oc_data_dir}" ]; then
-  echo > %{oc_data_pdir}/README.upgrade <<EOF
-An existing owncloud installation was detected while installing %{name}-server %{version} .
-Your data folder was preserved where the symbolic link 'data' points to.
-This location may or may not agree with the linux Filesystem Hierarchy Standards.
-We suggest to resolve the symbolic link and physically move your data folder here.
-EOF
+# must ignore errors with e.g.  '|| true' or we die in openSUSEs horrible post build checks.
+# https://github.com/owncloud/core/issues/12125 needed occ calls.
+# https://github.com/owncloud/core/issues/17583 correct occ usage.
+if [ -s %{statedir}/occ_maintenance_mode_during_owncloud_install ]; then
+  # https://github.com/owncloud/core/pull/19508
+  # https://github.com/owncloud/core/pull/19661
+  echo  "Leaving server in maintenance mode. Please run occ upgrade manually."
+  echo  ""
+  echo  "See https://doc.owncloud.org/server/8.1/admin_manual/maintenance/upgrade.html"
+  echo  ""
 fi
-ln -s %{oc_data_dir} %{oc_dir}/data || true
-chown -R %{oc_user}:%{oc_group} %{oc_data_dir}/ || true
-chmod 775 %{oc_data_dir}/ || true
-%endif
-
-# https://github.com/owncloud/core/issues/12125
-if [ -s /tmp/occ_maintenance_mode_during_owncloud_install ]; then
-  if [ -x /usr/bin/php -a -f %{oc_dir}/occ ]; then
-    # https://github.com/owncloud/core/issues/14351
-    su %{oc_user} -s /bin/sh -c "%{oc_dir}/occ maintenance:mode --off"
-    echo "%{name}-server: occ upgrade"
-    su %{oc_user} -s /bin/sh -c "%{oc_dir}/occ upgrade"
-    su %{oc_user} -s /bin/sh -c "%{oc_dir}/occ maintenance:mode --off"
-  fi
-fi
-rm -f /tmp/occ_maintenance_mode_during_owncloud_install
+rm -f %{statedir}/occ_maintenance_mode_during_owncloud_install
 
 %postun
 if [ 0$1 -eq 0 ]; then
@@ -831,76 +648,9 @@ chmod -R a+w   %{oc_dir}/apps/ %{oc_config_dir}/ %{oc_data_dir}/ || true
 %clean
 rm -rf "$RPM_BUILD_ROOT"
 
-%oc_app_package activity
-%oc_app_package files_pdfviewer
-%oc_app_package files_trashbin
-%oc_app_package firstrunwizard
-%oc_app_package templateeditor
-%oc_app_package user_ldap		Requires:php-ldap
-%oc_app_package external
-%oc_app_package files_external
-%oc_app_package files_sharing
-%oc_app_package files_versions
-%oc_app_package gallery
-%oc_app_package user_webdavauth
-%oc_app_package files
-%oc_app_package files_locking
-%oc_app_package files_texteditor
-%oc_app_package files_videoviewer
-%oc_app_package provisioning_api
-%oc_app_package user_external		Requires:owncloud-app-external
-%oc_app_package encryption
-
-
 %files
 %defattr(-,root,root,-)
 %doc README README.packaging
-
-
-%if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
-%files server-scl-php54
-%defattr(0644,root,%{oc_group},0755)
-%doc README README.SELinux
-%dir %{oc_dir}
-%doc %{oc_dir}/AUTHORS
-%doc %{oc_dir}/COPYING-AGPL
-%doc %{oc_dir}/README*
-%{oc_dir}/core
-%{oc_dir}/db_structure.xml
-%{oc_dir}/index.php
-%{oc_dir}/lib
-%{oc_dir}/ocs
-%{oc_dir}/ocs-provider
-%{oc_dir}/public.php
-%{oc_dir}/remote.php
-%{oc_dir}/settings
-%{oc_dir}/status.php
-%{oc_dir}/themes
-%{oc_dir}/cron.php
-%{oc_dir}/robots.txt
-%{oc_dir}/index.html
-%{oc_dir}/console.php
-%{oc_dir}/version.php
-%if %{fhs}
-## symlink. Only included if it is a link.
-%{oc_dir}/config
-%endif
-%defattr(0755,%{oc_user},%{oc_group},0775)
-%{oc_dir}/occ
-%dir %{oc_dir}/apps
-%exclude %{oc_dir}/apps/*
-%{oc_config_dir}/*
-%{oc_config_dir}/.htaccess
-%{oc_dir}/.htaccess
-%if %{fhs}
-## data is a symlink?
-%dir %{oc_data_pdir}
-%else
-%dir %{oc_data_dir}
-%endif
-%dir %{oc_config_dir}
-%endif
-
 
 %files server
 %defattr(0644,root,%{oc_group},0755)
@@ -925,36 +675,24 @@ rm -rf "$RPM_BUILD_ROOT"
 %{oc_dir}/console.php
 %{oc_dir}/version.php
 
-%if %{fhs}
-## symlink. Only included if it is a link.
-%{oc_dir}/config
-%endif
-
 %defattr(0755,%{oc_user},%{oc_group},0775)
 %{oc_dir}/themes
 %{oc_dir}/occ
 %dir %{oc_dir}/assets
 %dir %{oc_dir}/apps
-%exclude %{oc_dir}/apps/*
+%{oc_dir}/apps/*
 %{oc_config_dir}/*
 %{oc_config_dir}/.htaccess
 %{oc_dir}/.htaccess
-%if %{fhs}
-## data is a symlink?
-%dir %{oc_data_pdir}
-%else
 %dir %{oc_data_dir}
-%endif
 %dir %{oc_config_dir}
 
+%dir %{oc_dir}/3rdparty
+%{oc_dir}/3rdparty/*
 
 %files config-apache
 %defattr(-,%{oc_user},%{oc_group},0775)
 %config %attr(0644,root,root) %{apache_confdir}/owncloud.conf
-%if %{fhs}
-# backwards compat symlink, (only included, if it is a link :-))
-%{oc_apache_web_dir}
-%endif
 
 
 %if %{have_nginx}
@@ -966,11 +704,6 @@ rm -rf "$RPM_BUILD_ROOT"
 %dir /etc/nginx/conf.d
 %endif
 
-
-%files 3rdparty
-%defattr(0644,%{oc_user},%{oc_group},0755)
-%dir %{oc_dir}/3rdparty
-%{oc_dir}/3rdparty/*
 
 %changelog
 

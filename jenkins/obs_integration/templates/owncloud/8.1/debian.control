@@ -1,0 +1,229 @@
+Source: owncloud
+Section: devel
+Priority: optional
+Maintainer: Jürgen Weigert <jw@owncloud.com>
+Build-Depends: debhelper (>= 4), apache2
+Standards-Version: 3.9.3
+
+Package: owncloud
+Architecture: all
+Depends: ${misc:Depends}, owncloud-server (= ${binary:Version})
+## downgraded owncloud-config-apache from Depends: to Recommends: due to https://github.com/owncloud/core/issues/19050
+Recommends: mysql-server | mariadb-server, curl, exim4 | mail-transport-agent, owncloud-config-apache (= ${binary:Version})
+Suggests: clamav | clamav-daemon, smbclient, libreoffice-writer
+Provides: owncloud
+Description: The ownCloud Server - Private file sync and share server
+ ownCloud Server provides you a private file sync and share
+ cloud. Host this server to easily sync business or private documents
+ across all your devices, and share those documents with other users of
+ your ownCloud server on their devices.
+ .
+ ownCloud - Your Cloud, Your Data, Your Way!  www.owncloud.org
+
+Package: owncloud-server
+Architecture: all
+Depends: ${misc:Depends}, php5 (>= 5.4.0), php5-mysqlnd | php5-mysql, php5-sqlite, php5-pgsql, 
+	php5-common, php5-gd, php-xml-parser, php5-intl, php5-mcrypt, php5-curl, php5-json, php5-ldap, php5-cli
+## Merged back all the apps into owncloud-server, due to https://github.com/owncloud/core/issues/18043
+## According to https://www.debian.org/doc/debian-policy/ch-relationships.html replacing is done with three lists: Provides, Conflicts, Replaces.
+## Did not work.
+## According to https://lists.debian.org/debian-mentors/2015/09/msg00394.html transitional packages help when Provides does not.
+## Add all with Depends: owncloud-server (>= ${source:Version}).
+## Add to "Package: owncloud-server" Breaks and Replaces for each owncloud-app-... (<< 8.1.3-6.1~)
+Replaces: owncloud (<< 7.9.9),
+	owncloud-app-updater           (<< ${binary:Version}~),
+	owncloud-app-files-encryption  (<< ${binary:Version}~),
+	owncloud-3rdparty              (<< ${binary:Version}~),
+	owncloud-app-activity          (<< ${binary:Version}~),
+	owncloud-app-files             (<< ${binary:Version}~),
+	owncloud-app-files-pdfviewer   (<< ${binary:Version}~),
+	owncloud-app-files-trashbin    (<< ${binary:Version}~),
+	owncloud-app-files-external    (<< ${binary:Version}~),
+	owncloud-app-files-sharing     (<< ${binary:Version}~),
+	owncloud-app-files-versions    (<< ${binary:Version}~),
+	owncloud-app-files-locking     (<< ${binary:Version}~),
+	owncloud-app-files-texteditor  (<< ${binary:Version}~),
+	owncloud-app-provisioning-api  (<< ${binary:Version}~),
+	owncloud-app-firstrunwizard    (<< ${binary:Version}~),
+	owncloud-app-templateeditor    (<< ${binary:Version}~),
+	owncloud-app-user-ldap         (<< ${binary:Version}~),
+	owncloud-app-external          (<< ${binary:Version}~),
+	owncloud-app-files-videoviewer (<< ${binary:Version}~),
+	owncloud-app-gallery           (<< ${binary:Version}~),
+	owncloud-app-user-webdavauth   (<< ${binary:Version}~),
+	owncloud-app-user-external     (<< ${binary:Version}~),
+	owncloud-app-encryption	       (<< ${binary:Version}~)
+Breaks: owncloud (<< 7.9.9),
+	owncloud-app-updater           (<< ${binary:Version}~),
+	owncloud-app-files-encryption  (<< ${binary:Version}~),
+	owncloud-3rdparty              (<< ${binary:Version}~),
+	owncloud-app-activity          (<< ${binary:Version}~),
+	owncloud-app-files             (<< ${binary:Version}~),
+	owncloud-app-files-pdfviewer   (<< ${binary:Version}~),
+	owncloud-app-files-trashbin    (<< ${binary:Version}~),
+	owncloud-app-files-external    (<< ${binary:Version}~),
+	owncloud-app-files-sharing     (<< ${binary:Version}~),
+	owncloud-app-files-versions    (<< ${binary:Version}~),
+	owncloud-app-files-locking     (<< ${binary:Version}~),
+	owncloud-app-files-texteditor  (<< ${binary:Version}~),
+	owncloud-app-provisioning-api  (<< ${binary:Version}~),
+	owncloud-app-firstrunwizard    (<< ${binary:Version}~),
+	owncloud-app-templateeditor    (<< ${binary:Version}~),
+	owncloud-app-user-ldap         (<< ${binary:Version}~),
+	owncloud-app-external          (<< ${binary:Version}~),
+	owncloud-app-files-videoviewer (<< ${binary:Version}~),
+	owncloud-app-gallery           (<< ${binary:Version}~),
+	owncloud-app-user-webdavauth   (<< ${binary:Version}~),
+	owncloud-app-user-external     (<< ${binary:Version}~),
+	owncloud-app-encryption	       (<< ${binary:Version}~)
+# Don't recommend php5-apcu for Ubuntu-14.04 https://github.com/owncloud/core/issues/14188
+# Don't use apcu before 4.0.6 https://github.com/owncloud/core/issues/14175
+Suggests: php5-apcu (>= 4.0.6) | php-apc
+Description: The owncloud-server package
+ .
+ Server internals. For a complete system install package owncloud.
+
+Package: owncloud-config-apache
+Architecture: all
+Depends: owncloud-server (= ${binary:Version}), apache2 | httpd
+# According to https://www.debian.org/doc/debian-policy/ch-relationships.html saying
+# Replaces here, should allow us to overwrite a file. It does not work for owncloud.conf
+# which is inherited by owncloud 8.x from owncloud 7.x without apparent reason.
+Replaces: owncloud (<< 7.9.9)
+Breaks: owncloud (<< 7.9.9)
+Description: The ownCloud configuration for the apache web server
+ .
+ This subpackage helps to run ownCloud with an apache web server.
+
+
+Package: owncloud-3rdparty
+Architecture: all
+Depends: owncloud-server (>= ${source:Version})
+Description: This is a transitional package and can be safely removed.
+
+
+Package: owncloud-app-updater
+Architecture: all
+Depends: owncloud-server (>= ${source:Version})
+Description: This is a transitional package and can be safely removed.
+
+
+Package: owncloud-app-files-encryption
+Architecture: all
+Depends: owncloud-server (>= ${source:Version})
+Description: This is a transitional package and can be safely removed.
+
+
+Package: owncloud-app-activity
+Architecture: all
+Depends: owncloud-server (>= ${source:Version})
+Description: This is a transitional package and can be safely removed.
+
+
+Package: owncloud-app-files
+Architecture: all
+Depends: owncloud-server (>= ${source:Version})
+Description: This is a transitional package and can be safely removed.
+
+
+Package: owncloud-app-files-pdfviewer
+Architecture: all
+Depends: owncloud-server (>= ${source:Version})
+Description: This is a transitional package and can be safely removed.
+
+
+Package: owncloud-app-files-trashbin
+Architecture: all
+Depends: owncloud-server (>= ${source:Version})
+Description: This is a transitional package and can be safely removed.
+
+
+Package: owncloud-app-files-external
+Architecture: all
+Depends: owncloud-server (>= ${source:Version})
+Description: This is a transitional package and can be safely removed.
+
+
+Package: owncloud-app-files-sharing
+Architecture: all
+Depends: owncloud-server (>= ${source:Version})
+Description: This is a transitional package and can be safely removed.
+
+
+Package: owncloud-app-files-versions
+Architecture: all
+Depends: owncloud-server (>= ${source:Version})
+Description: This is a transitional package and can be safely removed.
+
+
+Package: owncloud-app-files-locking
+Architecture: all
+Depends: owncloud-server (>= ${source:Version})
+Description: This is a transitional package and can be safely removed.
+
+
+Package: owncloud-app-files-texteditor
+Architecture: all
+Depends: owncloud-server (>= ${source:Version})
+Description: This is a transitional package and can be safely removed.
+
+
+Package: owncloud-app-provisioning-api
+Architecture: all
+Depends: owncloud-server (>= ${source:Version})
+Description: This is a transitional package and can be safely removed.
+
+
+Package: owncloud-app-firstrunwizard
+Architecture: all
+Depends: owncloud-server (>= ${source:Version})
+Description: This is a transitional package and can be safely removed.
+
+
+Package: owncloud-app-templateeditor
+Architecture: all
+Depends: owncloud-server (>= ${source:Version})
+Description: This is a transitional package and can be safely removed.
+
+
+Package: owncloud-app-user-ldap
+Architecture: all
+Depends: owncloud-server (>= ${source:Version})
+Description: This is a transitional package and can be safely removed.
+
+
+Package: owncloud-app-external
+Architecture: all
+Depends: owncloud-server (>= ${source:Version})
+Description: This is a transitional package and can be safely removed.
+
+
+Package: owncloud-app-files-videoviewer
+Architecture: all
+Depends: owncloud-server (>= ${source:Version})
+Description: This is a transitional package and can be safely removed.
+
+
+Package: owncloud-app-gallery
+Architecture: all
+Depends: owncloud-server (>= ${source:Version})
+Description: This is a transitional package and can be safely removed.
+
+
+Package: owncloud-app-user-webdavauth
+Architecture: all
+Depends: owncloud-server (>= ${source:Version})
+Description: This is a transitional package and can be safely removed.
+
+
+Package: owncloud-app-user-external
+Architecture: all
+Depends: owncloud-server (>= ${source:Version})
+Description: This is a transitional package and can be safely removed.
+
+
+Package: owncloud-app-encryption
+Architecture: all
+Depends: owncloud-server (>= ${source:Version})
+Description: This is a transitional package and can be safely removed.
+
