@@ -1,0 +1,56 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+# This file was originally written by Joey Hess and Craig Small.
+# As a special exception, when this file is copied by dh-make into a
+# dh-make output file, you may use that output file without restriction.
+# This special exception was added by Craig Small in version 0.37 of dh-make.
+
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+
+SHELL=/bin/bash
+
+%:	
+	dh $@
+
+override_dh_install:
+	dh_install -Xdebian
+	mkdir -p $(CURDIR)/debian/owncloud-enterprise/var/www/owncloud-enterprise/data
+	chmod 770 $(CURDIR)/debian/owncloud-enterprise/var/www/owncloud-enterprise/data
+	mkdir -p $(CURDIR)/debian/owncloud-enterprise/etc/apache2/conf.d
+	echo 'Alias /owncloud-enterprise /var/www/owncloud-enterprise' > $(CURDIR)/debian/owncloud-enterprise/etc/apache2/conf.d/owncloud-enterprise.conf
+	# https://github.com/owncloud/enterprise/issues/333
+	# https://github.com/owncloud/enterprise/issues/228
+	echo '<Directory /var/www/owncloud-enterprise/>' >> $(CURDIR)/debian/owncloud-enterprise/etc/apache2/conf.d/owncloud-enterprise.conf
+	echo '  AllowOverride All' >> $(CURDIR)/debian/owncloud-enterprise/etc/apache2/conf.d/owncloud-enterprise.conf
+	echo '  SetEnv HOME /'     >> $(CURDIR)/debian/owncloud-enterprise/etc/apache2/conf.d/owncloud-enterprise.conf
+	echo '  SetEnv HTTP_HOME /'>> $(CURDIR)/debian/owncloud-enterprise/etc/apache2/conf.d/owncloud-enterprise.conf
+	echo '</Directory>'        >> $(CURDIR)/debian/owncloud-enterprise/etc/apache2/conf.d/owncloud-enterprise.conf
+	mkdir -p $(CURDIR)/debian/owncloud-enterprise/etc/apache2/conf-available
+	echo 'Alias /owncloud-enterprise /var/www/owncloud-enterprise' > $(CURDIR)/debian/owncloud-enterprise/etc/apache2/conf-available/owncloud-enterprise.conf
+	echo '<Directory /var/www/owncloud-enterprise/>' >> $(CURDIR)/debian/owncloud-enterprise/etc/apache2/conf-available/owncloud-enterprise.conf
+	echo '  AllowOverride All' >> $(CURDIR)/debian/owncloud-enterprise/etc/apache2/conf-available/owncloud-enterprise.conf
+	echo '  SetEnv HOME /'     >> $(CURDIR)/debian/owncloud-enterprise/etc/apache2/conf-available/owncloud-enterprise.conf
+	echo '  SetEnv HTTP_HOME /'>> $(CURDIR)/debian/owncloud-enterprise/etc/apache2/conf-available/owncloud-enterprise.conf
+	echo '</Directory>'        >> $(CURDIR)/debian/owncloud-enterprise/etc/apache2/conf-available/owncloud-enterprise.conf
+	mkdir -p $(CURDIR)/debian/owncloud-enterprise/usr/share/doc/owncloud-enterprise
+	install -m 644 $(CURDIR)/AUTHORS      $(CURDIR)/debian/owncloud-enterprise/usr/share/doc/owncloud-enterprise/AUTHORS
+	install -m 644 $(CURDIR)/COPYING-AGPL $(CURDIR)/debian/owncloud-enterprise/usr/share/doc/owncloud-enterprise/COPYING-AGPL
+	install -m 644 $(CURDIR)/.htaccess    $(CURDIR)/debian/owncloud-enterprise/var/www/owncloud-enterprise/ 
+	install -m 644 /usr/src/packages/SOURCES/robots.txt   $(CURDIR)/debian/owncloud-enterprise/var/www/owncloud-enterprise/ 
+	# clean-up doc files in webspace
+	rm -f $(CURDIR)/debian/owncloud-enterprise/var/www/owncloud-enterprise/AUTHORS
+	rm -f $(CURDIR)/debian/owncloud-enterprise/var/www/owncloud-enterprise/COPYING-AGPL
+	rm -f $(CURDIR)/debian/owncloud-enterprise/var/www/owncloud-enterprise/README
+	# https://github.com/owncloud/enterprise/issues/366
+	rm -f $(CURDIR)/debian/owncloud-enterprise/var/www/owncloud-enterprise/indie.json
+
+override_dh_fixperms:
+	dh_fixperms -X var/www/owncloud-enterprise/data -X var/www/owncloud-enterprise/config
+	# chown at the end to ensure everything is chown'ed
+	chown www-data:www-data $(CURDIR)/debian/owncloud-enterprise/var/www/owncloud-enterprise/apps
+	chown -R www-data:www-data $(CURDIR)/debian/owncloud-enterprise/var/www/owncloud-enterprise/config
+	chown -R www-data:www-data $(CURDIR)/debian/owncloud-enterprise/var/www/owncloud-enterprise/data
+	chmod 755 $(CURDIR)/debian/owncloud-enterprise/var/www/owncloud-enterprise/occ
+

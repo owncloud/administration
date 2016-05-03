@@ -3,7 +3,7 @@ Section: devel
 Priority: optional
 Maintainer: Juergen Weigert <jw@owncloud.com> 
 Build-Depends: debhelper (>= 4),
-	owncloud-server (>= 8.1.7~rc2),
+	owncloud-server (>= [% VERSION_DEB %]),
 	owncloud-config-apache,
 	curl
 Standards-Version: 3.9.3
@@ -13,9 +13,9 @@ Architecture: all
 Suggests: php5-odbc, php5-xmlrpc, php5-imap
 Depends: ${misc:Depends}, 
 	curl, 
-	owncloud-server           (>= 8.1.7~rc2),
-	owncloud                  (>= 8.1.7~rc2),
-	owncloud-config-apache    (>= 8.1.7~rc2),
+	owncloud-server           (>= [% VERSION_DEB %]),
+	owncloud                  (>= [% VERSION_DEB %]),
+	owncloud-config-apache    (>= [% VERSION_DEB %]),
 	owncloud-enterprise-theme                     (= ${binary:Version}),
 	owncloud-enterprise-app-admin-audit           (= ${binary:Version}),
 	owncloud-enterprise-app-enterprise-key        (= ${binary:Version}),

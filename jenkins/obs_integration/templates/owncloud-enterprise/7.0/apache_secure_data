@@ -1,0 +1,11 @@
+<Directory DATAPATH>
+
+  # https://github.com/owncloud/enterprise/issues/228
+  # https://github.com/owncloud/enterprise/issues/333
+  SetEnv HOME /
+  SetEnv HTTP_HOME /
+
+  AllowOverride All
+  Options FollowSymLinks
+</Directory>
+

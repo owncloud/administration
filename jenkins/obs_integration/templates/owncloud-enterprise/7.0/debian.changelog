@@ -1,0 +1,565 @@
+owncloud-enterprise (7.0.14~rc2-1) stable; urgency=low
+
+  * Update to version 7.0.14~rc2
+
+ -- Jenkins @ ownbrander <jenkins@owncloud.com>  Mon, 02 May 2016 13:17:56 +0000
+
+owncloud-enterprise (7.0.14~rc1-1) stable; urgency=low
+
+  * Update to version 7.0.14~rc1
+
+ -- Jürgen Weigert <jw@owncloud.com>  Wed, 27 Apr 2016 14:20:17 +0200
+
+owncloud-enterprise (7.0.13-1) stable; urgency=low
+
+  * Update to version 7.0.13
+
+ -- Jürgen Weigert <jw@owncloud.com>  Wed, 09 Mar 2016 15:36:32 +0100
+
+owncloud-enterprise (7.0.13~RC2-1) stable; urgency=low
+
+  * Update to version 7.0.13~RC2
+
+ -- Jürgen Weigert <jw@owncloud.com>  Sat, 05 Mar 2016 04:48:32 +0100
+
+owncloud-enterprise (7.0.13~RC1-2) stable; urgency=low
+
+  * Update to version 7.0.13~RC1
+
+ -- Jürgen Weigert <jw@owncloud.com>  Thu, 03 Mar 2016 17:57:34 +0100
+
+owncloud-enterprise (7.0.12-1) stable; urgency=low
+
+  * Update to version 7.0.12
+
+ -- Jenkins @ ownbrander <jenkins@owncloud.com>  Mon, 21 Dec 2015 15:12:41 +0000
+
+owncloud-enterprise (7.0.12~RC1-1) stable; urgency=low
+
+  * Update to version 7.0.12~RC1
+
+ -- Jenkins @ ownbrander <jenkins@owncloud.com>  Wed, 16 Dec 2015 14:36:53 +0000
+
+owncloud-enterprise (7.0.11-1) stable; urgency=low
+
+  * Update to version 7.0.11
+
+ -- Jürgen Weigert <jw@owncloud.com>  Fri, 30 Oct 2015 22:45:48 +0100
+
+owncloud-enterprise (7.0.11~RC2-2) stable; urgency=low
+
+  * switching maintenance:mode --on during upgrade
+    as per https://github.com/owncloud/core/pull/19661 discussions.
+
+ -- Jürgen Weigert <jw@owncloud.com>  Thu, 29 Oct 2015 14:19:21 +0100
+
+owncloud-enterprise (7.0.11~RC2-1) stable; urgency=low
+
+  * Update to version 7.0.11~RC2
+
+ -- Jürgen Weigert <jw@owncloud.com>  Wed, 28 Oct 2015 17:49:37 +0100
+
+owncloud-enterprise (7.0.11~RC1-1) stable; urgency=low
+
+  * Update to version 7.0.11~RC1
+
+ -- Jürgen Weigert <jw@owncloud.com>  Thu, 22 Oct 2015 04:19:46 +0200
+
+owncloud-enterprise (7.0.10-1) stable; urgency=low
+
+  * Update to version 7.0.10
+
+ -- Jürgen Weigert <jw@owncloud.com>  Fri, 11 Sep 2015 11:51:09 +0200
+
+owncloud-enterprise (7.0.9-1) stable; urgency=low
+
+  * Update to version 7.0.9
+
+ -- Jürgen Weigert <jw@owncloud.com>  Wed, 02 Sep 2015 12:41:22 +0200
+
+owncloud-enterprise (7.0.9~RC1-1) stable; urgency=low
+
+  * Update to version 7.0.9~RC1
+
+ -- Jürgen Weigert <jw@owncloud.com>  Thu, 27 Aug 2015 13:42:12 +0200
+
+owncloud-enterprise (7.0.8-1) stable; urgency=low
+
+  * Update to version 7.0.8
+
+ -- Jürgen Weigert <jw@owncloud.com>  Sat, 08 Aug 2015 14:48:26 +0200
+
+owncloud-enterprise (7.0.8~RC1-1) stable; urgency=low
+
+  * Update to version 7.0.8~RC1
+
+ -- Jürgen Weigert <jw@owncloud.com>  Mon, 03 Aug 2015 18:01:48 +0200
+
+owncloud-enterprise (7.0.8~beta1-1) stable; urgency=low
+
+  * Update to version 7.0.8~beta1
+
+ -- Jürgen Weigert <jw@owncloud.com>  Fri, 24 Jul 2015 18:49:13 +0200
+
+owncloud-enterprise (7.0.7-1) stable; urgency=low
+
+  * Update to version 7.0.7
+
+ -- Jürgen Weigert <jw@owncloud.com>  Fri, 03 Jul 2015 18:33:06 +0200
+
+owncloud-enterprise (7.0.7~RC1-1) stable; urgency=low
+
+  * Update to version 7.0.7~RC1
+
+ -- Jürgen Weigert <jw@ownCloud.com>  Wed, 01 Jul 2015 02:16:33 +0200
+
+owncloud-enterprise (7.0.7~Beta-1) stable; urgency=low
+
+  * Version 7.0.7~Beta
+
+ -- Jürgen Weigert <jw@owncloud.com>  Wed, 24 Jun 2015 12:35:47 +0200
+
+owncloud-enterprise (7.0.6-0) stable; urgency=low
+
+  * Update to final tarball 7.0.6
+    1. Incompatibility with PHP 5.3 in Stable7 -Regression#16665
+    2. Error logs from the files_external app (dropbox) even though the mount can be accessed normally #16679
+    3. Error templates url #16617
+    4. [stable7 only] encryption key broken for owner when deleting shared file as recipient #14588
+    5. AD Primary Group issue #12190
+    6. LDAP: Domain Users are not being loaded with User Filter #13533
+    7. [7.0.2] large files upload correctly, but download truncated to 2GB #11270
+    8. External Storage App: SMB CIFS / Using OC Login#15014
+    9. Fix bugs in ownCloud external storage #14475
+    10. Add asset pipelining to performance tuning docs. #1130
+    11. Can't access re-shared folder on another owncloud server#15758
+    12. [s2s] Files lose permissions when scanner retriggered through publicwebdav.php #15600
+    13. Sharing API malfunctions with maintenance mode #15436
+    14. External storage: when admin makes available for an user from LDAP the user badge is not shown when returning to admin page #15800
+    15. External Storage available user GUI issue #13781
+    16. Throw exception in initMountPoints if user manager returned null #13862
+    17. AD Primary Group issue #12190
+    18. LDAP: Domain Users are not being loaded with User Filter #13533
+    19. Set the sender mail address by user #10545
+    20. don't return null for not existing group id's #15435
+    21. [7.0.2] large files upload correctly, but download truncated to 2GB #11270
+    22. require_once(): Failed opening required '/appinfo/remote.php #15299
+    23. Fix bugs in ownCloud external storage #14475
+    24. Default shared folder not used when adding user to group#15243
+    25. Remove hacky Substring support for MSSQL#14498
+    26. Files added to other users shared folder does not count immediately #14596
+    27. cron shall not operate in case we are in maintenance mode - fixes #14843 #14846
+    28. support paged results against 389ds. #14849
+    29. offset parameter of the occ ldap:search command doesn't work with the group option #14098
+    30. External Storage App: SMB CIFS / Using OC Login#15014
+    31. readdir() expects parameter 1 to be resource, boolean given at #14876
+    32. "Updating ownCloud to version {version}" #12204
+    33. Replace deprecated switches #12261
+    34. Libreoffice config folder needs to be set #10827
+    35. LDAP: Domain Users are not being loaded with User Filter #13533
+    36. Select all + delete misses delete action in trashbin #14687
+    37. Only variables should be passed by reference #13751
+    38. Remove hacky Substring support for MSSQL#14498
+    39. Video thumbnails not generated since 7.0.3 #14316
+    40. Issues with missing personal files and no access to shared files after upgrading from 6.0.6 to 7.x #12801
+    41. Username vs Login when adding users #12041
+    42. backport connectivity check strings #12324
+    43. occ upgrade fail "Maximum execution time of 3600 seconds exceeded" #14156
+    44. Do not overwrite the shareType so the post hook is still correct #13979
+
+ -- Klaas Freitag <freitag@owncloud.com> Thu, 04 Jun 2015 22:46:37 +0200
+
+owncloud-enterprise (7.0.6~RC2-3) stable; urgency=low
+
+  * fix https://github.com/owncloud/enterprise/issues/666
+    by promoting php5-libsmbclient and php5-ldap to Recommends.
+
+ -- Jürgen Weigert <jw@owncloud.com>  Wed, 03 Jun 2015 19:32:46 +0200
+
+owncloud-enterprise (7.0.6~RC2-2) stable; urgency=low
+
+  * fix https://github.com/owncloud/enterprise/issues/668
+
+ -- Jürgen Weigert <jw@owncloud.com>  Wed, 03 Jun 2015 19:15:32 +0200
+
+owncloud-enterprise (7.0.6~RC2-1) stable; urgency=low
+
+  * version 7.0.6~RC2-1
+
+ -- Jürgen Weigert <jw@owncloud.com>  Tue, 02 Jun 2015 14:45:27 +0200
+
+owncloud-enterprise (7.0.5-2) stable; urgency=low
+
+  * updated to todays version of 7.0.5
+
+ -- Jürgen Weigert <jw@owncloud.com>  Wed, 04 Mar 2015 20:34:24 +0100
+
+owncloud-enterprise (7.0.5-1) stable; urgency=low
+
+  * version 7.0.5
+
+ -- Jürgen Weigert <jw@owncloud.com>  Mon, 23 Feb 2015 18:07:27 +0100
+
+owncloud-enterprise (7.0.4-4) stable; urgency=low
+
+  * assert robots.txt also for DEB
+    https://github.com/owncloud/core/issues/12903
+
+ -- Jürgen Weigert <jw@owncloud.com>  Wed, 17 Dec 2014 16:04:31 +0100
+
+owncloud-enterprise (7.0.4-3) stable; urgency=low
+
+  * Replaces: owncloud-enterprise-3rdparty (<= 7.0.3)
+
+ -- Jürgen Weigert <jw@owncloud.com>  Wed, 10 Dec 2014 13:42:01 +0100
+
+owncloud-enterprise (7.0.4-2) stable; urgency=low
+
+  * version 7.0.4.
+  * Better deleted outdated previews
+  * Store storage credential in session only if needed
+  * Don't disclose relative directory path for single shared files of user
+  * Password reset fixes
+  * Fix enable app only for a specific group
+  * fixing port configuration in trusted domains
+  * LDAP fixes
+  * Make group search case sensitive
+  * Allow admin to change users display name 
+  * ldap performance improvements
+  * config.php is now read only
+  * Several smaller fixes
+
+ -- Jürgen Weigert <jw@owncloud.com>  Mon, 08 Dec 2014 22:56:55 +0100
+
+owncloud-enterprise (7.0.4~RC2-1) UNRELEASED; urgency=low
+
+  * version 7.0.4RC2.
+    owncloud_enterprise-7.0.4RC2.tar.bz2 updated via ./internal_tar2obs.py
+
+ -- Jürgen Weigert <jw@owncloud.com>  Sat, 06 Dec 2014 13:56:55 +0100
+
+owncloud-enterprise (7.0.4~RC1-1) stable; urgency=low
+
+ * Release  "7.0.4" Dec 8. 2014
+     - Added XMLWriter check
+     - Better deleted outdated previews
+     - Store storage credential in session only if needed
+     - Don't disclose relative directory path for single shared files of user
+     - Password reset fixes
+     - Fix enable app only for a specific group
+     - fixing port configuration in trusted domains
+     - LDAP fixes
+     - Make group search case sensitive
+     - Allow admin to change users display name 
+     - Several smaller fixes
+
+ -- Juergen Weigert <jw@owncloud.com>  Tue, 02 Dec 2014 14:04:05 +0200
+
+owncloud-enterprise (7.0.3-2) stable; urgency=low
+
+  * fixed postinstall to survive not running apache
+
+ -- Juergen Weigert <jw@owncloud.com>  Mon, 24 Nov 2014 18:14:05 +0200
+
+owncloud-enterprise (7.0.3-1) stable; urgency=low
+
+  * Release  "7.0.3" Oct 22. 2014
+    - Some OS X server fixes
+    - Several external storage fixes and improvements
+    - Close session early to speedup apps page loading
+    - Add overwrite.cli.url config option
+    - Fix finding old versions in special cases
+    - Make versions and encryption aware of copy operations
+    - Force loading encryption app in all needed cases
+    - Better filesystem scanning error messages
+    - LDAP wizard fixes
+    - Add configuration switch to enable preview mimetypes
+    - Create backup of all encryption keys before recovery
+    - Add displayname for admins
+    - Better config.sample documentation
+    - Better apps descriptions
+    - Improve visual feedback if recovery key password gets changed
+    - Fix some object store integration issues
+    - Improved data directory configuration
+    - Fix DAV permissions without create permissions
+    - Fix filepicker home icon being partly hidden
+    - Do only follow http and https redirects
+    - Properly delete old previews
+    - Prevent upgrades between more than one major versions
+    - Several security fixes
+    - Lots of smaller improvements
+
+ -- Juergen Weigert <jw@owncloud.com>  Wed, 12 Nov 2014 18:14:05 +0200
+
+owncloud-enterprise (7.0.3~RC1-1) stable; urgency=low
+
+  * Release  "7.0.3 RC1" 
+
+ -- Juergen Weigert <jw@owncloud.com>  Thu, 16 Okt 2014 23:56:53 +0200
+
+owncloud-enterprise (7.0.2-1) stable; urgency=low
+
+  * Release  "7.0.2" Aug 26. 2014
+    - App upgrading stability improvements
+    - Make default share folder configurable
+    - Improve readability of error messages
+    - Log failed authentication
+    - S3 key fixes
+    - Fix range requests with encryption
+    - Several LDAP fixes
+    - Remove obsolete 'Download preparing' message for zip downloads
+    - Remove not working checks from code checker
+    - No error if we try to delete a file which no longer exists
+    - Fix detection of system wide mount points
+    - Simplify App navigation
+    - Add group management to public api
+    - Remove confusing 'automatic logon rejected' message
+    - Implement a txt preview fallback for the case that ttf is not support
+    - Fix tiny thumbnail bug
+    - Don't display share permission if resharing was disabled by the admin
+    - Close session right before the download starts
+    - Fix date display in filepicker
+    - Don't touch non-oc tables when doing the InnoDB repair step
+    - Several Documents fixes
+    - Correctly handle public uploads activities
+    - Add better 4 image previews to gallery
+
+ -- Juergen Weigert <jw@owncloud.com>  Mon, 26 Aug 2014 23:31:10 +0200
+
+owncloud-enterprise (6.0.4) unstable; urgency=low
+
+  * Depends: php5 (>= 5.3.3) 
+    -> for https://github.com/owncloud/core/issues/6324
+
+ -- Juergen Weigert <jw@owncloud.com>  Mon, 18 Aug 2014 18:27:10 +0200
+
+owncloud-enterprise (6.0.4) unstable; urgency=low
+
+  * Fixed a security issue (Will be disclosed two weeks after this release)
+  * Several LDAP fixes and improvements
+  * Add deprecated warning to load function
+  * File scanner fixes
+  * Heart beat fixes
+  * Encryption fixes for some corner cases
+  * Fix conflict dialog translations
+  * Fix button text overflow
+  * Fix search with Oracle
+  * php upload errors are written to log
+  * ocs status code fixes
+  * Add PostgreSQL version warning
+
+ -- Klaas Freitag <freitag@owncloud.com>  Wed, 25 Jun 2014 11:00:00 +0200
+
+owncloud-enterprise (6.0.3) unstable; urgency=low
+
+  * Update to 6.0.3
+
+ -- Klaas Freitag <freitag@owncloud.com>  Thu, 08 May 2014 11:00:00 +0200
+
+owncloud-enterprise (6.0.2) unstable; urgency=low
+
+  * Update to 6.0.2
+
+ -- Klaas Freitag <freitag@owncloud.com>  Tue, 11 Mar 2014 11:00:00 +0200
+
+owncloud-enterprise (6.0.1) unstable; urgency=low
+
+  * Update to 6.0.1 
+
+ -- Daniel Molkentin <danimo@owncloud.com>  Wed, 22 Jan 2014 16:03:41 +0100
+
+owncloud-enterprise (5.0.14a-1) unstable; urgency=low
+
+  * Add debian postinstall script to use a2enconf if available on the machine. 
+
+ -- Klaas Freitag <freitag@owncloud.com>  Fri, 17 Jan 2014 11:00:00 +0200
+
+owncloud-enterprise (5.0.14a-0) unstable; urgency=low
+
+  * Fix migration problem.
+
+ -- Klaas Freitag <freitag@owncloud.com>  Wed, 18 Dec 2013 13:44:31 +0200
+
+owncloud-enterprise (5.0.14-0) unstable; urgency=low
+
+  * Fix bug that triggers a regeneration of the etags and redownload of files
+  * Don't check migration status if a file is accessed by a public link
+  * Fix unsharing of files
+  * Several external filesystem improvements and fixes
+  * A lot of quota calculation fixes
+  * Login cookie handling fixes
+  * Fix WebDAV url
+  * Fix updating of cached permissions
+  * Reverse proxy fixes
+  * Fix handling of touch for external filesystems
+  * Fix setting of display names
+  * IIS fixes 
+  * Fix some Oracle cornercases
+
+ -- Klaas Freitag <freitag@owncloud.com>  Tue, 17 Dec 2013 17:44:31 +0200
+
+owncloud-enterprise (5.0.13-0) unstable; urgency=low
+
+  * SECURITY: Fix a possible security bypass on admin page under certain circumstances and MariaDB
+  * Correctly update database schema during app update
+  * Fix automatic login rejecion error message
+  * Several Oracle fixes
+  * Fixing serverroot/webroot calculation
+  * Adding detection for aborted uploads for chunked uploads
+  * Fixing directory handling that end with a space
+  * Fixing home storage handling
+  * allow to share a file/folder as public link also if one of it parents was already shared as link
+  * Fix search in shared folders
+  * Fix check for uploads into Shared folder
+  * Several Shared folder handling fixes
+  * Prefere them PNGs over core SVGs
+  * Fall back to default log file of specified logfile doesn't exist
+  * Several IE fixes
+  * Fix LDAP login for certain circumstances
+  * Fixed chunk size calculation for encrypted files
+  * Fix recursive delete for smb
+  * Fix using touch for creating files for smb
+  * Support OCS Share API
+  * Fix updating ETAGs
+  * Don't write user passwords into logfile
+  * Enable configuration of timezones for logfile timestamps
+  * Cleanup share database table for files that no longer exist
+  * Adding privilege check on move and rename operations
+
+ -- Klaas Freitag <freitag@owncloud.com>  Mon, 05 Nov 2013 09:44:31 +0200
+
+owncloud-enterprise (5.0.12-0) unstable; urgency=low
+
+  Release  "5.0.12"
+
+  - Usermanagement interface fixes
+  - Allow numeric group names
+  - Improved IE compatibiliy
+  - Fix database upgrade error
+  - Sharing permission interface fixes
+  - Small visual fixes
+  - File scanner fixes to handle deleted files correctly
+
+ -- Klaas Freitag <freitag@owncloud.com>  Mon, 04 Oct 2013 09:44:31 +0200
+
+owncloud-enterprise (5.0.11-0) unstable; urgency=low
+
+  Release  "5.0.11"
+
+  - Fixing upload in shared folders with create privileges 
+  - Making ldap more robust in certain situations
+  - Handing quota violation earlier to make the desktop clients more robust
+  - Several quota fixes
+  - Fix issues with certain file names like 0 or false
+  - New Swift and S3 implementation for improved speed
+  - Disable smb in files_External on windows servers
+  - Enable user to decrypt files again after encryption app was disabled
+  - Improved Encryption messages
+  - Add a searchByMime call to API
+  - Fix multiselects for Firefox on Mac in groups management
+  - Reduce the number od ldap connections
+  - Show a "password incorrect" notice when used shared password is wrong
+  - Switch to the completely new Google Drive SDK.
+  - Scanner: additional tests for reusing etags during scanning
+  - Fix accessing files that are newly created by setting the right mime type
+  - Several Calendar bugfixes
+  - Fixed "Show on Map" in Contacts
+  - A lof of Contacts fixes
+  - Several "Tasks" fixes
+
+ -- Klaas Freitag <freitag@owncloud.com>  Mon, 09 Sep 2013 09:44:31 +0200
+
+owncloud-enterprise (5.0.10-0) unstable; urgency=low
+
+  Final Release ownCloud Enterprise 5.0.10
+
+  * Configurable logfile date format
+  * Several Oracle fixes
+  * Several MSSQL fixes
+  * Make default language configurable
+  * New CLI upgrade script
+  * Correctly calculate folder size
+  * Fix display of search results
+  * Database upgrade fixes
+  * Smaller filesystem cache fixes
+  * Remember password fixes
+  * Encryption fixes
+  * Fix problems with german "Umlauts" in folder name
+  * IE fixes
+  * Improved upgrade logging
+  * Improved external storage status display
+  * Flicker free versions dropdown
+  * Don't create empty versions
+  * Less noisy debug logfile
+  * Don't show firstrunwizard during upgrade
+  * Several Calendar fixes
+  * Contacts fixes
+  * Fixes for Gallery
+  * Several smaller fixes
+
+ -- Daniel Molkentin <danimo@owncloud.com>  Mon, 12 August 2013 08:57:23 +0200
+
+owncloud-enterprise (5.0.9-0) unstable; urgency=low
+
+  Final Release ownCloud Enterprise 5.0.9
+
+  * General ownCloud improvements:
+  * New AES bases serverside encryption
+  * Support for multimple LDAP servers
+  * Enhanced logging module
+  * Provisioning API
+  * MS SQL support
+  * Home directory integration
+  * Massice speed improvements
+  * Improved userinterface
+  * Undelete
+  * More intelligent versioning
+  * Display names
+  * Anti Virus App
+  * Improved apps management
+  * Capabilities API
+  * Improved documentation 
+  *
+  * ownCloud 5.0.9 improvements:
+  * Fixes for mounting an WebDAV into an ownCloud
+  * Improve expiring of old version in case of an full storage
+  * IE8 fixes
+  * Speedup syncing of shared files
+  * Oracle compatibility fixes
+  * Make upgrade routine more robust
+  * Fix gallery for curtain php configurations
+  * Fix pdf viewer close button
+  * user_external fixes
+  * Several smaller fixes
+
+ -- Klaas Freitag <freitag@owncloud.com>  Wed, 15 July 2013 22:44:31 +0200
+
+owncloud-enterprise (5.0.8RC4-0) unstable; urgency=low
+
+  Release  "5.0.8RC4"
+  July 10, 2013
+
+ -- Klaas Freitag <freitag@owncloud.com>  Wed, 10 July 2013 22:44:31 +0200
+
+owncloud-enterprise (5.0.7RC3-0) unstable; urgency=low
+
+  Release  "5.0.7RC3"
+  July 3, 2013
+
+ -- Klaas Freitag <freitag@owncloud.com>  Wed, 03 July 2013 22:44:31 +0200
+
+owncloud-enterprise (5.0.7beta2-0) unstable; urgency=low
+
+  Release  "5.0.7beta2"
+  June 3, 2013
+
+ -- Klaas Freitag <freitag@owncloud.com>  Mon, 03 June 2013 22:44:31 +0200
+
+owncloud-enterprise (5.0.6beta1-0) unstable; urgency=low
+
+  Release  "5.0.6beta1"
+  May 9, 2013 
+
+ -- Klaas Freitag <freitag@owncloud.com>  Sat, 09 May 2013 22:44:31 +0200
+
+

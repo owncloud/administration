@@ -1,0 +1,35 @@
+Source: owncloud-enterprise
+Section: devel
+Priority: optional
+Maintainer: Klaas Freitag <freitag@owncloud.com> 
+Build-Depends: debhelper (>= 4), apache2
+Standards-Version: 3.9.3
+
+Package: owncloud-enterprise
+Architecture: all
+Replaces: owncloud-enterprise-3rdparty (<= 7.0.3)
+Depends: ${misc:Depends}, apache2 | httpd, php5 (>= 5.3.3), php5-mysqlnd | php5-mysql, 
+	php5-sqlite, php5-pgsql, php5-common, php5-gd, php-xml-parser, php5-intl, 
+	php5-mcrypt, php5-curl, php5-json
+Recommends: mysql-server, curl, exim4 | mail-transport-agent, 
+	php5-imagick, php5-apcu|php5-apc, php-soap,
+	php5-ldap, php5-libsmbclient (>= 0.5.0)
+Suggests: clamav | clamav-daemon, 
+	smbclient, libav-tools|ffmpeg, libreoffice-writer 
+Description: ownCloud Enterprise Edition - Server 
+ ownCloud Enterprise Edition provides an Enterprise class file sync and share
+ solution that is controlled and managed by you. Hosted on your servers or
+ private cloud, ownCloud integrates with your existing infrastructure - from
+ authentication and databases, to existing document storage repositories and
+ log management - and is highly extensible via the ownCloud App Architecture.
+ .
+ .
+ At the same time, ownCloud provides employees and end users anywhere,
+ anytime access to the files they need to get the job done - via mobile apps,
+ desktop sync clients, WebDAV clients and the web. With ownCloud, employees
+ can easily view and share documents and information critical to the
+ business, in a secure, flexible and controlled architecture - one that is
+ consistent with IT policies, procedures and regulatory requirements. 
+ .
+ For more information, visit www.owncloud.com
+

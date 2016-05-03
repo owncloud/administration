@@ -3,7 +3,7 @@ Section: devel
 Priority: optional
 Maintainer: Juergen Weigert <jw@owncloud.com> 
 Build-Depends: debhelper (>= 4),
-	owncloud-server,
+	owncloud-server (>= [% VERSION_DEB %]),
 	owncloud-config-apache,
 	curl
 Standards-Version: 3.9.3
