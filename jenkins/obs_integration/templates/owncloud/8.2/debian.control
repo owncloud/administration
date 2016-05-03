@@ -1,0 +1,120 @@
+Source: owncloud
+Section: devel
+Priority: optional
+Maintainer: Jürgen Weigert <jw@owncloud.com>
+Build-Depends: debhelper (>= 4), apache2
+Standards-Version: 3.9.3
+
+Package: owncloud
+Architecture: all
+Depends: ${misc:Depends}, owncloud-server (= ${binary:Version})
+## downgraded owncloud-config-apache from Depends: to Recommends: due to https://github.com/owncloud/core/issues/19050
+Recommends: mysql-server | mariadb-server | postgresql, curl, exim4 | mail-transport-agent, owncloud-config-apache (= ${binary:Version})
+Suggests: clamav | clamav-daemon, smbclient, libreoffice-writer
+Provides: owncloud
+Description: The ownCloud Server - Private file sync and share server
+ ownCloud Server provides you a private file sync and share
+ cloud. Host this server to easily sync business or private documents
+ across all your devices, and share those documents with other users of
+ your ownCloud server on their devices.
+ .
+ ownCloud - Your Cloud, Your Data, Your Way!  www.owncloud.org
+
+Package: owncloud-server
+Architecture: all
+Depends: ${misc:Depends}, php5 (>= 5.4.0), php5-mysqlnd | php5-mysql, php5-sqlite, php5-pgsql, 
+	php5-common, php5-gd, php-xml-parser, php5-intl, php5-mcrypt, php5-curl, php5-json, php5-ldap, php5-cli, php5-cgi
+## Without php5-cgi installed, ubuntu_14.04 installs apache2 as a hard requirement.
+## Merged back all the apps into owncloud-server, due to https://github.com/owncloud/core/issues/18043
+## According to https://www.debian.org/doc/debian-policy/ch-relationships.html replacing is done with three lists: Provides, Conflicts, Replaces.
+Breaks: owncloud (<< 7.9.9)
+Replaces: owncloud (<< 7.9.9), 
+	owncloud-app-updater (<< ${binary:Version}),
+	owncloud-app-files-encryption (<< ${binary:Version}),
+	owncloud-3rdparty              (<< ${binary:Version}),
+	owncloud-app-activity          (<< ${binary:Version}),
+	owncloud-app-files             (<< ${binary:Version}),
+	owncloud-app-files-pdfviewer   (<< ${binary:Version}),
+	owncloud-app-files-trashbin    (<< ${binary:Version}),
+	owncloud-app-files-external    (<< ${binary:Version}),
+	owncloud-app-files-sharing     (<< ${binary:Version}),
+	owncloud-app-files-versions    (<< ${binary:Version}),
+	owncloud-app-files-locking     (<< ${binary:Version}),
+	owncloud-app-files-texteditor  (<< ${binary:Version}),
+	owncloud-app-provisioning-api  (<< ${binary:Version}),
+	owncloud-app-firstrunwizard    (<< ${binary:Version}),
+	owncloud-app-templateeditor    (<< ${binary:Version}),
+	owncloud-app-user-ldap         (<< ${binary:Version}),
+	owncloud-app-external          (<< ${binary:Version}),
+	owncloud-app-files-videoviewer (<< ${binary:Version}),
+	owncloud-app-gallery           (<< ${binary:Version}),
+	owncloud-app-user-webdavauth   (<< ${binary:Version}),
+	owncloud-app-user-external     (<< ${binary:Version}),
+	owncloud-app-encryption	       (<< ${binary:Version})
+Conflicts:   owncloud (<< 7.9.9), 
+	owncloud-app-updater (<< ${binary:Version}),
+	owncloud-app-files-encryption (<< ${binary:Version}),
+	owncloud-3rdparty              (<< ${binary:Version}),
+	owncloud-app-activity          (<< ${binary:Version}),
+	owncloud-app-files             (<< ${binary:Version}),
+	owncloud-app-files-pdfviewer   (<< ${binary:Version}),
+	owncloud-app-files-trashbin    (<< ${binary:Version}),
+	owncloud-app-files-external    (<< ${binary:Version}),
+	owncloud-app-files-sharing     (<< ${binary:Version}),
+	owncloud-app-files-versions    (<< ${binary:Version}),
+	owncloud-app-files-locking     (<< ${binary:Version}),
+	owncloud-app-files-texteditor  (<< ${binary:Version}),
+	owncloud-app-provisioning-api  (<< ${binary:Version}),
+	owncloud-app-firstrunwizard    (<< ${binary:Version}),
+	owncloud-app-templateeditor    (<< ${binary:Version}),
+	owncloud-app-user-ldap         (<< ${binary:Version}),
+	owncloud-app-external          (<< ${binary:Version}),
+	owncloud-app-files-videoviewer (<< ${binary:Version}),
+	owncloud-app-gallery           (<< ${binary:Version}),
+	owncloud-app-user-webdavauth   (<< ${binary:Version}),
+	owncloud-app-user-external     (<< ${binary:Version}),
+	owncloud-app-encryption	       (<< ${binary:Version})
+# According to https://www.debian.org/doc/debian-policy/ch-relationships.html
+# all Provides: must be without version numbers. If we try with, it is ignored:
+# "WARNING W: Ignoring Provides line with DepCompareOp for package owncloud-3rdpart"
+Provides: owncloud-app-updater,
+	owncloud-app-files-encryption,
+	owncloud-3rdparty,
+	owncloud-app-activity,
+	owncloud-app-files,
+	owncloud-app-files-pdfviewer,
+	owncloud-app-files-trashbin,
+	owncloud-app-files-external,
+	owncloud-app-files-sharing,
+	owncloud-app-files-versions,
+	owncloud-app-files-locking,
+	owncloud-app-files-texteditor,
+	owncloud-app-provisioning-api,
+	owncloud-app-firstrunwizard,
+	owncloud-app-templateeditor,
+	owncloud-app-user-ldap,
+	owncloud-app-external,
+	owncloud-app-files-videoviewer,
+	owncloud-app-gallery,
+	owncloud-app-user-webdavauth,
+	owncloud-app-user-external,
+	owncloud-app-encryption
+# Don't recommend php5-apcu for Ubuntu-14.04 https://github.com/owncloud/core/issues/14188
+# Don't use apcu before 4.0.6 https://github.com/owncloud/core/issues/14175
+Suggests: php5-apcu (>= 4.0.6) | php-apc
+Description: The owncloud-server package
+ .
+ Server internals. For a complete system install package owncloud.
+
+Package: owncloud-config-apache
+Architecture: all
+Depends: owncloud-server (= ${binary:Version}), apache2 | httpd
+# According to https://www.debian.org/doc/debian-policy/ch-relationships.html saying
+# Replaces here, should allow us to overwrite a file. It does not work for owncloud.conf
+# which is inherited by owncloud 8.x from owncloud 7.x without apparent reason.
+Replaces: owncloud (<< 7.9.9)
+Breaks: owncloud (<< 7.9.9)
+Description: The ownCloud configuration for the apache web server
+ .
+ This subpackage helps to run ownCloud with an apache web server.
+

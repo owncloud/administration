@@ -1,0 +1,5 @@
+# needed for Debian 8.0 to finsh a build in obs.
+# FIXME: all that should be warnings in obs, as they are in s2 and local builds.
+owncloud source: source-is-missing
+owncloud source: license-problem-json-evil
+owncloud source: version-substvar-for-external-package

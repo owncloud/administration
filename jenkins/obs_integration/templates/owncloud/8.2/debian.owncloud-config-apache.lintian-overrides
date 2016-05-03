@@ -1,0 +1,4 @@
+owncloud-config-apache: dir-or-file-in-var-www
+# Usually, this is because debhelper (dh_installdeb, compat level 3 or higher)
+# will add any files in your package located in /etc automatically 
+owncloud-config-apache: duplicate-conffile
