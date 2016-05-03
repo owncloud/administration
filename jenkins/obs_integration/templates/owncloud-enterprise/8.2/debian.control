@@ -1,0 +1,127 @@
+Source: [% PACKNAME %]
+Section: devel
+Priority: optional
+Maintainer: Juergen Weigert <jw@owncloud.com> 
+Build-Depends: debhelper (>= 4),
+	owncloud-server,
+	owncloud-config-apache,
+	curl
+Standards-Version: 3.9.3
+
+Package: [% PACKNAME %]
+Architecture: all
+Suggests: php5-odbc, php5-xmlrpc, php5-imap
+Depends: ${misc:Depends}, 
+	curl, 
+	owncloud-server           (>= [% VERSION_DEB %]),
+	owncloud                  (>= [% VERSION_DEB %]),
+	owncloud-config-apache    (>= [% VERSION_DEB %]),
+	owncloud-enterprise-theme                     (= ${binary:Version}),
+	owncloud-enterprise-app-admin-audit           (= ${binary:Version}),
+	owncloud-enterprise-app-enterprise-key        (= ${binary:Version}),
+	owncloud-enterprise-app-files-antivirus       (= ${binary:Version}),
+	owncloud-enterprise-app-files-ldap-home       (= ${binary:Version}),
+	owncloud-enterprise-app-files-sharing-log     (= ${binary:Version}),
+	owncloud-enterprise-app-firewall              (= ${binary:Version}),
+	owncloud-enterprise-app-objectstore           (= ${binary:Version}),
+	owncloud-enterprise-app-sharepoint            (= ${binary:Version}),
+	owncloud-enterprise-app-user-shibboleth       (= ${binary:Version}),
+	owncloud-enterprise-app-windows-network-drive (= ${binary:Version}),
+	owncloud-enterprise-app-password-policy	      (= ${binary:Version}),
+	owncloud-enterprise-app-files-drop	      (= ${binary:Version})
+Description: ownCloud Enterprise Edition - Server 
+ ownCloud Enterprise Edition provides an Enterprise class file sync and share
+ solution that is controlled and managed by you. Hosted on your servers or 
+ private cloud, ownCloud integrates with your existing infrastructure - from
+ authentication and databases, to existing document storage repositories and
+ log management - and is highly extensible via the ownCloud App Architecture.
+ .
+ .
+ At the same time, ownCloud provides employees and end users anywhere,
+ anytime access to the files they need to get the job done - via mobile apps,
+ desktop sync clients, WebDAV clients and the web. With ownCloud, employees
+ can easily view and share documents and information critical to the
+ business, in a secure, flexible and controlled architecture - one that is
+ consistent with IT policies, procedures and regulatory requirements. 
+ .
+ For more information, visit www.owncloud.com
+
+
+Package: owncloud-enterprise-theme
+Architecture: all
+Depends: owncloud-enterprise (= ${binary:Version})
+Description: The owncloud-enterprise subpackage owncloud-enterprise-theme
+ .
+
+Package: owncloud-enterprise-app-admin-audit
+Architecture: all
+Depends: owncloud-enterprise (= ${binary:Version})
+Description: The owncloud-enterprise subpackage owncloud-enterprise-app-admin-audit
+ .
+
+Package: owncloud-enterprise-app-enterprise-key
+Architecture: all
+Depends: owncloud-enterprise (= ${binary:Version})
+Description: The owncloud-enterprise subpackage owncloud-enterprise-app-enterprise-key
+ .
+
+Package: owncloud-enterprise-app-files-antivirus
+Architecture: all
+Depends: owncloud-enterprise (= ${binary:Version}), clamav
+Description: The owncloud-enterprise subpackage owncloud-enterprise-app-files-antivirus
+ .
+
+Package: owncloud-enterprise-app-files-ldap-home
+Architecture: all
+Depends: owncloud-enterprise (= ${binary:Version})
+Description: The owncloud-enterprise subpackage owncloud-enterprise-app-files-ldap-home
+ .
+
+Package: owncloud-enterprise-app-files-sharing-log
+Architecture: all
+Depends: owncloud-enterprise (= ${binary:Version})
+Description: The owncloud-enterprise subpackage owncloud-enterprise-app-files-sharing-log
+ .
+
+Package: owncloud-enterprise-app-firewall
+Architecture: all
+Depends: owncloud-enterprise (= ${binary:Version})
+Description: The owncloud-enterprise subpackage owncloud-enterprise-app-firewall
+ .
+
+Package: owncloud-enterprise-app-objectstore
+Architecture: all
+Depends: owncloud-enterprise (= ${binary:Version})
+Description: The owncloud-enterprise subpackage owncloud-enterprise-app-objectstore
+ .
+
+Package: owncloud-enterprise-app-sharepoint
+Architecture: all
+Depends: owncloud-enterprise (= ${binary:Version})
+Suggests: php-soap
+Description: The owncloud-enterprise subpackage owncloud-enterprise-app-sharepoint
+ .
+
+Package: owncloud-enterprise-app-user-shibboleth
+Architecture: all
+Depends: owncloud-enterprise (= ${binary:Version})
+Description: The owncloud-enterprise subpackage owncloud-enterprise-app-user-shibboleth
+ .
+
+Package: owncloud-enterprise-app-windows-network-drive
+Architecture: all
+Depends: owncloud-enterprise (= ${binary:Version}), php5-libsmbclient
+Description: The owncloud-enterprise subpackage owncloud-enterprise-app-windows-network-drive
+ .
+
+Package: owncloud-enterprise-app-files-drop
+Architecture: all
+Depends: owncloud-enterprise (= ${binary:Version})
+Description: The owncloud-enterprise subpackage owncloud-enterprise-app-files-drop
+ .
+
+Package: owncloud-enterprise-app-password-policy
+Architecture: all
+Depends: owncloud-enterprise (= ${binary:Version})
+Description: The owncloud-enterprise subpackage owncloud-enterprise-app-password-policy
+ .

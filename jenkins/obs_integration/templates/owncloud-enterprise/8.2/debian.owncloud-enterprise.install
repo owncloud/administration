@@ -1,0 +1,3 @@
+config/* /var/www/owncloud/config/
+themes/* /var/www/owncloud/themes/
+# but not apps -- they are separate

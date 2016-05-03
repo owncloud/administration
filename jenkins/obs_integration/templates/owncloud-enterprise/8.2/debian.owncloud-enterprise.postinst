@@ -1,0 +1,74 @@
+#!/bin/sh -e
+# postinst script for owncloud enterprise
+#
+# No more mess with apache.
+#######
+#set -e
+#
+#if type a2enconf >/dev/null 2>/dev/null; then
+#  a2enconf owncloud-enterprise || true
+#  service apache2 reload || true
+#fi
+
+export SPEC_apache_serverroot=/var/www
+export oc_dir=$SPEC_apache_serverroot/owncloud
+
+#DEBHELPER#
+
+case "$1" in
+    configure)
+    	echo owncloud-enterprise postinst: configure.
+
+	if [ -f "$SPEC_apache_serverroot/_oc_upgrade_running" -a -d "$oc_dir" -a -d "$oc_dir-enterprise" ]; then
+	  echo You have both $oc_dir and $oc_dir-enterprise
+	  p1=$(readlink -f "$oc_dir/.")
+	  p2=$(readlink -f "$oc_dir-enterprise/.")
+	  if [ "$p1" = "$p2" ]; then
+	    echo Good, they are linked. Please consult $oc_dir/README.symlink later.
+	  else
+	    # when we are in an update case, and the installation in $oc_dir
+	    # is uninitialized, then we have the oc7 -> oc8 migration case.
+	    # The directory is there and populated, because we and all our 
+	    # dependencies just arrived.
+	    #
+	    # Uninitialized is: data folder empty and config.php missing.
+	    if [ ! -f "$oc_dir/config/config.php" -a -z "$(ls $oc_dir/data)" ]; then
+	      echo Good, your $oc_dir installation is uninitialized.
+	      echo "We will link that into $oc_dir-enterprise now." 
+	      echo Please consult $oc_dir/README.symlink later.
+
+	      cp -a $oc_dir/*    $oc_dir-enterprise/
+	      cp -a $oc_dir/.??* $oc_dir-enterprise/
+	      rm -rf $oc_dir
+	      ln -s $oc_dir-enterprise $oc_dir
+
+	      cat $oc_dir/README.symlink || true
+
+	    else
+	      rm -f $oc_dir/README.symlink || true
+	      echo ... looks like you have two independant ownCloud installations.
+	      echo Error: Cannot decide which one to upgrade. 
+	      echo Hint: Please remove one and try again.
+	      exit 1
+	    fi
+	  fi
+	else
+	  rm -f $oc_dir/README.symlink || true
+	fi
+	rm -f "$SPEC_apache_serverroot/_oc_upgrade_running"
+
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+exit 0
+
+
+

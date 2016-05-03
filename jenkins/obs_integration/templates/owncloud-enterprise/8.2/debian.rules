@@ -1,0 +1,35 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+# This file was originally written by Joey Hess and Craig Small.
+# As a special exception, when this file is copied by dh-make into a
+# dh-make output file, you may use that output file without restriction.
+# This special exception was added by Craig Small in version 0.37 of dh-make.
+
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+
+SHELL=/bin/bash
+
+export DROOT=$(CURDIR)/debian/owncloud-enterprise
+export SRCDIR=/usr/src/packages/SOURCES
+export OC_DIR=/var/www/owncloud
+
+
+%:	
+	dh $@
+
+override_dh_install:
+	dh_install -Xdebian
+	mkdir -p                                  $(DROOT)/usr/share/doc/owncloud-enterprise
+	mkdir -p                                  $(DROOT)/$(OC_DIR)/core/skeleton
+	# We must chown all apps folders, in each app, to be independant of installation order.
+	chown    www-data:www-data    		  $(DROOT)*/$(OC_DIR)/apps
+	# https://github.com/owncloud/core/issues/16132
+	chown -R www-data:www-data    		  $(DROOT)*/$(OC_DIR)/themes
+	install -m 644 $(SRCDIR)/README           $(DROOT)/usr/share/doc/owncloud-enterprise/README
+	install -m 644 $(SRCDIR)/README.packaging $(DROOT)/usr/share/doc/owncloud-enterprise/README.packaging
+	install -m 644 $(SRCDIR)/README.symlink   $(DROOT)/$(OC_DIR)/README.symlink
+	sed -i -e"s|@@OC_BASEDIR_8@@|$(OC_DIR)|g" -e"s|@@OC_BASEDIR_7@@|$(OC_DIR)-enterprise|g" $(DROOT)/$(OC_DIR)/README.symlink
+	install -m 644 $(SRCDIR)/*.pdf $(DROOT)/$(OC_DIR)/core/skeleton/
+
