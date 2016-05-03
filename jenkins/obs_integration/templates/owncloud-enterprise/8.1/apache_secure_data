@@ -1,0 +1,5 @@
+Alias /owncloud "@@OC_DIR@@/"
+<Directory "@@OC_DIR@@">
+  AllowOverride All
+</Directory>
+

@@ -1,7 +1,7 @@
 # 
-# spec file for package [% PACKNAME %]
+# spec file for package owncloud-enterprise
 #
-# Copyright (c) 2012-2016 ownCloud, Inc.
+# Copyright (c) 2012-2015 ownCloud, Inc.
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -63,13 +63,13 @@
 %define ochttpd		htppd24-httpd
 %endif
 
-Name:           [% PACKNAME %]
+Name:           owncloud-enterprise
 
 # Downloaded from http://download.owncloud.com/internal/8.0.0RC2/owncloud_enterprise-8.0.0RC2.tar.bz2
 # http://download.owncloud.com/internal/8.0.1/owncloud_enterprise-8.0.1.tar.bz2
 # http://download.owncloud.com/internal/8.0.3RC2/owncloud_enterprise-8.0.3RC2.tar.bz2
 
-## define prerelease % nil, if this is *not* a prerelease.
+## define prerelease %nil, if this is *not* a prerelease.
 %define prerelease [% PRERELEASE %]
 %define base_version [% VERSION %]
 
@@ -93,7 +93,7 @@ Source2:        README
 Source3:        README.SELinux
 Source4:        README.packaging
 Source5:        README.symlink
-Source6:        https://doc.owncloud.org/server/8.2/ownCloud_Server_Administration_Manual.pdf
+Source6:        https://doc.owncloud.org/server/8.1/ownCloud_Server_Administration_Manual.pdf
 Source100:      obs_check_deb_spec.sh
 Url:            http://www.owncloud.org
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -148,7 +148,6 @@ Requires:	%{name}-app-sharepoint		  = %{version}
 Requires:	%{name}-app-user_shibboleth	  = %{version}
 Requires:	%{name}-app-windows_network_drive = %{version}
 Requires:	%{name}-app-files_drop		  = %{version}
-Requires:	%{name}-app-password_policy	  = %{version}
 #################
 # removed between 8.0.0~RC2 and 8.0.1
 # Requires:	%{name}-app-files_drop
@@ -282,7 +281,6 @@ rm -rf "$RPM_BUILD_ROOT"
 %oc_app_package user_shibboleth
 %oc_app_package windows_network_drive	Requires:php5-libsmbclient
 %oc_app_package files_drop
-%oc_app_package password_policy
 
 %pretrans
 if [ -d "%{oc_dir}-enterprise" ]; then

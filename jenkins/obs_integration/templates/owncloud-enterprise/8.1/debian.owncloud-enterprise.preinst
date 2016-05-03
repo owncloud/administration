@@ -1,0 +1,33 @@
+#!/bin/sh -e
+# preinst script for owncloud enterprise
+#
+
+export SPEC_apache_serverroot=/var/www
+export oc_dir=$SPEC_apache_serverroot/owncloud
+
+
+#DEBHELPER#
+
+case "$1" in
+    install)
+    	echo owncloud-enterprise preinst: Initial install.
+    ;;
+
+    upgrade)
+    	echo owncloud-enterprise preinst: upgrade.
+	touch "$SPEC_apache_serverroot/_oc_upgrade_running"
+
+    ;;
+
+    abort-upgrade)
+    ;;
+
+    *)
+        echo "preinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+exit 0
+
+

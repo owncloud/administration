@@ -1,0 +1,41 @@
+= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
+Hello Admin!
+
+Your ownCloud enterprise installation was upgraded from 7 to 8 using 
+Linux packages. Before doing anything below, go to the website and press 
+
+	[Start update]
+
+With ownCloud 8, the enterpise edition uses the same server as the 
+community edition. The installation path changes from 
+@@OC_BASEDIR_7@@ to @@OC_BASEDIR_8@@ for all future installs.
+
+This time, a symbolic link was created to make your existing ownCloud
+installation appear under both installation paths.
+Physically everything still happens in the old path, although when you
+review the installation, your package manager will tell you that 
+the new owncloud-enterprise package went into the new location.
+
+Please take care of migrating the installation to the new place, 
+it is safe to do that later.
+Warning: This may require updating your web server configuration too. 
+
+Example commands to get you started with the migration:
+
+   topdir=$(dirname @@OC_BASEDIR_8@@)
+   cd $topdir
+   ls -la  # shows you a symlink owncloud -> @@OC_BASEDIR_7@@
+   rm owncloud
+   mv @@OC_BASEDIR_7@@ owncloud
+   grep "'datadirectory'" owncloud/config/config.php 
+   # fix references to the old locations in config.php.
+   
+   find /etc/apache2 /etc/httpd -name owncloud.conf 2>/dev/null
+   # should print web server configuration files that need editing.
+   
+The installation of ownCloud 8 updates in near future should work in 
+either case, before or after the migration.  
+
+Please note that @@OC_BASEDIR_7@@ is deprecate in 
+the future.  Its presence may cause installation failure in the long run.
+= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
