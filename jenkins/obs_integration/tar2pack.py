@@ -426,7 +426,9 @@ for file in fileslist:
     f.write(body)
     f.close()
 
-    ## also register known sources in the fileslist, so that we can keep them too.
+## also register known sources in the fileslist, so that we can keep them too.
+for file in fileslist:
+  if fileslist[file] is not None:
     if (re.search('\.spec$', file)):
       for src in known_sources_spec(body):
         if verbose: print(file+": seen source "+src)
