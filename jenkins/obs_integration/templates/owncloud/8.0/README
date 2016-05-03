@@ -1,0 +1,543 @@
+ownCloud Overview and installation instructions
+-----------------------------------------------
+
+Welcome to ownCloud, your self-hosted file sync and share solution.
+
+OwnCloud is open source file sync and share software for everyone from
+individuals operating the free Community Edition, to large enterprises and
+service providers operating ownCloud Enterprise Edition. ownCloud
+provides a safe, secure and compliant file sync and share solution on
+servers you control.
+
+With ownCloud you can share one or more folders on your PC, and sync
+them with your ownCloud server. Place files in your local shared
+directories, and those files are immediately synced to the server, and then
+to other PCs via the desktop client. Not near a desktop client? No
+problem, simply log in with the web client and manage your files there. The
+Android and iOS mobile apps allow you to browse, download and upload photos
+and videos. On Android, you may also create, download, edit and upload any
+other files, with the correct software installed.
+
+Whether using a mobile device, a workstation, or a web client, ownCloud
+provides the ability to put the right files in the right hands at the right
+time on any device in one simple-to-use, secure, private and controlled
+solution. After all, with ownCloud, it's Your Cloud, Your Data, Your
+Way.
+
+
+The Various Elements of ownCloud
+--------------------------------
+ownCloud comes in three different Editions, with desktop clients and mobile
+apps available as add-ons.
+
+The three editions are: 
+- Community Edition: the free, unsupported, open source version of ownCloud.
+  This is the same server software that is included in Business and
+  Enterprise Edition, it is just provided unsupported under AGPL license. It
+  includes the server side application and the built in web client.
+- Business Edition: the certified and supported ownCloud server provided
+  under AGPL license (support provided by ownCloud, Inc.), including the
+  desktop clients and intended as a starter pack for small businesses, or as
+  a PoC for large businesses or service providers.
+- Enterprise Edition: the certified and supported ownCloud server provided 
+  under AGPL or ownCloud license, including desktop clients and mobile apps,
+  available in increments up to an unlimited number of users, and intended
+  as an enterprise or service provider offering.
+
+While there are three different Editions of ownCloud, the ownCloud server is
+open source, and is essentially the same in all three offerings. This
+installation guide is designed for installation of the ownCloud server,
+a part of all three ownCloud Editions.
+
+For more information on ownCloud Editions, please visit ownCloud.com/overview.
+
+
+ownCloud is a Web Application
+-----------------------------
+ownCloud is a web based application that is intended to provide access to
+files. As such, understand that once you take an ownCloud instance live, it
+must be maintained as you would any other website or server. This means
+keeping up with patches to the web server, PHP, your database, as well as
+updates to ownCloud itself. Active monitoring of the application and logs
+are recommended, SSL connections are a good idea for security reasons, and a
+local server soft firewall is just smart - and in most cases part of the
+default server setup. Be thorough with ownCloud and your web server, and you
+will have the secure file, sync and share solution you are looking for for
+many years to come.
+
+
+Prerequisites
+-------------
+ownCloud requires a webserver, PHP5 and a database to operate. We support
+Apache, though it is possible to run ownCloud on Microsoft's IIS on Windows
+7 or Windows Server 2008 R2 via FastCGI. ownCloud recommends Apache and
+PHP5, for performance and overhead reasons. For databases, we support
+SQLite, MySQL, and PostgreSQL. See "Choosing the Database" for more
+information on which database to choose.
+
+
+Installation Scale
+------------------
+ownCloud is simple to install with a little technical know-how, and
+depending on your situation, can be installed in minutes. However, before
+installing ownCloud, it is important to understand what it is. ownCloud is a
+PHP based web application, so you also need to install PHP5 and Apache2. You
+can install ownCloud on Linux, Windows and Mac servers, as well as in
+virtual machine(s), where you install the application is entirely dependent
+on the scale of your operations.
+
+ownCloud is highly flexible software, supporting small to massive
+implementations. For small installations, you can install all of ownCloud on
+an old desktop or workstation, on a single server, or inside a single
+virtual machine. For mid-sized installations, you can separate the app and
+database server to enhance security and improve scalability, and add a
+second app server and MySQL server for redundancy. At the large end of the
+installation spectrum, you may have a load balancer out front of many
+ownCloud application servers, with a database cluster, and network attached
+storage on the back end, enabling massive scalability and performance tuning
+for your instance. 
+
+For the purposes of this document, the assumption is made that a small to
+mid sized installation is the desired outcome, either for personal use, or
+as a demo, proof of concept, or pilot.
+
+
+Choosing the Database
+---------------------
+When you install ownCloud, first take a hard look at the scale of your
+implementation. ownCloud can be installed with MySQL, PostgreSQL or SQLite.
+Which you choose is dependent on your environment, the number of users, and
+the scale of your implementation. SQLite is a lightweight,
+zero-configuration, self contained database engine. The best parts of SQLite
+are the ease with which one can implement and use SQLite, and the speed and
+low overhead required for it to work. However, this is really designed for
+small implementations of ownCloud. In general, it is best to keep the use of
+SQLite to personal installations, or to PoC or pilot installations with no
+more than 50 users. For these sorts of implementations, SQLite works great.
+If you have security concerns, or just don't know which to choose, then we
+recommend stepping up to MySQL, as the tradeoff in server overhead is
+typically worth the added benefits of a heavier database engine.
+
+If you are installing ownCloud Business or Enterprise Edition, the database
+choice is a matter of preference between MySQL and PostgreSQL. While we
+recommend MySQL for the large install base, large ecosystem, and the
+additional features, such as MySQL clusters, you can use either database. On
+first run, ownCloud will configure the instance using your defined database
+instance name, location, user name and password. For this to work, you must
+first install and start a database, and configure a database user for
+ownCloud. For the purposes of this install guide, we will use MySQL.
+
+
+Installation
+------------
+Enough of the background stuff, lets get started installing!
+
+Getting Started
+---------------
+In this section, we will guide you to the links for the software you need to
+install to get ownCloud operating. If you have an alternative or preferred
+approach to finding and installing Apache, PHP and MySQL, you may use it. On
+Linux, though, we highly recommend sticking to the package manager
+installations, which will greatly simplify updates, upgrades and un-installs
+in the future.
+
+To get started with your ownCloud installation, install the latest Apache
+release (as of writing, the latest Apache release is 2.4.1): 
+Linux: through your package manager
+Windows: download from http://httpd.apache.org/download.cgi 
+
+Start the web server, and open a browser to localhost to be sure the web
+server is installed and operating.
+
+When that is installed, download and install the latest version of PHP (as
+of writing, the latest PHP release is 5.4.0): 
+- Linux: through your package manager. The PHP or ownCloud package
+  installation will handle these dependencies at the next step, but it is
+  wise to make sure that these packagesare installed before you load
+  ownCloud for the first time:
+  - mod_php
+  - php-mysql 
+  - php-json
+  - php-gd
+  - php-mb_multibyte
+  - php-ctype
+  - php-zip
+- Windows: download from http://php.net/downloads.php 
+  Note: you will be selecting the FastCGI installation as well, for PHP
+  support.
+
+Note for Fedora 16 users: please check http://blogs.fsfe.org/samtuke/?p=333
+for information on getting php-zip installed!
+
+When that is installed, download and install the latest version of the MySQL
+community server (as of writing, the latest MySQL release is 5.6): 
+- Linux: through your package manager.
+- Windows: download from http://dev.mysql.com/downloads/
+
+Mac Users:
+If you are running a Mac, the easiest installation for this entire stack
+(including the database) is to download the MAMP "one click solution for
+setting up your personal web server". This can be found at
+http://www.mamp.info/en/index.html .
+
+At this point, you have the necessary prerequisites installed. Now it is
+time to configure the database.
+
+
+Setting up the Database
+-----------------------
+As already mentioned, ownCloud will automatically create tables inside a
+database at first run, but it needs to connect to a running instance of the
+database. If you are using SQLite, this is not an issue, as SQLite is
+essentially embedded in ownCloud. But, if you are using MySQL or PostgreSQL,
+you must install and configure the instance, as well as an ownCloud user.
+
+Please refer to the latest documentation for your database. 
+http://dev.mysql.com/doc/#manual (5.6)
+http://www.postgresql.org/docs/manuals/ (9.1)
+
+Ensure that the database is installed, started, and that you have configured
+an ownCloud user with complete rights to create, read, update and delete
+tables and records, as this user will be used to create tables at ownCloud
+first run, and then to manage users, groups, quota and more during ongoing
+operations. For security considerations, we strongly suggest that you do not
+use the database root account to access the database from ownCloud.
+
+You may install the ownCloud database on a separate server from the ownCloud
+installation. In fact, for the largest ownCloud installations, we recommend
+installing a MySQL cluster environment, with multiple load balanced ownCloud
+application servers out front, all accessing the shared cluster. Depending
+on your hardware, security considerations, and expected load, you may want
+to separate the database from the app server. Simply note the username,
+password, and address of the database, and enter this information into the
+form within ownCloud at first run, and ownCloud will create the instance and
+tables.
+
+
+Configuring PHP
+---------------
+There are a few default configuration settings that you will want to change
+to enable ownCloud to operate more effectively as a self hosted file sync
+and share server. When uploading through the web client, ownCloud is
+governed by PHP and Apache. As a default, PHP is configured for only 2 MB
+uploads. This is not entirely useful, so it is important to increase these
+variables to the sizes you want to support on your server.
+
+Point your favorite text editor over to your php.ini file. On different
+server operating systems this is located in different places. On openSUSE
+and Ubuntu, for example, this is located in /etc/php5/apache2/php.ini
+Note: the commend 'find / -name php.ini' can help you locate your php.ini on
+Linux. 
+
+On Windows, you can find this file within C:/Program Files (x86)/PHP/PHP.ini
+
+Edit the php.ini file, looking for:
+- upload_max_filesize = 500 MB
+- post_max_size = 600 MB
+
+The defaults for these values are quite small, so change them to to 500 MB
+and 600MB, or 1G and 1.2G, for example, and you have adjusted the maximum
+file size that can be uploaded at one time.
+
+Make sure you restart your Apache server after these changes, or it will not
+take affect!
+
+Note: You will want these two values to be about the same size, with
+post_max_size slightly larger to account for headers in the uploaded files.
+
+If you find later that files keep timing out on upload, you may want to also
+change these settings in the php.ini file: 
+max_input_time 
+memory_limit 
+max_execution_time 
+post_max_size 
+
+See below for more on php.ini settings from radlinks.com. 
+
+PHP.ini settings
+- upload_max_filesize and post_max_size
+  Files are usually POSTed to the webserver in a format known as
+  'multipart/form-data'. The post_max_size sets the upper limit on the
+  amount of data that a script can accept in this manner. Ideally this value
+  should be larger than the value that you set for upload_max_filesize. 
+
+  It's important to realize that upload_max_filesize is the sum of the sizes
+  of all the files that you are uploading. post_max_size is the
+  upload_max_filesize plus the sum of the lengths of all the other fields in
+  the form plus any mime headers that the encoder might include. Since these
+  fields are typically small you can often approximate the upload max size
+  to the post max size.
+
+  According to the PHP documentation you can set a MAX_UPLOAD_LIMIT in your
+  HTML form to suggest a limit to the browser. Our understanding is that
+  browsers totally ignore this directive and the only solution that can
+  impose such a client side restriction is our own Rad Upload Applet
+
+- memory_limit
+  When the PHP engine is handling an incoming POST it needs to keep some of
+  the incoming data in memory. This directive has any effect only if you
+  have used the --enable-memory-limit option at configuration time. Setting
+  too high a value can be very dangerous because if several uploads are
+  being handled concurrently all available memory will be used up and other
+  unrelated scripts that consume a lot of memory might effect the whole
+  server as well. 
+
+- max_execution_time and max_input_time
+  These settings define the maximum life time of the script and the time
+  that the script should spend in accepting input. If several mega bytes of
+  data are being transfered max_input_time should be reasonably high. You
+  can override the setting in the ini file for max_input_time by calling the
+  set_time_limit() function in your scripts. 
+
+
+Additional IIS Server Upload Step
+---------------------------------
+Now you have to go back to IIS manager and make one last change to enable
+file uploads on the webserver larger than 30MB.
+- Go to the start menu, and type in 'iis manager'
+- Open IIS Manager
+- Select the website you want enable to accept large file uploads
+- In the main window in the middle double click on the icon "Request filtering"
+- Once the window is opened you will see a bunch of tabs across the top
+- On the far right, select "Edit Feature Settings" and modify the 
+  "Maximum allowed content length (bytes)"
+  In here, you can change this to up to 4.1 GB. 
+  Note: this entry is in BYTES, not KB!
+- Click OK and then restart IIS.
+
+
+Installing ownCloud Server
+--------------------------
+For Linux we HIGHLY RECOMMEND using your package manager!
+- Go to http://owncloud.com/download/
+- Select "ownCloud Server", "rpm" and click "Download"
+  You will be taken to the openSUSE Build Service, where you can select the
+  OS for the installation, which will take you to the appropriate
+  repositories for your OS version. When stepping through the installation
+  process, be sure you remain subscribed to these repositories so that you
+  can get the latest updates through the package manager!!!
+
+These steps will download and install two packages and their dependencies on
+your server: 
+- ownCloud
+- ownCloud-3rdparty
+Both are required for ownCloud to function, but for licensing reasons, they
+must be packaged separately.
+
+You may also download ownCloud-unsupported packages from the same
+repository, following the instructions above, if you would like the
+unsupported packages installed as well. These are the packages that are
+provided by the community, but for which ownCloud, Inc. does not provide
+support. They are not required for ownCloud to function.
+
+
+Install from source tarball:
+Through a manual process of download and extracting the files. There are a
+few Linux distributions, as well as Mac and Windows that have no alternative
+and will need to use this method. If you are running Linux and can use the
+package manager, we recommend you do so because using a Tarball, all updates
+and maintenance will have to be handled manually.
+- Go to http://downcloud.com/download/
+- Select "ownCloud Server", ".tar.bz2" and click "Download"
+  Once downloaded, extract the archive to a folder of your choice Copy the
+  archive contents into the root of your web server 
+  - Linux: varies, but examples are /srv/www/htdocs/ or /var/www/html
+  - Windows: c:/inetpub/wwwroot/
+
+You have just installed the ownCloud application on your server!
+
+Note: there are Linux specific download and installation instructions
+available for the Community Edition at
+http://owncloud.org/support/setup-and-installation/linux-server/ if you need
+additional details on how to install ownCloud. If you follow those
+instructions, just be sure you download the ownCloud application from
+http://owncloud.com/download, as the latest stable and supported version of
+ownCloud will always be available at this URL.
+
+
+Configuration
+-------------
+After successfully installing ownCloud, you will find a folder in your web
+server root called /owncloud. The entire ownCloud application is installed
+in that directory.
+
+
+- Changing Permissions
+  Once ownCloud is installed, you need to change permissions so that the web
+  server user can access and update the ownCloud application and
+  configuration files. 
+
+  To do this, go to your root web server directory and change the owner of
+  the files to the web server. 
+  openSUSE / SLES
+  - Go to /srv/www/htdocs/
+  - type: chown -R wwwrun:www owncloud
+  Fedora / RHEL
+  - Go to /var/www/html/
+  - type: chown -R apache:apache owncloud
+  - If you are running SELinux, please read
+    /usr/share/doc/ownCloud/README.SELinux
+  Ubuntu
+  - Go to /var/www
+  - type: chown -R www-data:www-data owncloud
+  Windows
+  - Navigate your windows explorer over to C:/inetpub/wwwroot/owncloud (or
+    your installation directory if you selected something different).
+  - Right click and select properties.
+  - Click on the security tab, and click the button "to change permissions,
+    click edit".
+  - Select the "users" user from the list, and check the box "write". 
+  - Apply these settings and close
+
+
+Performing First Run
+--------------------
+Once all of this is completed, it is time to run the "first run" wizard.
+Point your browser over to the instance of ownCloud you are setting up, e.g.
+http://localhost/owncloud
+
+This will open the ownCloud "first run" wizard. On this page, you enter your
+desired ownCloud username and password for the administrator, and expand the
+little arrow. 
+
+You can select the appropriate database here, and enter the database user
+name and password, instance name and address. We recommend MySQL as the
+database, on this page enter the user name and password you setup for MySQL
+earlier, and pick any name for the database instance. We use something
+meaningful like ownCloud_2012, you can use anything.
+
+Note: the owncloud admin password and the MySQL password CANNOT be the same
+in any way!
+
+Click next, and the ownCloud server will write to the /owncloud/config
+folder the config.php file, connect to the database and create the tables
+ownCloud needs, and then ownCloud should have you logged in as the admin
+user in the ownCloud interface. Now you an get started exploring ownCloud,
+creating other users and more from the web interface.
+
+
+Configuring SSL
+---------------
+Configuring SSL within ownCloud is not difficult, as ownCloud is a web based
+application. Simply get a certificate and follow your procedures for
+enabling SSL on your web server. If you have are looking for procedures to
+follow, you may follow a number of standard online tutorials at Apache.org
+or a variety of other sites. They will demonstarte how to create a self
+signed certificate, or how to generate a certificate request and get a
+certificate authority signed certificate, where to place the certificate on
+the server, and how to enable SSL in the Apache configuration files. As
+ownCloud is a web application, following these procedures will enable you to
+effectively use SSL, and if you choose, leverage SSL on all of your client,
+mobile app and web based access to the server. Just remember to close HTTP
+and open HTTPS on your server firewall if you would like to force all
+clients to use HTTPS. 
+
+
+Desktop Clients
+---------------
+While all OwnCloud Editions can be accessed by our desktop clients,
+only the Business and Enterprise Editions come with support subscriptions
+for the client. You can gain access to any of the clients on the
+http://downcloud.com/download website.
+
+
+Windows Client Installation 
+---------------------------
+- Go to http://owncloud.com/download 
+- Find the ownCloud Windows Client and click Download 
+- Once downloaded, run the installation wizard
+
+Note: On some Norton Antivirus systems, Norton raises a flag on this client
+software. It doesn't say the software is a virus, just that it is unknown to
+Norton. Essentially, this is new software from ownCloud, and Norton doesn't
+have a record in their database for the file, so it quarantines it. It is a
+simple matter to remove it from the quarantine and install the client.
+
+- Once the client is installed, find the application in your Start menu, and
+  open it. You will be notified that "There is no ownCloud connection
+  available. Please configure one by clicking on the tray icon." In your
+  system tray, right click on the ownCloud icon and click configure. This
+  will take you to the "Create an ownCloud Connection" wizard. 
+
+- Here you enter your ownCloud instance address and click next, and then
+  enter your user name and password and click next.
+
+- The desktop client will attempt to conenct to your server, and if
+  successful, will try to create the c:/users/'your user name'/ownCloud
+  directory, and will link this directory to a new folder on the server in
+  your account it will create called "syncclient". This is the automated
+  setup wizard. Note: if either of these folders exist already, it will not
+  link them for security reasons.
+
+- If you want to add folders to Sync on the server, simply right click and
+  select "Add Folder". This will take you to the "Express Upload Source"
+  directory, where you can select other folders to sync on your PC, and
+  connect them to other folders you create on your server.
+
+Note: you cannot sync a parent directory, and then sync a child directory,
+as you would be syncing two directories that are essentially the same, which
+the server does not allow.
+
+From here, any files or folders put into any synced directory will be
+automatically uploaded the server, and server files will automatically be
+downloaded to the client. If a conflict is detected, the sync client will
+create a file with "conflict" in the name, and you can view and
+determine which file to keep and which to delete.
+
+Also note, if you wish to share files, all sharing is enables through the
+web client. Log in to an account through a web browser, and select the files
+and folders to share, and they will be shared automatically with other users
+of ownCloud, or publicly with a read only, shared public link.
+
+
+Linux Client Installation 
+-------------------------
+- Go to http://owncloud.com/download 
+- Find the ownCloud Linux Clients and click Download 
+- Select the operating system you are working with, the version, and click
+  the button 
+- Your package manager will automatically download the client and any
+  dependencies not already installed. Remember to select to stay subscribed
+  to the repository so that updates can be easily installed on the Linux
+  client!!!
+
+- Once the client is installed, find the application in your Start menu, and
+  open it. You will be notified that "There is no ownCloud connection
+  available. Please configure one by clicking on the tray icon." In your
+  system tray, right click on the ownCloud icon and click configure. This
+  will take you to the "Create an ownCloud Connection" wizard. 
+
+- Here you enter your ownCloud instance address and click next, and then
+  enter your user name and password and click next.
+
+- The desktop client will attempt to connect to your server, and if
+  successful, will try to create the /home/'your user name'/ownCloud
+  directory, and will link this directory to a new folder on the server in
+  your account it will create called "syncclient". This is the
+  automated setup wizard. Note: if either of these folders exist already, it
+  will not link them for security reasons.
+
+- If you want to remove an existing folder, or add folders to Sync to the
+  server, simply right click on the ownCloud system try icon and select
+  "Add Folder". This will take you to the "Express Upload Source"
+  directory, where you can select other folders to sync on your
+  PC, and connect them to other folders you create on your server.
+
+Note: you cannot sync a parent directory, and then sync a child directory,
+as you would be syncing two directories with the same content, which the
+server does not allow.
+
+From here, any files or folders put into any synced directory will be
+automatically uploaded the server, and server files will automatically be
+downloaded to the client. If a conflict is detected, the sync client will
+create a file with "conflict" in the name, and you can view and
+determine which file to keep and which to delete.
+
+If you wish to share files, all sharing is enables through the web client.
+Log in to an account through a web browser, and select the files and folders
+to share, and they will be shared automatically with other users of
+ownCloud, or publicly with a read only, shared public link.
+
+
+Enjoy your own Cloud!
+

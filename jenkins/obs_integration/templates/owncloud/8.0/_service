@@ -1,0 +1,5 @@
+<services>
+  <service name="source_validator" mode="trylocal"/>
+  <!-- https://build.opensuse.org/package/show/isv:ownCloud:devel/obs-service-increment_buildrelease -->
+</services>
+

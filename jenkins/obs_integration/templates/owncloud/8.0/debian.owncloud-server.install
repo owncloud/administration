@@ -1,0 +1,23 @@
+AUTHORS		/var/www/owncloud/
+config		/var/www/owncloud/
+console.php	/var/www/owncloud/
+COPYING-AGPL	/var/www/owncloud/
+core		/var/www/owncloud/
+cron.php	/var/www/owncloud/
+db_structure.xml /var/www/owncloud/
+index.html	/var/www/owncloud/
+index.php	/var/www/owncloud/
+indie.json	/var/www/owncloud/
+l10n		/var/www/owncloud/
+lib		/var/www/owncloud/
+occ		/var/www/owncloud/
+ocs		/var/www/owncloud/
+public.php	/var/www/owncloud/
+remote.php	/var/www/owncloud/
+robots.txt	/var/www/owncloud/
+settings	/var/www/owncloud/
+status.php	/var/www/owncloud/
+themes		/var/www/owncloud/
+version.php	/var/www/owncloud/
+.htaccess 	/var/www/owncloud/
+

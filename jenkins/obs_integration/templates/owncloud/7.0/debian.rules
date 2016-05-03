@@ -1,0 +1,51 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+# This file was originally written by Joey Hess and Craig Small.
+# As a special exception, when this file is copied by dh-make into a
+# dh-make output file, you may use that output file without restriction.
+# This special exception was added by Craig Small in version 0.37 of dh-make.
+
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+
+SHELL=/bin/bash
+
+%:	
+	dh $@
+
+override_dh_install:
+	dh_install -Xdebian
+	mkdir -p $(CURDIR)/debian/owncloud/var/www/owncloud/data
+	chmod 770 $(CURDIR)/debian/owncloud/var/www/owncloud/data
+	mkdir -p $(CURDIR)/debian/owncloud/etc/apache2/conf.d
+	echo 'Alias /owncloud /var/www/owncloud' > $(CURDIR)/debian/owncloud/etc/apache2/conf.d/owncloud.conf
+	echo '<Directory /var/www/owncloud/>'   >> $(CURDIR)/debian/owncloud/etc/apache2/conf.d/owncloud.conf
+	echo '  AllowOverride All'              >> $(CURDIR)/debian/owncloud/etc/apache2/conf.d/owncloud.conf
+	echo '</Directory>'                     >> $(CURDIR)/debian/owncloud/etc/apache2/conf.d/owncloud.conf
+	mkdir -p $(CURDIR)/debian/owncloud/etc/apache2/conf-available
+	echo 'Alias /owncloud /var/www/owncloud' > $(CURDIR)/debian/owncloud/etc/apache2/conf-available/owncloud.conf
+	echo '<Directory /var/www/owncloud/>'   >> $(CURDIR)/debian/owncloud/etc/apache2/conf-available/owncloud.conf
+	echo '  AllowOverride All'              >> $(CURDIR)/debian/owncloud/etc/apache2/conf-available/owncloud.conf
+	echo '</Directory>'                     >> $(CURDIR)/debian/owncloud/etc/apache2/conf-available/owncloud.conf
+	mkdir -p $(CURDIR)/debian/owncloud/usr/share/doc/owncloud
+	#install -m 644 $(CURDIR)/debian/extrafiles/README $(CURDIR)/debian/owncloud/usr/share/doc/owncloud/README
+	#install -m 644 $(CURDIR)/debian/extrafiles/README.SELinux $(CURDIR)/debian/owncloud/usr/share/doc/owncloud/README.SELinux
+	#install -m 644 $(CURDIR)/debian/extrafiles/README.fedora16 $(CURDIR)/debian/owncloud/usr/share/doc/owncloud/README.fedora16
+	install -m 644 $(CURDIR)/AUTHORS $(CURDIR)/debian/owncloud/usr/share/doc/owncloud/AUTHORS
+	install -m 644 $(CURDIR)/COPYING-AGPL $(CURDIR)/debian/owncloud/usr/share/doc/owncloud/COPYING-AGPL
+	install -m 644 $(CURDIR)/.htaccess $(CURDIR)/debian/owncloud/var/www/owncloud/ 
+	install -m 644 /usr/src/packages/SOURCES/robots.txt   $(CURDIR)/debian/owncloud/var/www/owncloud/ 
+	# clean-up doc files in webspace
+	rm -f $(CURDIR)/debian/owncloud/var/www/owncloud/AUTHORS
+	rm -f $(CURDIR)/debian/owncloud/var/www/owncloud/COPYING-AGPL
+	rm -f $(CURDIR)/debian/owncloud/var/www/owncloud/COPYING-README
+	rm -f $(CURDIR)/debian/owncloud/var/www/owncloud/README
+
+override_dh_fixperms:
+	dh_fixperms -X var/www/owncloud/data -X var/www/owncloud/config
+	# chown at the end to ensure everything is chown'ed
+	chown www-data:www-data $(CURDIR)/debian/owncloud/var/www/owncloud/apps
+	chown -R www-data:www-data $(CURDIR)/debian/owncloud/var/www/owncloud/config
+	chown -R www-data:www-data $(CURDIR)/debian/owncloud/var/www/owncloud/data
+

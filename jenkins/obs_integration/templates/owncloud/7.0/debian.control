@@ -1,0 +1,20 @@
+Source: owncloud
+Section: devel
+Priority: optional
+Maintainer: Jürgen Weigert <jw@owncloud.com>
+Build-Depends: debhelper (>= 4), apache2
+Standards-Version: 3.9.3
+
+Package: owncloud
+Architecture: all
+Depends: ${misc:Depends}, apache2 | httpd, php5 (>= 5.3.3), php5-mysqlnd | php5-mysql, php5-sqlite, php5-pgsql, php5-common, php5-gd, php-xml-parser, php5-intl, php5-mcrypt, php5-curl, php5-json
+Recommends: mysql-server, curl, exim4 | mail-transport-agent, php5-imagick, php5-apcu|php5-apc
+Suggests: clamav | clamav-daemon, smbclient, libav-tools|ffmpeg, libreoffice-writer
+Description: ownCloud Server - Private file sync and share server
+ ownCloud Server provides you a private file sync and share
+ cloud. Host this server to easily sync business or private documents
+ across all your devices, and share those documents with other users of
+ your ownCloud server on their devices.
+ .
+ ownCloud - Your Cloud, Your Data, Your Way!  www.owncloud.org
+

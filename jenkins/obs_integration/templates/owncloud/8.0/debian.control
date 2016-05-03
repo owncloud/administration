@@ -1,0 +1,244 @@
+Source: owncloud
+Section: devel
+Priority: optional
+Maintainer: Jürgen Weigert <jw@owncloud.com>
+Build-Depends: debhelper (>= 4), apache2
+Standards-Version: 3.9.3
+
+Package: owncloud
+Architecture: all
+Depends: ${misc:Depends}, owncloud-server (= ${binary:Version}), owncloud-config-apache (= ${binary:Version})
+Recommends: mysql-server, curl, exim4 | mail-transport-agent
+Suggests: clamav | clamav-daemon, smbclient, libreoffice-writer
+Conflicts: owncloud-fhs
+Provides: owncloud
+Description: ownCloud Server - Private file sync and share server
+ ownCloud Server provides you a private file sync and share
+ cloud. Host this server to easily sync business or private documents
+ across all your devices, and share those documents with other users of
+ your ownCloud server on their devices.
+ .
+ ownCloud - Your Cloud, Your Data, Your Way!  www.owncloud.org
+
+Package: owncloud-server
+Architecture: all
+Depends: ${misc:Depends}, php5 (>= 5.4.0), php5-mysqlnd | php5-mysql, php5-sqlite, php5-pgsql, 
+	php5-common, php5-gd, php-xml-parser, php5-intl, php5-mcrypt, php5-curl, php5-json, php5-cli,
+	owncloud-3rdparty              (= ${binary:Version}),
+	owncloud-app-activity          (= ${binary:Version}),
+	owncloud-app-files             (= ${binary:Version}),
+	owncloud-app-files-encryption  (= ${binary:Version}),
+	owncloud-app-files-pdfviewer   (= ${binary:Version}),
+	owncloud-app-files-trashbin    (= ${binary:Version}),
+	owncloud-app-files-external    (= ${binary:Version}),
+	owncloud-app-files-sharing     (= ${binary:Version}),
+	owncloud-app-files-versions    (= ${binary:Version}),
+	owncloud-app-files-locking     (= ${binary:Version}),
+	owncloud-app-files-texteditor  (= ${binary:Version}),
+	owncloud-app-provisioning-api  (= ${binary:Version}),
+	owncloud-app-firstrunwizard    (= ${binary:Version}),
+	owncloud-app-templateeditor    (= ${binary:Version}),
+	owncloud-app-user-ldap         (= ${binary:Version}),
+	owncloud-app-external          (= ${binary:Version}),
+	owncloud-app-files-videoviewer (= ${binary:Version}),
+	owncloud-app-gallery           (= ${binary:Version}),
+	owncloud-app-user-webdavauth   (= ${binary:Version}),
+	owncloud-app-user-external     (= ${binary:Version})
+## Do not do Depends: owncloud-app-updater
+# moving .htaccess from owncloud-config-apache (8.0.2) to owncloud-server (8.0.3)
+Replaces: owncloud (<< 7.9.9), 
+	owncloud-config-apache (<< 8.0.3)
+Breaks: owncloud (<< 7.9.9), 
+	owncloud-config-apache (<< 8.0.3)
+# Caution: Provides: cannot satisfy versioned Depends, according to https://www.debian.org/doc/debian-policy/ch-relationships.html
+Provides: owncloud-server-core
+# Don't recommend php5-apcu for Ubuntu-14.04 https://github.com/owncloud/core/issues/14188
+# Don't use apcu before 4.0.6 https://github.com/owncloud/core/issues/14175
+Suggests: php5-apcu (>= 4.0.6) | php-apc
+Description: The owncloud-server package
+ .
+
+Package: owncloud-config-apache
+Architecture: all
+# Depends: owncloud-server-core fails with debian6 and ubuntu14.04
+Depends: owncloud-server (= ${binary:Version}), apache2 | httpd
+# According to https://www.debian.org/doc/debian-policy/ch-relationships.html saying
+# Replaces here, should allow us to overwrite a file. It does not work for owncloud.conf
+# which is inherited by owncloud 8.x from owncloud 7.x without apparent reason.
+Replaces: owncloud (<< 7.9.9)
+Breaks: owncloud (<< 7.9.9)
+Description: The ownCloud configuration for the apache web server
+ .
+
+Package: owncloud-3rdparty
+Architecture: all
+Depends: owncloud-server (= ${binary:Version})
+Replaces: owncloud (<< 7.9.9)
+Breaks: owncloud (<< 7.9.9)
+Description: The ownCloud app owncloud-3rdparty
+ .
+
+Package: owncloud-app-activity
+Architecture: all
+Depends: owncloud-server (= ${binary:Version})
+Replaces: owncloud (<< 7.9.9)
+Breaks: owncloud (<< 7.9.9)
+Description: The ownCloud app owncloud-app-activity
+ .
+
+Package: owncloud-app-files-encryption
+Architecture: all
+Depends: owncloud-server (= ${binary:Version})
+Replaces: owncloud (<< 7.9.9)
+Breaks: owncloud (<< 7.9.9)
+### Builtin:
+# Suggests: php-openssl
+Description: The ownCloud app owncloud-app-files-encryption
+ .
+
+Package: owncloud-app-files-pdfviewer
+Architecture: all
+Depends: owncloud-server (= ${binary:Version})
+Replaces: owncloud (<< 7.9.9)
+Breaks: owncloud (<< 7.9.9)
+Description: The ownCloud app owncloud-app-files-pdfviewer
+ .
+
+Package: owncloud-app-files-trashbin
+Architecture: all
+Depends: owncloud-server (= ${binary:Version})
+Replaces: owncloud (<< 7.9.9)
+Breaks: owncloud (<< 7.9.9)
+Description: The ownCloud app owncloud-app-files-trashbin
+ .
+
+Package: owncloud-app-firstrunwizard
+Architecture: all
+Depends: owncloud-server (= ${binary:Version})
+Replaces: owncloud (<< 7.9.9)
+Breaks: owncloud (<< 7.9.9)
+Description: The ownCloud app owncloud-app-firstrunwizard
+ .
+
+Package: owncloud-app-templateeditor
+Architecture: all
+Depends: owncloud-server (= ${binary:Version})
+Replaces: owncloud (<< 7.9.9)
+Breaks: owncloud (<< 7.9.9)
+Description: The ownCloud app owncloud-app-templateeditor
+ .
+
+Package: owncloud-app-user-ldap
+Architecture: all
+Depends: owncloud-server (= ${binary:Version})
+Replaces: owncloud (<< 7.9.9)
+Breaks: owncloud (<< 7.9.9)
+Suggests: php5-ldap
+Description: The ownCloud app owncloud-app-user-ldap
+ .
+
+Package: owncloud-app-external
+Architecture: all
+Depends: owncloud-server (= ${binary:Version})
+Replaces: owncloud (<< 7.9.9)
+Breaks: owncloud (<< 7.9.9)
+Description: The ownCloud app owncloud-app-external
+ .
+
+Package: owncloud-app-files-external
+Architecture: all
+Depends: owncloud-server (= ${binary:Version})
+Replaces: owncloud (<< 7.9.9)
+Breaks: owncloud (<< 7.9.9)
+Description: The ownCloud app owncloud-app-files-external
+ .
+
+Package: owncloud-app-files-sharing
+Architecture: all
+Depends: owncloud-server (= ${binary:Version})
+Replaces: owncloud (<< 7.9.9)
+Breaks: owncloud (<< 7.9.9)
+Description: The ownCloud app owncloud-app-files-sharing
+ .
+
+Package: owncloud-app-files-versions
+Architecture: all
+Depends: owncloud-server (= ${binary:Version})
+Replaces: owncloud (<< 7.9.9)
+Breaks: owncloud (<< 7.9.9)
+Suggests: php5-imagick
+Description: The ownCloud app owncloud-app-files-versions
+ .
+
+Package: owncloud-app-gallery
+Architecture: all
+Depends: owncloud-server (= ${binary:Version})
+Replaces: owncloud (<< 7.9.9)
+Breaks: owncloud (<< 7.9.9)
+Description: The ownCloud app owncloud-app-gallery
+ .
+
+Package: owncloud-app-updater
+Architecture: all
+Depends: owncloud-server (= ${binary:Version})
+Replaces: owncloud (<< 7.9.9)
+Breaks: owncloud (<< 7.9.9)
+Description: The ownCloud app owncloud-app-updater
+ .
+
+Package: owncloud-app-user-webdavauth
+Architecture: all
+Depends: owncloud-server (= ${binary:Version})
+Replaces: owncloud (<< 7.9.9)
+Breaks: owncloud (<< 7.9.9)
+Description: The ownCloud app owncloud-app-user-webdavauth
+ .
+
+Package: owncloud-app-files-locking
+Architecture: all
+Depends: owncloud-server (= ${binary:Version})
+Replaces: owncloud (<< 7.9.9)
+Breaks: owncloud (<< 7.9.9)
+Description: The ownCloud app owncloud-app-files-locking
+ .
+
+Package: owncloud-app-files-texteditor
+Architecture: all
+Depends: owncloud-server (= ${binary:Version})
+Replaces: owncloud (<< 7.9.9)
+Breaks: owncloud (<< 7.9.9)
+Description: The ownCloud app owncloud-app-files-texteditor
+ .
+
+Package: owncloud-app-files-videoviewer
+Architecture: all
+Depends: owncloud-server (= ${binary:Version})
+Replaces: owncloud (<< 7.9.9)
+Breaks: owncloud (<< 7.9.9)
+Suggests: libav-tools|ffmpeg
+Description: The ownCloud app owncloud-app-files-videoviewer
+ .
+
+Package: owncloud-app-files
+Architecture: all
+Depends: owncloud-server (= ${binary:Version})
+Replaces: owncloud (<< 7.9.9)
+Breaks: owncloud (<< 7.9.9)
+Description: The ownCloud app owncloud-app-files
+ .
+
+Package: owncloud-app-provisioning-api
+Architecture: all
+Depends: owncloud-server (= ${binary:Version})
+Replaces: owncloud (<< 7.9.9)
+Breaks: owncloud (<< 7.9.9)
+Description: The ownCloud app owncloud-app-provisioning-api
+ .
+
+Package: owncloud-app-user-external
+Architecture: all
+Depends: owncloud-server (= ${binary:Version})
+Replaces: owncloud (<< 7.9.9)
+Breaks: owncloud (<< 7.9.9)
+Description: The ownCloud app owncloud-app-user-external
+ .

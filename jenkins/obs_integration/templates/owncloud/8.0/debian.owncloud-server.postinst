@@ -1,0 +1,51 @@
+#!/bin/sh -e
+# postinst script for owncloud-server
+
+# FROM http://anonscm.debian.org/cgit/pkg-owncloud/owncloud.git/plain/debian/postinst
+# https://github.com/owncloud/core/issues/12037
+# https://github.com/owncloud/core/issues/12125
+
+## CAUTION: keep in sync with debian.rules
+export SPEC_owncloud=owncloud
+export SPEC_apache_serverroot=/var/www
+export SPEC_apache_confdir=/etc/apache2/conf.d
+export SPEC_apache_confdir_a=/etc/apache2/conf-available
+
+export SPEC_oc_apache_web_dir=$SPEC_apache_serverroot/$SPEC_owncloud
+
+export SPEC_oc_user=www-data
+export SPEC_oc_group=www-data
+export SPEC_oc_dir=$SPEC_oc_apache_web_dir
+export SPEC_oc_doc_dir=/usr/share/doc/$SPEC_owncloud
+export SPEC_oc_config_dir=$SPEC_oc_apache_web_dir/config
+export SPEC_oc_data_dir=$SPEC_oc_apache_web_dir/data
+export SPEC_oc_data_pdir=$SPEC_oc_apache_web_dir
+
+set -e
+
+#DEBHELPER#
+
+case "$1" in
+    configure)
+	# Update the database on upgrade
+	# Don’t let it fail, since it exits with 3 if no upgrade is necessary
+	if [ -e $SPEC_oc_config_dir/config.php ] ; then
+            # https://github.com/owncloud/core/pull/19661
+            echo  "Leaving server in maintenance mode. Please run occ upgrade manually."
+            echo  ""
+            echo  "See https://doc.owncloud.org/server/8.0/admin_manual/maintenance/upgrade.html"
+            echo  ""
+	fi
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+exit 0
+

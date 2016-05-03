@@ -1,0 +1,7 @@
+# needed for Debian 8.0 to finsh a build in obs.
+# FIXME: all that should be warnings in obs, as they are in s2 and local builds.
+#
+# https://lintian.debian.org/tags/dir-or-file-in-var-www.html
+# Debian packages should not install files under /var/www. We have to.
+# do we really need to enumerate all here?
+owncloud-server: dir-or-file-in-var-www

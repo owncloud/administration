@@ -1,0 +1,4 @@
+<Directory DATAPATH>
+  AllowOverride All
+</Directory>
+
