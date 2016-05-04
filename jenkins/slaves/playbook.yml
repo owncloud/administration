@@ -1,80 +1,21 @@
 ---
+- hosts: all
+  remote_user: root
+  roles:
+    - swarm
+  vars_prompt:
+
+    - name: "jenkins_username"
+      prompt: "Enter Jenkins username"
+      private: no
+
+    - name: "jenkins_password"
+      prompt: "Enter Jenkins password"
+      private: yes
+
 - hosts: slave
   remote_user: root
+  roles:
+    - jsunit
+    - php
 
-  tasks:
-  - name: update packages cache
-    apt: update_cache=yes cache_valid_time=3600
-
-  - name: install packages
-    apt: name={{ item }}
-    with_items:
-      - git
-      - default-jre-headless
-      - ant
-      - curl
-      - docker.io
-      - wget
-      - mysql-server
-      - postgresql
-      - php5
-      - php5-curl
-      - php5-gd
-      - php5-intl
-      - php5-json
-      - php5-mcrypt
-      - php5-sqlite
-      - php5-mysqlnd
-      - php5-pgsql
-      - php5-ldap
-      - php5-dev
-      - smbclient
-      - nodejs
-      - npm
-
-  - name: install packages for phpenv
-    apt: name={{ item }}
-    with_items:
-       - libxml2-dev
-       - re2c
-       - libmcrypt-dev
-       - libcurl3-openssl-dev
-       - bison
-       - flex
-       - libjpeg-dev
-       - libpng-dev
-       - libtidy-dev
-       - libxslt-dev
-       - libreadline-dev
-       - libldap2-dev
-       - libpq-dev
-       - libbz2-dev
-       - libicu-dev
-       - libircclient-dev
-       - libmysqlclient-dev
-
-  - name: install phunit
-    get_url: url=https://phar.phpunit.de/phpunit.phar dest=/usr/local/bin/phpunit mode=555
-
-  - name: install composer
-    get_url: url=https://getcomposer.org/download/1.1.0-RC/composer.phar  dest=/usr/local/bin checksum=sha256:31e771ed24f3db45019a073fe9e43a6a8e75249962012955cd105ebec0a08100
-
-  - name: create jenkins user
-    user: name=jenkins
-
-  - name: add ssh access to that user
-    authorized_key: user=jenkins key=https://github.com/{{ item.name }}.keys
-    with_items:
-      - { name: 'DeepDiver1975' }
-
-  - name: create jenkins working dir
-    file: path=/var/jenkins state=directory owner=jenkins mode=0775
-
-  - name: get slave.jar
-    get_url: url=https://ci.owncloud.org/jnlpJars/slave.jar dest=/var/jenkins owner=jenkins
-
-  - name: Install client script
-    template: src=templates/jenkins-client.tmpl dest=/etc/init.d/jenkins-slave mode=0700
-
-  - name: start jenkins client
-    action: service name=jenkins-slave state=started enabled=yes

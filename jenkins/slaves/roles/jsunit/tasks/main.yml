@@ -1,0 +1,7 @@
+---
+- name: install packages
+  apt: name={{ item }}
+  with_items:
+    - nodejs
+    - nodejs-legacy
+    - npm
