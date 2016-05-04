@@ -1,0 +1,10 @@
+[mysqld]
+key_buffer		= 512M
+
+general_log = OFF
+slow_query_log = OFF
+
+innodb_buffer_pool_size = 512M
+#innodb_log_file_size = 256M
+innodb_flush_log_at_trx_commit = 2
+

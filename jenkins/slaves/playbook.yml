@@ -1,21 +1,22 @@
 ---
-- hosts: all
-  remote_user: root
-  roles:
-    - swarm
-  vars_prompt:
-
-    - name: "jenkins_username"
-      prompt: "Enter Jenkins username"
-      private: no
-
-    - name: "jenkins_password"
-      prompt: "Enter Jenkins password"
-      private: yes
+#- hosts: all
+#  remote_user: root
+#  roles:
+#    - swarm
+#  vars_prompt:
+#
+#    - name: "jenkins_username"
+#      prompt: "Enter Jenkins username"
+#      private: no
+#
+#    - name: "jenkins_password"
+#      prompt: "Enter Jenkins password"
+#      private: yes
 
 - hosts: slave
   remote_user: root
   roles:
     - jsunit
+    - php-build
     - php
 

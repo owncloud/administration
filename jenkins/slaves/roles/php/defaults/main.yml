@@ -1,0 +1,30 @@
+database_names:
+  - oc_autotest0
+  - oc_autotest1
+  - oc_autotest2
+  - oc_autotest3
+  - oc_autotest4
+  - oc_autotest5
+  - oc_autotest6
+  - oc_autotest7
+  - oc_autotest8
+  - oc_autotest9
+  - oc_autotest10
+
+php_releases:
+  - {
+    version: "5.4.45",
+    minor: "5.4"
+  }
+  - {
+    version: "5.5.35",
+    minor: "5.5"
+  }
+  - {
+    version: "5.6.21",
+    minor: "5.6"
+  }
+  - {
+    version: "7.0.6",
+    minor: "7.0"
+  }

@@ -1,0 +1,21 @@
+---
+
+# The php-build and phpenv project repositories.
+phpbuild_repositories:
+  - {
+    repository: "git://github.com/CHH/php-build.git",
+    path: "/tmp/php-build-master"
+  }
+  - {
+    repository: "git://github.com/CHH/phpenv.git",
+    path: "/tmp/phpenv-master"
+  }
+
+# php-build installation path.
+phpbuild_path: /opt/php-build
+
+# phpenv installation path.
+phpenv_path: /opt/phpenv
+
+# Just for code clarity, the path to the phpenv's versions directory.
+phpenv_versions_path: "{{ phpenv_path }}/versions"

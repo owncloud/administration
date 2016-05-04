@@ -1,0 +1,33 @@
+# Need PEAR to install PECL.
+#with_pear
+
+# enable additional modules
+configure_option "--enable-intl"
+configure_option "--with-pgsql"
+configure_option "--with-pdo-pgsql"
+configure_option "--with-mysql-sock=/var/run/mysqld/mysqld.sock"
+#configure_option "--with-oci8=shared,instantclient,/home/deepdiver/Development/instantclient_12_1/"
+configure_option "--with-libdir=/lib/x86_64-linux-gnu"
+
+# Disable CGI.
+configure_option -R "--disable-cgi"
+
+{% if item.version|version_compare('5.4', '<') %}
+# Remove libevent dir for PHP < 5.4.
+# Alternative way: install newer libevent version (> 1.4.11)
+configure_option -R --without-libevent-dir
+{% endif %}
+
+# Just in case php-build does not have the definition file.
+# Works only with the most "recent releases".
+if [ -f {{ phpbuild_path }}/share/php-build/definitions/{{ item.version }} ]; then
+  source {{ phpbuild_path }}/share/php-build/definitions/{{ item.version }}
+else
+  # Xdebug is installed with pecl.
+  install_package "https://php.net/distributions/php-{{ item.version }}.tar.bz2"
+  install_pyrus
+
+  {% if item.version|version_compare('5.5', '>=') %}
+  enable_builtin_opcache
+  {% endif %}
+fi

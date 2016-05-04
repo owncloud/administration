@@ -1,0 +1,43 @@
+---
+- name: Install utilities.
+  apt: >
+    pkg={{ item }}
+    update_cache=yes
+    state=present
+  with_items:
+    - curl
+    - git
+
+- name: Clone php-build and phpenv.
+  git: >
+    repo={{ item.repository }}
+    dest={{ item.path }}
+    depth=1
+    accept_hostkey=yes
+  with_items: '{{phpbuild_repositories}}'
+
+- name: Install php-build.
+  shell: PREFIX={{ phpbuild_path }} /tmp/php-build-master/install.sh
+
+- name: Finish php-build installation (additional directories are created on the first run).
+  command: "{{ phpbuild_path }}/bin/php-build --version"
+
+# PHP 5.3 have issues
+# Building intl 64-bit fails on OS X: https://bugs.php.net/bug.php?id=48795
+#- name: Install php-build handler to fix C++ linking issues in PHP 5.3.
+#  copy: >
+#    src=php-linking.sh
+#    dest={{ phpbuild_path }}/share/php-build/before-install.d/php-linking.sh
+#    mode=0755
+
+#- name: Disable building of xdebug by php-build definition files.
+#  shell: sed -ie "/^install_xdebug/d" {{ phpbuild_path }}/share/php-build/definitions/*
+
+- name: Install phpenv.
+  shell: >
+    PHPENV_ROOT={{ phpenv_path }} /tmp/phpenv-master/bin/phpenv-install.sh; {{ phpenv_path }}/bin/phpenv init -
+    creates={{ phpenv_versions_path }}
+
+- name: Copy profile.d scripts.
+  template: src={{ item }}.j2 dest=/etc/profile.d/{{ item }}
+  with_items: '{{ phpbuild_profile_scripts }}'

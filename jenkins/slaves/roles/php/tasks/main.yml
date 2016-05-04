@@ -23,50 +23,68 @@
     - php5-ldap
     - php5-dev
     - smbclient
+    - python-psycopg2
 
-  - name: install packages for phpenv
-    apt: name={{ item }}
-    with_items:
-       - libxml2-dev
-       - re2c
-       - libmcrypt-dev
-       - libcurl3-openssl-dev
-       - bison
-       - flex
-       - libjpeg-dev
-       - libpng-dev
-       - libtidy-dev
-       - libxslt-dev
-       - libreadline-dev
-       - libldap2-dev
-       - libpq-dev
-       - libbz2-dev
-       - libicu-dev
-       - libircclient-dev
-       - libmysqlclient-dev
+- name: install packages for phpenv
+  apt: name={{ item }}
+  with_items:
+     - libxml2-dev
+     - re2c
+     - libmcrypt-dev
+     - libcurl3-openssl-dev
+     - bison
+     - flex
+     - libjpeg-dev
+     - libpng-dev
+     - libtidy-dev
+     - libxslt-dev
+     - libreadline-dev
+     - libldap2-dev
+     - libpq-dev
+     - libbz2-dev
+     - libicu-dev
+     - libircclient-dev
+     - libmysqlclient-dev
 
-  - name: install phunit
-    get_url: url=https://phar.phpunit.de/phpunit.phar dest=/usr/local/bin/phpunit mode=555
+- name: Create directory for the definitions files.
+  file: dest=/tmp/definitions state=directory
 
-  - name: install composer
-    get_url: url=https://getcomposer.org/download/1.1.0-RC/composer.phar  dest=/usr/local/bin checksum=sha256:31e771ed24f3db45019a073fe9e43a6a8e75249962012955cd105ebec0a08100
+- name: Create a custom definition file for the PHP version (with PEAR and PECL).
+  template: src=definition.j2 dest=/tmp/definitions/{{ item.version }}
+  with_items: '{{php_releases}}'
 
-#  - name: download phpenv
-#    get_url: url=https://raw.github.com/CHH/phpenv/master/bin/phpenv-install.sh dest=/home/jenkins
-#    become: yes
-#    become_user: jenkins
-#
-#  - name: install phpenv
-#    shell: /home/jenkins/phpenv-install.sh
-#    args:
-#      chdir: /home/jenkins
-#      executable: /bin/bash
-#    become: yes
-#    become_user: jenkins
-#    become_method: su
+- name: Build PHP versions.
+  shell: >
+    {{ phpbuild_path }}/bin/php-build -i {{ item.ini_file|default('development') }} {{ item.version }} {{ phpenv_versions_path }}/{{ item.version }};
+    chdir=/tmp/definitions
+    creates={{ phpenv_versions_path }}/{{ item.version }}/etc/php.ini
+  with_items: '{{php_releases}}'
 
-#  mkdir /home/vagrant/.phpenv/plugins
-#  cd /home/vagrant/.phpenv/plugins && git clone git://github.com/CHH/php-build.git
-#  echo 'PATH=$HOME/.phpenv/bin:$PATH # Add phpenv to PATH for scripting' >> /home/vagrant/.bashrc
-#  echo 'eval "$(phpenv init -)"' >> /home/vagrant/.bashrc
+- name: tune mysql
+  template: src=mysql-tune.cnf.j2 dest=/etc/mysql/conf.d/mysql-tune.cnf
 
+- name: install phunit
+  get_url: url=https://phar.phpunit.de/phpunit.phar dest=/usr/local/bin/phpunit mode=555
+
+- name: install composer
+  get_url: url=https://getcomposer.org/download/1.1.0-RC/composer.phar  dest=/usr/local/bin checksum=sha256:31e771ed24f3db45019a073fe9e43a6a8e75249962012955cd105ebec0a08100
+
+- name: setup mysql users for unit testing
+  mysql_db: name={{ item }}
+  with_items: '{{database_names}}'
+
+- name: setup mysql dbs for unit testing
+  mysql_user: name={{ item }} password=owncloud priv={{ item }}.*:ALL,GRANT
+  with_items: '{{database_names}}'
+
+- name: setup postgres dbs for unit testing
+  postgresql_db: name={{ item }}
+  with_items: '{{database_names}}'
+  become: true
+  become_user: postgres
+
+- name: setup postgres user for unit testing
+  postgresql_user: db={{ item }} name={{ item }} password=owncloud role_attr_flags=SUPERUSER
+  with_items: '{{database_names}}'
+  become: true
+  become_user: postgres
