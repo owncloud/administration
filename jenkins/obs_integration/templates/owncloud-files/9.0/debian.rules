@@ -21,6 +21,9 @@ export OC_DIR=/var/www/owncloud
 %:	
 	dh $@
 
+override_dh_strip_nondeterminism:
+	echo skipping dh_strip_nondeterminism
+
 override_dh_install:
 	dh_install -Xdebian
 	mkdir -p                                     $(DROOT)/usr/share/doc/$(NAME)

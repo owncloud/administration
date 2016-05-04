@@ -2,7 +2,7 @@ Source: owncloud
 Section: devel
 Priority: optional
 Maintainer: Jürgen Weigert <jw@owncloud.com>
-Build-Depends: debhelper (>= 4), apache2
+Build-Depends: debhelper (>= 4)
 Standards-Version: 3.9.3
 
 Package: owncloud

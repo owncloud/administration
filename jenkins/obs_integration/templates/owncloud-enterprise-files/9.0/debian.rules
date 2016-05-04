@@ -21,6 +21,9 @@ export OC_DIR=/var/www/owncloud
 %:	
 	dh $@
 
+override_dh_strip_nondeterminism:
+	echo skipping dh_strip_nondeterminism
+
 override_dh_install:
 	dh_install -Xdebian
 	mkdir -p                                     $(DROOT)/usr/share/doc/$(NAME)
@@ -35,13 +38,8 @@ override_dh_install:
 	install -m 644 $(SRCDIR)/README              $(DROOT)/usr/share/doc/$(NAME)/README
 	install -m 644 $(SRCDIR)/README.packaging    $(DROOT)/usr/share/doc/$(NAME)/README.packaging
 	# https://github.com/owncloud/enterprise/issues/1306
-<<<<<<< HEAD
-	chown www-data:www-data    		     $(DROOT)/$(OC_DIR)/.htaccess
-	chown www-data:www-data    		     $(DROOT)/$(OC_DIR)/.user.ini
-=======
 	install -m 664 .htaccess          	     $(DROOT)/$(OC_DIR)/.htaccess
 	install -m 664 .user.ini          	     $(DROOT)/$(OC_DIR)/.user.ini
->>>>>>> consistent .htaccess permissions
 	##
 	## https://github.com/owncloud/core/issues/22257
 	install -m 644 $(SRCDIR)/disable-updatechecker.config.php $(DROOT)/$(OC_DIR)/config/
