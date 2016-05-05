@@ -1,11 +1,12 @@
 ---
 # This playbook contains common plays that will be run on all nodes.
 
-- name: jenkins-swarm | Install java
+- name: jenkins-swarm | Install java, git and sudo
   apt: name={{ item }}
   with_items:
     - default-jre-headless
     - git
+    - sudo
 
 - name: jenkins-swarm | Create jenkins user
   user: name={{ jenkins_user }} comment="Jenkins user" home={{ jenkins_home }} shell={{ jenkins_shell }}

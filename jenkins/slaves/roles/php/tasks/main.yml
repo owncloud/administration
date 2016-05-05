@@ -24,6 +24,7 @@
     - php5-dev
     - smbclient
     - python-psycopg2
+    - python-mysqldb
 
 - name: install packages for phpenv
   apt: name={{ item }}
