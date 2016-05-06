@@ -37,3 +37,6 @@
 
 - name: setup profile.d
   copy: src=oracle.sh dest=/etc/profile.d/oracle.sh
+
+- name: remove Oracle ldap.h
+  file: path=/usr/include/oracle/12.1/client64/ldap.h state=absent
