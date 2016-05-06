@@ -63,8 +63,8 @@
 - name: tune mysql
   template: src=mysql-tune.cnf.j2 dest=/etc/mysql/conf.d/mysql-tune.cnf
 
-- name: install phunit
-  get_url: url=https://phar.phpunit.de/phpunit.phar dest=/usr/local/bin/phpunit mode=555
+- name: install phpunit 4.8.24
+  get_url: url=https://phar.phpunit.de/phpunit-4.8.24.phar dest=/usr/local/bin/phpunit mode=555
 
 - name: install composer
   get_url: url=https://getcomposer.org/download/1.1.0-RC/composer.phar  dest=/usr/local/bin checksum=sha256:31e771ed24f3db45019a073fe9e43a6a8e75249962012955cd105ebec0a08100
