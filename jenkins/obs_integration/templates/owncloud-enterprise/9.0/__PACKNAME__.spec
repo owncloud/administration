@@ -187,7 +187,7 @@ echo build
 
 %install
 mkdir -p $RPM_BUILD_ROOT/%{apache_confdir}/
-sed -e 's@/var/www/owncloud@%{oc_dir}/owncloud@' < %{SOURCE100} > $RPM_BUILD_ROOT/%{apache_confdir}/owncloud.conf
+sed -e 's@/var/www/owncloud@%{oc_dir}@' < %{SOURCE100} > $RPM_BUILD_ROOT/%{apache_confdir}/owncloud.conf
 echo install
 
 %clean

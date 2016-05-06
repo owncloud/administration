@@ -22,6 +22,7 @@ export OC_DIR=/var/www/owncloud
 	dh $@
 
 override_dh_strip_nondeterminism:
+	# https://github.com/owncloud/core/issues/24367
 	echo skipping dh_strip_nondeterminism
 
 override_dh_install:
