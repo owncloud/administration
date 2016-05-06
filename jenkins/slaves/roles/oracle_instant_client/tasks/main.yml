@@ -1,0 +1,39 @@
+---
+- name: install packages
+  apt: name={{ item }}
+  with_items:
+    - alien
+    - libaio1
+
+- name: Clone DeepDiver1975/oracle_instant_client_for_ubuntu_64bit
+  git: >
+    repo=https://github.com/DeepDiver1975/oracle_instant_client_for_ubuntu_64bit.git
+    dest=/root/instantclient
+    version=12.1
+    depth=1
+    accept_hostkey=yes
+
+- name: Check if Oracle is installed
+  command: dpkg-query -l {{ item.deb }}
+  register: is_installed
+  failed_when: is_installed.rc > 1
+  with_items: '{{oracle_packages}}'
+
+- name: Install instant client packages
+  command: alien -iv {{ item.item.rpm }} chdir=/root/instantclient/oracle_rpms
+  when: item.rc == 1
+  with_items: '{{is_installed.results}}'
+
+- name: symlink sqlplus
+  file: path=/usr/bin/sqlplus
+        src=/usr/bin/sqlplus64
+        state=link
+
+- name: setup ldconfig
+  copy: src=oracle.conf dest=/etc/ld.so.conf.d/oracle.conf
+
+- name: Run ldconfig
+  command: ldconfig
+
+- name: setup profile.d
+  copy: src=oracle.sh dest=/etc/profile.d/oracle.sh

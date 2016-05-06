@@ -1,0 +1,9 @@
+---
+- name: Install docker
+  apt: name={{ item }}
+  with_items:
+    - docker.io
+
+- name: Add jenkins user to group docker
+  user: name=jenkins groups="docker" append=yes
+

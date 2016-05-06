@@ -1,0 +1,5 @@
+---
+oracle_packages:
+    - { rpm: oracle-instantclient12.1-basic-12.1.0.2.0-1.x86_64.rpm, deb: oracle-instantclient12.1-basic }
+    - { rpm: oracle-instantclient12.1-devel-12.1.0.2.0-1.x86_64.rpm, deb: oracle-instantclient12.1-devel }
+    - { rpm: oracle-instantclient12.1-sqlplus-12.1.0.2.0-1.x86_64.rpm, deb: oracle-instantclient12.1-sqlplus }
