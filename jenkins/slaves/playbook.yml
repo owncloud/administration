@@ -17,6 +17,8 @@
   remote_user: root
   roles:
     - jsunit
+    - oracle_instant_client
+    - docker
     - php-build
     - php
 

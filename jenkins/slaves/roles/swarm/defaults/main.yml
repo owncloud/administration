@@ -4,7 +4,7 @@ jenkins_swarm_client_version: 2.0                # Swarm client version
 jenkins_name: jenkins
 jenkins_user: jenkins
 jenkins_group: jenkins
-jenkins_shell: "/bin/false"
+jenkins_shell: "/bin/bash"
 jenkins_home: /var/lib/jenkins
 jenkins_url: https://ci.owncloud.org/
 jenkins_slave_name: swarm-{{ ansible_hostname }}

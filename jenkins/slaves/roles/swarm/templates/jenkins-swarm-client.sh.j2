@@ -11,7 +11,7 @@
 # {{ ansible_managed }}
 
 dir="{{ jenkins_home }}"
-cmd="java -jar {{ jenkins_home }}/swarm-client-{{ jenkins_swarm_client_version }}-jar-with-dependencies.jar -name {{jenkins_slave_name}} -mode exclusive -executors 10 -password {{ jenkins_password }} -username {{ jenkins_username }} -fsroot {{ jenkins_home }}/jenkins-slave -master {{ jenkins_url }} -disableSslVerification"
+cmd="source /etc/profile; java -jar {{ jenkins_home }}/swarm-client-{{ jenkins_swarm_client_version }}-jar-with-dependencies.jar -name {{jenkins_slave_name}} -mode exclusive -executors 10 -password {{ jenkins_password }} -username {{ jenkins_username }} -fsroot {{ jenkins_home }}/jenkins-slave -master {{ jenkins_url }} -disableSslVerification"
 user={{ jenkins_user }}
 
 name=`basename $0`
@@ -34,7 +34,7 @@ case "$1" in
     else
         echo "Starting $name"
         cd "$dir"
-        sudo -u "$user" $cmd >> "$stdout_log" 2>> "$stderr_log" &
+        sudo -u "$user" bash -c "$cmd" >> "$stdout_log" 2>> "$stderr_log" &
         echo $! > "$pid_file"
         if ! is_running; then
             echo "Unable to start, see $stdout_log and $stderr_log"
