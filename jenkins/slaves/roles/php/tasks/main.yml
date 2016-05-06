@@ -7,7 +7,6 @@
   with_items:
     - ant
     - curl
-    - docker.io
     - wget
     - mysql-server
     - postgresql

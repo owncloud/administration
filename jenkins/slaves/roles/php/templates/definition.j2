@@ -4,9 +4,10 @@
 # enable additional modules
 configure_option "--enable-intl"
 configure_option "--with-pgsql"
+configure_option "--with-ldap"
 configure_option "--with-pdo-pgsql"
 configure_option "--with-mysql-sock=/var/run/mysqld/mysqld.sock"
-#configure_option "--with-oci8=shared,instantclient,/home/deepdiver/Development/instantclient_12_1/"
+configure_option "--with-oci8=instantclient,/usr/lib/oracle/12.1/client64/lib/"
 configure_option "--with-libdir=/lib/x86_64-linux-gnu"
 
 # Disable CGI.
