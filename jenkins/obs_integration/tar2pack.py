@@ -48,7 +48,7 @@
 
 
 
-import sys, time, argparse, subprocess, os, re, tempfile, shutil
+import sys, time, argparse, subprocess, os, re, tempfile, shutil, glob
 # so that we can have encoding='latin-1' spelled out in both python2 and python3
 from io import open
 
@@ -56,6 +56,14 @@ argv0 = 'obs_integration/tar2pack.py'
 def_template_dir = 'http://github.com/owncloud/administration/tree/master/jenkins/obs_integration/templates'
 def_msg="Update to version [% VERSION_DEB %]"
 
+def parse_source0_from_spec(specfile):
+  for l in open(specfile).readlines():
+    m = re.match("Source0:\s*(\S+)", l)
+    if m:
+      return m.group(1)
+  print("Error: failed to parse Source0: in "+specs[0]+" ...")
+  sys.exit(1)
+  
 def subst_variables(text, subst, filename=False):
   def subst_cb(m):
     var = m.group(1)
@@ -246,6 +254,8 @@ PACKNAME and VERSION are derived from the tar-archive name unless explicitly spe
 cd ce:9.0:testing/owncloud-files
 osc up
 """+sys.argv[0]+""" -v -O . https://download.owncloud.org/community/testing/owncloud-9.0.1RC1.tar.bz2
+# """+sys.argv[0]+""" -v .		# refresh templates only.
+osc addremove
 osc diff
 osc ci
 """, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -258,6 +268,7 @@ ap.add_argument('-v', '--verbose', action='store_true', help="Be more verbose. D
 ap.add_argument('-k', '--keepfiles', action='store_true', help="Keep unknown files in package. Default: remove them.")
 ap.add_argument('-O', '--outdir', help="Define output directory. This also provides a default for PACKNAME. Default: subdirectoy PACKNAME and PACKNAME derived fro tar-archive name.")
 ap.add_argument('-m', '--message', help="Define the commit and changelog message. Default: "+re.sub('%', '%%', def_msg), default=def_msg)
+ap.add_argument('-r', '--refresh-metafiles', action='store_true',help="update the meta-files from the templates, keeping the source archive as is. Default: pull source from url. Same as using '.' for the url")
 args=ap.parse_args()
 # print args
 
@@ -272,6 +283,18 @@ except:
 if args.define is None: args.define = []
 if args.name: args.define.append("PACKNAME=" + args.name)
 if args.email: args.define.append("MAINTAINER_EMAIL=" + args.email)
+
+source_tar_url = args.url
+if args.url == '.':
+  if args.outdir is None:
+    print("url='.' implies --outdir .\n")
+    args.outdir = '.'
+  specs = glob.glob(args.outdir + '/*.spec')
+  if len(specs) != 1:
+    print("expecting exactly one *.spec file in "+args.outdir+", seen "+len(specs))
+    sys.exit(0)
+  source_tar_url = parse_source0_from_spec(specs[0])
+  print("keeping source tar url "+source_tar_url)
 
 # all -d define options
 if args.define:
@@ -289,7 +312,7 @@ if not 'PACKNAME' in define and args.outdir:
 # http://download.owncloud.org/community/owncloud-9.0.0RC1.tar.bz2
 # ('http://download.owncloud.org/community/', 'owncloud', '9.0.0', 'rc1', 'tar.bz2', '.bz2')
 #              1     2        3                  4                 5   6
-m = re.match(r'(.*/)?(.*?)[_-](\d[\d\.]*?)[\.~-]?([a-z]+[\d\.]*)?\.(tar(\.\w+)?|tgz|zip)$', args.url, flags=re.IGNORECASE)
+m = re.match(r'(.*/)?(.*?)[_-](\d[\d\.]*?)[\.~-]?([a-z]+[\d\.]*)?\.(tar(\.\w+)?|tgz|zip)$', source_tar_url, flags=re.IGNORECASE)
 if m:
   if not 'SOURCE_BASE' in define: define['SOURCE_BASE'] = m.group(2)
   if not 'PACKNAME'    in define: define['PACKNAME']    = m.group(2)
@@ -300,7 +323,7 @@ if m:
     print("Waiting 3 seconds for CTRL-C")
     time.sleep(5)
 else:
-  print("Warning: cannot parse PACKNAME, VERSION, PRERELEASE from tar-name: "+args.url)
+  print("Warning: cannot parse PACKNAME, VERSION, PRERELEASE from tar-name: "+source_tar_url)
   print("Waiting 3 seconds for CTRL-C")
   time.sleep(5)
 
@@ -331,7 +354,7 @@ if not 'DATE_DEB' in define: define['DATE_DEB'] = time.strftime("%a, %d %b %Y %H
 # so that we can override it with -d SOURCE_TAR_URL=owncloud-%{base_version}%{prerelease}.tar.bz2
 if not 'SOURCE_TAR_URL' in define:
   # make sure we have no credentials in SOURCE_TAR_URL
-  define['SOURCE_TAR_URL'] = re.sub('://[^@]+@', '://', args.url)
+  define['SOURCE_TAR_URL'] = re.sub('://[^@]+@', '://', source_tar_url)
 
 
 # automatic variables that cannot be overwritten:
@@ -371,8 +394,8 @@ for d in os.listdir(template_dir):
     exit(1)
 
 ## bring in the tar archive
-newtarfile=args.url
-newtarfile=re.sub(r'.*/','', args.url)
+newtarfile=source_tar_url
+newtarfile=re.sub(r'.*/','', source_tar_url)
 
 fileslist = { 'debian.changelog':None, define['PACKNAME']+'.changes':None, newtarfile:None }
 
@@ -394,11 +417,12 @@ if not os.path.isdir(outdir):
   print("ERROR: output directory '"+outdir+"' not there.\nPlease create or try changing with -O")
   sys.exit(1)
 
+
 if re.search(r'://', args.url):
   r=run(["wget", args.url,"-O",outdir + '/' + newtarfile,"-nv"], redirect=False, return_code=True)
   if r: sys.exit()
 else:
-  if os.path.abspath(args.url) != os.path.abspath(outdir + '/' + newtarfile):
+  if args.url != '.' and os.path.abspath(args.url) != os.path.abspath(outdir + '/' + newtarfile):
     # ignore SameFileError. (Without waiting for pyhton 3.4)
     shutil.copyfile(args.url, outdir + '/' + newtarfile)
 
