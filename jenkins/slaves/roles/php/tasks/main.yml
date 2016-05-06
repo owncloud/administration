@@ -60,8 +60,13 @@
     creates={{ phpenv_versions_path }}/{{ item.version }}/etc/php.ini
   with_items: '{{php_releases}}'
 
+- name: Adjust php memory limit
+  shell: echo "memory_limit = 512M" >> "{{ phpenv_versions_path }}/{{ item.version }}/etc/php.ini"
+  with_items: '{{php_releases}}'
+
 - name: tune mysql
   template: src=mysql-tune.cnf.j2 dest=/etc/mysql/conf.d/mysql-tune.cnf
+  notify: restart mysql
 
 - name: install phpunit 4.8.24
   get_url: url=https://phar.phpunit.de/phpunit-4.8.24.phar dest=/usr/local/bin/phpunit mode=555
@@ -88,3 +93,8 @@
   with_items: '{{database_names}}'
   become: true
   become_user: postgres
+
+- name: allow local usage of dropdb
+  copy: src=pg_hba.conf dest=/etc/postgresql/9.4/main/pg_hba.conf
+  notify: restart postgres
+

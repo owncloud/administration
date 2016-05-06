@@ -40,3 +40,6 @@
 
 - name: remove Oracle ldap.h
   file: path=/usr/include/oracle/12.1/client64/ldap.h state=absent
+
+- name: create /usr/lib/oracle/12.1/client64/network/admin
+  file: path=/usr/lib/oracle/12.1/client64/network/admin state=directory
