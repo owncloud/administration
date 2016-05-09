@@ -22,7 +22,7 @@ rm -rf job.sh
 
 git checkout $BRANCH
 git branch
-git pull --rebase
+git pull --rebase || true
 
 mkdir -p l10n/.tx
 cd l10n
