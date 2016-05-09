@@ -81,6 +81,6 @@ git rm -rf l10n/or_IN.* || true
 git status
 git add l10n
 git commit -am "[tx-robot] updated from transifex" || true
-git push origin $BRANCH
+git push origin $BRANCH || true
 git status
 echo "done"
