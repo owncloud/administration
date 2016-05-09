@@ -21,6 +21,7 @@
     - php5-pgsql
     - php5-ldap
     - php5-dev
+    - php5-xdebug
     - smbclient
     - python-psycopg2
     - python-mysqldb
