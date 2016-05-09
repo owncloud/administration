@@ -1,0 +1,1 @@
+export USEDOCKER=1

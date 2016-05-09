@@ -35,6 +35,9 @@
   command: systemctl daemon-reload
   when: ansible_os_family == 'Debian' and ansible_distribution_release == 'jessie'
 
+- name: setup profile.d
+  copy: src=use-docker.sh dest=/etc/profile.d/use-docker.sh
+
 - name: jenkins-swarm | Start the Jenkins swarm client service
   service: name=jenkins-swarm-client state=started enabled=true
   tags: service  
