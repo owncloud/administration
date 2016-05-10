@@ -1,8 +1,18 @@
 ---
-- name: Install docker
+- name: Install python-apt and apt-transport-https
   apt: name={{ item }}
   with_items:
-    - docker.io
+    - apt-transport-https
+    - python-apt
+
+- name: Add docker apt key
+  apt_key: keyserver=p80.pool.sks-keyservers.net id=58118E89F3A912897C070ADBF76221572C52609D
+
+- name: Install docker repo
+  apt_repository: repo='deb https://apt.dockerproject.org/repo debian-jessie main' state=present  update_cache=yes
+
+- name: Install docker
+  apt: name=docker-engine
 
 - name: Add jenkins user to group docker
   user: name=jenkins groups="docker" append=yes
