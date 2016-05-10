@@ -1,0 +1,16 @@
+---
+- name: Install python-apt and apt-transport-https
+  apt: name={{ item }}
+  with_items:
+    - perl
+    - gettext
+    - liblocale-po-perl
+    - liblocale-gettext-perl
+    - python-pip
+
+- name: Install transifex
+  pip: name={{ item }} extra_args='--upgrade'
+  with_items:
+    - transifex-client
+    - six
+
