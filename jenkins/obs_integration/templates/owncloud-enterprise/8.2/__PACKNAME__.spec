@@ -106,6 +106,8 @@ Group:          Productivity/Networking/Web/Utilities
 ## All build requires go into the main package.
 
 BuildRequires:	owncloud >= %{version}
+## E: summary-too-long (Badness: 200) C The ownCloud application files_sharing_log add-on for owncloud-enterprise-server
+BuildRequires:        -post-build-checks -rpmlint -rpmlint-mini
 
 %if 0%{?fedora_version} || 0%{?rhel_version} >= 6 || 0%{?centos_version} >= 6
 # BuildRequires:  %{ochttpd}
