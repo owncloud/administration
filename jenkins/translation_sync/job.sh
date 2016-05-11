@@ -73,6 +73,7 @@ git rm -rf l10n/uz.* || true
 git rm -rf l10n/yo.* || true
 git rm -rf l10n/ne.* || true
 git rm -rf l10n/or_IN.* || true
+git rm -rf l10n/en@pirate.* || true
 
 
 #
