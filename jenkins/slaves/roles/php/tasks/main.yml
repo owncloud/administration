@@ -65,6 +65,14 @@
   shell: echo "memory_limit = 512M" >> "{{ phpenv_versions_path }}/{{ item.version }}/etc/php.ini"
   with_items: '{{php_releases}}'
 
+- name: Symlink versions
+  file: >
+    src={{ phpenv_versions_path }}/{{ item.version }}
+    dest={{ phpenv_versions_path }}/{{ item.minor }}
+    state=link
+  when: item.minor|default(false)
+  with_items: '{{php_releases}}'
+
 - name: tune mysql
   template: src=mysql-tune.cnf.j2 dest=/etc/mysql/conf.d/mysql-tune.cnf
   notify: restart mysql
