@@ -38,6 +38,8 @@ override_dh_auto_configure:
 	dh_auto_configure -- "$${git_defs[@]}" -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_DOCDIR=/usr/share/doc/[% shortname %]-client -DSYSCONF_INSTALL_DIR=/etc -DWITH_DOC=FALSE -DCMAKE_SKIP_RPATH=FALSE -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE -DOEM_THEME_DIR=$(CURDIR)/[% themename_deb %]/[% oem_sub_dir %]
 
 override_dh_auto_install:
+	# survive at Ubuntu_16.04
+	mkdir -p $(CURDIR)/usr/share/owncloud/i18n
 	dh_auto_install -Xdebian
 	# https://github.com/owncloud/client/issues/4107
 	install -m 0755 -D $(SRCDIR)/100-owncloud-inotify.conf $(DROOT)/etc/sysconf.d/100-owncloud-inotify.conf
