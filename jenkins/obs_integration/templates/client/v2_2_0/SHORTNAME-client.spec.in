@@ -117,7 +117,12 @@ Patch1:         autostart_use_wrapper.diff
 #   - But not SLE (re-evaluate with SLE 13)
 # - Fedora >= 20
 # - RHEL or CentOS >= 7.0
-%if ( !0%{sle_version} && 0%{?suse_version} > 1310) || 0%{?fedora_version} > 20 || 0%{?rhel_version} >= 700 || 0%{?centos_version} >= 700
+%define suse_has_qt5 0
+%if !0%{sle_version} && 0%{?suse_version} > 1310
+  %define suse_has_qt5 1
+%endif
+
+%if 0%{?suse_has_qt5} || 0%{?fedora_version} > 20 || 0%{?rhel_version} >= 700 || 0%{?centos_version} >= 700
   %define use_qt5 1
   
   # On top of the Qt5 requirement, Dolphin plugin interface can only work on distros with KDE Applications >= 15.12
