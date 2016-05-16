@@ -112,16 +112,19 @@ Patch1:         autostart_use_wrapper.diff
 %define use_qt5 0
 %define build_dolphin_overlays 0
 
-%if 0%{?suse_version} > 1310 || 0%{?fedora_version} > 20 || 0%{?rhel_version} >= 700 || 0%{?centos_version} >= 700
+# Use Qt5 if
+# - OpenSUSE is > 13.1 (needs to include 1315 for 42.1!, hence "> 1310")
+#   - But not SLE (re-evaluate with SLE 13)
+# - Fedora >= 20
+# - RHEL or CentOS >= 7.0
+%if ( !0%{sle_version} && 0%{?suse_version} > 1310) || 0%{?fedora_version} > 20 || 0%{?rhel_version} >= 700 || 0%{?centos_version} >= 700
   %define use_qt5 1
   
-  %if 0%{?suse_version} > 1315 || 0%{?fedora_version} > 23
-  %define build_dolphin_overlays 1
+  # On top of the Qt5 requirement, Dolphin plugin interface can only work on distros with KDE Applications >= 15.12
+  # This we make sure to allow building for OpenSUSE Leap 42.1 and better, but not 13.2 (non-monotonic, see table below)
+  %if 0%{?suse_version} == 1315 || 0%{?suse_version} > 1320 || 0%{?fedora_version} > 23
+    %define build_dolphin_overlays 1
   %endif
-%endif
-# Check for SLE12 -> it does not have qt5 obviously.
-%if 0%{?sle_version} && !0%{?is_opensuse}
-  %define use_qt5 0
 %endif
 
 # The infamous SUSE matrix:
