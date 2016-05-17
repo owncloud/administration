@@ -218,7 +218,7 @@ BuildRequires:  libopenssl-devel
 %endif
 
 # no documents on SLE12
-%if 0%{?suse_version} == 1315
+%if 0%{?suse_version} == 1315 && 0%{?sle_version}
 %define have_doc 0
 %endif
 
