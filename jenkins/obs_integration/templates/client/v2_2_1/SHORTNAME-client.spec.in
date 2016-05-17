@@ -150,9 +150,9 @@ Patch1:         autostart_use_wrapper.diff
 BuildRequires:  cmake >= 2.8.11
 BuildRequires:  gcc gcc-c++
 %if %use_qt5
-BuildRequires:  %{qtprefix}libqt5keychain-devel %{qtprefix}libqt5keychain0
+BuildRequires:  %{qtprefix}libqt5keychain-devel >= 0.6.2, %{qtprefix}libqt5keychain0 >= 0.6.2
 %else
-BuildRequires:  %{qtprefix}libqtkeychain-devel
+BuildRequires:  %{qtprefix}libqtkeychain-devel >= 0.6.2
 %endif
 
 # This is for all modern Fedora and CentOS 7
@@ -309,9 +309,9 @@ Localization files for the [% displayname %] desktop application.
 
 %package -n lib[% shortname %]sync0
 %if %use_qt5
-Requires:       %{qtprefix}libqt5keychain0
+Requires:       %{qtprefix}libqt5keychain0 >= 0.6.2
 %else
-Requires:       %{qtprefix}libqtkeychain0 >= 0.3
+Requires:       %{qtprefix}libqtkeychain0 >= 0.6.2
 %endif
 Obsoletes:      opt-lib[% shortname %]sync0
 
