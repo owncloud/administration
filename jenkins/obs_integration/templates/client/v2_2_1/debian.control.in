@@ -5,13 +5,14 @@ Maintainer: [% maintainer_person %]
 Standards-Version: 3.9.6
 Build-Depends: debhelper (>= 9), cmake, sed, doxygen,
 	libsqlite3-dev, python-sphinx | python3-sphinx, libssl-dev,
-	libqt5webkit5-dev (>= 2.2.0) | libqtwebkit-dev (>= 2.2.0), qt5keychain-dev (>= 0.6.2) | qtkeychain-dev (>= 0.6.2)
+	libqtwebkit-dev (>= 2.2.0) | libqt5webkit5-dev (>= 2.2.0),
+	qtkeychain-dev (>= 0.6.2) | qt5keychain-dev (>= 0.6.2)
 
 Package: [% shortname %]-client
 Architecture: any
 Multi-Arch: same
 Depends: ${misc:Depends}, ${shlibs:Depends}, libowncloudsync0 (= ${binary:Version}), owncloud-client-l10n,
-	libqt5sql5-sqlite | libqt4-sql-sqlite
+	libqt4-sql-sqlite | libqt5sql5-sqlite
 Description: [% pkgdescription_debian %]
 Package: [% shortname %]-client-doc
 Architecture: all
@@ -37,7 +38,8 @@ Package: lib[% shortname %]sync0
 Architecture: any
 Multi-Arch: same
 Section: devel
-Depends: ${misc:Depends}, ${shlibs:Depends}, libqt5keychain0 (>= 0.6.2) | libqtkeychain0 (>= 0.6.2)
+Depends: ${misc:Depends}, ${shlibs:Depends},
+	libqtkeychain0 (>= 0.6.2) | libqt5keychain0 (>= 0.6.2)
 Pre-Depends: ${misc:Pre-Depends}
 Breaks: libocsync0
 Replaces: libocsync0
