@@ -9,7 +9,9 @@ Architecture: any
 Standards-Version: 3.9.6
 Build-Depends: debhelper (>= 9), cmake, sed, doxygen,
 	libsqlite3-dev, python-sphinx | python3-sphinx, libssl-dev,
-	libqt5webkit5-dev (>= 2.2.0) | libqtwebkit-dev (>= 2.2.0), qt5keychain-dev | qtkeychain-dev
+	libqt5webkit5-dev (>= 2.2.0) | libqtwebkit-dev (>= 2.2.0), qt5keychain-dev | qtkeychain-dev,
+        qttools5-dev | qt4-dev-tools,
+        qttools5-dev-tools | qt4-dev-tools
 Package-List:
  lib[% shortname %]sync0 deb libs optional
  [% shortname %]-client deb net optional
