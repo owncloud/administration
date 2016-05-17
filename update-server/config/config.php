@@ -69,68 +69,128 @@
 
 return [
 	'production' => [
+		'9.0' => [
+			'latest' => '9.0.3',
+			'web' => 'https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html',
+		],
+		'8.2.5' => [
+			'latest' => '9.0.3',
+			'web' => 'https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html',
+		],
 		'8.2' => [
-			'latest' => '8.2.3',
+			'latest' => '8.2.5',
+			'web' => 'https://doc.owncloud.org/server/8.2/admin_manual/maintenance/upgrade.html',
+		],
+		'8.1.8' => [
+			'latest' => '8.2.5',
 			'web' => 'https://doc.owncloud.org/server/8.2/admin_manual/maintenance/upgrade.html',
 		],
 		'8.1' => [
-			'latest' => '8.1.6',
+			'latest' => '8.1.8',
+			'web' => 'https://doc.owncloud.org/server/8.1/admin_manual/maintenance/upgrade.html',
+		],
+		'8.0.13' => [
+			'latest' => '8.1.8',
 			'web' => 'https://doc.owncloud.org/server/8.1/admin_manual/maintenance/upgrade.html',
 		],
 		'8.0' => [
-			'latest' => '8.0.11',
+			'latest' => '8.0.13',
+			'web' => 'https://doc.owncloud.org/server/8.0/admin_manual/maintenance/upgrade.html',
+		],
+		'7.0.15' => [
+			'latest' => '8.0.13',
 			'web' => 'https://doc.owncloud.org/server/8.0/admin_manual/maintenance/upgrade.html',
 		],
 		'7' => [
-			'latest' => '7.0.13',
+			'latest' => '7.0.15',
 			'web' => 'https://doc.owncloud.org/server/8.0/admin_manual/maintenance/upgrade.html',
 		],
 		'6' => [
-			'latest' => '7.0.13',
+			'latest' => '7.0.15',
 			'web' => 'https://doc.owncloud.org/server/7.0/admin_manual/maintenance/upgrade.html',
 		],
 	],
 	'stable' => [
+		'9.0' => [
+			'latest' => '9.0.3',
+			'web' => 'https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html',
+		],
+		'8.2.5' => [
+			'latest' => '9.0.3',
+			'web' => 'https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html',
+		],
 		'8.2' => [
-			'latest' => '8.2.3',
+			'latest' => '8.2.5',
+			'web' => 'https://doc.owncloud.org/server/8.2/admin_manual/maintenance/upgrade.html',
+		],
+		'8.1.8' => [
+			'latest' => '8.2.5',
 			'web' => 'https://doc.owncloud.org/server/8.2/admin_manual/maintenance/upgrade.html',
 		],
 		'8.1' => [
-			'latest' => '8.1.6',
+			'latest' => '8.1.8',
+			'web' => 'https://doc.owncloud.org/server/8.1/admin_manual/maintenance/upgrade.html',
+		],
+		'8.0.13' => [
+			'latest' => '8.1.8',
 			'web' => 'https://doc.owncloud.org/server/8.1/admin_manual/maintenance/upgrade.html',
 		],
 		'8.0' => [
-			'latest' => '8.0.11',
+			'latest' => '8.0.13',
+			'web' => 'https://doc.owncloud.org/server/8.0/admin_manual/maintenance/upgrade.html',
+		],
+		'7.0.15' => [
+			'latest' => '8.0.13',
 			'web' => 'https://doc.owncloud.org/server/8.0/admin_manual/maintenance/upgrade.html',
 		],
 		'7' => [
-			'latest' => '7.0.13',
+			'latest' => '7.0.15',
 			'web' => 'https://doc.owncloud.org/server/8.0/admin_manual/maintenance/upgrade.html',
 		],
 		'6' => [
-			'latest' => '7.0.13',
+			'latest' => '7.0.15',
 			'web' => 'https://doc.owncloud.org/server/7.0/admin_manual/maintenance/upgrade.html',
 		],
 	],
 	'beta' => [
+		'9.0' => [
+			'latest' => '9.0.3',
+			'web' => 'https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html',
+		],
+		'8.2.5' => [
+			'latest' => '9.0.3',
+			'web' => 'https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html',
+		],
 		'8.2' => [
-			'latest' => '8.2.3',
+			'latest' => '8.2.5',
+			'web' => 'https://doc.owncloud.org/server/8.2/admin_manual/maintenance/upgrade.html',
+		],
+		'8.1.8' => [
+			'latest' => '8.2.5',
 			'web' => 'https://doc.owncloud.org/server/8.2/admin_manual/maintenance/upgrade.html',
 		],
 		'8.1' => [
-			'latest' => '8.1.6',
+			'latest' => '8.1.8',
+			'web' => 'https://doc.owncloud.org/server/8.1/admin_manual/maintenance/upgrade.html',
+		],
+		'8.0.13' => [
+			'latest' => '8.1.8',
 			'web' => 'https://doc.owncloud.org/server/8.1/admin_manual/maintenance/upgrade.html',
 		],
 		'8.0' => [
-			'latest' => '8.0.11',
+			'latest' => '8.0.13',
+			'web' => 'https://doc.owncloud.org/server/8.0/admin_manual/maintenance/upgrade.html',
+		],
+		'7.0.15' => [
+			'latest' => '8.0.13',
 			'web' => 'https://doc.owncloud.org/server/8.0/admin_manual/maintenance/upgrade.html',
 		],
 		'7' => [
-			'latest' => '7.0.13',
+			'latest' => '7.0.15',
 			'web' => 'https://doc.owncloud.org/server/8.0/admin_manual/maintenance/upgrade.html',
 		],
 		'6' => [
-			'latest' => '7.0.13',
+			'latest' => '7.0.15',
 			'web' => 'https://doc.owncloud.org/server/7.0/admin_manual/maintenance/upgrade.html',
 		],
 	],
