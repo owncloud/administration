@@ -5,7 +5,7 @@ Maintainer: [% maintainer_person %]
 Standards-Version: 3.9.6
 Build-Depends: debhelper (>= 9), cmake, sed, doxygen,
 	libsqlite3-dev, python-sphinx | python3-sphinx, libssl-dev,
-	libqt5webkit5-dev (>= 2.2.0) | libqtwebkit-dev (>= 2.2.0), qt5keychain-dev | qtkeychain-dev
+	libqt5webkit5-dev (>= 2.2.0) | libqtwebkit-dev (>= 2.2.0), qt5keychain-dev (>= 0.6.2) | qtkeychain-dev (>= 0.6.2)
 
 Package: [% shortname %]-client
 Architecture: any
@@ -37,7 +37,7 @@ Package: lib[% shortname %]sync0
 Architecture: any
 Multi-Arch: same
 Section: devel
-Depends: ${misc:Depends}, ${shlibs:Depends}, libqt5keychain0 (>= 0.5) | libqtkeychain0 (>= 0.3)
+Depends: ${misc:Depends}, ${shlibs:Depends}, libqt5keychain0 (>= 0.6.2) | libqtkeychain0 (>= 0.6.2)
 Pre-Depends: ${misc:Pre-Depends}
 Breaks: libocsync0
 Replaces: libocsync0
