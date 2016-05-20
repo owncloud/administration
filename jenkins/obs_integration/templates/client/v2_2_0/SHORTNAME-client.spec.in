@@ -48,14 +48,14 @@ Name:           [% shortname %]-client
 # Use translations from an external tarball in the package, or build them
 # using the Qt tools? For distros where we do not have the tools, disable.
 
-%if 0%{?centos_version} == 600 || 0%{?rhel_version} == 600 || 0%{?fedora_version} || 0%{?!prerelease:1}
+%if 0%{?centos_version} == 600 || 0%{?rhel_version} == 600 || 0%{?fedora_version} || "%{prerelease}" == ""
 # For beta and rc versions we use the ~ notation, as documented in
 # http://en.opensuse.org/openSUSE:Package_naming_guidelines
 # Some distro's (centos_6) don't allow ~ characters. There we follow the Fedora guidelines,
 # which suggests massaging the buildrelease number.
 # Otoh: for openSUSE, this technique is discouraged by the package naming guidelines.
 Version:       	%{base_version}
-%if 0%{?!prerelease:1}
+%if "%{prerelease}" == ""
 Release:        0
 %else
 Release:       	0.<CI_CNT>.<B_CNT>.%{prerelease}
@@ -405,7 +405,7 @@ mkdir build
 pushd build
 # http://www.cmake.org/Wiki/CMake_RPATH_handling#Default_RPATH_settings
 cmake .. -DWITH_DOC=TRUE \
-%if 0%{?prerelease:1}
+%if "%{prerelease}" != ""
   -DMIRALL_VERSION_SUFFIX="%{prerelease}" \
   -DMIRALL_VERSION_BUILD="[% buildjobid %]" \
 %endif
