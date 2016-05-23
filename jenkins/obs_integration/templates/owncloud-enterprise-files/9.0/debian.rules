@@ -13,6 +13,7 @@ SHELL=/bin/bash
 
 export NAME=[% PACKNAME %]
 export DROOT=$(CURDIR)/debian/$(NAME)
+# https://github.com/owncloud/core/issues/24757
 export SRCDIR=/usr/src/packages/SOURCES
 # Caution: keep in sync with apache_conf_default
 export OC_DIR=/var/www/owncloud
@@ -35,15 +36,17 @@ override_dh_install:
 	# We must chown all apps folders, in each app, to be independant of installation order.
 	# https://github.com/owncloud/core/issues/16132
 	chown -R www-data:www-data    		     $(DROOT)/$(OC_DIR)/themes
-	install -m 644 $(SRCDIR)/apache_conf_default $(DROOT)/usr/share/doc/$(NAME)/owncloud-config-apache.conf.default
-	install -m 644 $(SRCDIR)/README              $(DROOT)/usr/share/doc/$(NAME)/README
-	install -m 644 $(SRCDIR)/README.packaging    $(DROOT)/usr/share/doc/$(NAME)/README.packaging
+	test -f     $(SRCDIR)/apache_conf_default && cp $(SRCDIR)/apache_conf_default debian/ || true
+	install -m 644 debian/apache_conf_default    $(DROOT)/usr/share/doc/$(NAME)/owncloud-config-apache.conf.default
+	test -f     $(SRCDIR)/README && cp $(SRCDIR)/README debian/ || true
+	install -m 644 debian/README                 $(DROOT)/usr/share/doc/$(NAME)/README
 	# https://github.com/owncloud/enterprise/issues/1306
 	install -m 664 .htaccess          	     $(DROOT)/$(OC_DIR)/.htaccess
 	install -m 664 .user.ini          	     $(DROOT)/$(OC_DIR)/.user.ini
 	##
 	## https://github.com/owncloud/core/issues/22257
-	install -m 644 $(SRCDIR)/disable-updatechecker.config.php $(DROOT)/$(OC_DIR)/config/
+	test -f     $(SRCDIR)/disable-updatechecker.config.php && cp $(SRCDIR)/disable-updatechecker.config.php debian/ || true
+	install -m 644 debian/disable-updatechecker.config.php $(DROOT)/$(OC_DIR)/config/
 	##
 	ls -la 
 
@@ -70,3 +73,4 @@ override_dh_fixperms:
 	chown www-data:www-data    $(DROOT)/$(OC_DIR)/.user.ini
 	chmod ug+rw                $(DROOT)/$(OC_DIR)/.htaccess
 	chmod ug+rw                $(DROOT)/$(OC_DIR)/.user.ini
+
