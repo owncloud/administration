@@ -118,7 +118,7 @@ Patch1:         autostart_use_wrapper.diff
 # - Fedora >= 20
 # - RHEL or CentOS >= 7.0
 %define suse_has_qt5 0
-%if ! 0%{?sle_version} && 0%{?suse_version} > 1310
+%if 0%{?is_opensuse} || 0%{?suse_version} == 1320
   %define suse_has_qt5 1
 %endif
 
