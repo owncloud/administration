@@ -126,8 +126,9 @@ Patch1:         autostart_use_wrapper.diff
   %define use_qt5 1
   
   # On top of the Qt5 requirement, Dolphin plugin interface can only work on distros with KDE Applications >= 15.12
-  # This we make sure to allow building for OpenSUSE Leap 42.1 and better, but not 13.2 (non-monotonic, see table below)
-  %if 0%{?suse_version} == 1315 || 0%{?suse_version} > 1320 || 0%{?fedora_version} > 23
+  # This we make sure to allow building not for OpenSUSE Leap 42.1 GA, not for 13.2
+  # Leap_Updates would allow a dolphin overlay to work, this is not handled here. TODO: add a Leap_Updates target, if needed.
+  %if 0%{?suse_version} > 1320 || 0%{?fedora_version} > 23
     %define build_dolphin_overlays 1
   %endif
 %endif
