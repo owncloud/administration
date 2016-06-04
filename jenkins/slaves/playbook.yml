@@ -21,4 +21,4 @@
     - docker
     - php-build
     - php
-
+    - translation-sync
