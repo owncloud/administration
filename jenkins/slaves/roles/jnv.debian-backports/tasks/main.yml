@@ -1,0 +1,6 @@
+---
+- name: add distribution-specific variables
+  include_vars: "{{ ansible_distribution }}.yml"
+
+- name: add backports repository
+  apt_repository: repo='deb {{backports_uri}} {{backports_components}}' state=present update_cache=yes

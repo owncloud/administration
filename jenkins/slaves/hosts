@@ -1,4 +1,4 @@
 [slave]
 lex-j1
-oc-fd-j4
-
+oc-fd-j4 jenkins_executors=3
+ber-j5 jenkins_executors=8
