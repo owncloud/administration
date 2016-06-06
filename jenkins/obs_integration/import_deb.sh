@@ -19,10 +19,19 @@ URL or path of debian package needed. Please browse for inspiration:
   $default_base_url
 
 Example usage:
-  cd src/obs/isv:ownCloud:devel:Ubuntu_16.04_Universe
+  firefox https://launchpad.net/ubuntu/+source/qttools-opensource-src/
+
+  cd ~/src/obs/isv:ownCloud:devel:Ubuntu_16.04_Universe
   osc mkpac qttools5-dev-tools
+  cd qttools5-dev-tools
   $0 q/qttools-opensource-src/qttools5-dev-tools_5.5.1-3build1_amd64.deb
-  osc ci -m '$0 q/qttools-opensource-src/qttools5-dev-tools_5.5.1-3build1_amd64.deb'
+  osc ci -m '$0 q/qttools-opensource-src/qttools5-dev-tools_5.5.1-3build1_i386.deb'
+
+  cd ~/src/obs/isv:ownCloud:devel:Ubuntu_16.04_Universe:i386
+  osc mkpac qttools5-dev-tools
+  cd qttools5-dev-tools
+  $0 q/qttools-opensource-src/qttools5-dev-tools_5.5.1-3build1_i386.deb
+  osc ci -m '$0 q/qttools-opensource-src/qttools5-dev-tools_5.5.1-3build1_i386.deb'
 EOF
   exit 1
 fi
@@ -33,7 +42,7 @@ if [[ ! $url =~ '://' ]]; then
   fi
 fi
 
-deb_in_pkg_name=$(echo $url | sed -e 's@.*/@@')
+deb_in_pkg_name=$(echo  "$url"  | sed -e 's@.*/@@')
 tmpdir=/tmp/import$$
 tmpfile=$tmpdir/$deb_in_pkg_name
 
