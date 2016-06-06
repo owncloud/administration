@@ -504,7 +504,7 @@ done
 ## use exit 0 instead of exit 1 to turn this into warnings:
 if [ "%{name}" != "testpilotcloud-client" ]; then
   if [ "%{prerelease}" == "" ]; then
-    expr match '%{distribution}' '.*:community:\(testing\|nightly\)' && { echo "Error: Need a prerelease here, not %{version}"; exit 1; }
+    expr match '%{distribution}' '.*:community:\(testing\|nightly\)' && { echo "Warning: Need a prerelease here, not %{version} (okay, if you want to submitpac this as a release today)"; }
   else
     expr match '%{distribution}' '.*:community:desktop' && { echo "Error: Must not have a prerelease here, not %{version}"; exit 1; }
   fi
