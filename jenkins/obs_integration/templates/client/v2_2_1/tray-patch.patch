@@ -1,0 +1,48 @@
+diff --git a/src/gui/accountsettings.cpp b/src/gui/accountsettings.cpp
+index 727d3bd..151f7b8 100644
+--- a/src/gui/accountsettings.cpp
++++ b/src/gui/accountsettings.cpp
+@@ -159,7 +159,13 @@ void AccountSettings::createAccountToolbox()
+ 
+ void AccountSettings::slotOpenAccountWizard()
+ {
+-    if (QSystemTrayIcon::isSystemTrayAvailable()) {
++    if (
++#if QT_VERSION > QT_VERSION_CHECK(5, 0, 0)
++            qgetenv("QT_QPA_PLATFORMTHEME") == "appmenu-qt5"
++                // We can't call isSystemTrayAvailable with appmenu-qt5 because it breaks the systemtray
++                // (issue #4693, #4944)
++#endif
++            || QSystemTrayIcon::isSystemTrayAvailable()) {
+         topLevelWidget()->close();
+     }
+ #ifdef Q_OS_MAC
+diff --git a/src/gui/generalsettings.cpp b/src/gui/generalsettings.cpp
+index d4d41c5..6373da4 100644
+--- a/src/gui/generalsettings.cpp
++++ b/src/gui/generalsettings.cpp
+@@ -161,12 +161,4 @@ void GeneralSettings::slotIgnoreFilesEditor()
+     }
+ }
+ 
+-void GeneralSettings::slotOpenAccountWizard()
+-{
+-    if (QSystemTrayIcon::isSystemTrayAvailable()) {
+-        topLevelWidget()->close();
+-    }
+-    OwncloudSetupWizard::runWizard(qApp, SLOT(slotownCloudWizardDone(int)), 0);
+-}
+-
+ } // namespace OCC
+diff --git a/src/gui/generalsettings.h b/src/gui/generalsettings.h
+index 74c297f..69c96c4 100644
+--- a/src/gui/generalsettings.h
++++ b/src/gui/generalsettings.h
+@@ -44,7 +44,6 @@ private slots:
+     void slotToggleOptionalDesktopNotifications(bool);
+     void slotUpdateInfo();
+     void slotIgnoreFilesEditor();
+-    void slotOpenAccountWizard();
+ 
+ private:
+     void loadMiscSettings();

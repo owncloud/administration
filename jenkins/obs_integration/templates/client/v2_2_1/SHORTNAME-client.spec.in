@@ -81,6 +81,8 @@ Source3:        100-owncloud-inotify.conf
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 Patch1:         autostart_use_wrapper.diff
 %endif
+# https://github.com/owncloud/client/issues/3414
+Patch2:		highdpi-6ccd9e8.patch
 
 %if 0%{?rhel_version} >= 600 || 0%{?centos_version} >= 600 || 0%{?suse_version} == 1110
 %if 0%{?suse_version} == 1110
@@ -390,6 +392,8 @@ Framework 5 based dolphin filemanager to display overlay icons.
 # autostart_use_wrapper.diff
 %patch1 -p1
 %endif
+# highdpi-6ccd9e8.patch
+%patch2 -p1
 
 %if 0%{?rhel_version} == 600 || 0%{?centos_version} == 600
 sed -i -e 's/OVERRIDE=override/OVERRIDE=/' cmake/modules/QtVersionAbstraction.cmake
