@@ -345,7 +345,9 @@ sub readOEMcmake( $ )
 	$substs{displayname} = $substs{APPLICATION_NAME};
     }
     if( $substs{APPLICATION_DOMAIN} ) {
-	$substs{projecturl} = $substs{APPLICATION_DOMAIN};
+	my $url = $substs{APPLICATION_DOMAIN};
+	$url = "http://" . $url unless( $url =~ /^http/i );
+	$substs{projecturl} = $url;
     }
     if( $substs{APPLICATION_EXECUTABLE} ) {
 	$substs{executable} = $substs{APPLICATION_EXECUTABLE};
