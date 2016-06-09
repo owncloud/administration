@@ -67,11 +67,7 @@ Release:        0
 
 License:        GPL-2.0+
 Summary:        [% summary %]
-%if %{is_owncloud_client}
-Url:            https://www.[% projecturl %]
-%else
 Url:            [% projecturl %]
-%endif
 Group:          Productivity/Networking/Other
 Source0:        [% tarball %].tar.bz2
 Source1:        [% APPLICATION_EXECUTABLE %].sh
