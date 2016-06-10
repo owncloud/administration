@@ -1,0 +1,4 @@
+# https://github.com/owncloud/client/pull/4947
+tray-patch.patch
+# https://github.com/owncloud/client/issues/3414
+highdpi-6ccd9e8.patch

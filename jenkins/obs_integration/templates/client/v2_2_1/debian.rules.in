@@ -19,14 +19,6 @@ SHELL=/bin/bash
 	dh $@
 
 override_dh_auto_configure:
-	if grep -q ' 12.04 LTS ' /etc/issue; then \
-	  patch -p0 < /usr/src/packages/SOURCES/neon27_ubuntu1204_compat_csync.diff; \
-	  sed -i.orig -e 's/OVERRIDE=override/OVERRIDE=/' cmake/modules/QtVersionAbstraction.cmake; \
-	fi
-	# https://github.com/owncloud/client/pull/4947
-	patch -p1 < /usr/src/packages/SOURCES/tray-patch.patch
-	# https://github.com/owncloud/client/issues/3414
-	patch -p1 < /usr/src/packages/SOURCES/highdpi-6ccd9e8.patch
 	# not sure, when which variables are set.
 	echo source:Version=${source:Version}
 	echo source:Upstream-Version=${source:Upstream-Version}
