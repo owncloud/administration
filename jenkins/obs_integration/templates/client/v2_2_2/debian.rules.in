@@ -35,7 +35,7 @@ override_dh_auto_configure:
 
 override_dh_auto_install:
 	# survive at Ubuntu_16.04
-	mkdir -p $(CURDIR)/usr/share/owncloud/i18n
+	mkdir -p $(CURDIR)/usr/share/[% shortname %]/i18n
 	echo 3cb86418caef9c95cd211cbf60a1bddd88000000020101 | xxd -r -p > $(CURDIR)/usr/share/[% shortname %]/i18n/client_en.qm
 	dh_auto_install -Xdebian
 	# https://github.com/owncloud/client/issues/4107
