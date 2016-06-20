@@ -575,7 +575,10 @@ fi
 
 %files -n %{name}-l10n
 %defattr(-,root,root,-)
+%if 0%{?fedora_version} < 23
+# workaround for https://github.com/owncloud/client/issues/4987
 %{_datadir}/[% APPLICATION_EXECUTABLE %]
+%endif
 
 %files -n lib[% shortname %]sync0
 %defattr(-,root,root,-)
