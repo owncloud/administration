@@ -1,0 +1,4 @@
+tray-patch.patch
+ # tray patch for https://github.com/owncloud/client/pull/4947
+highdpi-6ccd9e8.patch
+ # hi dpi patch, see patch for comments
