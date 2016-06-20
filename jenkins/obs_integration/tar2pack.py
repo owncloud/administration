@@ -20,7 +20,7 @@
 # (cd owncloud-files; osc addremove; osc ci)
 # (cd owncloud; osc addremove; osc ci)
 #
-# tar2pack.py http://owncloud:owncloud42@download.owncloud.com/internal/9.0.2/owncloud-enterprise-complete-9.0.2.tar.bz2 -d PACKNAME=owncloud-enterprise-files -d SOURCE_TAR_TOP_DIR=owncloue
+# tar2pack.py http://owncloud:owncloud42@download.owncloud.com/internal/9.0.2/owncloud-enterprise-complete-9.0.2.tar.bz2 -d PACKNAME=owncloud-enterprise-files -d SOURCE_TAR_TOP_DIR=owncloud
 
 
 # Requires: python, wget, svn
@@ -258,6 +258,15 @@ osc up
 osc addremove
 osc diff
 osc ci
+
+cd ee:9.0:testing/owncloud-enterprise-files
+osc up
+"""+sys.argv[0]+""" -v -O .  http://.../9.0.3RC1/owncloud-enterprise-complete-9.0.3RC1.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
+...
+cd ee:9.0:testing/owncloud-enterprise
+osc up
+"""+sys.argv[0]+""" -v -O .  -d VERSION=9.0.1 owncloud-empty.tar.bz2
+...
 """, formatter_class=argparse.RawDescriptionHelpFormatter)
 ap.add_argument('url', type=str, help="tar archive (file or) url to put into this package")
 ap.add_argument('-d', '--define', action="append", metavar="KEY=VALUE", help="Specify name=value for template variables. Default: derive from url")
