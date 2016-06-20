@@ -3,7 +3,7 @@
   locale_gen: name={{ item }} state=present
   with_items:
     - "de_DE.UTF-8"
-    - "us_US.UTF-8"
+    - "en_US.UTF-8"
 
 
 
