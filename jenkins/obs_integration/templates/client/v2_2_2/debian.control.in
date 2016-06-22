@@ -11,7 +11,7 @@ Build-Depends: debhelper (>= 9), cmake, sed, doxygen,
 Package: [% shortname %]-client
 Architecture: any
 Multi-Arch: same
-Depends: ${misc:Depends}, ${shlibs:Depends}, libowncloudsync0 (= ${binary:Version}), owncloud-client-l10n,
+Depends: ${misc:Depends}, ${shlibs:Depends}, lib[% shortname %]sync0 (= ${binary:Version}), [% shortname %]-client-l10n,
 	libqt4-sql-sqlite | libqt5sql5-sqlite
 Description: [% pkgdescription_debian %]
 Package: [% shortname %]-client-doc
