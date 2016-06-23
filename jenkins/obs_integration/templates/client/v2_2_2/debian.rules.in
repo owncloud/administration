@@ -40,5 +40,6 @@ override_dh_auto_install:
 	dh_auto_install -Xdebian
 	# https://github.com/owncloud/client/issues/4107
 	install -m 0755 -D $(SRCDIR)/100-owncloud-inotify.conf $(DROOT)/etc/sysconf.d/100-owncloud-inotify.conf
+	if [ -f $(SRCDIR)/l10n.zip ]; then cd $(CURDIR) ; unzip -o $(SRCDIR)/l10n.zip; fi || true
 
 
