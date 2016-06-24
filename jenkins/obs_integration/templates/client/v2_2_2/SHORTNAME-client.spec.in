@@ -74,6 +74,7 @@ Source1:        [% APPLICATION_EXECUTABLE %].sh
 Source2:        [% APPLICATION_EXECUTABLE %]cmd.sh
 Source3:        100-owncloud-inotify.conf
 Source4:        README.UPDATE.txt
+Source5:        l10n.zip
 
 %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 Patch1:         autostart_use_wrapper.diff
