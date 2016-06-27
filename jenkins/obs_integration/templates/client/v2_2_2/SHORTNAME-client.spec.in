@@ -168,6 +168,8 @@ BuildRequires:  %{qtprefix}libqtkeychain-devel >= 0.7.0
 # "nothing provides qt5-designer qt5-linguist needed by qt5-qttools-devel"
 # while Fedora_22 and Fedora_21 are happy with their qt5-qttools-devel.
 BuildRequires:  qt5-qttools-libs-designercomponents qt5-qttools-libs-designer
+# needed on Fedora-24 for KF5-KIO to be recognized by cmake:
+BuildRequires:  extra-cmake-modules
 %else
 BuildRequires:  %{qtprefix}qt5-qttools-devel
 %endif
