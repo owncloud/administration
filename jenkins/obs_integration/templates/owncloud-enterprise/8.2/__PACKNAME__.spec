@@ -145,9 +145,11 @@ Requires:	%{name}-theme
 Requires:	%{name}-app-admin_audit		  = %{version}
 Requires:	%{name}-app-enterprise_key	  = %{version}
 %if %{have_antivir}
-Requires:	%{name}-app-files_antivirus	  = % {version}
-%endif
 Requires:	%{name}-app-files_antivirus	  = %{version}
+%else
+Obsoletes:	%{name}-app-files_antivirus	  < %{version}
+Conflicts:	%{name}-app-files_antivirus	  < %{version}
+%endif
 Requires:	%{name}-app-files_ldap_home	  = %{version}
 Requires:	%{name}-app-files_sharing_log	  = %{version}
 Requires:	%{name}-app-firewall		  = %{version}
