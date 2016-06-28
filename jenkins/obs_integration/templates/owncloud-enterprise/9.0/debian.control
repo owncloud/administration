@@ -53,7 +53,8 @@ Provides: [% PACKNAME %]-deps
 # From https://github.com/owncloud/core/issues/20963
 # From https://github.com/owncloud/core/issues/23644
 # https://github.com/owncloud/core/issues/23878
-Depends: libapache2-mod-php7.0,
+# https://github.com/owncloud/core/issues/25283
+Depends: php7.0,
         php7.0-common,
         php7.0-mysql,
         php7.0-intl,
@@ -68,7 +69,6 @@ Depends: libapache2-mod-php7.0,
         php7.0-curl,
         php7.0-xml,
         php7.0-zip,
-	apache2 (>= 2.4.0) | httpd,
 	[% PACKNAME %]-files
 Suggests: php7.0-ldap, php-smbclient | libsmbclient
 # https://github.com/owncloud/core/issues/23737
