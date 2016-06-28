@@ -82,6 +82,7 @@
 # V2.25 -- 2016-03-10, jw  obs repo mapping. Used to play with Ubuntu_16.04 before obs offers this.
 # V2.26 -- 2016-03-23, jw  support full url in prj_path mapping.
 # V2.27 -- 2016-05-02, jw  The retry adter error now runs with --no-cache, to make caching errors disappear automatically.
+# V2.28 -- 2016-05-03, jw  Support passwords that need url encoding.
 #
 # FIXME: yum install returns success, if one package out of many was installed.
 #
@@ -95,7 +96,7 @@
 
 from __future__ import print_function	# must appear at beginning of file.
 
-__VERSION__="2.27"
+__VERSION__="2.28"
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import yaml, sys, os, re, time, tempfile
@@ -424,6 +425,8 @@ run.verbose=1
 
 def urlopen_auth(url, username, password):
   request = urllib2.Request(url)
+  # no urlencoding needed here:
+  # password_urlenc = re.sub('+', '%2B', password, flags=re.IGNORECASE)
   txt = '%s:%s' % (username, password)
   base64string = base64.encodestring(txt.encode())		# encode() needed for python3
   base64string = base64string.decode().replace('\n', '')	# decode() needed for python3
@@ -542,7 +545,13 @@ def obs_fetch_bin_version(api, download_item, prj, pkg, target, retry=True):
     for line in downloads:
       bin_seen += re.sub(".*/", "", line[0]) + "\n"
   except Exception as e:
-    print("Error: ", str(e))
+    try:
+      downloads = lu.apache(cfg['url_cred']+'/'+target, noverify=True)
+      for line in downloads:
+        bin_seen += re.sub(".*/", "", line[0]) + "\n"
+      print("WARNING: Successful retry with noverify=True after: ", str(e))
+    except Exception as e:
+      print("lu.apache Error: ", str(e))
 
   # osc ls -b obsoleted by the above ListUrl()
   # bin_seen = run(["osc", "-A"+api, "ls", "-b", args.project, args.package, target], input="")
@@ -648,6 +657,8 @@ def obs_download_cfg(config, download_item, prj_path, urltest_target=None, verbo
       if m:
         data['username'] = m.group(1)
         data['password'] = m.group(2)
+	# urldecode for dummies. FIXME: is there a nice library call to do that %40 -> @ conversion?
+        data['password'] = re.sub('%([0-9a-f]{2})', lambda m: chr(int(m.group(1), base=16)), data['password'], flags=re.IGNORECASE)
       else:
         data['username'] = cred
       data['url'] = url_proto + server + url_path
