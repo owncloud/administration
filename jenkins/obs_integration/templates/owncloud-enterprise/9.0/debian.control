@@ -69,6 +69,7 @@ Depends: php7.0,
         php7.0-curl,
         php7.0-xml,
         php7.0-zip,
+	apache2 (>= 2.4.0) | httpd,
 	[% PACKNAME %]-files
 Suggests: php7.0-ldap, php-smbclient | libsmbclient
 # https://github.com/owncloud/core/issues/23737
