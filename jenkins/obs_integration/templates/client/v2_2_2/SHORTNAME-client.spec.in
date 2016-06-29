@@ -558,10 +558,8 @@ fi
 /usr/bin/[% APPLICATION_EXECUTABLE %]cmd
 %endif
 %config /etc/[% shortname_etc %]
-%dir /etc
 # https://github.com/owncloud/client/issues/4107
-%dir /etc/sysctl.d
-%config /etc/sysctl.d/*
+%config /etc/sysctl.d/100-sync-inotify.conf
 
 %files -n %{name}-doc
 %defattr(-,root,root,-)
