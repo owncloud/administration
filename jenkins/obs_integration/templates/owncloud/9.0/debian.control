@@ -53,7 +53,7 @@ Provides: [% PACKNAME %]-deps
 # From https://github.com/owncloud/core/issues/20963
 # From https://github.com/owncloud/core/issues/23644
 # https://github.com/owncloud/core/issues/23878
-Depends: libapache2-mod-php7.0,
+Depends: libapache2-mod-php7.0 | php7.0,
         php7.0-common,
         php7.0-mysql,
         php7.0-intl,
