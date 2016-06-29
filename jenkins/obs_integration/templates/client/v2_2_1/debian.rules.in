@@ -39,6 +39,6 @@ override_dh_auto_install:
 	echo 3cb86418caef9c95cd211cbf60a1bddd88000000020101 | xxd -r -p > $(CURDIR)/usr/share/[% shortname %]/i18n/client_en.qm
 	dh_auto_install -Xdebian
 	# https://github.com/owncloud/client/issues/4107
-	install -m 0755 -D $(SRCDIR)/100-owncloud-inotify.conf $(DROOT)/etc/sysconf.d/100-owncloud-inotify.conf
+	install -m 0755 -D $(SRCDIR)/100-owncloud-inotify.conf $(DROOT)/etc/sysctl.d/100-owncloud-inotify.conf
 
 
