@@ -72,7 +72,7 @@ Group:          Productivity/Networking/Other
 Source0:        [% tarball %].tar.bz2
 Source1:        [% APPLICATION_EXECUTABLE %].sh
 Source2:        [% APPLICATION_EXECUTABLE %]cmd.sh
-Source3:        100-owncloud-inotify.conf
+Source3:        100-sync-inotify.conf
 Source4:        README.UPDATE.txt
 Source5:        l10n.zip
 
@@ -492,7 +492,7 @@ install %{SOURCE2} ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]cmd
 %endif
 
 # https://github.com/owncloud/client/issues/4107
-install -m 0755 -D %{SOURCE3} ${RPM_BUILD_ROOT}/etc/sysctl.d/100-owncloud-inotify.conf
+install -m 0755 -D %{SOURCE3} ${RPM_BUILD_ROOT}/etc/sysctl.d/100-sync-inotify.conf
 
 %if %{?suse_version:1}0
 %suse_update_desktop_file -n [% APPLICATION_EXECUTABLE %]
