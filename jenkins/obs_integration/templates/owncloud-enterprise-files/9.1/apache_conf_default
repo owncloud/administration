@@ -1,0 +1,18 @@
+Alias /owncloud "/var/www/owncloud/"
+<Directory "/var/www/owncloud">
+  Options +FollowSymLinks
+  AllowOverride All
+
+  <IfModule mod_dav.c>
+        Dav off
+  </IfModule>
+
+  SetEnv HOME /var/www/owncloud
+  SetEnv HTTP_HOME /var/www/owncloud
+</Directory>
+
+<Directory "/var/www/owncloud/data/">
+  # just in case if .htaccess gets disabled
+    Require all denied
+</Directory>
+

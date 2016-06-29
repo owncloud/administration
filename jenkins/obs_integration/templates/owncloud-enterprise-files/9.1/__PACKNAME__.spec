@@ -76,7 +76,7 @@ Source6:	rpmlintrc
 Url:            http://www.owncloud.org
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 BuildArch:      noarch
-Summary:        The ownCloud Server - Private file sync and share server
+Summary:        The ownCloud Server Enterprise Edition - Private file sync and share server
 License:        AGPL-3.0 and MIT
 Group:          Productivity/Networking/Web/Utilities
 
@@ -92,12 +92,27 @@ Recommends: %{name}-deps
 BuildRequires:        -rpmlint -rpmlint-mini
 %endif
 
-Obsoletes:	owncloud-server 	<= 8.99.99
-Obsoletes:	owncloud-config-apache 	<= 8.99.99
-Obsoletes:	owncloud		<= 8.99.99
+Obsoletes:	owncloud-enterprise	<= 9.00.99
+Obsoletes:	owncloud-enterprise-theme <= 9.00.99
+Obsoletes:	owncloud-enterprise-app-files_antivirus	<= 9.00.99
+Obsoletes:	owncloud-enterprise-app-files_ldap_home	<= 9.00.99
+Obsoletes:	owncloud-enterprise-app-admin_audit	<= 9.00.99
+Obsoletes:	owncloud-enterprise-app-windows_network_drive	<= 9.00.99
+Obsoletes:	owncloud-enterprise-app-files_drop	<= 9.00.99
+Obsoletes:	owncloud-enterprise-app-files_sharing_log	<= 9.00.99
+Obsoletes:	owncloud-enterprise-app-enterprise_key	<= 9.00.99
+Obsoletes:	owncloud-enterprise-app-password_policy	<= 9.00.99
+Obsoletes:	owncloud-enterprise-app-user_shibboleth	<= 9.00.99
+Obsoletes:	owncloud-enterprise-app-firewall	<= 9.00.99
+Obsoletes:	owncloud-enterprise-app-sharepoint	<= 9.00.99
+Obsoletes:	owncloud-enterprise-app-objectstore	<= 9.00.99
+
+Obsoletes:	owncloud-server 	<= 9.00.99
+Obsoletes:	owncloud-config-apache 	<= 9.00.99
+Obsoletes:	owncloud		<= 9.00.99
 
 %description
-ownCloud Server provides you a private file sync and share
+ownCloud Server Enterprise Edition provides you a private file sync and share
 cloud. Host this server to easily sync business or private documents
 across all your devices, and share those documents with other users of
 your ownCloud server on their devices.

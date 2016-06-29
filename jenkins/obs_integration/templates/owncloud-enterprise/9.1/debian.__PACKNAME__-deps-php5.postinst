@@ -1,0 +1,105 @@
+#!/bin/sh -e
+# postinst script for [% PACKNAME %]-deps-* (==[% VERSION_MM %])
+
+# FROM http://anonscm.debian.org/cgit/pkg-owncloud/owncloud.git/plain/debian/postinst
+# https://github.com/owncloud/core/issues/12037
+# https://github.com/owncloud/core/issues/12125
+
+## CAUTION: keep in sync with debian.rules
+export SPEC_apache_serverroot=/var/www
+export SPEC_apache_confdir=/etc/apache2/conf.d
+export SPEC_apache_confdir_a=/etc/apache2/conf-available
+
+export SPEC_oc_apache_web_dir=$SPEC_apache_serverroot/owncloud
+
+export SPEC_oc_user=www-data
+export SPEC_oc_group=www-data
+export SPEC_oc_dir=$SPEC_oc_apache_web_dir
+export SPEC_oc_doc_dir=/usr/share/doc/owncloud
+export SPEC_oc_config_dir=$SPEC_oc_apache_web_dir/config
+export SPEC_oc_data_dir=$SPEC_oc_apache_web_dir/data
+export SPEC_oc_data_pdir=$SPEC_oc_apache_web_dir
+
+set -e
+
+#DEBHELPER#
+
+if type a2enconf >/dev/null 2>/dev/null; then
+  # FIXME: configure case below pulls symlinks from conf-available manually.
+  # FIXME: https://github.com/owncloud/core/issues/15200 
+  #  we suspect a race condition, when doing things in rapid succession. Adding sleep 5.
+  a2enconf owncloud || true
+  sleep 5
+  service apache2 reload || true
+  sleep 5
+fi
+
+reload_apache()
+{
+    if apache2ctl configtest 2>/dev/null; then
+	if [ -x /usr/sbin/invoke-rc.d ]; then
+            invoke-rc.d apache2 $1 3>/dev/null || true
+	else
+            /etc/init.d/apache2 $1 3>/dev/null || true
+	fi
+    else
+        echo "Your Apache 2 configuration is broken, so we're not restarting it for you."
+    fi
+}
+
+case "$1" in
+    configure)
+	COMMON_STATE=$(dpkg-query -f '${Status}' -W 'apache2.2-common' 2>/dev/null | awk '{print $3}' || true)
+	if [ -e /usr/share/apache2/apache2-maintscript-helper ] ; then
+		. /usr/share/apache2/apache2-maintscript-helper
+		apache2_invoke enmod rewrite
+		if [ -e /etc/apache2/conf-available/owncloud.conf ] ; then
+			sleep 5
+			apache2_invoke enconf owncloud || exit $?
+		fi
+	elif [ "$COMMON_STATE" = "installed" ] || [ "$COMMON_STATE" = "unpacked" ] ; then
+		if [ -e /etc/apache2/conf-available/owncloud.conf ] && [ -d /etc/apache2/conf.d/ ] && [ ! -L /etc/apache2/conf.d/owncloud.conf ] ; then
+			ln -s ../conf-available/owncloud.conf /etc/apache2/conf.d/owncloud.conf
+		fi
+		# Test whether a2enmod is available (and thus also apache2ctl).
+		if [ -x /usr/sbin/a2enmod ]; then
+			# Enable the Apache2 rewrite module if not already enabled
+			a2enmod rewrite > /dev/null || true
+			# Restart Apache to really enable the module and load
+			# /etc/apache2/conf.d/owncloud.conf.
+			sleep 5
+			reload_apache restart
+		fi
+	fi
+	# Create empty logfile if needed
+	file=/var/log/owncloud.log
+	if [ ! -f $file ]; then
+		touch $file
+		chown www-data:adm $file
+		chmod 0640 $file
+	fi
+
+	if [ -s /run/occ_maintenance_mode_during_owncloud_install ]; then
+		# https://github.com/owncloud/core/pull/19508
+		# https://github.com/owncloud/core/pull/19661
+		echo  "Leaving server in maintenance mode. Please run occ upgrade manually."
+		echo  ""
+		echo  "See https://doc.owncloud.org/server/[% VERSION_MM %]/admin_manual/maintenance/upgrade.html"
+		echo  ""
+		# enter maintenance mode again, just in case it failed during preinst.
+		su $SPEC_oc_user -s /bin/sh -c "cd $SPEC_oc_dir; php ./occ maintenance:mode --on" || true
+
+	fi
+	rm -f /run/occ_maintenance_mode_during_owncloud_install
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+exit 0

@@ -92,9 +92,9 @@ Recommends: %{name}-deps
 BuildRequires:        -rpmlint -rpmlint-mini
 %endif
 
-Obsoletes:	owncloud-server 	<= 8.99.99
-Obsoletes:	owncloud-config-apache 	<= 8.99.99
-Obsoletes:	owncloud		<= 8.99.99
+Obsoletes:	owncloud-server 	<= 9.00.99
+Obsoletes:	owncloud-config-apache 	<= 9.00.99
+Obsoletes:	owncloud		<= 9.00.99
 
 %description
 ownCloud Server provides you a private file sync and share

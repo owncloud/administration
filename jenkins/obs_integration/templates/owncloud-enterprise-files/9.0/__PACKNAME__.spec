@@ -72,6 +72,7 @@ Source1:        apache_conf_default
 Source2:        README
 Source4:        README.packaging
 Source5:	disable-updatechecker.config.php
+Source6:	rpmlintrc
 Url:            http://www.owncloud.org
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 BuildArch:      noarch
