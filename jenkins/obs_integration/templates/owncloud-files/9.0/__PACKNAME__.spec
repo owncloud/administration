@@ -180,7 +180,11 @@ test ! -d %{apache_confdir} && getent passwd %{oc_user} | grep -q "Dummy for %{n
 # BUMMER: exclude excludes globally, not just below. It cannot be used to avoid duplicate warnings?
 # FIXME: only cure against the duplicate warnings is a -f file-list
 
-%{oc_dir}
+# https://github.com/owncloud/core/issues/23512
+%attr(0755,%{oc_user},%{oc_group}) %{oc_dir}/.htaccess
+%attr(0755,%{oc_user},%{oc_group}) %{oc_dir}/.user.ini
+%dir %{oc_dir}
+%{oc_dir}/*
 
 %changelog
 
