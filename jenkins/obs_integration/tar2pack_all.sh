@@ -5,6 +5,7 @@
 #  - unroll everything for easier maintenance.
 #  - there is always some manual changes in the templates. better run with echo=echo and do copy-pasta
 #  - always push into :testing, and if its a final then add a pull request
+#  - do not leave any decisions to the user. Nobody can remember e.g. when to use the enterprise-complete tar and when not.
 #
 # 2016-07-04, jw@owncloud.com
 
