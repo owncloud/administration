@@ -49,7 +49,7 @@ for vers in $*; do
 
     $echo cd $co_dir_s2/ee:$majmin:testing/owncloud-enterprise
     $echo osc up
-    $echo $tar2pack -O . http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-complete-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
+    $echo $tar2pack -O . http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
     $echo wget https://doc.owncloud.org/server/8.1/ownCloud_Server_Administration_Manual.pdf
     $echo osc addremove
     $echo osc ci
@@ -94,7 +94,7 @@ if [ -z "$testing" ]; then
   osc rq list isv:ownCloud:community -s new,review
   osc -As2 rq list -s new,review
   echo "Please accept the pull request to build non-testing packages."
-  echo "Caution: at openSUSE obs, you may want to disable publishing first.
+  echo "Caution: at openSUSE obs, you may want to disable publishing first."
 fi
 
 echo "ssh root@s2"

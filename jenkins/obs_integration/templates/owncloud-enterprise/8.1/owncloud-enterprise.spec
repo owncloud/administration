@@ -214,7 +214,7 @@ oc_dir:        %{oc_dir}			\
 
 
 %prep
-%setup -q -n owncloud
+%setup -q -n enterprise
 cp %{SOURCE2} .
 cp %{SOURCE3} .
 cp %{SOURCE4} .
