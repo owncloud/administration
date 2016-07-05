@@ -139,7 +139,6 @@ Requires:	%{name}-theme
 # included subpackages, per oc_app_package macro:
 Requires:	%{name}-app-admin_audit		  = %{version}
 Requires:	%{name}-app-enterprise_key	  = %{version}
-Requires:	%{name}-app-files_antivirus	  = %{version}
 Requires:	%{name}-app-files_ldap_home	  = %{version}
 Requires:	%{name}-app-files_sharing_log	  = %{version}
 Requires:	%{name}-app-firewall		  = %{version}
@@ -268,11 +267,6 @@ rm -rf "$RPM_BUILD_ROOT"
 
 %oc_app_package admin_audit
 %oc_app_package enterprise_key
-%if 0%{?suse_version}
-%oc_app_package files_antivirus		Recommends:clamav
-%else
-%oc_app_package files_antivirus
-%endif
 %oc_app_package files_ldap_home
 %oc_app_package files_sharing_log
 %oc_app_package firewall
