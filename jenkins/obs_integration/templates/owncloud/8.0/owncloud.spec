@@ -198,6 +198,7 @@ Requires:	%{name}-app-files             = %{version} \
 Requires:	%{name}-app-files_locking     = %{version} \
 Requires:	%{name}-app-files_texteditor  = %{version} \
 Requires:	%{name}-app-files_videoviewer = %{version} \
+Requires:	%{name}-app-files_antivir     = %{version} \
 Requires:	%{name}-app-provisioning_api  = %{version} \
 Requires:	%{name}-app-user_external     = %{version}
 
@@ -743,6 +744,11 @@ rm -rf "$RPM_BUILD_ROOT"
 %oc_app_package files_locking
 %oc_app_package files_texteditor
 %oc_app_package files_videoviewer
+%if 0%{?suse_version}
+%oc_app_package files_antivirus		Recommends:clamav
+%else
+%oc_app_package files_antivirus
+%endif
 %oc_app_package provisioning_api
 %oc_app_package user_external		Requires:owncloud-app-external
 

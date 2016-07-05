@@ -41,6 +41,7 @@ Depends: ${misc:Depends}, php5 (>= 5.4.0), php5-mysqlnd | php5-mysql, php5-sqlit
 	owncloud-app-user-ldap         (= ${binary:Version}),
 	owncloud-app-external          (= ${binary:Version}),
 	owncloud-app-files-videoviewer (= ${binary:Version}),
+	owncloud-app-files-antivirus   (= ${binary:Version}),
 	owncloud-app-gallery           (= ${binary:Version}),
 	owncloud-app-user-webdavauth   (= ${binary:Version}),
 	owncloud-app-user-external     (= ${binary:Version})
@@ -241,4 +242,12 @@ Depends: owncloud-server (= ${binary:Version})
 Replaces: owncloud (<< 7.9.9)
 Breaks: owncloud (<< 7.9.9)
 Description: The ownCloud app owncloud-app-user-external
+ .
+
+Package: owncloud-app-files-antivirus
+Architecture: all
+Depends: owncloud-server (= ${binary:Version})
+Replaces: owncloud (<< 7.9.9)
+Breaks: owncloud (<< 7.9.9)
+Description: The ownCloud app owncloud-app-files-antivirus
  .
