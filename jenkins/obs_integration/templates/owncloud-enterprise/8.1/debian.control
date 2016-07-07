@@ -27,6 +27,7 @@ Depends: ${misc:Depends},
 	owncloud-enterprise-app-user-shibboleth       (= ${binary:Version}),
 	owncloud-enterprise-app-windows-network-drive (= ${binary:Version}),
 	owncloud-enterprise-app-files-drop	      (= ${binary:Version})
+Replaces: owncloud-enterprise-app-files-antivirus     (<< ${binary:Version})
 Description: ownCloud Enterprise Edition - Server 
  ownCloud Enterprise Edition provides an Enterprise class file sync and share
  solution that is controlled and managed by you. Hosted on your servers or 

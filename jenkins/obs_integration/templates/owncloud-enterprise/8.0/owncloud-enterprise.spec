@@ -45,6 +45,9 @@
 ## only for backwards compatibility with our 7.0 package layout.
 %define oc_apache_web_dir 	%{apache_serverroot}/%{owncloud}
 
+# files_antivirus disappererd in 8.2.6~rc1
+%define have_antivir 0
+
 # CAUTION: keep in sync with debian.rules
 %if %{fhs}
 %define oc_dir		/usr/share/%{owncloud}
@@ -167,6 +170,13 @@ Requires:	%{name}-theme
 # included subpackages, per oc_app_package macro:
 Requires:	%{name}-app-admin_audit		  = %{version}
 Requires:	%{name}-app-enterprise_key	  = %{version}
+%if %{have_antivir}
+Requires:	%{name}-app-files_antivirus	  = %{version}
+%else
+Obsoletes:	%{name}-app-files_antivirus	  < %{version}
+Conflicts:	%{name}-app-files_antivirus	  < %{version}
+%endif
+Requires:	%{name}-app-files_ldap_home	  = %{version}
 Requires:	%{name}-app-files_antivirus	  = %{version}
 Requires:	%{name}-app-files_ldap_home	  = %{version}
 Requires:	%{name}-app-files_sharing_log	  = %{version}
@@ -306,10 +316,12 @@ rm -rf "$RPM_BUILD_ROOT"
 
 %oc_app_package admin_audit
 %oc_app_package enterprise_key
+%if %{have_antivir}
 %if 0%{?suse_version}
 %oc_app_package files_antivirus		Recommends:clamav
 %else
 %oc_app_package files_antivirus
+%endif
 %endif
 %oc_app_package files_ldap_home
 #               files_ldap_home		Requires:php5-ldap
