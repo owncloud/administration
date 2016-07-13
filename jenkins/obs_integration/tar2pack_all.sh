@@ -51,6 +51,7 @@ for vers in $*; do
     $echo osc addremove
     $echo osc ci
     test -z "$testing" && $echo osc submitpac --no-cleanup ee:$majmin owncloud-enterprise-files
+    echo >> $logfile "$vers enterprise	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise-files"
 
     $echo cd $co_dir_s2/ee:$majmin:testing/owncloud-enterprise
     $echo osc up
@@ -58,7 +59,7 @@ for vers in $*; do
     $echo osc addremove
     $echo osc ci
     test -z "$testing" && $echo osc submitpac --no-cleanup ee:$majmin owncloud-enterprise
-    echo >> $logfile "$vers enterprise	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise"
+    echo >> $logfile "               	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise"
 
     $echo cd $co_dir_s2/ce:$majmin:testing/owncloud-files
     $echo osc up
@@ -66,6 +67,7 @@ for vers in $*; do
     $echo osc addremove
     $echo osc ci
     test -z "$testing" && $echo osc submitpac --no-cleanup ce:$majmin owncloud-files
+    echo >> $logfile "$vers community	https://obs.int.owncloud.com/package/show/ce:$majmin:testing/owncloud-files"
 
     $echo cd $co_dir_s2/ce:$majmin:testing/owncloud
     $echo osc up
@@ -73,7 +75,8 @@ for vers in $*; do
     $echo osc addremove
     $echo osc ci
     test -z "$testing" && $echo osc submitpac --no-cleanup ce:$majmin owncloud
-    echo >> $logfile "$vers community	https://obs.int.owncloud.com/package/show/ce:$majmin:testing/owncloud"
+    echo >> $logfile "               	https://obs.int.owncloud.com/package/show/ce:$majmin:testing/owncloud"
+    test -n "$echo" && echo
   ;;
 
   9.0*) majmin=9.0
@@ -84,6 +87,7 @@ for vers in $*; do
     $echo osc addremove
     $echo osc ci
     test -z "$testing" && $echo osc submitpac --no-cleanup ee:$majmin owncloud-enterprise-files
+    echo >> $logfile "$vers enterprise	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise-files"
 
     $echo cd $co_dir_s2/ee:$majmin:testing/owncloud-enterprise
     $echo osc up
@@ -91,7 +95,7 @@ for vers in $*; do
     $echo osc addremove
     $echo osc ci
     test -z "$testing" && $echo osc submitpac --no-cleanup ee:$majmin owncloud-enterprise
-    echo >> $logfile "$vers enterprise	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise"
+    echo >> $logfile "               	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise"
 
     $echo cd $co_dir_s2/ce:$majmin:testing/owncloud-files
     $echo osc up
@@ -99,6 +103,7 @@ for vers in $*; do
     $echo osc addremove
     $echo osc ci
     test -z "$testing" && $echo osc submitpac --no-cleanup ce:$majmin owncloud-files
+    echo >> $logfile "$vers community	https://obs.int.owncloud.com/package/show/ce:$majmin:testing/owncloud-files"
 
     $echo cd $co_dir_s2/ce:$majmin:testing/owncloud
     $echo osc up
@@ -106,7 +111,8 @@ for vers in $*; do
     $echo osc addremove
     $echo osc ci
     test -z "$testing" && $echo osc submitpac --no-cleanup ce:$majmin owncloud
-    echo >> $logfile "$vers community	https://obs.int.owncloud.com/package/show/ce:$majmin:testing/owncloud"
+    echo >> $logfile "               	https://obs.int.owncloud.com/package/show/ce:$majmin:testing/owncloud"
+    test -n "$echo" && echo
   ;;
 
   8.2*) majmin=8.2
@@ -127,6 +133,7 @@ for vers in $*; do
     $echo osc ci
     echo >> $logfile "$vers community	https://obs.int.owncloud.com/package/show/ce:$majmin:testing/owncloud"
     test -z "$testing" && $echo osc submitpac --no-cleanup ce:$majmin owncloud
+    test -n "$echo" && echo
   ;;
 
   8.1*) majmin=8.1
@@ -147,6 +154,7 @@ for vers in $*; do
     $echo osc ci
     echo >> $logfile "$vers community	https://build.opensuse.org/package/show/isv:ownCloud:community:$majmin:testing/owncloud"
     test -z "$testing" && $echo osc submitpac --no-cleanup isv:ownCloud:community:$majmin owncloud
+    test -n "$echo" && echo
   ;;
 
   8.0*) majmin=8.0
@@ -166,6 +174,7 @@ for vers in $*; do
     $echo osc ci
     echo >> $logfile "$vers community	https://build.opensuse.org/package/show/isv:ownCloud:community:$majmin:testing/owncloud"
     test -z "$testing" && $echo osc submitpac --no-cleanup isv:ownCloud:community:$majmin owncloud-enterprise
+    test -n "$echo" && echo
   ;;
 
   esac
