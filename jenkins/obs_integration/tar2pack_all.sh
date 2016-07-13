@@ -13,6 +13,7 @@ co_dir_obs=$HOME/src/obs
 co_dir_s2=$HOME/src/obs/s2
 
 tar2pack=$HOME/obs_integration/tar2pack.py
+logfile=/tmp/tar2pack_all.$$.log
 
 echo=
 echo=echo	# use for preview only
@@ -32,6 +33,7 @@ if [ -z "$1" ]; then
   exit 0;
 fi
 
+:> $logfile
 for vers in $*; do
 
   case $vers in 
@@ -54,6 +56,7 @@ for vers in $*; do
     $echo wget https://doc.owncloud.org/server/8.1/ownCloud_Server_Administration_Manual.pdf
     $echo osc addremove
     $echo osc ci
+    echo >> $logfile "$vers enterprise	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise"
     test -z "$testing" && $echo osc submitpac --no-cleanup ee:$majmin owncloud-enterprise
 
     $echo cd $co_dir_obs/isv:ownCloud:community:$majmin:testing/owncloud
@@ -61,7 +64,8 @@ for vers in $*; do
     $echo $tar2pack -O . http://download.owncloud.org/community/$testing/owncloud-$vers.tar.bz2
     $echo osc addremove
     $echo osc ci
-    test -z "$testing" && $echo osc submitpac --no-cleanup isv:ownCloud:community:$majmin owncloud-enterprise
+    echo >> $logfile "$vers community	https://build.opensuse.org/package/show/isv:ownCloud:community:$majmin:testing/owncloud"
+    test -z "$testing" && $echo osc submitpac --no-cleanup isv:ownCloud:community:$majmin owncloud
   ;;
 
   8.0*) majmin=8.0
@@ -71,6 +75,7 @@ for vers in $*; do
     $echo $tar2pack -O . http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
     $echo osc addremove
     $echo osc ci
+    echo >> $logfile "$vers enterprise	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise"
     test -z "$testing" && $echo osc submitpac --no-cleanup ee:$majmin owncloud-enterprise
 
     $echo cd $co_dir_obs/isv:ownCloud:community:$majmin:testing/owncloud
@@ -78,6 +83,7 @@ for vers in $*; do
     $echo $tar2pack -O . http://download.owncloud.org/community/$testing/owncloud-$vers.tar.bz2
     $echo osc addremove
     $echo osc ci
+    echo >> $logfile "$vers community	https://build.opensuse.org/package/show/isv:ownCloud:community:$majmin:testing/owncloud"
     test -z "$testing" && $echo osc submitpac --no-cleanup isv:ownCloud:community:$majmin owncloud-enterprise
   ;;
 
@@ -90,8 +96,13 @@ for vers in $*; do
 
 done
 
+echo "Packages pushed into the build services:"
+cat $logfile | sed -e 's@^@  @'
+rm -f $logfile
+echo
+
 if [ -z "$testing" ]; then
-  echo "new pull requests:"
+  echo "New pull requests:"
   osc rq list isv:ownCloud:community -s new,review
   osc -As2 rq list -s new,review
   echo "Please accept the pull request to build non-testing packages."
