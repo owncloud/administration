@@ -42,6 +42,7 @@
 #                        - all print() with parens,
 #                        - all data read/write as binary open(file, encoding="latin-1")
 # 2016-04-01: 0.10 jw: warn with uppercase in VERSION or PRERELEASE.
+# 2016-07-12: 0.11 jw: exit(1) when download failed.
 #
 ## TODO: refresh version in dsc file, to be in sync with changelog.
 ## FIXME: should have a mode to grab all the define variables from an existing specfile.
@@ -156,7 +157,7 @@ def parse_osc_user(data):
   m = re.match(r'(.*?):\s"(.*?)"\s+<(.*?)>', txt)
   if m is None:
     print("Error: osc user failed.")
-    sys.exit(0)
+    sys.exit(1)
   data['LOGNAME'] = m.group(1)
   data['MAINTAINER_NAME'] = m.group(2)
   data['MAINTAINER_EMAIL'] = m.group(3)
@@ -301,7 +302,7 @@ if args.url == '.':
   specs = glob.glob(args.outdir + '/*.spec')
   if len(specs) != 1:
     print("expecting exactly one *.spec file in "+args.outdir+", seen "+len(specs))
-    sys.exit(0)
+    sys.exit(1)
   source_tar_url = parse_source0_from_spec(specs[0])
   print("keeping source tar url "+source_tar_url)
 
@@ -383,7 +384,7 @@ if re.match('^https?://', args.template_dir):
   if not which(svn_co[0]):
     print("Error: cannot find svn binary in path. Do you have package subversion installed?")
     print("       (or use -t with a local copy of the templates)")
-    sys.exit(0)
+    sys.exit(1)
   run(svn_co + [svn_url, template_base])
 
 template_dir = template_base
@@ -400,7 +401,7 @@ for d in os.listdir(template_dir):
   if os.path.isdir(template_dir+'/'+d):
     print(template_dir + " is not a template directory: contains subdirectory '"+d+"'")
     print("... or template base '"+template_base+"' had no match for "+define['PACKNAME']+"-"+define['VERSION'])
-    exit(1)
+    sys.exit(1)
 
 ## bring in the tar archive
 newtarfile=source_tar_url
@@ -429,7 +430,11 @@ if not os.path.isdir(outdir):
 
 if re.search(r'://', args.url):
   r=run(["wget", args.url,"-O",outdir + '/' + newtarfile,"-nv"], redirect=False, return_code=True)
-  if r: sys.exit()
+  if r:
+    print("Download failed!")
+    try: os.unlink(outdir + '/' + newtarfile)	# wget most likely dropped a zero length file
+    except: pass
+    sys.exit(1)
 else:
   if args.url != '.' and os.path.abspath(args.url) != os.path.abspath(outdir + '/' + newtarfile):
     # ignore SameFileError. (Without waiting for pyhton 3.4)
@@ -486,5 +491,5 @@ edit_debchangelog(outdir+'/'+"debian.changelog", define, args.message)
 edit_changes(outdir+'/'+define['PACKNAME']+".changes", define, args.message)
 
 print("next steps:\n\tosc addremove\n\tosc ci")
-exit(0)
+sys.exit(0)
 
