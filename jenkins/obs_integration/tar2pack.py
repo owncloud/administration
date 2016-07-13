@@ -43,6 +43,7 @@
 #                        - all data read/write as binary open(file, encoding="latin-1")
 # 2016-04-01: 0.10 jw: warn with uppercase in VERSION or PRERELEASE.
 # 2016-07-12: 0.11 jw: exit(1) when download failed.
+#                      -d VERSION=9.0.4RC1 handled as -d VERSION=9.0.4~rc1
 #
 ## TODO: refresh version in dsc file, to be in sync with changelog.
 ## FIXME: should have a mode to grab all the define variables from an existing specfile.
@@ -334,6 +335,14 @@ if m:
     time.sleep(5)
 else:
   print("Warning: cannot parse PACKNAME, VERSION, PRERELEASE from tar-name: "+source_tar_url)
+  if 'VERSION' in define:
+    print("   user defined VERSION=" + define['VERSION'])
+    m = re.match(r'(.*?)[~-]?([a-z].*)', define['VERSION'], flags=re.IGNORECASE)
+    if m:
+      define['VERSION'] = m.group(1)
+      define['PRERELEASE'] = m.group(2).lower()
+      print("   ... interpreted as VERSION=" + define['VERSION'] + " PRERELEASE=" + define['PRERELEASE'])
+
   print("Waiting 3 seconds for CTRL-C")
   time.sleep(5)
 
