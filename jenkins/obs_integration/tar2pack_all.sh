@@ -42,6 +42,9 @@ for vers in $*; do
   *) testing=;;
   esac
 
+  msg="Update to $vers"
+  test -n "$echo" && msg="'$msg'"
+
   case $vers in
   9.1*) majmin=9.1
 
@@ -49,7 +52,7 @@ for vers in $*; do
     $echo osc up
     $echo $tar2pack -O . http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-complete-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
     $echo osc addremove
-    $echo osc ci
+    $echo osc ci -m "$msg"
     test -z "$testing" && $echo osc submitpac --no-cleanup ee:$majmin owncloud-enterprise-files
     echo >> $logfile "$vers enterprise	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise-files"
 
@@ -57,7 +60,7 @@ for vers in $*; do
     $echo osc up
     $echo $tar2pack -O . -d VERSION=$vers owncloud-empty.tar.bz2
     $echo osc addremove
-    $echo osc ci
+    $echo osc ci -m "$msg"
     test -z "$testing" && $echo osc submitpac --no-cleanup ee:$majmin owncloud-enterprise
     echo >> $logfile "               	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise"
 
@@ -65,7 +68,7 @@ for vers in $*; do
     $echo osc up
     $echo $tar2pack -O . http://download.owncloud.org/community/$testing/owncloud-$vers.tar.bz2
     $echo osc addremove
-    $echo osc ci
+    $echo osc ci -m "$msg"
     test -z "$testing" && $echo osc submitpac --no-cleanup ce:$majmin owncloud-files
     echo >> $logfile "$vers community	https://obs.int.owncloud.com/package/show/ce:$majmin:testing/owncloud-files"
 
@@ -73,7 +76,7 @@ for vers in $*; do
     $echo osc up
     $echo $tar2pack -O . -d VERSION=$vers owncloud-empty.tar.bz2
     $echo osc addremove
-    $echo osc ci
+    $echo osc ci -m "$msg"
     test -z "$testing" && $echo osc submitpac --no-cleanup ce:$majmin owncloud
     echo >> $logfile "               	https://obs.int.owncloud.com/package/show/ce:$majmin:testing/owncloud"
     test -n "$echo" && echo
@@ -85,7 +88,7 @@ for vers in $*; do
     $echo osc up
     $echo $tar2pack -O . http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-complete-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
     $echo osc addremove
-    $echo osc ci
+    $echo osc ci -m "$msg"
     test -z "$testing" && $echo osc submitpac --no-cleanup ee:$majmin owncloud-enterprise-files
     echo >> $logfile "$vers enterprise	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise-files"
 
@@ -93,7 +96,7 @@ for vers in $*; do
     $echo osc up
     $echo $tar2pack -O . -d VERSION=$vers owncloud-empty.tar.bz2
     $echo osc addremove
-    $echo osc ci
+    $echo osc ci -m "$msg"
     test -z "$testing" && $echo osc submitpac --no-cleanup ee:$majmin owncloud-enterprise
     echo >> $logfile "               	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise"
 
@@ -101,7 +104,7 @@ for vers in $*; do
     $echo osc up
     $echo $tar2pack -O . http://download.owncloud.org/community/$testing/owncloud-$vers.tar.bz2
     $echo osc addremove
-    $echo osc ci
+    $echo osc ci -m "$msg"
     test -z "$testing" && $echo osc submitpac --no-cleanup ce:$majmin owncloud-files
     echo >> $logfile "$vers community	https://obs.int.owncloud.com/package/show/ce:$majmin:testing/owncloud-files"
 
@@ -109,7 +112,7 @@ for vers in $*; do
     $echo osc up
     $echo $tar2pack -O . -d VERSION=$vers owncloud-empty.tar.bz2
     $echo osc addremove
-    $echo osc ci
+    $echo osc ci -m "$msg"
     test -z "$testing" && $echo osc submitpac --no-cleanup ce:$majmin owncloud
     echo >> $logfile "               	https://obs.int.owncloud.com/package/show/ce:$majmin:testing/owncloud"
     test -n "$echo" && echo
@@ -122,7 +125,7 @@ for vers in $*; do
     $echo $tar2pack -O . http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
     $echo wget https://doc.owncloud.org/server/8.2/ownCloud_Server_Administration_Manual.pdf
     $echo osc addremove
-    $echo osc ci
+    $echo osc ci -m "$msg"
     echo >> $logfile "$vers enterprise	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise"
     test -z "$testing" && $echo osc submitpac --no-cleanup ee:$majmin owncloud-enterprise
 
@@ -130,7 +133,7 @@ for vers in $*; do
     $echo osc up
     $echo $tar2pack -O . http://download.owncloud.org/community/$testing/owncloud-$vers.tar.bz2
     $echo osc addremove
-    $echo osc ci
+    $echo osc ci -m "$msg"
     echo >> $logfile "$vers community	https://obs.int.owncloud.com/package/show/ce:$majmin:testing/owncloud"
     test -z "$testing" && $echo osc submitpac --no-cleanup ce:$majmin owncloud
     test -n "$echo" && echo
@@ -143,7 +146,7 @@ for vers in $*; do
     $echo $tar2pack -O . http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
     $echo wget https://doc.owncloud.org/server/8.1/ownCloud_Server_Administration_Manual.pdf
     $echo osc addremove
-    $echo osc ci
+    $echo osc ci -m "$msg"
     echo >> $logfile "$vers enterprise	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise"
     test -z "$testing" && $echo osc submitpac --no-cleanup ee:$majmin owncloud-enterprise
 
@@ -151,7 +154,7 @@ for vers in $*; do
     $echo osc up
     $echo $tar2pack -O . http://download.owncloud.org/community/$testing/owncloud-$vers.tar.bz2
     $echo osc addremove
-    $echo osc ci
+    $echo osc ci -m "$msg"
     echo >> $logfile "$vers community	https://build.opensuse.org/package/show/isv:ownCloud:community:$majmin:testing/owncloud"
     test -z "$testing" && $echo osc submitpac --no-cleanup isv:ownCloud:community:$majmin owncloud
     test -n "$echo" && echo
@@ -163,7 +166,7 @@ for vers in $*; do
     $echo osc up
     $echo $tar2pack -O . http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
     $echo osc addremove
-    $echo osc ci
+    $echo osc ci -m "$msg"
     echo >> $logfile "$vers enterprise	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise"
     test -z "$testing" && $echo osc submitpac --no-cleanup ee:$majmin owncloud-enterprise
 
@@ -171,7 +174,7 @@ for vers in $*; do
     $echo osc up
     $echo $tar2pack -O . http://download.owncloud.org/community/$testing/owncloud-$vers.tar.bz2
     $echo osc addremove
-    $echo osc ci
+    $echo osc ci -m "$msg"
     echo >> $logfile "$vers community	https://build.opensuse.org/package/show/isv:ownCloud:community:$majmin:testing/owncloud"
     test -z "$testing" && $echo osc submitpac --no-cleanup isv:ownCloud:community:$majmin owncloud-enterprise
     test -n "$echo" && echo
