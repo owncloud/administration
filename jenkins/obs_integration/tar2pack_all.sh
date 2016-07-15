@@ -44,6 +44,7 @@ for vers in $*; do
 
   msg="Update to $vers"
   test -n "$echo" && msg="'$msg'"
+  test -n "$echo" && echo "# - - - - - - - - - - -  $vers  - - - - - - - - - - -"
 
   case $vers in
   9.1*) majmin=9.1
