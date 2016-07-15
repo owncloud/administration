@@ -198,7 +198,7 @@ Requires:	%{name}-app-files             = %{version} \
 Requires:	%{name}-app-files_locking     = %{version} \
 Requires:	%{name}-app-files_texteditor  = %{version} \
 Requires:	%{name}-app-files_videoviewer = %{version} \
-Requires:	%{name}-app-files_antivir     = %{version} \
+Requires:	%{name}-app-files_antivirus   = %{version} \
 Requires:	%{name}-app-provisioning_api  = %{version} \
 Requires:	%{name}-app-user_external     = %{version}
 

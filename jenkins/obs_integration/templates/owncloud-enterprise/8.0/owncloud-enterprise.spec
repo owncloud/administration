@@ -177,7 +177,6 @@ Obsoletes:	%{name}-app-files_antivirus	  < %{version}
 Conflicts:	%{name}-app-files_antivirus	  < %{version}
 %endif
 Requires:	%{name}-app-files_ldap_home	  = %{version}
-Requires:	%{name}-app-files_antivirus	  = %{version}
 Requires:	%{name}-app-files_ldap_home	  = %{version}
 Requires:	%{name}-app-files_sharing_log	  = %{version}
 Requires:	%{name}-app-firewall		  = %{version}

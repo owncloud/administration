@@ -66,12 +66,6 @@ Depends: owncloud-enterprise (= ${binary:Version})
 Description: The owncloud-enterprise subpackage owncloud-enterprise-app-enterprise-key
  .
 
-Package: owncloud-enterprise-app-files-antivirus
-Architecture: all
-Depends: owncloud-enterprise (= ${binary:Version}), clamav
-Description: The owncloud-enterprise subpackage owncloud-enterprise-app-files-antivirus
- .
-
 Package: owncloud-enterprise-app-files-ldap-home
 Architecture: all
 Depends: owncloud-enterprise (= ${binary:Version})
