@@ -66,7 +66,6 @@ for vers in $*; do
     $echo osc ci -m "$msg" --noservice
     test -z "$testing" && $echo osc submitpac --no-cleanup ee:$majmin owncloud-enterprise
     echo >> $logfile "               	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise"
-    echo >> $dl_list "                	http://obs.int.owncloud.com:83/ee:$majmin:testing"
 
     $echo cd $co_dir_s2/ce:$majmin:testing/owncloud-files
     $echo osc up
@@ -83,7 +82,6 @@ for vers in $*; do
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
     test -z "$testing" && $echo osc submitpac --no-cleanup ce:$majmin owncloud
-    echo >> $dl_list "                	http://obs.int.owncloud.com:83/ce:$majmin:testing"
     echo >> $logfile "               	https://obs.int.owncloud.com/package/show/ce:$majmin:testing/owncloud"
   ;;
 
@@ -104,7 +102,6 @@ for vers in $*; do
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
     test -z "$testing" && $echo osc submitpac --no-cleanup ee:$majmin owncloud-enterprise
-    echo >> $dl_list "                	http://obs.int.owncloud.com:83/ee:$majmin:testing"
     echo >> $logfile "               	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise"
 
     $echo cd $co_dir_s2/ce:$majmin:testing/owncloud-files
@@ -122,7 +119,6 @@ for vers in $*; do
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
     test -z "$testing" && $echo osc submitpac --no-cleanup ce:$majmin owncloud
-    echo >> $dl_list "                	http://obs.int.owncloud.com:83/ce:$majmin:testing"
     echo >> $logfile "               	https://obs.int.owncloud.com/package/show/ce:$majmin:testing/owncloud"
   ;;
 
