@@ -74,7 +74,7 @@ for vers in $*; do
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
     test -z "$testing" && $echo osc submitpac --no-cleanup ce:$majmin owncloud-files
-    echo >> $dl_list "$vers community 	http://obs.int.owncloud.com:83/ee:$majmin:testing"
+    echo >> $dl_list "$vers community 	http://obs.int.owncloud.com:83/ce:$majmin:testing"
     echo >> $logfile "$vers community	https://obs.int.owncloud.com/package/show/ce:$majmin:testing/owncloud-files"
 
     $echo cd $co_dir_s2/ce:$majmin:testing/owncloud
@@ -83,7 +83,7 @@ for vers in $*; do
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
     test -z "$testing" && $echo osc submitpac --no-cleanup ce:$majmin owncloud
-    echo >> $dl_list "                	http://obs.int.owncloud.com:83/ee:$majmin:testing"
+    echo >> $dl_list "                	http://obs.int.owncloud.com:83/ce:$majmin:testing"
     echo >> $logfile "               	https://obs.int.owncloud.com/package/show/ce:$majmin:testing/owncloud"
   ;;
 
@@ -113,7 +113,7 @@ for vers in $*; do
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
     test -z "$testing" && $echo osc submitpac --no-cleanup ce:$majmin owncloud-files
-    echo >> $dl_list "$vers community 	http://obs.int.owncloud.com:83/ee:$majmin:testing"
+    echo >> $dl_list "$vers community 	http://obs.int.owncloud.com:83/ce:$majmin:testing"
     echo >> $logfile "$vers community	https://obs.int.owncloud.com/package/show/ce:$majmin:testing/owncloud-files"
 
     $echo cd $co_dir_s2/ce:$majmin:testing/owncloud
@@ -122,7 +122,7 @@ for vers in $*; do
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
     test -z "$testing" && $echo osc submitpac --no-cleanup ce:$majmin owncloud
-    echo >> $dl_list "                	http://obs.int.owncloud.com:83/ee:$majmin:testing"
+    echo >> $dl_list "                	http://obs.int.owncloud.com:83/ce:$majmin:testing"
     echo >> $logfile "               	https://obs.int.owncloud.com/package/show/ce:$majmin:testing/owncloud"
   ;;
 
@@ -143,7 +143,7 @@ for vers in $*; do
     $echo $tar2pack -O . http://download.owncloud.org/community/$testing/owncloud-$vers.tar.bz2
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
-    echo >> $dl_list "$vers community 	http://obs.int.owncloud.com:83/ee:$majmin:testing"
+    echo >> $dl_list "$vers community 	http://obs.int.owncloud.com:83/ce:$majmin:testing"
     echo >> $logfile "$vers community	https://obs.int.owncloud.com/package/show/ce:$majmin:testing/owncloud"
     test -z "$testing" && $echo osc submitpac --no-cleanup ce:$majmin owncloud
     test -n "$echo" && echo
