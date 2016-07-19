@@ -221,4 +221,5 @@ rm -f $dl_list
 echo
 echo "ssh root@s2"
 echo "# and do bin/publishee ...; bin/publish_ce ... eventually"
-
+echo "ssh monkey"
+echo "# bash src/github/owncloud/enterprise/appliance/obfuscation/ZendGuard-7.0.0/obfuscate_apps-9.0.sh ee:9.0"
