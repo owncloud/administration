@@ -55,7 +55,7 @@ for vers in $*; do
     $echo $tar2pack -O . http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-complete-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
-    test -z "$testing" && $echo osc submitpac --no-cleanup ee:$majmin owncloud-enterprise-files
+    test -z "$testing" && echo y | $echo EDITOR=touch osc submitpac --yes --no-cleanup ee:$majmin owncloud-enterprise-files
     echo >> $logfile "$vers enterprise	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise-files"
     echo >> $dl_list "$vers enterprise	http://obs.int.owncloud.com:83/ee:$majmin:testing"
 
@@ -64,7 +64,7 @@ for vers in $*; do
     $echo $tar2pack -O . -d VERSION=$vers owncloud-empty.tar.bz2
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
-    test -z "$testing" && $echo osc submitpac --no-cleanup ee:$majmin owncloud-enterprise
+    test -z "$testing" && echo y | $echo EDITOR=touch osc submitpac --yes --no-cleanup ee:$majmin owncloud-enterprise
     echo >> $logfile "               	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise"
 
     $echo cd $co_dir_s2/ce:$majmin:testing/owncloud-files
@@ -72,7 +72,7 @@ for vers in $*; do
     $echo $tar2pack -O . http://download.owncloud.org/community/$testing/owncloud-$vers.tar.bz2
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
-    test -z "$testing" && $echo osc submitpac --no-cleanup ce:$majmin owncloud-files
+    test -z "$testing" && echo y | $echo EDITOR=touch osc submitpac --yes --no-cleanup ce:$majmin owncloud-files
     echo >> $dl_list "$vers community 	http://obs.int.owncloud.com:83/ce:$majmin:testing"
     echo >> $logfile "$vers community	https://obs.int.owncloud.com/package/show/ce:$majmin:testing/owncloud-files"
 
@@ -81,7 +81,7 @@ for vers in $*; do
     $echo $tar2pack -O . -d VERSION=$vers owncloud-empty.tar.bz2
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
-    test -z "$testing" && $echo osc submitpac --no-cleanup ce:$majmin owncloud
+    test -z "$testing" && echo y | $echo EDITOR=touch osc submitpac --yes --no-cleanup ce:$majmin owncloud
     echo >> $logfile "               	https://obs.int.owncloud.com/package/show/ce:$majmin:testing/owncloud"
   ;;
 
@@ -92,7 +92,7 @@ for vers in $*; do
     $echo $tar2pack -O . http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-complete-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
-    test -z "$testing" && $echo osc submitpac --no-cleanup ee:$majmin owncloud-enterprise-files
+    test -z "$testing" && echo y | $echo EDITOR=touch osc submitpac --yes --no-cleanup ee:$majmin owncloud-enterprise-files
     echo >> $dl_list "$vers enterprise	http://obs.int.owncloud.com:83/ee:$majmin:testing"
     echo >> $logfile "$vers enterprise	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise-files"
 
@@ -101,7 +101,7 @@ for vers in $*; do
     $echo $tar2pack -O . -d VERSION=$vers owncloud-empty.tar.bz2
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
-    test -z "$testing" && $echo osc submitpac --no-cleanup ee:$majmin owncloud-enterprise
+    test -z "$testing" && echo y | $echo EDITOR=touch osc submitpac --yes --no-cleanup ee:$majmin owncloud-enterprise
     echo >> $logfile "               	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise"
 
     $echo cd $co_dir_s2/ce:$majmin:testing/owncloud-files
@@ -109,7 +109,7 @@ for vers in $*; do
     $echo $tar2pack -O . http://download.owncloud.org/community/$testing/owncloud-$vers.tar.bz2
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
-    test -z "$testing" && $echo osc submitpac --no-cleanup ce:$majmin owncloud-files
+    test -z "$testing" && echo y | $echo EDITOR=touch osc submitpac --yes --no-cleanup ce:$majmin owncloud-files
     echo >> $dl_list "$vers community 	http://obs.int.owncloud.com:83/ce:$majmin:testing"
     echo >> $logfile "$vers community	https://obs.int.owncloud.com/package/show/ce:$majmin:testing/owncloud-files"
 
@@ -118,7 +118,7 @@ for vers in $*; do
     $echo $tar2pack -O . -d VERSION=$vers owncloud-empty.tar.bz2
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
-    test -z "$testing" && $echo osc submitpac --no-cleanup ce:$majmin owncloud
+    test -z "$testing" && echo y | $echo EDITOR=touch osc submitpac --yes --no-cleanup ce:$majmin owncloud
     echo >> $logfile "               	https://obs.int.owncloud.com/package/show/ce:$majmin:testing/owncloud"
   ;;
 
@@ -132,7 +132,7 @@ for vers in $*; do
     $echo osc ci -m "$msg" --noservice
     echo >> $dl_list "$vers enterprise	http://obs.int.owncloud.com:83/ee:$majmin:testing"
     echo >> $logfile "$vers enterprise	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise"
-    test -z "$testing" && $echo osc submitpac --no-cleanup ee:$majmin owncloud-enterprise
+    test -z "$testing" && echo y | $echo EDITOR=touch osc submitpac --yes --no-cleanup ee:$majmin owncloud-enterprise
 
     $echo cd $co_dir_s2/ce:$majmin:testing/owncloud
     $echo osc up
@@ -141,7 +141,7 @@ for vers in $*; do
     $echo osc ci -m "$msg" --noservice
     echo >> $dl_list "$vers community 	http://obs.int.owncloud.com:83/ce:$majmin:testing"
     echo >> $logfile "$vers community	https://obs.int.owncloud.com/package/show/ce:$majmin:testing/owncloud"
-    test -z "$testing" && $echo osc submitpac --no-cleanup ce:$majmin owncloud
+    test -z "$testing" && echo y | $echo EDITOR=touch osc submitpac --yes --no-cleanup ce:$majmin owncloud
     test -n "$echo" && echo
   ;;
 
@@ -155,7 +155,7 @@ for vers in $*; do
     $echo osc ci -m "$msg" --noservice
     echo >> $dl_list "$vers enterprise	http://obs.int.owncloud.com:83/ee:$majmin:testing"
     echo >> $logfile "$vers enterprise	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise"
-    test -z "$testing" && $echo osc submitpac --no-cleanup ee:$majmin owncloud-enterprise
+    test -z "$testing" && echo y | $echo EDITOR=touch osc submitpac --yes --no-cleanup ee:$majmin owncloud-enterprise
 
     $echo cd $co_dir_obs/isv:ownCloud:community:$majmin:testing/owncloud
     $echo osc up
@@ -164,7 +164,7 @@ for vers in $*; do
     $echo osc ci -m "$msg" --noservice
     echo >> $dl_list "$vers community 	http://software.opensuse.org/download.html?project=isv:ownCloud:community:$majmin:testing&package=owncloud"
     echo >> $logfile "$vers community	https://build.opensuse.org/package/show/isv:ownCloud:community:$majmin:testing/owncloud"
-    test -z "$testing" && $echo osc submitpac --no-cleanup isv:ownCloud:community:$majmin owncloud
+    test -z "$testing" && echo y | $echo EDITOR=touch osc submitpac --yes --no-cleanup isv:ownCloud:community:$majmin owncloud
     test -n "$echo" && echo
   ;;
 
@@ -177,7 +177,7 @@ for vers in $*; do
     $echo osc ci -m "$msg" --noservice
     echo >> $dl_list "$vers enterprise	http://obs.int.owncloud.com:83/ee:$majmin:testing"
     echo >> $logfile "$vers enterprise	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise"
-    test -z "$testing" && $echo osc submitpac --no-cleanup ee:$majmin owncloud-enterprise
+    test -z "$testing" && echo y | $echo EDITOR=touch osc submitpac --yes --no-cleanup ee:$majmin owncloud-enterprise
 
     $echo cd $co_dir_obs/isv:ownCloud:community:$majmin:testing/owncloud
     $echo osc up
@@ -186,7 +186,7 @@ for vers in $*; do
     $echo osc ci -m "$msg" --noservice
     echo >> $dl_list "$vers community	http://software.opensuse.org/download.html?project=isv:ownCloud:community:$majmin:testing&package=owncloud"
     echo >> $logfile "$vers community	https://build.opensuse.org/package/show/isv:ownCloud:community:$majmin:testing/owncloud"
-    test -z "$testing" && $echo osc submitpac --no-cleanup isv:ownCloud:community:$majmin owncloud-enterprise
+    test -z "$testing" && echo y | $echo EDITOR=touch osc submitpac --yes --no-cleanup isv:ownCloud:community:$majmin owncloud
     test -n "$echo" && echo
   ;;
 
@@ -207,8 +207,10 @@ echo
 
 if [ -z "$testing" ]; then
   echo "New pull requests:"
-  osc rq list isv:ownCloud:community -s new,review
-  osc -As2 rq list -s new,review
+  $echo cd /tmp
+  $echo osc -Aobs rq list isv:ownCloud:community:8.1 -s new,review
+  $echo osc -Aobs rq list isv:ownCloud:community:8.0 -s new,review
+  $echo osc -As2 rq list -s new,review
   echo "Please accept the pull request to build non-testing packages."
   echo "Caution: at openSUSE obs, you may want to disable publishing first."
 fi
