@@ -308,7 +308,7 @@ Requires: %{name}%{?_isa} = %{version}-%{release}
 Obsoletes:      opt-%{name}-doc
 
 %description -n %{name}-doc
-Documentation about the [% displayname %] desktop application.
+Documentation for the [% displayname %] desktop application.
 
 %package -n %{name}-l10n
 Summary:        Localization for [% displayname %]
@@ -327,20 +327,20 @@ Requires:       %{qtprefix}libqtkeychain1 >= 0.7.0
 %endif
 Obsoletes:      opt-lib[% shortname %]sync0
 
-Summary:        The [% displayname %] sync library
+Summary:        The [% displayname %] synchronization library
 Group:          Development/Libraries/C and C++
 
 %description -n lib[% shortname %]sync0
-The [% displayname %] sync library.
+The [% displayname %] synchronization library.
 
 %package -n lib[% shortname %]sync-devel
-Summary:        Development files for the [% displayname %] sync library
+Summary:        Development files for the [% displayname %] synchronization library
 Group:          Development/Libraries/C and C++
 Requires: lib[% shortname %]sync0 = %{version}
 Obsoletes:      opt-lib[% shortname %]sync-devel
 
 %description -n lib[% shortname %]sync-devel
-Development files for the [% displayname %] sync library.
+Development files for the [% displayname %] synchronization library.
 
 %package -n %{name}-nautilus
 Summary:        Nautilus overlay icons
@@ -355,8 +355,8 @@ Requires:       %{name}%{?_isa} = %{version}-%{release}
 Obsoletes:      opt-%{name}-nautilus
 
 %description -n %{name}-nautilus
-This package provides overlay icons to visualize the sync state
-in the nautilus file manager.
+This package provides overlay icons to visualize the synchronization state
+in the Nautilus file manager.
 
 %package -n %{name}-nemo
 Summary:        Nemo overlay icons
@@ -371,8 +371,8 @@ Requires:       %{name}%{?_isa} = %{version}-%{release}
 Obsoletes:      opt-%{name}-nemo
 
 %description -n %{name}-nemo
-This package provides overlay icons to visualize the sync state
-in the nemo file manager.
+This package provides overlay icons to visualize the synchronization state
+in the Nemo file manager.
 
 %if 0%{build_dolphin_overlays}
 %package -n %{name}-dolphin
@@ -386,8 +386,8 @@ Requires:       dolphin
 Requires:       %{name}%{?_isa} = %{version}-%{release}
 
 %description -n %{name}-dolphin
-This package provides the neccessary plugin libraries for KDE
-Framework 5 based dolphin filemanager to display overlay icons.
+This package provides the neccessary plugin libraries for the KDE
+Framework 5 based Dolphin filemanager to display overlay icons.
 
 %endif
 
@@ -519,23 +519,20 @@ fi
 
 %if 0%{?fedora_version}
 %post
-/bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
+/bin/touch --no-create %{_datadir}/icons/hicolor >/dev/null 2>/dev/null || :
 
 %postun
 if [ $1 -eq 0 ] ; then
-    /bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null
-    /usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
+    /bin/touch --no-create %{_datadir}/icons/hicolor >/dev/null  2>/dev/null
+    /usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor >/dev/null 2>/dev/null || :
 fi
 
 %posttrans
-/usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
+/usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor >/dev/null 2>/dev/null || :
 %endif
 
-%post -n lib[% shortname %]sync0
-/sbin/ldconfig
-
-%postun -n lib[% shortname %]sync0
-/sbin/ldconfig
+%post   -n lib[% shortname %]sync0 -p /sbin/ldconfig
+%postun -n lib[% shortname %]sync0 -p /sbin/ldconfig
 
 %files
 %defattr(-,root,root,-)

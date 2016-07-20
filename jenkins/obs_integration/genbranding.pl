@@ -529,7 +529,7 @@ if( buildOwnCloudTheme($theme) || $substs->{shortname} eq 'owncloud' ) {
 $substs->{themename} = $theme;
 $substs->{themename_deb} = debian_filename($theme);	# debian packaging guide allows no upper case. (e.g. SURFdrive).
 $substs->{create_msg} = $create_msg || '' unless defined $substs->{create_msg};
-$substs->{summary} = "The $theme client";	# prevent shdbox to die with empty summary.
+$substs->{summary} = "The $theme synchronization client";	# prevent shdbox to die with empty summary.
 $substs->{buildjobid} = $ENV{OBS_INTEGRATION_BUILDJOBID} || '0';	# used since templates/client/v2_2_0
 
 # Automatically derive version number from the client tarball.
