@@ -124,6 +124,15 @@ for vers in $*; do
 
   8.2*) majmin=8.2
 
+    $echo cd $co_dir_s2/ee:$majmin:testing/owncloud-enterprise-files
+    $echo osc up
+    $echo $tar2pack -O . http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-complete-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
+    $echo osc addremove
+    $echo osc ci -m "$msg" --noservice
+    test -z "$testing" && echo y | $echo EDITOR="sed -i -e 's/$/ /'" osc submitpac --yes --no-cleanup ee:$majmin owncloud-enterprise-files
+    echo >> $dl_list "$vers enterprise	http://obs.int.owncloud.com:83/ee:$majmin:testing"
+    echo >> $logfile "$vers enterprise	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise-files"
+
     $echo cd $co_dir_s2/ee:$majmin:testing/owncloud-enterprise
     $echo osc up
     $echo $tar2pack -O . http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
@@ -133,6 +142,15 @@ for vers in $*; do
     echo >> $dl_list "$vers enterprise	http://obs.int.owncloud.com:83/ee:$majmin:testing"
     echo >> $logfile "$vers enterprise	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise"
     test -z "$testing" && echo y | $echo EDITOR="sed -i -e 's/$/ /'" osc submitpac --yes --no-cleanup ee:$majmin owncloud-enterprise
+
+    $echo cd $co_dir_s2/ce:$majmin:testing/owncloud-files
+    $echo osc up
+    $echo $tar2pack -O . http://download.owncloud.org/community/$testing/owncloud-$vers.tar.bz2
+    $echo osc addremove
+    $echo osc ci -m "$msg" --noservice
+    test -z "$testing" && echo y | $echo EDITOR="sed -i -e 's/$/ /'" osc submitpac --yes --no-cleanup ce:$majmin owncloud-files
+    echo >> $dl_list "$vers community 	http://obs.int.owncloud.com:83/ce:$majmin:testing"
+    echo >> $logfile "$vers community	https://obs.int.owncloud.com/package/show/ce:$majmin:testing/owncloud-files"
 
     $echo cd $co_dir_s2/ce:$majmin:testing/owncloud
     $echo osc up
