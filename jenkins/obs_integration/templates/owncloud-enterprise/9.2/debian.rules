@@ -1,0 +1,22 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# (C) 2016 jw@owncloud.com
+#
+# see qtkeychain/debian.rules for a nice one.
+
+export DH_VERBOSE=1
+SHELL=/bin/bash
+export DROOT=$(CURDIR)/debian/[% PACKNAME %]
+# https://github.com/owncloud/core/issues/24757
+export SRCDIR=/usr/src/packages/SOURCES
+
+
+%:
+	dh $@
+
+override_dh_install:
+	dh_install -Xdebian
+	test -f         $(SRCDIR)/apache_conf_default && cp $(SRCDIR)/apache_conf_default debian/ || true
+	install -m 0644 -D debian/apache_conf_default $(DROOT)-deps-php5/etc/apache2/conf-available/owncloud.conf
+	install -m 0644 -D debian/apache_conf_default $(DROOT)-deps-php7.0/etc/apache2/conf-available/owncloud.conf
+
