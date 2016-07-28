@@ -12,7 +12,8 @@
 #  - there package owncloud-files with buildpackage.pl, but should be obsoleted by another call to tar2pack.py
 #
 # 2016-07-04, jw@owncloud.com
-# 2016-07-26, jw@owncloud.com
+# 2016-07-26, jw@owncloud.com - imported code snippet for nightly. untested.
+
 
 co_dir_obs=$HOME/src/obs
 co_dir_s2=$HOME/src/obs/s2
@@ -53,6 +54,38 @@ for vers in $*; do
   test -n "$echo" && echo "# - - - - - - - - - - -  $vers  - - - - - - - - - - -"
 
   case $vers in
+  nightly)
+    test -n "$echo" && { echo "echo mode ignored for nighly, executing in 5 sec..."; sleep 5; }
+    # Imported code from https://rotor.int.owncloud.com/job/owncloud-server-nightly/configure
+    # TODO
+    cd $co_dir_s2/ce:nightly/owncloud-files
+    osc up
+    download=owncloud-daily-master.tar.bz2
+    wget --server-response --progress=dot http://download.owncloud.org/community/$download
+    ##extract correct version
+    tarversion=$(tar xvf $download owncloud/version.php -O | grep 'OC_Version =')
+    tarversionstring=$(tar xvf $download owncloud/version.php -O | grep 'OC_VersionString')
+    echo "Version in $download: $tarversion"
+    # version=$(echo $tarversion | sed -e 's@.*(\([0-9][0-9]*\),\([0-9][0-9]*\).*@\1.\2@')
+    version=$(echo $tarversionstring | sed -e "s@';.*@@" -e "s@.*'@@" -e 's@ @@g')
+    vers=${version}.$(date +%Y%m%d)
+    ##rename to a speaking name
+    newname=owncloud-${version_date}.tar.bz2
+    mv $download $newname
+    $tar2pack -O . $newname -d VERSION=$vers -d SOURCE_TAR_TOP_DIR=owncloud
+    osc addremove
+    osc ci -m "$msg" --noservice
+    echo >> $logfile "$vers community	https://obs.int.owncloud.com/package/show/ce:nightly/owncloud-files"
+    echo >> $dl_list "$vers community	http://obs.int.owncloud.com:83/ce:nightly"
+
+    cd $co_dir_s2/ce:nightly/owncloud
+    osc up
+    $tar2pack -O . -d VERSION=$vers owncloud-empty.tar.bz2
+    osc addremove
+    osc ci -m "$msg" --noservice
+    echo >> $logfile "$vers          	https://obs.int.owncloud.com/package/show/ce:nightly/owncloud"
+    ;;
+
   9.1*) majmin=9.1
 
     $echo cd $co_dir_s2/ee:$majmin:testing/owncloud-enterprise-files
