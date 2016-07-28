@@ -45,7 +45,6 @@
 # 2016-07-12: 0.11 jw: exit(1) when download failed.
 #                      -d VERSION=9.0.4RC1 handled as -d VERSION=9.0.4~rc1
 #
-## TODO: refresh version in dsc file, to be in sync with changelog.
 ## FIXME: should have a mode to grab all the define variables from an existing specfile.
 
 
@@ -494,7 +493,7 @@ if not args.keepfiles:
         print("Ignoring bogus directory: "+file)
 
 ## TODO:refresh other sources listed in spec, if url specified
-## TODO:refresh dsc file
+## dsc file update is done through variable expansion and templates.
 
 edit_debchangelog(outdir+'/'+"debian.changelog", define, args.message)
 edit_changes(outdir+'/'+define['PACKNAME']+".changes", define, args.message)

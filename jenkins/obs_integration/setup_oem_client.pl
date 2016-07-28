@@ -4,7 +4,7 @@
 #
 # setup_oem_client.pl expects that the subproject already exists.
 # The branding-client package itself is not created here. Use genbranding -o to create it.
-# it adds a list of known dependencies, so that we can have all relevant binaries 
+# setup_oem_client.pl adds a list of known dependencies, so that we can have all relevant binaries 
 # in one repo per oem branding.
 #
 # 2014-08-15, jw, more parameters for obs and template change.

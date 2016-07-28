@@ -3,6 +3,7 @@
 # check_rpm_keys.pl -- test GPG keys in RPM packages on the downloads, see if they match the repo keys.
 # (c) 2014, jw@owncloud.com, GPLv2 or ask
 #
+# unfinished draft.
 
 my $prj = shift
 my $pkg = shift

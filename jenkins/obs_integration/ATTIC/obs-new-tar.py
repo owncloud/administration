@@ -21,7 +21,13 @@
 # Version 1.6: Advertise OSCPARAM for ocoscrc switching for rotor setup.
 
 
+
 import sys, time, argparse, subprocess, os, re
+
+################ DEPRECATED CODE HERE. ################################
+print("obs-new-tar.py is deprecated. Please use tar2pack.py instead");
+sys.exit(1);
+################ DEPRECATED CODE HERE. ################################
 
 argv0 = 'obs_integration/obs-new-tar.py'
 verbose=1

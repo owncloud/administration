@@ -1,6 +1,7 @@
 #! /bin/sh
 #
-# calling osc getbinaries to pull built packages from a build project
+# Calling osc getbinaries to pull built packages from a build project.
+# Loops over all targets, grabs them all.
 
 obs_prj=$1
 out_dir=$2

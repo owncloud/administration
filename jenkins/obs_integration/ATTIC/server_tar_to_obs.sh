@@ -31,6 +31,13 @@
 #             CAUTION: this cannot do 9.0.x with owncloud-files and friends.
 # 2016-05-02, jw@owncloud.com: handle relative path in $0.
 
+
+cat << EOF
+Obselete: $0: This script cannot handle *-files packages.
+Please use tar2pack_all.sh instead.
+EOF
+exit 0;
+
 prerel="${PREREL:-}"
 username="${USERNAME:-jenkins@owncloud.com}"
 

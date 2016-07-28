@@ -3,6 +3,9 @@
 # obs_check_deb_spec.sh -- test consistency of the owncloud server package
 # This script is maintained at https://github.com/owncloud/administration/blob/master/jenkins/obs_integration/obs_check_deb_spec.sh
 #
+# This script was used to assert that all apps have their proper sub packages. 
+# Note, that since 9.0 we no longer split away apps packages.
+#
 # The top part is owncloud specific apps handling.
 # The remainder should be generic consistency test.
 # 
