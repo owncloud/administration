@@ -16,6 +16,10 @@
 # 
 # 2016-03-04: also recognize prealpha as a prerelease name.
 #
+# 2016-07-26: jw. CAUTION: tar2pack.py does similar things.
+#        https://rotor.int.owncloud.com/job/owncloud-server-nightly
+#        uses both, this buildpackage.pl and tar2pack.py 
+#
 use Getopt::Std;
 use Config::IniFiles;
 use File::Copy;

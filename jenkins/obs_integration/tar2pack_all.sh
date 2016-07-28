@@ -7,7 +7,12 @@
 #  - always push into :testing, and if its a final then add a pull request
 #  - do not leave any decisions to the user. Nobody can remember e.g. when to use the enterprise-complete tar and when not.
 #
+# CAUTION: Keep in sync with https://rotor.int.owncloud.com/job/owncloud-server-nightly
+#  - there package owncloud is prepared with tar2pack.py in a code snippet similar to the usage here.
+#  - there package owncloud-files with buildpackage.pl, but should be obsoleted by another call to tar2pack.py
+#
 # 2016-07-04, jw@owncloud.com
+# 2016-07-26, jw@owncloud.com
 
 co_dir_obs=$HOME/src/obs
 co_dir_s2=$HOME/src/obs/s2
