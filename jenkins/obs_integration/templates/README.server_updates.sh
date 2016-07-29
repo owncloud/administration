@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Do not run this script. It is for demonstration only.
+# Do not run this script. It is for demonstration only. Refer to ../tar2pack_all.sh instead.
 # Copy paste, monitor!
 
 # msg='Updated to [% VERSION %]'
