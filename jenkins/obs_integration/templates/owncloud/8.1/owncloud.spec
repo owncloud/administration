@@ -212,6 +212,7 @@ Summary:      Common code server for ownCloud
 %if 0%{?fedora_version} || 0%{?rhel} || 0%{?rhel_version} || 0%{?centos_version}
 Requires:       sqlite
 Requires:       %{ocphp} >= 5.4.0
+Requires:       %{ocphp} < 7.0.0
 Requires:       %{ocphp}-json %{ocphp}-mbstring %{ocphp}-process %{ocphp}-xml %{ocphp}-zip
 # core#13357, core#13944
 Requires:	%{ocphp}-posix %{ocphp}-gd
@@ -384,6 +385,7 @@ popd
 
 echo "repository: |%{_repository}|"
 echo "Requires:       %{ocphp} >= 5.4.0"
+ echo "Requires:      %{ocphp} < 7.0.0"
 
 # remove .bower.json .bowerrc .gitattributes .gitmodules
 find . -name .bower\* -print -o -name .git\* -print | xargs rm
