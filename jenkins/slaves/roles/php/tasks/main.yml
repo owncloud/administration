@@ -62,7 +62,7 @@
   with_items: '{{php_releases}}'
 
 - name: Adjust php memory limit
-  shell: echo "memory_limit = 512M" >> "{{ phpenv_versions_path }}/{{ item.version }}/etc/php.ini"
+  shell: echo "memory_limit = -1" >> "{{ phpenv_versions_path }}/{{ item.version }}/etc/php.ini"
   with_items: '{{php_releases}}'
 
 - name: Symlink versions
