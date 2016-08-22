@@ -19,6 +19,11 @@ co_dir_obs=$HOME/src/obs
 co_dir_s2=$HOME/src/obs/s2
 
 tar2pack=$HOME/obs_integration/tar2pack.py
+
+test -n "$CO_DIR_OBS_EXT" && co_dir_obs="$CO_DIR_OBS_EXT"
+test -n "$CO_DIR_OBS_INT" && co_dir_s2="$CO_DIR_OBS_INT"
+test -n "$TAR2PACK"       && tar2pack="$TAR2PACK"
+
 logfile=/tmp/tar2pack_all.$$.log
 dl_list=/tmp/tar2pack_all.$$.lst
 
