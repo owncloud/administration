@@ -269,9 +269,9 @@ echo
 if [ -z "$testing" ]; then
   echo "New pull requests:"
   $echo cd /tmp
-  $echo osc -Aobs rq list isv:ownCloud:community:8.1 -s new,review
-  $echo osc -Aobs rq list isv:ownCloud:community:8.0 -s new,review
-  $echo osc -As2 rq list -s new,review
+  $echo osc -Ahttps://api.opensuse.org rq list isv:ownCloud:community:8.1 -s new,review
+  $echo osc -Ahttps://api.opensuse.org rq list isv:ownCloud:community:8.0 -s new,review
+  $echo osc -Ahttps://obs.int.owncloud.com rq list -s new,review
   echo "Please accept the pull request to build non-testing packages."
   echo "Caution: at openSUSE obs, you may want to disable publishing first."
 fi
