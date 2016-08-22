@@ -21,7 +21,7 @@ if ($configCreateOU) {
 	}
 }
 
-$names = unserialize(file_get_contents('names.dat'));
+$names = json_decode(file_get_contents('names.json'), true);
 $cfn = count($names['fns']) - 1;
 $csn = count($names['sns']) - 1;
 
