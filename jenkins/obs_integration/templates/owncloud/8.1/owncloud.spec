@@ -389,6 +389,8 @@ echo "Requires:       %{ocphp} >= 5.4.0"
 
 # remove .bower.json .bowerrc .gitattributes .gitmodules
 find . -name .bower\* -print -o -name .git\* -print | xargs rm
+# seen in 8.1.10~rc1 tar:
+rm -rf Jenkinsfile
 
 if [ ! -d %{statedir} ]; then
   echo ERROR: %{statedir} does not exist here.
