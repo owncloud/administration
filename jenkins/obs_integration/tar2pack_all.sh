@@ -280,7 +280,20 @@ echo "Download build results from:"
 cat $dl_list | sed -e 's@^@  @'
 rm -f $dl_list
 echo
+
 echo "ssh root@s2"
 echo "# and do bin/publishee ...; bin/publish_ce ... eventually"
+if [ -z "$testing" ]; then
+  echo "# ... check https://download.owncloud.org/download/repositories/stable/owncloud/"
+else
+  echo "# ... check https://download.owncloud.org/download/repositories/testing/owncloud/"
+fi
+echo
+
 echo "ssh monkey"
-echo "# bash src/github/owncloud/enterprise/appliance/obfuscation/ZendGuard-7.0.0/obfuscate_apps-9.0.sh ee:9.0"
+if [ -z "$testing" ]; then
+  echo "# bash src/github/owncloud/enterprise/appliance/obfuscation/ZendGuard-7.0.0/obfuscate_apps-9.sh ee:9.1"
+else
+  echo "# bash src/github/owncloud/enterprise/appliance/obfuscation/ZendGuard-7.0.0/obfuscate_apps-9.sh ee:9.1:testing"
+fi
+
