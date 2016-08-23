@@ -470,6 +470,8 @@ popd
 
 # remove .bower.json .bowerrc .gitattributes .gitmodules
 find . -name .bower\* -print -o -name .git\* -print | xargs rm
+# seen in 8.0.15~rc1 tar:
+rm -rf Jenkinsfile
 
 %build
 # obsolete stuff, to be removed from tar-balls.

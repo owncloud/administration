@@ -141,7 +141,7 @@ for vers in $*; do
 
     $echo cd $co_dir_s2/ee:$majmin:testing/owncloud-enterprise
     $echo osc up
-    $echo $tar2pack -O . ee:$majmin:testing/owncloud-enterprise -d VERSION=$vers owncloud-empty.tar.bz2
+    $echo $tar2pack -O . -E ee:$majmin:testing/owncloud-enterprise -d VERSION=$vers owncloud-empty.tar.bz2
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
     test -z "$testing" && echo y | $echo EDITOR="sed -i -e 's/$/ /'" osc submitpac --yes --no-cleanup ee:$majmin owncloud-enterprise
