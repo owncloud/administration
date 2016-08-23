@@ -275,6 +275,7 @@ echo Requires: %{ocphp}
 # obsolete stuff, to be removed from tar-balls.
 rm -f indie.json
 rm -f l10n/l10n.pl
+rm -f Jenkinsfile
 
 %install
 # no server side java code contained, alarm is false

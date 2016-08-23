@@ -401,6 +401,7 @@ ls -la %{statedir}
 # obsolete stuff, to be removed from tar-balls.
 rm -f indie.json
 rm -f l10n/l10n.pl
+rm -f Jenkinsfile
 
 # do not build updater app.
 rm -rf apps/updater

@@ -184,6 +184,7 @@ Summary: Dependencies for php7
 
 %build
 echo build
+rm -f Jenkinsfile
 
 %install
 # We had silently skipped files under %{_docdir} on both SUSE and CentOS. Do not use that for our

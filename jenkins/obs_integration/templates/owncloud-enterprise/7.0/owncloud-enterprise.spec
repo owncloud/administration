@@ -197,6 +197,7 @@ echo centos_version = %centos_version
 %endif
 
 %build
+rm -f Jenkinsfile
 
 %install
 # no server side java code contained, alarm is false

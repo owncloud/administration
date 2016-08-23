@@ -124,6 +124,7 @@ cp %{SOURCE4} .
 # find . -name .bower\* -print -o -name .git\* -print | xargs -r rm -rf
 
 %build
+rm -f Jenkinsfile
 
 %install
 # We had silently skipped files under %{_docdir} on both SUSE and CentOS. Do not use that for our

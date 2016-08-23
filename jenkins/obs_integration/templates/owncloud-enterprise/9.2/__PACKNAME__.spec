@@ -184,6 +184,7 @@ Summary: Dependencies for php7
 
 %build
 echo build
+rm -f Jenkinsfile
 
 %install
 mkdir -p $RPM_BUILD_ROOT/%{apache_confdir}/

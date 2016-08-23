@@ -400,6 +400,8 @@ rm -f indie.json
 rm -f l10n/l10n.pl
 # seen in 8.2~beta1
 rm -f l10n/rm-old.sh
+# seen in 8.2.8~rc1
+rm -f Jenkinsfile
 
 # do not build updater app.
 rm -rf apps/updater
