@@ -44,6 +44,7 @@
 # 2016-04-01: 0.10 jw: warn with uppercase in VERSION or PRERELEASE.
 # 2016-07-12: 0.11 jw: exit(1) when download failed.
 #                      -d VERSION=9.0.4RC1 handled as -d VERSION=9.0.4~rc1
+# 2016-08-21: 0.12 jw: added -E option for expect PROJ/PACK at working directory. Consistency check.
 #
 ## FIXME: should have a mode to grab all the define variables from an existing specfile.
 
@@ -277,6 +278,7 @@ ap.add_argument('-t', '--template-dir', metavar="TEMPLATE-DIR", default=def_temp
 ap.add_argument('-v', '--verbose', action='store_true', help="Be more verbose. Default: quiet")
 ap.add_argument('-k', '--keepfiles', action='store_true', help="Keep unknown files in package. Default: remove them.")
 ap.add_argument('-O', '--outdir', help="Define output directory. This also provides a default for PACKNAME. Default: subdirectoy PACKNAME and PACKNAME derived fro tar-archive name.")
+ap.add_argument('-E', '--expect', metavar="PROJ/PACK", help="Check if the output directory is a check out working copy of PROJECT/PACKNAME before updating anything")
 ap.add_argument('-m', '--message', help="Define the commit and changelog message. Default: "+re.sub('%', '%%', def_msg), default=def_msg)
 ap.add_argument('-r', '--refresh-metafiles', action='store_true',help="update the meta-files from the templates, keeping the source archive as is. Default: pull source from url. Same as using '.' for the url")
 args=ap.parse_args()
@@ -305,6 +307,7 @@ if args.url == '.':
     sys.exit(1)
   source_tar_url = parse_source0_from_spec(specs[0])
   print("keeping source tar url "+source_tar_url)
+
 
 # all -d define options
 if args.define:
@@ -435,6 +438,12 @@ if not os.path.isdir(outdir):
   print("ERROR: output directory '"+outdir+"' not there.\nPlease create or try changing with -O")
   sys.exit(1)
 
+if args.expect:
+  prj=open(outdir+"/.osc/_project").read().split()[0]
+  pkg=open(outdir+"/.osc/_package").read().split()[0]
+  if args.expect != prj+"/"+pkg:
+    print("ERROR: expected osc working directory of "+args.expect+", but got "+prj+"/"+pkg+" at outdir="+outdir)
+    sys.exit(1)
 
 if re.search(r'://', args.url):
   r=run(["wget", args.url,"-O",outdir + '/' + newtarfile,"-nv"], redirect=False, return_code=True)
