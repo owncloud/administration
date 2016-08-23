@@ -77,7 +77,7 @@ for vers in $*; do
     ##rename to a speaking name
     newname=owncloud-${version_date}.tar.bz2
     mv $download $newname
-    $tar2pack -O . $newname -d VERSION=$vers -d SOURCE_TAR_TOP_DIR=owncloud
+    $tar2pack -O . -E ce:nightly/owncloud-files $newname -d VERSION=$vers -d SOURCE_TAR_TOP_DIR=owncloud
     osc addremove
     osc ci -m "$msg" --noservice
     echo >> $logfile "$vers community	https://obs.int.owncloud.com/package/show/ce:nightly/owncloud-files"
@@ -85,7 +85,7 @@ for vers in $*; do
 
     cd $co_dir_s2/ce:nightly/owncloud
     osc up
-    $tar2pack -O . -d VERSION=$vers owncloud-empty.tar.bz2
+    $tar2pack -O . -E ce:nightly/owncloud -d VERSION=$vers owncloud-empty.tar.bz2
     osc addremove
     osc ci -m "$msg" --noservice
     echo >> $logfile "$vers          	https://obs.int.owncloud.com/package/show/ce:nightly/owncloud"
@@ -95,7 +95,7 @@ for vers in $*; do
 
     $echo cd $co_dir_s2/ee:$majmin:testing/owncloud-enterprise-files
     $echo osc up
-    $echo $tar2pack -O . http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-complete-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
+    $echo $tar2pack -O . -E ee:$majmin:testing/owncloud-enterprise-files http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-complete-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
     test -z "$testing" && echo y | $echo EDITOR="sed -i -e 's/$/ /'" osc submitpac --yes --no-cleanup ee:$majmin owncloud-enterprise-files
@@ -104,7 +104,7 @@ for vers in $*; do
 
     $echo cd $co_dir_s2/ee:$majmin:testing/owncloud-enterprise
     $echo osc up
-    $echo $tar2pack -O . -d VERSION=$vers owncloud-empty.tar.bz2
+    $echo $tar2pack -O . -E ee:$majmin:testing/owncloud-enterprise -d VERSION=$vers owncloud-empty.tar.bz2
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
     test -z "$testing" && echo y | $echo EDITOR="sed -i -e 's/$/ /'" osc submitpac --yes --no-cleanup ee:$majmin owncloud-enterprise
@@ -112,7 +112,7 @@ for vers in $*; do
 
     $echo cd $co_dir_s2/ce:$majmin:testing/owncloud-files
     $echo osc up
-    $echo $tar2pack -O . http://download.owncloud.org/community/$testing/owncloud-$vers.tar.bz2
+    $echo $tar2pack -O . -E ce:$majmin:testing/owncloud-files http://download.owncloud.org/community/$testing/owncloud-$vers.tar.bz2
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
     test -z "$testing" && echo y | $echo EDITOR="sed -i -e 's/$/ /'" osc submitpac --yes --no-cleanup ce:$majmin owncloud-files
@@ -121,7 +121,7 @@ for vers in $*; do
 
     $echo cd $co_dir_s2/ce:$majmin:testing/owncloud
     $echo osc up
-    $echo $tar2pack -O . -d VERSION=$vers owncloud-empty.tar.bz2
+    $echo $tar2pack -O . -E ce:$majmin:testing/owncloud -d VERSION=$vers owncloud-empty.tar.bz2
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
     test -z "$testing" && echo y | $echo EDITOR="sed -i -e 's/$/ /'" osc submitpac --yes --no-cleanup ce:$majmin owncloud
@@ -132,7 +132,7 @@ for vers in $*; do
 
     $echo cd $co_dir_s2/ee:$majmin:testing/owncloud-enterprise-files
     $echo osc up
-    $echo $tar2pack -O . http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-complete-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
+    $echo $tar2pack -O . -E ee:$majmin:testing/owncloud-enterprise-files http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-complete-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
     test -z "$testing" && echo y | $echo EDITOR="sed -i -e 's/$/ /'" osc submitpac --yes --no-cleanup ee:$majmin owncloud-enterprise-files
@@ -141,7 +141,7 @@ for vers in $*; do
 
     $echo cd $co_dir_s2/ee:$majmin:testing/owncloud-enterprise
     $echo osc up
-    $echo $tar2pack -O . -d VERSION=$vers owncloud-empty.tar.bz2
+    $echo $tar2pack -O . ee:$majmin:testing/owncloud-enterprise -d VERSION=$vers owncloud-empty.tar.bz2
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
     test -z "$testing" && echo y | $echo EDITOR="sed -i -e 's/$/ /'" osc submitpac --yes --no-cleanup ee:$majmin owncloud-enterprise
@@ -149,7 +149,7 @@ for vers in $*; do
 
     $echo cd $co_dir_s2/ce:$majmin:testing/owncloud-files
     $echo osc up
-    $echo $tar2pack -O . http://download.owncloud.org/community/$testing/owncloud-$vers.tar.bz2
+    $echo $tar2pack -O . -E ce:$majmin:testing/owncloud-files http://download.owncloud.org/community/$testing/owncloud-$vers.tar.bz2
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
     test -z "$testing" && echo y | $echo EDITOR="sed -i -e 's/$/ /'" osc submitpac --yes --no-cleanup ce:$majmin owncloud-files
@@ -158,7 +158,7 @@ for vers in $*; do
 
     $echo cd $co_dir_s2/ce:$majmin:testing/owncloud
     $echo osc up
-    $echo $tar2pack -O . -d VERSION=$vers owncloud-empty.tar.bz2
+    $echo $tar2pack -O . -E ce:$majmin:testing/owncloud -d VERSION=$vers owncloud-empty.tar.bz2
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
     test -z "$testing" && echo y | $echo EDITOR="sed -i -e 's/$/ /'" osc submitpac --yes --no-cleanup ce:$majmin owncloud
@@ -169,7 +169,7 @@ for vers in $*; do
 
     $echo cd $co_dir_s2/ee:$majmin:testing/owncloud-enterprise-files
     $echo osc up
-    $echo $tar2pack -O . http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-complete-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
+    $echo $tar2pack -O . -E ee:$majmin:testing/owncloud-enterprise-files http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-complete-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
     test -z "$testing" && echo y | $echo EDITOR="sed -i -e 's/$/ /'" osc submitpac --yes --no-cleanup ee:$majmin owncloud-enterprise-files
@@ -178,7 +178,7 @@ for vers in $*; do
 
     $echo cd $co_dir_s2/ee:$majmin:testing/owncloud-enterprise
     $echo osc up
-    $echo $tar2pack -O . http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
+    $echo $tar2pack -O . -E ee:$majmin:testing/owncloud-enterprise http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
     $echo wget https://doc.owncloud.org/server/8.2/ownCloud_Server_Administration_Manual.pdf
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
@@ -188,7 +188,7 @@ for vers in $*; do
 
     $echo cd $co_dir_s2/ce:$majmin:testing/owncloud-files
     $echo osc up
-    $echo $tar2pack -O . http://download.owncloud.org/community/$testing/owncloud-$vers.tar.bz2
+    $echo $tar2pack -O . -E ce:$majmin:testing/owncloud-files http://download.owncloud.org/community/$testing/owncloud-$vers.tar.bz2
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
     test -z "$testing" && echo y | $echo EDITOR="sed -i -e 's/$/ /'" osc submitpac --yes --no-cleanup ce:$majmin owncloud-files
@@ -197,7 +197,7 @@ for vers in $*; do
 
     $echo cd $co_dir_s2/ce:$majmin:testing/owncloud
     $echo osc up
-    $echo $tar2pack -O . http://download.owncloud.org/community/$testing/owncloud-$vers.tar.bz2
+    $echo $tar2pack -O . -E ce:$majmin:testing/owncloud http://download.owncloud.org/community/$testing/owncloud-$vers.tar.bz2
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
     echo >> $dl_list "$vers community 	http://obs.int.owncloud.com:83/ce:$majmin:testing"
@@ -210,7 +210,7 @@ for vers in $*; do
 
     $echo cd $co_dir_s2/ee:$majmin:testing/owncloud-enterprise
     $echo osc up
-    $echo $tar2pack -O . http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
+    $echo $tar2pack -O . -E ee:$majmin:testing/owncloud-enterprise http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
     $echo wget https://doc.owncloud.org/server/8.1/ownCloud_Server_Administration_Manual.pdf
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
@@ -220,7 +220,7 @@ for vers in $*; do
 
     $echo cd $co_dir_obs/isv:ownCloud:community:$majmin:testing/owncloud
     $echo osc up
-    $echo $tar2pack -O . http://download.owncloud.org/community/$testing/owncloud-$vers.tar.bz2
+    $echo $tar2pack -O . -E isv:ownCloud:community:$majmin:testing/owncloud http://download.owncloud.org/community/$testing/owncloud-$vers.tar.bz2
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
     echo >> $dl_list "$vers community 	http://software.opensuse.org/download.html?project=isv:ownCloud:community:$majmin:testing&package=owncloud"
@@ -233,7 +233,7 @@ for vers in $*; do
 
     $echo cd $co_dir_s2/ee:$majmin:testing/owncloud-enterprise
     $echo osc up
-    $echo $tar2pack -O . http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
+    $echo $tar2pack -O . -E ee:$majmin:testing/owncloud-enterprise http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
     echo >> $dl_list "$vers enterprise	http://obs.int.owncloud.com:83/ee:$majmin:testing"
@@ -242,7 +242,7 @@ for vers in $*; do
 
     $echo cd $co_dir_obs/isv:ownCloud:community:$majmin:testing/owncloud
     $echo osc up
-    $echo $tar2pack -O . http://download.owncloud.org/community/$testing/owncloud-$vers.tar.bz2
+    $echo $tar2pack -O . -E isv:ownCloud:community:$majmin:testing/owncloud http://download.owncloud.org/community/$testing/owncloud-$vers.tar.bz2
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
     echo >> $dl_list "$vers community	http://software.opensuse.org/download.html?project=isv:ownCloud:community:$majmin:testing&package=owncloud"
