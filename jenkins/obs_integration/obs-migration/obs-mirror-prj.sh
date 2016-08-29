@@ -38,12 +38,12 @@ for prj in "$@"; do
   echo "Packages in $prj: $(echo $pkgs)"
   for pkg in $pkgs; do
     counter=$(expr $counter + 1)
-    echo "$prj: $counter/$npkgs ..."
     md5_old=$(osc -A$OBS_API_SRC log $prj $pkg 2>&1 | head -n2 | awk -F\| '{ print $4 }')
     md5_new=$(osc -A$OBS_API_DST log $prj $pkg 2>&1 | head -n2 | awk -F\| '{ print $4 }')
     if [ "$md5_old" = "$md5_new" ]; then
-      echo "$prj $pkg md5sum $(echo $md5_new) matches. Skipping ..."
+      echo "$prj: $counter/$npkgs md5sum $(echo $md5_new) match $pkg - skipping ..."
     else
+      echo "$prj: $counter/$npkgs ..."
       echo "+ osc -A$OBS_API_SRC copypac -t $OBS_API_DST $prj $pkg $prj"
       osc -A$OBS_API_SRC copypac -t $OBS_API_DST $prj $pkg $prj || exit 1
     fi
