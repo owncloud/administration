@@ -18,6 +18,9 @@ cd ..
 git clone --depth 1 -b $CORE_BRANCH https://github.com/owncloud/core
 cd core
 git submodule update --init
+if [ -f Makefile ]; then
+  make
+fi
 
 cd apps
 cp -R ../../$APP_NAME/ .
