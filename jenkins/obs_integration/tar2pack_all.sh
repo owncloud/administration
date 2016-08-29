@@ -13,6 +13,7 @@
 #
 # 2016-07-04, jw@owncloud.com
 # 2016-07-26, jw@owncloud.com - imported code snippet for nightly. untested.
+# 2016-08-21, jw@owncloud.com - use -E to avoid pushing to the wrong package / project.
 
 
 co_dir_obs=$HOME/src/obs
