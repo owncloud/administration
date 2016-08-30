@@ -1,0 +1,13 @@
+---
+- hosts: master
+  remote_user: root
+  roles:
+    - base
+    - jsunit
+    - oracle_instant_client
+    - docker
+    - php-build
+    - php
+    - translation-sync
+    - client
+
