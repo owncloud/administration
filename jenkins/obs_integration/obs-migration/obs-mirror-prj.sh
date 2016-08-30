@@ -38,10 +38,16 @@ for prj in "$@"; do
   echo "Packages in $prj: $(echo $pkgs)"
   for pkg in $pkgs; do
     counter=$(expr $counter + 1)
-    md5_old=$(osc -A$OBS_API_SRC log $prj $pkg 2>&1 | head -n2 | awk -F\| '{ print $4 }')
-    md5_new=$(osc -A$OBS_API_DST log $prj $pkg 2>&1 | head -n2 | awk -F\| '{ print $4 }')
-    if [ "$md5_old" = "$md5_new" ]; then
-      echo "$prj: $counter/$npkgs md5sum $(echo $md5_new) match $pkg - skipping ..."
+    # md5_old=$(osc -A$OBS_API_SRC log $prj $pkg 2>&1 | head -n2 | awk -F\| '{ print $4 }')
+    # md5_new=$(osc -A$OBS_API_DST log $prj $pkg 2>&1 | head -n2 | awk -F\| '{ print $4 }')
+    tstamp_old=$(osc -A$OBS_API_SRC log $prj $pkg 2>&1 | head -n2 | awk -F\| '{ print $3 }')
+    tstamp_new=$(osc -A$OBS_API_DST log $prj $pkg 2>&1 | head -n2 | awk -F\| '{ print $3 }')
+    tstamp_small=$(echo $tstamp_old; echo $tstamp_new)  | sort | head -n 1)
+    # md5sums are unreliable. sometimes they match, sometimes they dont.
+    # if [ "$md5_old" = "$md5_new" ]; then
+    #   echo "$prj: $counter/$npkgs md5sum $(echo $md5_new) match $pkg - skipping ..."
+    if [ "$tstamp_old" = "$tstamp_small" ]; then
+      echo "$prj: $counter/$npkgs unchanged $pkg - skipping ..."
     else
       echo "$prj: $counter/$npkgs ..."
       echo "+ osc -A$OBS_API_SRC copypac -t $OBS_API_DST $prj $pkg $prj"
