@@ -7,6 +7,7 @@
     - liblocale-po-perl
     - liblocale-gettext-perl
     - python-pip
+    - python-polib
 
 - name: Install transifex
   pip: name={{ item }} extra_args='--upgrade'
