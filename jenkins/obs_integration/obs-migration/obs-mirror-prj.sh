@@ -3,6 +3,7 @@
 # see http://openbuildservice.org/help/manuals/obs-best-practices/cha.obs.best-practices.bootstrapping.html
 #
 # We only copy when md5sum changes!
+# No use of md5sum. They are unreliable. Better compare timestamps in the log.
 
 test -z "$OBS_API_DST"  && OBS_API_DST=obs-new
 test -z "$OBS_API_SRC"  && OBS_API_SRC=obs-old
@@ -40,13 +41,15 @@ for prj in "$@"; do
     counter=$(expr $counter + 1)
     # md5_old=$(osc -A$OBS_API_SRC log $prj $pkg 2>&1 | head -n2 | awk -F\| '{ print $4 }')
     # md5_new=$(osc -A$OBS_API_DST log $prj $pkg 2>&1 | head -n2 | awk -F\| '{ print $4 }')
-    tstamp_old=$(osc -A$OBS_API_SRC log $prj $pkg 2>&1 | head -n2 | awk -F\| '{ print $3 }')
-    tstamp_new=$(osc -A$OBS_API_DST log $prj $pkg 2>&1 | head -n2 | awk -F\| '{ print $3 }')
-    tstamp_small=$(echo $tstamp_old; echo $tstamp_new)  | sort | head -n 1)
+    tstamp_old=$(osc -A$OBS_API_SRC log $prj $pkg 2>&1 | head -n2 | awk -F\| '{ print $3 }' | tr -d ' ')
+    tstamp_new=$(osc -A$OBS_API_DST log $prj $pkg 2>&1 | head -n2 | awk -F\| '{ print $3 }' | tr -d ' ')
+    tstamp_late=$((echo "$tstamp_old"; echo "$tstamp_new")  | sort -r | head -n 1)
     # md5sums are unreliable. sometimes they match, sometimes they dont.
     # if [ "$md5_old" = "$md5_new" ]; then
     #   echo "$prj: $counter/$npkgs md5sum $(echo $md5_new) match $pkg - skipping ..."
-    if [ "$tstamp_old" = "$tstamp_small" ]; then
+    #####
+    # extra echo to strip newlines and stuff.
+    if [ "$(echo $tstamp_new)" = "$(echo $tstamp_late)" ]; then
       echo "$prj: $counter/$npkgs unchanged $pkg - skipping ..."
     else
       echo "$prj: $counter/$npkgs ..."
