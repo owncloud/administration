@@ -1,4 +1,9 @@
 ---
+- name: Install locales
+  apt: name={{ item }}
+  with_items:
+    - locales
+
 - name: Generate locales
   locale_gen: name={{ item }} state=present
   with_items:
