@@ -1,0 +1,19 @@
+---
+- name: Install build tools
+  apt: name={{ item }}
+  with_items:
+    - cmake
+    - pkg-config
+    - libsqlite3-dev
+    - qtkeychain-dev
+    - qt4-dev-tools
+    - clang
+    - qt5-default
+    - qt5keychain-dev
+    - libqt5webkit5-dev
+    - qttools5-dev-tools
+
+
+
+
+
