@@ -4,6 +4,9 @@
 #
 # We only copy when md5sum changes!
 # No use of md5sum. They are unreliable. Better compare timestamps in the log.
+#
+# FIXME: the timestamp comparison is easily fooled by interrupted transfers.
+#        can we retrieve the list of files with their individual md5sums easily? Maybe they can match?
 
 test -z "$OBS_API_DST"  && OBS_API_DST=obs-new
 test -z "$OBS_API_SRC"  && OBS_API_SRC=obs-old
