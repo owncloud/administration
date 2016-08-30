@@ -1,15 +1,44 @@
 database_names:
-  - oc_autotest0
-  - oc_autotest1
-  - oc_autotest2
-  - oc_autotest3
-  - oc_autotest4
-  - oc_autotest5
-  - oc_autotest6
-  - oc_autotest7
-  - oc_autotest8
-  - oc_autotest9
-  - oc_autotest10
+- oc_autotest0
+- oc_autotest1
+- oc_autotest2
+- oc_autotest3
+- oc_autotest4
+- oc_autotest5
+- oc_autotest6
+- oc_autotest7
+- oc_autotest8
+- oc_autotest9
+- oc_autotest10
+- oc_autotest11
+- oc_autotest12
+- oc_autotest13
+- oc_autotest14
+- oc_autotest15
+- oc_autotest16
+- oc_autotest17
+- oc_autotest18
+- oc_autotest19
+- oc_autotest20
+- oc_autotest21
+- oc_autotest22
+- oc_autotest23
+- oc_autotest24
+- oc_autotest25
+- oc_autotest26
+- oc_autotest27
+- oc_autotest28
+- oc_autotest29
+- oc_autotest30
+- oc_autotest31
+- oc_autotest32
+- oc_autotest33
+- oc_autotest34
+- oc_autotest35
+- oc_autotest36
+- oc_autotest37
+- oc_autotest38
+- oc_autotest39
 
 php_releases:
   - {
@@ -25,6 +54,13 @@ php_releases:
     minor: "5.6"
   }
   - {
-    version: "7.0.6",
+    version: "7.0.8",
     minor: "7.0"
   }
+  - {
+    version: "7.1.0alpha3",
+    minor: "7.1"
+  }
+
+
+
