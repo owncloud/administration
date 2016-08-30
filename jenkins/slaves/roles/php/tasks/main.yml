@@ -62,7 +62,11 @@
   with_items: '{{php_releases}}'
 
 - name: Adjust php memory limit
-  shell: echo "memory_limit = 512M" >> "{{ phpenv_versions_path }}/{{ item.version }}/etc/php.ini"
+  lineinfile: dest={{ phpenv_versions_path }}/{{ item.version }}/etc/php.ini regexp='memory_limit' line='memory_limit = 1024M'
+  with_items: '{{php_releases}}'
+
+- name: Ensure timezone is set in php.ini
+  lineinfile: dest={{ phpenv_versions_path }}/{{ item.version }}/etc/php.ini regexp='date.timezone =' line='date.timezone = UTC'
   with_items: '{{php_releases}}'
 
 - name: Symlink versions
@@ -107,3 +111,6 @@
   copy: src=pg_hba.conf dest=/etc/postgresql/9.4/main/pg_hba.conf
   notify: restart postgres
 
+
+# set max_connection in /etc/mysql/my.cnf
+# set max_connection in /etc/postgresql/9.4/main/postgresql.conf
