@@ -25,6 +25,7 @@
     - smbclient
     - python-psycopg2
     - python-mysqldb
+    - libmagickwand-dev
 
 - name: install packages for phpenv
   apt: name={{ item }}
