@@ -180,17 +180,8 @@ elsif( $task eq 'write' ){
 				s/\$/\\\$/g;
 			}
 
-			if ( -e 'no-php' ) {
-				# delete old php file
-				unlink "$language.php";
-			} else {
-				# Write PHP file
-				open( OUT, ">$language.php" );
-				print OUT "<?php\n\$TRANSLATIONS = array(\n";
-				print OUT join( ",\n", @strings );
-				print OUT "\n);\n\$PLURAL_FORMS = \"$plurals\";\n";
-				close( OUT );
-			}
+			# delete old php file
+			unlink "$language.php";
 
 			# Write js file
 			open( OUT, ">$language.js" );
