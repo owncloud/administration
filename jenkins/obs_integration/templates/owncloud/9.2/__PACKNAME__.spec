@@ -224,6 +224,12 @@ fi
 
 
 %post -n %{ocphp_deps_name}
+
+# check with Vincent, what is needed here...
+echo "Makefile: you need node js (with npm) to be installed on the system
+sleep 10
+
+
 if [ -f /etc/sysconfig/apache2 ]; then
 %if 0%{?suse_version}
 ## FIXME: use a2enmod instead??
