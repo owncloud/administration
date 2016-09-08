@@ -63,7 +63,7 @@
   with_items: '{{php_releases}}'
 
 - name: Adjust php memory limit
-  lineinfile: dest={{ phpenv_versions_path }}/{{ item.version }}/etc/php.ini regexp='memory_limit' line='memory_limit = 1024M'
+  lineinfile: dest={{ phpenv_versions_path }}/{{ item.version }}/etc/php.ini regexp='memory_limit' line='memory_limit = 2024M'
   with_items: '{{php_releases}}'
 
 - name: Ensure timezone is set in php.ini

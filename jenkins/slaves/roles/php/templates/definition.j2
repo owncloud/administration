@@ -7,16 +7,13 @@ configure_option "--with-pgsql"
 configure_option "--with-mysqli"
 configure_option "--with-ldap"
 configure_option "--with-pdo-pgsql"
+configure_option "--with-pdo-mysql"
 configure_option "--with-mysql-sock=/var/run/mysqld/mysqld.sock"
 configure_option "--with-oci8=instantclient,/usr/lib/oracle/12.1/client64/lib/"
 configure_option "--with-libdir=/lib/x86_64-linux-gnu"
 
 # Disable CGI.
 configure_option -R "--disable-cgi"
-configure_option -R "--with-mysql"
-
-# Avoid error with PHP_Archive ...
-configure_option "--disable-phar"
 
 {% if item.version|version_compare('5.4', '<') %}
 # Remove libevent dir for PHP < 5.4.
