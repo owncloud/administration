@@ -58,7 +58,7 @@ use Template;		# Requires: perl-Template-Toolkit
 
 
 my $build_token         = 'oc_'.strftime("%Y%m%d", localtime);
-my $source_tar          = shift;
+my $source_tar          = shift;	# 1st param
 
 if (!defined $source_tar or $source_tar =~ m{^-})
   {
@@ -92,15 +92,15 @@ but without the tar.* extension.
 };
   }
 
-my $container_project   = shift || 'oem';	#'home:jw:oem';	'ownbrander';
+my $container_project   = shift || 'oem';	# 2nd param 'home:jw:oem';	'ownbrander';
 
-my $client_filter	= shift || "";
+my $client_filter	= shift || "";		# 3rd param
 my @client_filter	= split(/[,\|\s]/, $client_filter);
 my %client_filter = map { $_ => 1 } @client_filter;
 
-my $obs_api             = shift || 'https://obs.int.owncloud.com';
-my $template_prj 	= shift || 'desktop';
-my $template_pkg 	= shift || 'owncloud-client';
+my $obs_api             = shift || 'https://obs.int.owncloud.com';	# 4th param
+my $template_prj 	= shift || 'desktop';			# 5th param
+my $template_pkg 	= shift || 'owncloud-client';		# 6th param
 my $create_msg 		= $ENV{OBS_INTEGRATION_MSG} || "created by: $0 @ARGV; template=$template_prj/$template_pkg";
 
 
