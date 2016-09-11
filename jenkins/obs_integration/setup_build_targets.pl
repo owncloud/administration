@@ -12,13 +12,14 @@
 # v0.5, 2015-07-15, jw, always sync list of available repositories from TEMPLATE_PRJ.
 #                       Fixing https://github.com/owncloud/ownbrander/issues/393
 # v0.6, 2015-08-26, jw, No CentOS_7 or RHEL_7 for 32bit when expanding wildcards.
+# v0.7, 2016-09-11, jw, use env OBS_INTEGRATION_APIURL as fallback after OBS_API
 
 use Data::Dumper;
 use XML::Simple;
 
-my $version = '0.6';
+my $version = '0.7';
 my $verbose = 1;
-my $obs_api = $ENV{'OBS_API'} || 'https://obs.int.owncloud.com';
+my $obs_api = $ENV{'OBS_API'} || $ENV{'OBS_INTEGRATION_APIURL'} || 'https://obs.int.owncloud.com';
 my $osc_cmd = $ENV{'OSC_CMD'} || 'osc';
 my $template_prj = $ENV{'TEMPLATE_PRJ'} || 'desktop';
 
