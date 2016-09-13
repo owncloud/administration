@@ -96,7 +96,7 @@ for vers in $*; do
 
     $echo cd $co_dir_s2/ee:$majmin:testing/owncloud-enterprise-files
     $echo osc up
-    $echo $tar2pack -O . -E ee:$majmin:testing/owncloud-enterprise-files http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-complete-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
+    $echo $tar2pack -O . -E ee:$majmin:testing/owncloud-enterprise-files \'http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-complete-$vers.tar.bz2\' -d SOURCE_TAR_TOP_DIR=owncloud
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
     test -z "$testing" && echo y | $echo EDITOR="sed -i -e 's/$/ /'" osc submitpac --yes --no-cleanup ee:$majmin owncloud-enterprise-files
@@ -133,7 +133,7 @@ for vers in $*; do
 
     $echo cd $co_dir_s2/ee:$majmin:testing/owncloud-enterprise-files
     $echo osc up
-    $echo $tar2pack -O . -E ee:$majmin:testing/owncloud-enterprise-files http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-complete-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
+    $echo $tar2pack -O . -E ee:$majmin:testing/owncloud-enterprise-files \'http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-complete-$vers.tar.bz2\' -d SOURCE_TAR_TOP_DIR=owncloud
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
     test -z "$testing" && echo y | $echo EDITOR="sed -i -e 's/$/ /'" osc submitpac --yes --no-cleanup ee:$majmin owncloud-enterprise-files
@@ -170,7 +170,7 @@ for vers in $*; do
 
     $echo cd $co_dir_s2/ee:$majmin:testing/owncloud-enterprise-files
     $echo osc up
-    $echo $tar2pack -O . -E ee:$majmin:testing/owncloud-enterprise-files http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-complete-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
+    $echo $tar2pack -O . -E ee:$majmin:testing/owncloud-enterprise-files \'http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-complete-$vers.tar.bz2\' -d SOURCE_TAR_TOP_DIR=owncloud
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
     test -z "$testing" && echo y | $echo EDITOR="sed -i -e 's/$/ /'" osc submitpac --yes --no-cleanup ee:$majmin owncloud-enterprise-files
@@ -179,7 +179,7 @@ for vers in $*; do
 
     $echo cd $co_dir_s2/ee:$majmin:testing/owncloud-enterprise
     $echo osc up
-    $echo $tar2pack -O . -E ee:$majmin:testing/owncloud-enterprise http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
+    $echo $tar2pack -O . -E ee:$majmin:testing/owncloud-enterprise \'http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-$vers.tar.bz2\' -d SOURCE_TAR_TOP_DIR=owncloud
     $echo wget https://doc.owncloud.org/server/8.2/ownCloud_Server_Administration_Manual.pdf
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
@@ -211,7 +211,7 @@ for vers in $*; do
 
     $echo cd $co_dir_s2/ee:$majmin:testing/owncloud-enterprise
     $echo osc up
-    $echo $tar2pack -O . -E ee:$majmin:testing/owncloud-enterprise http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
+    $echo $tar2pack -O . -E ee:$majmin:testing/owncloud-enterprise \'http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-$vers.tar.bz2\' -d SOURCE_TAR_TOP_DIR=owncloud
     $echo wget https://doc.owncloud.org/server/8.1/ownCloud_Server_Administration_Manual.pdf
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
@@ -234,7 +234,7 @@ for vers in $*; do
 
     $echo cd $co_dir_s2/ee:$majmin:testing/owncloud-enterprise
     $echo osc up
-    $echo $tar2pack -O . -E ee:$majmin:testing/owncloud-enterprise http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-$vers.tar.bz2 -d SOURCE_TAR_TOP_DIR=owncloud
+    $echo $tar2pack -O . -E ee:$majmin:testing/owncloud-enterprise \'http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-$vers.tar.bz2\' -d SOURCE_TAR_TOP_DIR=owncloud
     $echo osc addremove
     $echo osc ci -m "$msg" --noservice
     echo >> $dl_list "$vers enterprise	http://obs.int.owncloud.com:83/ee:$majmin:testing"

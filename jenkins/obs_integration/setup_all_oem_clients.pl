@@ -1,6 +1,7 @@
 #! /usr/bin/perl -w
 #
 # (c) 2014 jw@owncloud.com - GPLv2 or ask.
+# (c) 2016 jw@owncloud.com - GPLv2 or ask.
 #
 # 
 # Iterate over customer-themes github repo, get a list of themes.
@@ -44,6 +45,7 @@
 # 2015-03-18, jw, moved subroutines at the end. Allow both, client and branding to be provided as tar-files, instead
 #                 as git-branch and branding name in cusomer-themes. This feature is neeed for ownbrander.
 # 2015-06-03, jw, obs_pkg_from_template() now always deletes the package before filling in.
+# 2016-09-13, jw, also copy prjconf in obs_prj_from_template()
 
 use Data::Dumper;
 use File::Copy;
@@ -492,6 +494,16 @@ sub obs_prj_from_template
   open(my $ofd, "|$osc_cmd meta prj '$prj' -F - >/dev/null") or die "cannot create project: $!\n";
   print $ofd $meta_prj_template;
   close($ofd) or die "writing prj meta failed: $!\n";
+
+  # no teplatizing needed for prjconf, we simply copy it over. 
+  # obs should have inheritance on prjconf, if it had, this would be unnecessary.
+  open(my $ifd, "$osc_cmd meta prjconf '$template_prj'|") or die "cannot fetch meta prjconf $template_prj: $!\n";
+  my $meta_prjconf = join("",<$ifd>);
+  close($ifd);
+  open(my $ofd, "|$osc_cmd meta prjconf '$prj' -F - >/dev/null") or die "cannot apply prjconf for $prj: $!\n";
+  print $ofd $meta_prjconf;
+  close($ofd) or die "writing prjconf meta failed: $!\n";
+
   print "Project '$prj' created.\n";
 }
 
