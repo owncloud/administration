@@ -80,7 +80,7 @@ Source5:        l10n.zip
 Patch1:         autostart_use_wrapper.diff
 %endif
 
-%if 0%{?rhel_version} >= 600 || 0%{?centos_version} >= 600 || 0%{?suse_version} == 1110
+%if 0%{?rhel_version} >= 600 || 0%{?centos_version} >= 600 || 0%{?suse_version} == 1110 || 0%{?fedora_version} == 23
 %if 0%{?suse_version} == 1110
 # SLES 11 calls make_install makeinstall
 %define make_install %{makeinstall}
@@ -167,6 +167,7 @@ BuildRequires:  %{qtprefix}libqtkeychain-devel >= 0.7.0
 # Fedora_23 has an unusable qt5-qttools-devel package. It complains
 # "nothing provides qt5-designer qt5-linguist needed by qt5-qttools-devel"
 # while Fedora_22 and Fedora_21 are happy with their qt5-qttools-devel.
+# Without these, Fedora_23 fails with unpackaged mo files. hmm???
 BuildRequires:  qt5-qttools-libs-designercomponents qt5-qttools-libs-designer
 # needed on Fedora-24 for KF5-KIO to be recognized by cmake:
 BuildRequires:  extra-cmake-modules
