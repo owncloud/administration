@@ -497,10 +497,10 @@ sub obs_prj_from_template
 
   # no teplatizing needed for prjconf, we simply copy it over. 
   # obs should have inheritance on prjconf, if it had, this would be unnecessary.
-  open(my $ifd, "$osc_cmd meta prjconf '$template_prj'|") or die "cannot fetch meta prjconf $template_prj: $!\n";
+  open($ifd, "$osc_cmd meta prjconf '$template_prj'|") or die "cannot fetch meta prjconf $template_prj: $!\n";
   my $meta_prjconf = join("",<$ifd>);
   close($ifd);
-  open(my $ofd, "|$osc_cmd meta prjconf '$prj' -F - >/dev/null") or die "cannot apply prjconf for $prj: $!\n";
+  open($ofd, "|$osc_cmd meta prjconf '$prj' -F - >/dev/null") or die "cannot apply prjconf for $prj: $!\n";
   print $ofd $meta_prjconf;
   close($ofd) or die "writing prjconf meta failed: $!\n";
 
