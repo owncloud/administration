@@ -247,7 +247,8 @@ Description: The ownCloud app owncloud-app-user-external
 Package: owncloud-app-files-antivirus
 Architecture: all
 Depends: owncloud-server (= ${binary:Version})
-Replaces: owncloud (<< 7.9.9)
+Replaces: owncloud (<< 7.9.9),
+	owncloud-enterprise-app-files-antivirus (<< ${binary:Version}~)
 Breaks: owncloud (<< 7.9.9)
 Description: The ownCloud app owncloud-app-files-antivirus
  .
