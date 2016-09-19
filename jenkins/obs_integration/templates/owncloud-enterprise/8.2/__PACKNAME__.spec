@@ -193,6 +193,8 @@ License:      PHP-3.01
 Group:        Development/Libraries/PHP
 Summary:      The ownCloud enterprise theme
 Requires:     %{name} = %{version}
+Conflicts:    owncloud-enterprise-files <= 8.2.3
+
 %description theme
 The ownCloud enterprise theme.
 Branding to distinguish enterprise from community installations.
