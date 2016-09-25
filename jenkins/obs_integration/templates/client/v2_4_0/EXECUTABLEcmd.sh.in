@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# Wrapper to start the correct owncloud binary with proper preinitializations.
+qtdir=qt-5.4
+if [ -d /opt/qt-4.8 ]; then
+  qtdir=qt-4.8
+  source /opt/$qtdir/bin/$qtdir-env.sh
+fi
+
+exec /opt/$qtdir/bin/[% APPLICATION_EXECUTABLE %]cmd "$@"
+
+# end
