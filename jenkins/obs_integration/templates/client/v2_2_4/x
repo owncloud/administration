@@ -1,0 +1,338 @@
+--- /home/jw/src/obs/obs-new/desktop/owncloud-client/owncloud-client.spec	2016-09-13 22:54:06.378532754 +0200
++++ SHORTNAME-client.spec.in	2016-09-08 10:23:25.181017012 +0200
+@@ -1,5 +1,5 @@
+ #
+-# spec file for package owncloud-client
++# spec file for package [% shortname %]-client
+ #
+ # Copyright (c) 2012 ownCloud, inc.; Nuernberg, Germany.
+ #
+@@ -23,7 +23,7 @@
+ ##  -> you can modify it in testing, and play around for a while, but then merge into the copy on
+ ##     github, which is authorative for the branded clients.
+ ##
+-## created by: ./genbranding.pl (V1.13) -o -p isv:ownCloud:desktop owncloudclient-2.2.3.tar.xz ownCloud.tar.xz
++## [% create_msg %]
+ 
+ ## One specfile to rule them all:
+ ##  versions 1.6.x or 1.7.x, released or prerelease versions. All rpm based platforms.
+@@ -33,11 +33,11 @@
+ ## prerelease, base_version, tar_version are the interface into buildpackage.pl
+ ## used in rotor.o.c job owncloud-client-linux
+ ## define prerelease as %nil, if this is not a prerelease.
+-%define prerelease %nil
+-%define base_version 2.2.3
++%define prerelease [% prerelease %]
++%define base_version [% version %]
+ %define tar_version %{base_version}%{prerelease}
+ 
+-Name:           owncloud-client
++Name:           [% shortname %]-client
+ 
+ %if "%{name}" == "owncloud-client"
+ %define is_owncloud_client 1
+@@ -66,12 +66,12 @@
+ %endif
+ 
+ License:        GPL-2.0+
+-Summary:        The ownCloud synchronization client
+-Url:            http://owncloud.com
++Summary:        [% summary %]
++Url:            [% projecturl %]
+ Group:          Productivity/Networking/Other
+-Source0:        owncloudclient-2.2.3.tar.bz2
+-Source1:        owncloud.sh
+-Source2:        owncloudcmd.sh
++Source0:        [% tarball %].tar.bz2
++Source1:        [% APPLICATION_EXECUTABLE %].sh
++Source2:        [% APPLICATION_EXECUTABLE %]cmd.sh
+ Source3:        100-sync-inotify.conf
+ Source4:        README.UPDATE.txt
+ Source5:        l10n.zip
+@@ -80,7 +80,7 @@
+ Patch1:         autostart_use_wrapper.diff
+ %endif
+ 
+-%if 0%{?rhel_version} >= 600 || 0%{?centos_version} >= 600 || 0%{?suse_version} == 1110 || 0%{?fedora_version} == 23
++%if 0%{?rhel_version} >= 600 || 0%{?centos_version} >= 600 || 0%{?suse_version} == 1110
+ %if 0%{?suse_version} == 1110
+ # SLES 11 calls make_install makeinstall
+ %define make_install %{makeinstall}
+@@ -167,7 +167,6 @@
+ # Fedora_23 has an unusable qt5-qttools-devel package. It complains
+ # "nothing provides qt5-designer qt5-linguist needed by qt5-qttools-devel"
+ # while Fedora_22 and Fedora_21 are happy with their qt5-qttools-devel.
+-# Without these, Fedora_23 fails with unpackaged mo files. hmm???
+ BuildRequires:  qt5-qttools-libs-designercomponents qt5-qttools-libs-designer
+ # needed on Fedora-24 for KF5-KIO to be recognized by cmake:
+ BuildRequires:  extra-cmake-modules
+@@ -278,17 +277,17 @@
+ %endif
+ 
+ Requires: %{name}-l10n
+-Requires: libowncloudsync0 = %{version}
++Requires: lib[% shortname %]sync0 = %{version}
+ 
+ ######################################################################### Obsoletes only below here.
+ 
+ Obsoletes: libocsync0
+ Obsoletes: libocsync-devel
+-Obsoletes: libocsync-plugin-owncloud
+-Obsoletes: libocsync-plugin-owncloud
++Obsoletes: libocsync-plugin-[% shortname %]
++Obsoletes: libocsync-plugin-[% APPLICATION_EXECUTABLE %]
+ Obsoletes: libocsync-devel-doc
+ Obsoletes: libocsync-doc
+-Obsoletes: opt-owncloud-client
++Obsoletes: opt-[% APPLICATION_EXECUTABLE %]-client
+ 
+ # Obsolete the experimental Qt5 packages if this is the unbranded client.
+ %if %{is_owncloud_client}
+@@ -300,73 +299,48 @@
+ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+ 
+ %description
+-The ownCloud sync client - github.com/owncloud/client
+-
+-ownCloud client enables you to connect to your private
+-ownCloud Server. With it you can create folders in your home
+-directory, and keep the contents of those folders synced with your
+-ownCloud server. Simply copy a file into the directory and the
+-ownCloud Client does the rest.
+-
+-ownCloud gives your employees anytime, anywhere access to the files
+-they need to get the job done, whether through this desktop application,
+-our mobile apps, the web interface, or other WebDAV clients. With it,
+-your employees can easily view and share documents and information
+-critical to the business, in a secure, flexible and controlled
+-architecture. You can easily extend ownCloud with plug-ins from the
+-community, or that you build yourself to meet the requirements of
+-your infrastructure and business.
+-
+-ownCloud - Your Cloud, Your Data, Your Way!  www.owncloud.com
+-
+-Authors
+-=======
+-Duncan Mac-Vicar P. <duncan@kde.org>
+-Klaas Freitag <freitag@owncloud.com>
+-Daniel Molkentin <danimo@owncloud.com>
+-
+-
++[% pkgdescription %]
+ 
+ %package -n %{name}-doc
+-Summary:        Documentation for ownCloud
++Summary:        Documentation for [% displayname %]
+ Group:          Development/Libraries/C and C++
+ Requires: %{name}%{?_isa} = %{version}-%{release}
+ Obsoletes:      opt-%{name}-doc
+ 
+ %description -n %{name}-doc
+-Documentation for the ownCloud desktop application.
++Documentation for the [% displayname %] desktop application.
+ 
+ %package -n %{name}-l10n
+-Summary:        Localization for ownCloud
++Summary:        Localization for [% displayname %]
+ Group:          Development/Libraries/C and C++
+ Requires: %{name}%{?_isa} = %{version}-%{release}
+ Obsoletes:      opt-%{name}-l10n
+ 
+ %description -n %{name}-l10n
+-Localization files for the ownCloud desktop application.
++Localization files for the [% displayname %] desktop application.
+ 
+-%package -n libowncloudsync0
++%package -n lib[% shortname %]sync0
+ %if %use_qt5
+ Requires:       %{qtprefix}libqt5keychain1 >= 0.7.0
+ %else
+ Requires:       %{qtprefix}libqtkeychain1 >= 0.7.0
+ %endif
+-Obsoletes:      opt-libowncloudsync0
++Obsoletes:      opt-lib[% shortname %]sync0
+ 
+-Summary:        The ownCloud synchronization library
++Summary:        The [% displayname %] synchronization library
+ Group:          Development/Libraries/C and C++
+ 
+-%description -n libowncloudsync0
+-The ownCloud synchronization library.
++%description -n lib[% shortname %]sync0
++The [% displayname %] synchronization library.
+ 
+-%package -n libowncloudsync-devel
+-Summary:        Development files for the ownCloud synchronization library
++%package -n lib[% shortname %]sync-devel
++Summary:        Development files for the [% displayname %] synchronization library
+ Group:          Development/Libraries/C and C++
+-Requires: libowncloudsync0 = %{version}
+-Obsoletes:      opt-libowncloudsync-devel
++Requires: lib[% shortname %]sync0 = %{version}
++Obsoletes:      opt-lib[% shortname %]sync-devel
+ 
+-%description -n libowncloudsync-devel
+-Development files for the ownCloud synchronization library.
++%description -n lib[% shortname %]sync-devel
++Development files for the [% displayname %] synchronization library.
+ 
+ %package -n %{name}-nautilus
+ Summary:        Nautilus overlay icons
+@@ -418,7 +392,7 @@
+ %endif
+ 
+ %prep
+-%setup -q -n owncloudclient-2.2.3
++%setup -q -n [% tarball %]
+ %if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
+ # autostart_use_wrapper.diff
+ %patch1 -p1
+@@ -445,7 +419,7 @@
+ cmake .. -DWITH_DOC=TRUE \
+ %if "%{prerelease}" != ""
+   -DMIRALL_VERSION_SUFFIX="%{prerelease}" \
+-  -DMIRALL_VERSION_BUILD="1813" \
++  -DMIRALL_VERSION_BUILD="[% buildjobid %]" \
+ %endif
+   -DKDE_INSTALL_USE_QT_SYS_PATHS=1 \
+   -DCMAKE_C_FLAGS:STRING="%{optflags}" \
+@@ -457,7 +431,7 @@
+   -DLIB_SUFFIX=64 \
+ %endif
+ %if ! %{is_owncloud_client}
+-  -DOEM_THEME_DIR=$PWD/../ownCloud/syncclient \
++  -DOEM_THEME_DIR=$PWD/../[% themename %]/[% oem_sub_dir %] \
+ %endif
+ %if %{opt_hack}
+ %if 0%{?rhel_version} == 600 || 0%{?centos_version} == 600
+@@ -477,7 +451,7 @@
+   mv conf.py doc/
+ fi
+ 
+-env LD_RUN_PATH=%{_libdir}/owncloud:%{_libdir}/owncloud make %{?_smp_mflags} VERBOSE=1
++env LD_RUN_PATH=%{_libdir}/[% APPLICATION_EXECUTABLE %]:%{_libdir}/[% shortname %] make %{?_smp_mflags} VERBOSE=1
+ 
+ make doc
+ popd
+@@ -500,35 +474,35 @@
+ if [ -d ${RPM_BUILD_ROOT}%{_mandir}/man1 ]; then
+ %if ! %{is_owncloud_client}
+   mkdir -p ${RPM_BUILD_ROOT}%{_mandir}man1
+-  mv ${RPM_BUILD_ROOT}%{_mandir}/man1/{owncloud.1,owncloud.1}
+-  mv ${RPM_BUILD_ROOT}%{_mandir}/man1/{owncloudcmd.1,owncloudcmd.1}
++  mv ${RPM_BUILD_ROOT}%{_mandir}/man1/{owncloud.1,[% APPLICATION_EXECUTABLE %].1}
++  mv ${RPM_BUILD_ROOT}%{_mandir}/man1/{owncloudcmd.1,[% APPLICATION_EXECUTABLE %]cmd.1}
+ %endif
+   gzip ${RPM_BUILD_ROOT}%{_mandir}/man1/*.1
+ fi
+ 
+ %define extdir ${RPM_BUILD_ROOT}%{_datadir}/nautilus-python/extensions
+-test -f %{extdir}/ownCloud.py  && mv %{extdir}/ownCloud.py  %{extdir}/owncloud.py  || true
+-test -f %{extdir}/ownCloud.pyo && mv %{extdir}/ownCloud.pyo %{extdir}/owncloud.pyo || true
+-test -f %{extdir}/ownCloud.pyc && mv %{extdir}/ownCloud.pyc %{extdir}/owncloud.pyc || true
++test -f %{extdir}/ownCloud.py  && mv %{extdir}/ownCloud.py  %{extdir}/[% APPLICATION_EXECUTABLE %].py  || true
++test -f %{extdir}/ownCloud.pyo && mv %{extdir}/ownCloud.pyo %{extdir}/[% APPLICATION_EXECUTABLE %].pyo || true
++test -f %{extdir}/ownCloud.pyc && mv %{extdir}/ownCloud.pyc %{extdir}/[% APPLICATION_EXECUTABLE %].pyc || true
+ 
+ %if %opt_hack
+ install -d ${RPM_BUILD_ROOT}/%{optdir}/bin
+-mv ${RPM_BUILD_ROOT}/%{_bindir}/owncloud* ${RPM_BUILD_ROOT}/%{optdir}/bin/
++mv ${RPM_BUILD_ROOT}/%{_bindir}/[% APPLICATION_EXECUTABLE %]* ${RPM_BUILD_ROOT}/%{optdir}/bin/
+ 
+-install %{SOURCE1} ${RPM_BUILD_ROOT}/usr/bin/owncloud
+-install %{SOURCE2} ${RPM_BUILD_ROOT}/usr/bin/owncloudcmd
++install %{SOURCE1} ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]
++install %{SOURCE2} ${RPM_BUILD_ROOT}/usr/bin/[% APPLICATION_EXECUTABLE %]cmd
+ %endif
+ 
+ # https://github.com/owncloud/client/issues/4107
+ install -m 0755 -D %{SOURCE3} ${RPM_BUILD_ROOT}/etc/sysctl.d/100-sync-inotify.conf
+ 
+ %if %{?suse_version:1}0
+-%suse_update_desktop_file -n owncloud
++%suse_update_desktop_file -n [% APPLICATION_EXECUTABLE %]
+ # workaround for https://github.com/owncloud/ownbrander/issues/322
+ for desktop_icon_dir in $RPM_BUILD_ROOT/usr/share/icons/hicolor/*/apps; do
+   # copy shortname to executable name, if missing.
+-  if [ -f $desktop_icon_dir/owncloud.png -a ! -f $desktop_icon_dir/owncloud.png ]; then
+-    cp $desktop_icon_dir/owncloud.png $desktop_icon_dir/owncloud.png
++  if [ -f $desktop_icon_dir/[% shortname %].png -a ! -f $desktop_icon_dir/[% APPLICATION_EXECUTABLE %].png ]; then
++    cp $desktop_icon_dir/[% shortname %].png $desktop_icon_dir/[% APPLICATION_EXECUTABLE %].png
+   fi
+ done
+ %endif
+@@ -557,32 +531,32 @@
+ /usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor >/dev/null 2>/dev/null || :
+ %endif
+ 
+-%post   -n libowncloudsync0 -p /sbin/ldconfig
+-%postun -n libowncloudsync0 -p /sbin/ldconfig
++%post   -n lib[% shortname %]sync0 -p /sbin/ldconfig
++%postun -n lib[% shortname %]sync0 -p /sbin/ldconfig
+ 
+ %files
+ %defattr(-,root,root,-)
+-%{_bindir}/owncloud
+-%{_bindir}/owncloudcmd
++%{_bindir}/[% APPLICATION_EXECUTABLE %]
++%{_bindir}/[% APPLICATION_EXECUTABLE %]cmd
+ 
+ %if %{opt_hack}
+-%{optdir}/bin/owncloud
+-%{optdir}/bin/owncloudcmd
++%{optdir}/bin/[% APPLICATION_EXECUTABLE %]
++%{optdir}/bin/[% APPLICATION_EXECUTABLE %]cmd
+ %endif
+ 
+-%{_datadir}/applications/owncloud.desktop
++%{_datadir}/applications/[% APPLICATION_EXECUTABLE %].desktop
+ %{_datadir}/icons/hicolor
+ %if 0%{have_doc}
+-%{_mandir}/man1/owncloud*
++%{_mandir}/man1/[% APPLICATION_EXECUTABLE %]*
+ %endif
+ 
+ %if %opt_hack
+ /usr/share/icons/hicolor
+-/usr/share/applications/owncloud.desktop
+-/usr/bin/owncloud
+-/usr/bin/owncloudcmd
++/usr/share/applications/[% APPLICATION_EXECUTABLE %].desktop
++/usr/bin/[% APPLICATION_EXECUTABLE %]
++/usr/bin/[% APPLICATION_EXECUTABLE %]cmd
+ %endif
+-%config /etc/ownCloud
++%config /etc/[% shortname_etc %]
+ # https://github.com/owncloud/client/issues/4107
+ %config /etc/sysctl.d/100-sync-inotify.conf
+ 
+@@ -597,20 +571,20 @@
+ %defattr(-,root,root,-)
+ %if 0%{?fedora_version} < 23
+ # workaround for https://github.com/owncloud/client/issues/4987
+-%{_datadir}/owncloud
++%{_datadir}/[% APPLICATION_EXECUTABLE %]
+ %endif
+ 
+-%files -n libowncloudsync0
++%files -n lib[% shortname %]sync0
+ %defattr(-,root,root,-)
+-%{_libdir}/libowncloudsync.so.*
+-%{_libdir}/owncloud/libocsync.so.*
+-%dir %{_libdir}/owncloud
++%{_libdir}/lib[% APPLICATION_EXECUTABLE %]sync.so.*
++%{_libdir}/[% APPLICATION_EXECUTABLE %]/libocsync.so.*
++%dir %{_libdir}/[% APPLICATION_EXECUTABLE %]
+ 
+-%files -n libowncloudsync-devel
++%files -n lib[% shortname %]sync-devel
+ %defattr(-,root,root,-)
+-%{_libdir}/libowncloudsync.so
+-%{_libdir}/owncloud/libocsync.so
+-%{_includedir}/owncloudsync/
++%{_libdir}/lib[% APPLICATION_EXECUTABLE %]sync.so
++%{_libdir}/[% APPLICATION_EXECUTABLE %]/libocsync.so
++%{_includedir}/[% APPLICATION_EXECUTABLE %]sync/
+ 
+ %files -n %{name}-nautilus
+ %defattr(-,root,root,-)
