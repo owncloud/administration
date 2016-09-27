@@ -720,3 +720,5 @@ if( $opt_o ) {
 
 print "buildOk=$buildOk\n";
 print " Finished!\n\n";
+
+exit(1) unless( $buildOk );
