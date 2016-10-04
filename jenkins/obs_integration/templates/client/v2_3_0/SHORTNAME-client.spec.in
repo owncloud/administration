@@ -151,10 +151,15 @@ Patch1:         autostart_use_wrapper.diff
 
 BuildRequires:  cmake >= 2.8.11
 BuildRequires:  gcc gcc-c++
+%if %suse_has_qt5
+# newer openSUSE versions bring the qtkeychain in the distro.
+BuildRequires:  qtkeychain-qt5-devel >= 0.7.0, libqt5keychain1 >= 0.7.0
+%else
 %if %use_qt5
 BuildRequires:  %{qtprefix}libqt5keychain-devel >= 0.7.0, %{qtprefix}libqt5keychain1 >= 0.7.0
 %else
 BuildRequires:  %{qtprefix}libqtkeychain-devel >= 0.7.0
+%endif
 %endif
 
 # This is for all modern Fedora and CentOS 7
