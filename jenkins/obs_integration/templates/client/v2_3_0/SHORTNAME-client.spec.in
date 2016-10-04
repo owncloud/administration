@@ -114,7 +114,7 @@ Patch1:         autostart_use_wrapper.diff
 # - Fedora >= 20
 # - RHEL or CentOS >= 7.0
 %define suse_has_qt5 0
-%if 0%{?is_opensuse} || 0%{?suse_version} == 1320
+%if 0%{?is_opensuse} || 0%{?suse_version} == 1320 || 0%{?sle_version} >= 120200
   %define suse_has_qt5 1
 %endif
 
@@ -124,7 +124,8 @@ Patch1:         autostart_use_wrapper.diff
   # On top of the Qt5 requirement, Dolphin plugin interface can only work on distros with KDE Applications >= 15.12
   # This we make sure to allow building not for OpenSUSE Leap 42.1 GA, not for 13.2
   # Leap_Updates would allow a dolphin overlay to work, this is not handled below.
-  %if 0%{?suse_version} > 1320 || 0%{?fedora_version} > 23
+  # the third term below is for leap 42.2
+  %if 0%{?suse_version} > 1320 || 0%{?fedora_version} > 23 || (0%{?sle_version} >= 120200 && 0%{?is_opensuse})
     %define build_dolphin_overlays 1
   %endif
   %if "%_repository" == "openSUSE_Leap_42.1_Update"
@@ -228,7 +229,7 @@ BuildRequires:  libopenssl-devel
 %endif
 
 # no documents on SLE12
-%if 0%{?suse_version} == 1315 && 0%{?sle_version}
+%if 0%{?suse_version} == 1315 && ! 0%{?is_opensuse}
 %define have_doc 0
 %endif
 
@@ -348,6 +349,7 @@ Requires:       nautilus
 Requires:       nautilus-python
 %else
 Requires:       python-nautilus
+Supplements:    packageand(%{name}:nautilus)
 %endif
 Requires:       %{name}%{?_isa} = %{version}-%{release}
 Obsoletes:      opt-%{name}-nautilus
