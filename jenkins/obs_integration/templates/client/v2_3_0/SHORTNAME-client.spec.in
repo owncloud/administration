@@ -65,7 +65,7 @@ Version:       	%{base_version}~%{prerelease}
 Release:        0
 %endif
 
-License:        GPL-2.0+
+License:        GPL-2.0 and GPL-2.0+ and LGPL-2.1+
 Summary:        [% summary %]
 Url:            [% projecturl %]
 Group:          Productivity/Networking/Other
