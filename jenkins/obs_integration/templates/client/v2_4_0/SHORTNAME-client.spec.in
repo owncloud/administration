@@ -589,14 +589,14 @@ fi
 %files -n %{name}-nautilus
 %defattr(-,root,root,-)
 # Fedora also has *.pyc and *.pyo files here.
-%{_datadir}/nautilus-python/extensions/syncstate.py*
+%{_datadir}/nautilus-python/extensions/syncstate-*.py*
 %dir %{_datadir}/nautilus-python
 %dir %{_datadir}/nautilus-python/extensions/
 
 %files -n %{name}-nemo
 %defattr(-,root,root,-)
 # Fedora also has *.pyc and *.pyo files here.
-%{_datadir}/nemo-python/extensions/syncstate.py*
+%{_datadir}/nemo-python/extensions/syncstate-*.py*
 %dir %{_datadir}/nemo-python
 %dir %{_datadir}/nemo-python/extensions/
 
