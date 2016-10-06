@@ -594,7 +594,7 @@ fi
 %files -n %{name}-nautilus
 %defattr(-,root,root,-)
 # Fedora also has *.pyc and *.pyo files here.
-%{_datadir}/nautilus-python/extensions/syncstate.py*
+%{_datadir}/nautilus-python/extensions/syncstate-*.py*
 %dir %{_datadir}/nautilus-python
 %dir %{_datadir}/nautilus-python/extensions/
 
