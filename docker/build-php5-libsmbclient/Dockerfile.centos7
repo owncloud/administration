@@ -1,0 +1,20 @@
+# start with a php5 base upgrade according to our documentation
+# https://doc.owncloud.com/server/9.1/admin_manual/installation/php_55_installation.html
+# https://github.com/owncloud/documentation/issues/2172#issuecomment-188876694
+FROM centos:centos7
+RUN yum install -y centos-release-scl
+RUN yum install -y php55 php55-php php55-php-gd php55-php-mbstring
+RUN yum install -y php55-php-mysqlnd php55-php-ldap
+RUN yum install -y php55-php-devel
+RUN yum groupinstall -y "Development Tools"
+RUN yum install -y wget rpm-build yum-utils 
+RUN wget http://download.opensuse.org/repositories/isv:ownCloud:community/CentOS_7/isv:ownCloud:community.repo -O /etc/yum.repos.d/isv:ownCloud:community.repo
+RUN yum clean all
+RUN yum-builddep -y php5-libsmbclient
+RUN yumdownloader --source php5-libsmbclient
+RUN rpm -ihv php5-libsmbclient*.src.rpm
+RUN sed -i -e 's@phpize@source /opt/rh/php55/enable; phpize@' /root/rpmbuild/SPECS/php5-libsmbclient.spec
+RUN sed -i -e 's@CentOS_6_PHP55@CentOS_7_PHP55@'              /root/rpmbuild/SPECS/php5-libsmbclient.spec
+RUN cd /root/rpmbuild && rpmbuild -D '_repository CentOS_7_PHP55' -ba              SPECS/php5-libsmbclient.spec
+CMD bash --rcfile /opt/rh/php55/enable
+
