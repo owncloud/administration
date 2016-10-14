@@ -6,6 +6,9 @@ dockername=centos7-php55-devel
 build_opt=--no-cache=false
 
 docker build $build_opt --force-rm=true --rm=true -t $dockername -f Dockerfile.centos7 .
+docker run $dockername tar jcf - root/rpmbuild --transform 's@root/@@' --exclude BUILD --exclude BUILDROOT | tar jxvf -
+exit 0
+
 cat <<EOF
 Study:
   https://github.com/owncloud/documentation/issues/2172#issuecomment-188876694
