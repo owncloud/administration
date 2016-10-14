@@ -1,4 +1,7 @@
-# start with a php5 base upgrade according to our documentation
+# This Dockerfile generates a php5-libsmbclient*.rpm package for both RHEL7 and CentOS7 using php-5.5
+# (c) 2016 jw@owncloud.com 
+#
+# Start with a php5 base upgrade according to our documentation
 # https://doc.owncloud.com/server/9.1/admin_manual/installation/php_55_installation.html
 # https://github.com/owncloud/documentation/issues/2172#issuecomment-188876694
 FROM centos:centos7
