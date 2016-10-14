@@ -1,9 +1,14 @@
 # This Dockerfile generates a php5-libsmbclient*.rpm package for both RHEL7 and CentOS7 using php-5.5
+#
 # (c) 2016 jw@owncloud.com 
 #
 # Start with a php5 base upgrade according to our documentation
 # https://doc.owncloud.com/server/9.1/admin_manual/installation/php_55_installation.html
 # https://github.com/owncloud/documentation/issues/2172#issuecomment-188876694
+#
+# The build environment used here is CentOS7 specific, you cannot use the exact same instructions on a RHEL7 system.
+# On RHEL7, you need to use subscription-manager to enable the needed channels for e.g. php55-php-devel.
+#
 FROM centos:centos7
 RUN yum install -y centos-release-scl
 RUN yum install -y php55 php55-php php55-php-gd php55-php-mbstring
