@@ -538,6 +538,8 @@ unless( defined $substs->{version} )
   {
     my $vers = getFileName($clienttar);
     my $prerel;
+    my $month;
+    my $day;
 
     print "parsing version from '$vers' ...\n";
 
@@ -550,11 +552,13 @@ unless( defined $substs->{version} )
 	if ( $substs->{buildjobid} )
 	  {
 	    # https://github.com/owncloud/client/issues/4289
-            my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
+        my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = gmtime(time);
 	    $year += 1900;
 	    $mon += 1;
-            $prerel = "nightly" . "$year" . "$mon" . "$mday";
-            $substs->{version_deb} = $vers . '~' . $prerel;
+        $month = sprintf "%02d", $mon;
+        $day = sprintf "%02d", $mday;
+        $prerel = "nightly" . "$year" . "$month" . "$day";
+        $substs->{version_deb} = $vers . '~' . $prerel;
 	  }
 	else
 	  {
