@@ -77,8 +77,8 @@ class Setup {
 			$error.='PHP 5.6.0 is required. Please ask your server administrator to update PHP to version 5.6.0 or higher.<br/>';
 		}
 
-		// running oC on windows is unsupported since 8.1
-		if(substr(PHP_OS, 0, 3) === "WIN") {
+		// running oC on Windows is unsupported since 8.1
+		if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
 			$error.='ownCloud Server does not support Microsoft Windows.<br/>';
 		}
 
