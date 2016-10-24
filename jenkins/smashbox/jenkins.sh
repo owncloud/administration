@@ -42,14 +42,14 @@ function cleanup() {
 	if [ ! -z "$DOCKER_CONTAINER_ID" ]; then
 		echo "Kill the docker $DOCKER_CONTAINER_ID"
 		docker stop "$DOCKER_CONTAINER_ID"
-		docker rm -rf "$DOCKER_CONTAINER_ID"
+		docker rm -f "$DOCKER_CONTAINER_ID"
 	fi
 }
 
 # restore config on exit
 trap cleanup EXIT
 
-HOST=`docker inspect $DOCKER_CONTAINER_ID | grep IPAddress | cut -d '"' -f 4`
+HOST=`docker inspect --format="{{.NetworkSettings.IPAddress}}" $DOCKER_CONTAINER_ID`
 echo "Docker $DOCKER_CONTAINER_ID is available on $HOST"
 
 #
@@ -78,7 +78,7 @@ if [ "$TEST_NAME" == "litmus" ]; then
 	litmus -k http://${HOST}/remote.php/webdav $ADMIN_USER $ADMIN_PASS | tee litmus.out || true
 	more litmus.out | grep -a -v high-unicode | grep -a FAIL | tee fail.txt
 	if test -s fail.txt ; then
-		echo "litmus did fail! WebDAV not working properly! Aborting!"
+	    echo "litmus did fail! WebDAV not working properly! Aborting!"
 	    exit 1
 	fi
 	echo "litmus succeeded! WebDAV working properly!"
