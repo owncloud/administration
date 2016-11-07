@@ -282,7 +282,7 @@ cat $dl_list | sed -e 's@^@  @'
 rm -f $dl_list
 echo
 
-echo "ssh root@s2"
+echo "ssh root@obs.int"
 echo "# and do bin/publishee ...; bin/publish_ce ... eventually"
 if [ -z "$testing" ]; then
   echo "# ... check https://download.owncloud.org/download/repositories/stable/owncloud/"
