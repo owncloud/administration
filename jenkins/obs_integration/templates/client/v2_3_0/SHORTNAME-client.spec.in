@@ -270,6 +270,7 @@ Requires:       %{qtprefix}qt5-qtwebkit
 # Fedora-19 and -20, CentOS-6, CentOS-7, RHEL_6,7 don't have Suggests.
 Suggests:	%{name}-nautilus
 Suggests:       %{name}-nemo
+Suggests:       %{name}-caja
 %endif
 
 %if 0%{?rhel_version} == 600 || 0%{?centos_version} == 600
@@ -378,6 +379,21 @@ Obsoletes:      opt-%{name}-nemo
 %description -n %{name}-nemo
 This package provides overlay icons to visualize the synchronization state
 in the Nemo file manager.
+
+%package -n %{name}-caja
+Summary:        Caja overlay icons
+Group:          Productivity/Networking/Other
+Requires:       caja
+%if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
+Requires:       caja-python
+%else
+Requires:       python-caja
+%endif
+Requires:       %{name}%{?_isa} = %{version}-%{release}
+
+%description -n %{name}-caja
+This package provides overlay icons to visualize the synchronization state
+in the Caja file manager.
 
 %if 0%{build_dolphin_overlays}
 %package -n %{name}-dolphin
@@ -604,6 +620,13 @@ fi
 %{_datadir}/nemo-python/extensions/syncstate-*.py*
 %dir %{_datadir}/nemo-python
 %dir %{_datadir}/nemo-python/extensions/
+
+%files -n %{name}-caja
+%defattr(-,root,root,-)
+# Fedora also has *.pyc and *.pyo files here.
+%{_datadir}/caja-python/extensions/syncstate-*.py*
+%dir %{_datadir}/caja-python
+%dir %{_datadir}/caja-python/extensions/
 
 %if 0%{build_dolphin_overlays}
 %files -n %{name}-dolphin
