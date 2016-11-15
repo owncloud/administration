@@ -64,7 +64,8 @@ Depends: [% shortname %]-client (= ${binary:Version}), ${misc:Depends}, lib[% sh
 Description: nautilus plugin for [% displayname %]
  This package contains a nautilus plugin to display overlay icons.
  .
- This is a nice gui feature.
+ This helps users to understand the sync state of files in the 
+ synchronized directory.
 
 Package: [% shortname %]-client-nemo
 Architecture: all
@@ -73,4 +74,15 @@ Depends: [% shortname %]-client (= ${binary:Version}), ${misc:Depends}, lib[% sh
 Description: Nemo plugin for [% displayname %]
  This package contains a nemo plugin to display overlay icons.
  .
- This is a nice gui feature.
+ This helps users to understand the sync state of files in the 
+ synchronized directory.
+
+ Package: [% shortname %]-client-caja
+Architecture: all
+Section: devel
+Depends: [% shortname %]-client (= ${binary:Version}), ${misc:Depends}, lib[% shortname %]sync0, python-caja, caja
+Description: Caja plugin for [% displayname %]
+ This package contains a caja plugin to display overlay icons.
+ .
+ This helps users to understand the sync state of files in the 
+ synchronized directory.
