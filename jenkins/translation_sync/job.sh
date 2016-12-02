@@ -20,7 +20,7 @@ APPNAME=$2
 
 rm -rf job.sh
 
-git checkout $BRANCH
+git checkout $BRANCH || true
 git branch
 git pull --rebase || true
 
