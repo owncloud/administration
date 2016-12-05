@@ -241,6 +241,8 @@ BuildRequires:  sqlite-devel
 BuildRequires:  inetd desktop-file-utils
 %if 0%{?fedora_version} || 0%{?rhel_version} > 600 || 0%{?centos_version} > 600
 BuildRequires:  python-sphinx
+# sphinx fails on Fedora 25: https://github.com/owncloud/client/issues/5355
+BuildRequires: python
 %endif
 %else
 %if 0%{have_doc}
