@@ -1,8 +1,16 @@
 <?php
 /**
- * @license MIT <http://opensource.org/licenses/MIT>
+ * ownCloud
+ *
+ * @author Lukas Reschke <lukas@owncloud.com>
+ * @copyright Copyright (c) 2016, ownCloud GmbH.
+ *
+ * This code is covered by the ownCloud Commercial License.
+ *
+ * You should have received a copy of the ownCloud Commercial License
+ * along with this program. If not, see <https://owncloud.com/licenses/owncloud-commercial/>.
+ *
  */
-
 require_once __DIR__ . '/vendor/autoload.php';
 
 // Set Content-Type to XML

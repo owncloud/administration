@@ -227,7 +227,6 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     {
         $sc = new ProjectServiceContainer();
         $sc->set('foo', $foo = new \stdClass());
-        $sc->set('bar', $foo = new \stdClass());
         $sc->set('baz', $foo = new \stdClass());
 
         try {
@@ -266,6 +265,18 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     {
         $sc = new ProjectServiceContainer();
         $this->assertNull($sc->get('inactive', ContainerInterface::NULL_ON_INVALID_REFERENCE));
+    }
+
+    /**
+     * @expectedException \Symfony\Component\DependencyInjection\Exception\RuntimeException
+     * @expectedExceptionMessage You have requested a synthetic service ("request"). The DIC does not know how to construct this service.
+     */
+    public function testGetSyntheticServiceAlwaysThrows()
+    {
+        require_once __DIR__.'/Fixtures/php/services9.php';
+
+        $container = new \ProjectServiceContainer();
+        $container->get('request', ContainerInterface::NULL_ON_INVALID_REFERENCE);
     }
 
     public function testHas()
@@ -345,14 +356,17 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $container->addScope(new Scope('foo'));
 
         $container->enterScope('foo');
+        $container->set('foo', new \stdClass(), 'foo');
         $scoped1 = $container->get('scoped');
         $scopedFoo1 = $container->get('scoped_foo');
 
         $container->enterScope('foo');
+        $container->set('foo', new \stdClass(), 'foo');
         $scoped2 = $container->get('scoped');
         $scoped3 = $container->get('SCOPED');
         $scopedFoo2 = $container->get('scoped_foo');
 
+        $container->set('foo', null, 'foo');
         $container->leaveScope('foo');
         $scoped4 = $container->get('scoped');
         $scopedFoo3 = $container->get('scoped_foo');
@@ -692,7 +706,9 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
 class ProjectServiceContainer extends Container
 {
-    public $__bar, $__foo_bar, $__foo_baz;
+    public $__bar;
+    public $__foo_bar;
+    public $__foo_baz;
     public $synchronized;
 
     public function __construct()
@@ -731,6 +747,12 @@ class ProjectServiceContainer extends Container
         }
 
         return $this->services['scoped_bar'] = $this->scopedServices['foo']['scoped_bar'] = new \stdClass();
+    }
+
+    protected function synchronizeFooService()
+    {
+        // Typically get the service to pass it to a setter
+        $this->get('foo');
     }
 
     protected function synchronizeScopedSynchronizedFooService()

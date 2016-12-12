@@ -14,6 +14,7 @@ namespace Symfony\Component\DependencyInjection\Tests;
 require_once __DIR__.'/Fixtures/includes/classes.php';
 require_once __DIR__.'/Fixtures/includes/ProjectExtension.php';
 
+use Symfony\Bridge\PhpUnit\ErrorAssert;
 use Symfony\Component\Config\Resource\ResourceInterface;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -59,26 +60,18 @@ class ContainerBuilderTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    /**
+     * @requires function Symfony\Bridge\PhpUnit\ErrorAssert::assertDeprecationsAreTriggered
+     */
     public function testCreateDeprecatedService()
     {
-        $definition = new Definition('stdClass');
-        $definition->setDeprecated(true);
+        ErrorAssert::assertDeprecationsAreTriggered('The "deprecated_foo" service is deprecated. You should stop using it, as it will soon be removed.', function () {
+            $definition = new Definition('stdClass');
+            $definition->setDeprecated(true);
 
-        $that = $this;
-        $wasTriggered = false;
-
-        set_error_handler(function ($errno, $errstr) use ($that, &$wasTriggered) {
-            $that->assertSame(E_USER_DEPRECATED, $errno);
-            $that->assertSame('The "deprecated_foo" service is deprecated. You should stop using it, as it will soon be removed.', $errstr);
-            $wasTriggered = true;
+            $builder = new ContainerBuilder();
+            $builder->createService($definition, 'deprecated_foo');
         });
-
-        $builder = new ContainerBuilder();
-        $builder->createService($definition, 'deprecated_foo');
-
-        restore_error_handler();
-
-        $this->assertTrue($wasTriggered);
     }
 
     public function testRegister()
@@ -122,7 +115,7 @@ class ContainerBuilderTest extends \PHPUnit_Framework_TestCase
         try {
             @$builder->get('baz');
             $this->fail('->get() throws a ServiceCircularReferenceException if the service has a circular reference to itself');
-        } catch (\Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException $e) {
+        } catch (ServiceCircularReferenceException $e) {
             $this->assertEquals('Circular reference detected for service "baz", path: "baz".', $e->getMessage(), '->get() throws a LogicException if the service has a circular reference to itself');
         }
 
@@ -684,14 +677,12 @@ class ContainerBuilderTest extends \PHPUnit_Framework_TestCase
         $container->set('a', new \stdClass());
     }
 
-    /**
-     * @expectedException \BadMethodCallException
-     */
     public function testThrowsExceptionWhenAddServiceOnAFrozenContainer()
     {
         $container = new ContainerBuilder();
         $container->compile();
-        $container->set('a', new \stdClass());
+        $container->set('a', $foo = new \stdClass());
+        $this->assertSame($foo, $container->get('a'));
     }
 
     public function testNoExceptionWhenSetSyntheticServiceOnAFrozenContainer()
@@ -784,6 +775,21 @@ class ContainerBuilderTest extends \PHPUnit_Framework_TestCase
         $container->prependExtensionConfig('foo', $second);
         $configs = $container->getExtensionConfig('foo');
         $this->assertEquals(array($second, $first), $configs);
+    }
+
+    public function testAbstractAlias()
+    {
+        $container = new ContainerBuilder();
+
+        $abstract = new Definition('AbstractClass');
+        $abstract->setAbstract(true);
+
+        $container->setDefinition('abstract_service', $abstract);
+        $container->setAlias('abstract_alias', 'abstract_service');
+
+        $container->compile();
+
+        $this->assertSame('abstract_service', (string) $container->getAlias('abstract_alias'));
     }
 
     public function testLazyLoadedService()
