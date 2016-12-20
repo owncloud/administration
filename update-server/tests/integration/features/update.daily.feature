@@ -48,7 +48,7 @@ Feature: Testing the update scenario of releases on the daily channel
     When The request is sent
     Then The response is non-empty
     And Update to version "100.0.0.0" is available
-    And URL to download is "https://download.owncloud.org/community/owncloud-9.1.2.zip"
+    And URL to download is "https://download.owncloud.org/community/owncloud-9.1.3.zip"
     And URL to documentation is "https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html"
 
   Scenario: Updating an outdated-dated ownCloud 9.0 daily
@@ -58,7 +58,7 @@ Feature: Testing the update scenario of releases on the daily channel
     When The request is sent
     Then The response is non-empty
     And Update to version "100.0.0.0" is available
-    And URL to download is "https://download.owncloud.org/community/owncloud-9.1.2.zip"
+    And URL to download is "https://download.owncloud.org/community/owncloud-9.1.3.zip"
     And URL to documentation is "https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html"
 
   Scenario: Updating an up-to-date ownCloud 9.0 daily
@@ -76,7 +76,7 @@ Feature: Testing the update scenario of releases on the daily channel
     When The request is sent
     Then The response is non-empty
     And Update to version "100.0.0.0" is available
-    And URL to download is "https://download.owncloud.org/community/owncloud-9.0.6.zip"
+    And URL to download is "https://download.owncloud.org/community/owncloud-9.0.7.zip"
     And URL to documentation is "https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html"
 
   Scenario: Updating an outdated-dated ownCloud 8.2 daily
@@ -86,7 +86,7 @@ Feature: Testing the update scenario of releases on the daily channel
     When The request is sent
     Then The response is non-empty
     And Update to version "100.0.0.0" is available
-    And URL to download is "https://download.owncloud.org/community/owncloud-9.0.6.zip"
+    And URL to download is "https://download.owncloud.org/community/owncloud-9.0.7.zip"
     And URL to documentation is "https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html"
 
   Scenario: Updating an up-to-date ownCloud 8.2 daily
