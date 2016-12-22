@@ -549,10 +549,11 @@ if [ $1 -eq 0 ] ; then
     /bin/touch --no-create %{_datadir}/icons/hicolor >/dev/null  2>/dev/null
     /usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor >/dev/null 2>/dev/null || :
 fi
+%endif
 
 %posttrans
-/usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor >/dev/null 2>/dev/null || :
-%endif
+# fixing https://github.com/owncloud/enterprise/issues/1714
+/usr/bin/gtk-update-icon-cache --quiet --force %{_datadir}/icons/hicolor >/dev/null 2>/dev/null || :
 
 %post   -n lib[% shortname %]sync0 -p /sbin/ldconfig
 %postun -n lib[% shortname %]sync0 -p /sbin/ldconfig
