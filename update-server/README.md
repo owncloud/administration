@@ -1,9 +1,15 @@
 This is the server that is called from ownCloud to check if a new version of the server is available.
 
+## Setup
+
+1. Make sure that composer is available on your system
+2. Run `make`
+
 ## How to release a new update
 
 1. Adjust config/config.php for the update
 2. Adjust tests/integration/features/update.feature for the integration tests
+3. Run the tests with `make test`
 
 If the tests are not passing the TravisCI test execution will fail.
 
