@@ -163,7 +163,7 @@ BuildRequires:  %{qtprefix}libqtkeychain-devel >= 0.7.0
 %if 0%{?fedora_version} >= 21 || 0%{?centos_version} >= 700 || 0%{?rhel_version} == 700
 
 %if %use_qt5
-%if 0%{?fedora_version} >= 23
+%if 0%{?fedora_version} == 23
 # Fedora_23 has an unusable qt5-qttools-devel package. It complains
 # "nothing provides qt5-designer qt5-linguist needed by qt5-qttools-devel"
 # while Fedora_22 and Fedora_21 are happy with their qt5-qttools-devel.
@@ -179,6 +179,7 @@ BuildRequires:  %{qtprefix}qt5-qtbase-gui
 BuildRequires:  %{qtprefix}qt5-qtwebkit-devel
 
 %if %build_dolphin_overlays
+BuildRequires:  extra-cmake-modules
 BuildRequires:  kf5-kio-devel
 %endif
 
@@ -572,7 +573,7 @@ fi
 
 %files -n %{name}-l10n
 %defattr(-,root,root,-)
-%if 0%{?fedora_version} < 23
+%if 0%{?fedora_version} != 23
 # workaround for https://github.com/owncloud/client/issues/4987
 %{_datadir}/[% APPLICATION_EXECUTABLE %]
 %endif
