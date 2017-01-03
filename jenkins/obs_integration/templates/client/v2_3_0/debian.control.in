@@ -77,7 +77,7 @@ Description: Nemo plugin for [% displayname %]
  This helps users to understand the sync state of files in the 
  synchronized directory.
 
- Package: [% shortname %]-client-caja
+Package: [% shortname %]-client-caja
 Architecture: all
 Section: devel
 Depends: [% shortname %]-client (= ${binary:Version}), ${misc:Depends}, lib[% shortname %]sync0, python-caja, caja
