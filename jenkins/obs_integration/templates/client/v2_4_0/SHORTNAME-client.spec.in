@@ -1,7 +1,7 @@
 #
 # spec file for package [% shortname %]-client
 #
-# Copyright (c) 2012 ownCloud, inc.; Nuernberg, Germany.
+# Copyright (c) 2012-2016 ownCloud GmbH; Nuernberg, Germany.
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -65,7 +65,7 @@ Version:       	%{base_version}~%{prerelease}
 Release:        0
 %endif
 
-License:        GPL-2.0+
+License:        GPL-2.0 and GPL-2.0+ and LGPL-2.1+
 Summary:        [% summary %]
 Url:            [% projecturl %]
 Group:          Productivity/Networking/Other
@@ -76,9 +76,7 @@ Source3:        100-sync-inotify.conf
 Source4:        README.UPDATE.txt
 Source5:        l10n.zip
 
-%if 0%{?rhel_version} || 0%{?centos_version} || 0%{?suse_version} == 1110
 Patch1:         autostart_use_wrapper.diff
-%endif
 
 %if 0%{?rhel_version} >= 600 || 0%{?centos_version} >= 600 || 0%{?suse_version} == 1110
 %if 0%{?suse_version} == 1110
@@ -116,7 +114,7 @@ Patch1:         autostart_use_wrapper.diff
 # - Fedora >= 20
 # - RHEL or CentOS >= 7.0
 %define suse_has_qt5 0
-%if 0%{?is_opensuse} || 0%{?suse_version} == 1320
+%if 0%{?is_opensuse} || 0%{?suse_version} == 1320 || 0%{?sle_version} >= 120200
   %define suse_has_qt5 1
 %endif
 
@@ -126,7 +124,8 @@ Patch1:         autostart_use_wrapper.diff
   # On top of the Qt5 requirement, Dolphin plugin interface can only work on distros with KDE Applications >= 15.12
   # This we make sure to allow building not for OpenSUSE Leap 42.1 GA, not for 13.2
   # Leap_Updates would allow a dolphin overlay to work, this is not handled below.
-  %if 0%{?suse_version} > 1320 || 0%{?fedora_version} > 23
+  # the third term below is for leap 42.2
+  %if 0%{?suse_version} > 1320 || 0%{?fedora_version} > 23 || (0%{?sle_version} >= 120200 && 0%{?is_opensuse})
     %define build_dolphin_overlays 1
   %endif
   %if "%_repository" == "openSUSE_Leap_42.1_Update"
@@ -152,10 +151,16 @@ Patch1:         autostart_use_wrapper.diff
 
 BuildRequires:  cmake >= 2.8.11
 BuildRequires:  gcc gcc-c++
+%if 0%{?suse_version} >= 1330 || 0%{?sle_version} >= 120200
+# newer openSUSE versions bring qtkeychain 0.7 in the distro.
+# Leap_42.2 has it, but not Leap_42.1
+BuildRequires:  qtkeychain-qt5-devel >= 0.7.0, libqt5keychain1 >= 0.7.0
+%else
 %if %use_qt5
 BuildRequires:  %{qtprefix}libqt5keychain-devel >= 0.7.0, %{qtprefix}libqt5keychain1 >= 0.7.0
 %else
 BuildRequires:  %{qtprefix}libqtkeychain-devel >= 0.7.0
+%endif
 %endif
 
 # This is for all modern Fedora and CentOS 7
@@ -231,7 +236,7 @@ BuildRequires:  libopenssl-devel
 %endif
 
 # no documents on SLE12
-%if 0%{?suse_version} == 1315 && 0%{?sle_version}
+%if 0%{?suse_version} == 1315 && ! 0%{?is_opensuse}
 %define have_doc 0
 %endif
 
@@ -269,6 +274,7 @@ Requires:       %{qtprefix}qt5-qtwebkit
 # Fedora-19 and -20, CentOS-6, CentOS-7, RHEL_6,7 don't have Suggests.
 Suggests:	%{name}-nautilus
 Suggests:       %{name}-nemo
+Suggests:       %{name}-caja
 %endif
 
 %if 0%{?rhel_version} == 600 || 0%{?centos_version} == 600
@@ -353,6 +359,7 @@ Requires:       nautilus
 Requires:       nautilus-python
 %else
 Requires:       python-nautilus
+Supplements:    packageand(%{name}:nautilus)
 %endif
 Requires:       %{name}%{?_isa} = %{version}-%{release}
 Obsoletes:      opt-%{name}-nautilus
@@ -376,6 +383,21 @@ Obsoletes:      opt-%{name}-nemo
 %description -n %{name}-nemo
 This package provides overlay icons to visualize the synchronization state
 in the Nemo file manager.
+
+%package -n %{name}-caja
+Summary:        Caja overlay icons
+Group:          Productivity/Networking/Other
+Requires:       caja
+%if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
+Requires:       caja-python
+%else
+Requires:       python-caja
+%endif
+Requires:       %{name}%{?_isa} = %{version}-%{release}
+
+%description -n %{name}-caja
+This package provides overlay icons to visualize the synchronization state
+in the Caja file manager.
 
 %if 0%{build_dolphin_overlays}
 %package -n %{name}-dolphin
@@ -603,6 +625,13 @@ fi
 %{_datadir}/nemo-python/extensions/syncstate-*.py*
 %dir %{_datadir}/nemo-python
 %dir %{_datadir}/nemo-python/extensions/
+
+%files -n %{name}-caja
+%defattr(-,root,root,-)
+# Fedora also has *.pyc and *.pyo files here.
+%{_datadir}/caja-python/extensions/syncstate-*.py*
+%dir %{_datadir}/caja-python
+%dir %{_datadir}/caja-python/extensions/
 
 %if 0%{build_dolphin_overlays}
 %files -n %{name}-dolphin
