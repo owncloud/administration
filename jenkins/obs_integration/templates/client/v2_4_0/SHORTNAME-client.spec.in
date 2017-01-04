@@ -151,9 +151,9 @@ Patch1:         autostart_use_wrapper.diff
 
 BuildRequires:  cmake >= 2.8.11
 BuildRequires:  gcc gcc-c++
-%if 0%{?suse_version} >= 1330 || 0%{?sle_version} >= 120200
-# newer openSUSE versions bring qtkeychain 0.7 in the distro.
-# Leap_42.2 has it, but not Leap_42.1
+%if 0%{?is_opensuse} && (0%{?suse_version} >= 1330 || 0%{?sle_version} >= 120200)
+# newer openSUSE versions ship qtkeychain 0.7.0
+# Leap_42.2 has it, but neither Leap_42.1 nor SLE_12_SP2
 BuildRequires:  qtkeychain-qt5-devel >= 0.7.0, libqt5keychain1 >= 0.7.0
 %else
 %if %use_qt5
