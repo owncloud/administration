@@ -35,11 +35,11 @@ override_dh_auto_configure:
 
 override_dh_auto_install:
 	# survive at Ubuntu_16.04
-	mkdir -p $(CURDIR)/usr/share/[% shortname %]/i18n
-	echo 3cb86418caef9c95cd211cbf60a1bddd88000000020101 | xxd -r -p > $(CURDIR)/usr/share/[% shortname %]/i18n/client_en.qm
+	mkdir -p $(CURDIR)/usr/share/[% application_executable %]/i18n
+	echo 3cb86418caef9c95cd211cbf60a1bddd88000000020101 | xxd -r -p > $(CURDIR)/usr/share/[% application_executable %]/i18n/client_en.qm
 	dh_auto_install -Xdebian
 	# https://github.com/owncloud/client/issues/4107
 	install -m 0755 -D $(SRCDIR)/100-sync-inotify.conf $(DROOT)/etc/sysctl.d/100-sync-inotify.conf
-	if [ -f $(SRCDIR)/l10n.zip ]; then cd $(CURDIR)/usr/share/[% shortname %] ; unzip -o $(SRCDIR)/l10n.zip; fi || true
+	if [ -f $(SRCDIR)/l10n.zip ]; then cd $(CURDIR)/usr/share/[% application_executable %] ; unzip -o $(SRCDIR)/l10n.zip; fi || true
 
 
