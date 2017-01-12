@@ -178,6 +178,7 @@ BuildRequires:  extra-cmake-modules
 %else
 BuildRequires:  %{qtprefix}qt5-qttools-devel
 %endif
+# we need qt5 >= 5.5.1 https://github.com/owncloud/client/issues/5432
 BuildRequires:  %{qtprefix}qt5-qtbase
 BuildRequires:  %{qtprefix}qt5-qtbase-devel
 BuildRequires:  %{qtprefix}qt5-qtbase-gui
@@ -200,6 +201,7 @@ BuildRequires:  inetd desktop-file-utils
 # This is for all SUSE and RHEL6 and CentOS 6
 %if %use_qt5
 
+# we need qt5 >= 5.5.1 https://github.com/owncloud/client/issues/5432
 BuildRequires:  libQt5Core-devel
 BuildRequires:  libQt5Gui-devel
 BuildRequires:  libQt5Network-devel
@@ -264,6 +266,7 @@ BuildRequires:  update-desktop-files
 # suse finds the libs via autoreqprov 
 # https://github.com/owncloud/client/issues/4431
 
+# we need qt5 >= 5.5.1 https://github.com/owncloud/client/issues/5432
 Requires:       %{qtprefix}qt5-qtbase
 Requires:       %{qtprefix}qt5-qtbase-gui
 # libQtWebKit4 is implicitly pulled by libowncloudsync0
