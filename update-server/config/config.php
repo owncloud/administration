@@ -271,6 +271,10 @@ return [
 			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
 		],
 		'8.2' => [
+			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-8.2.9.zip',
+			'web' => 'https://doc.owncloud.org/server/8.2/admin_manual/maintenance/upgrade.html',
+		],
+		'8.2.9' => [
 			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-9.0.7.zip',
 			'web' => 'https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html',
 		],
