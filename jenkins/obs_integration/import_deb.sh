@@ -6,8 +6,20 @@
 # Requires:
 # sudo apt-get install libdistro-info-perl
 # sudo apt-get install osc
-
-#wget http://security.ubuntu.com/ubuntu/pool/universe/q/qttools-opensource-src/qttools5-dev_5.5.1-3build1_amd64.deb
+#
+# FIXME: cannot directly handle multiple architctures.
+# supports both i586 and x86_64, manually adapted:
+#  - merge the data tar as data-$arch.tar.gz into data.tar.gz
+#  - create a debian.NAME.dirs file with all possible dirs from both.
+#  - edit NAME.dsc file to list both architectures.
+#  - edit debian.NAME.install so that wildcards are used for the
+#    architectures and no directories are listed.
+#
+# Example: isv:ownCloud:devel:Qt562/libdouble-conversion-dev 
+# wget http://security.ubuntu.com/ubuntu/pool/universe/q/qttools-opensource-src/qttools5-dev_5.5.1-3build1_amd64.deb
+#
+# 2017-01-21, jw@owncloud.com -- double tar added to support multiarch later.
+#
 
 # https://launchpad.net/ubuntu/xenial/+package/libqt5designer5
 default_base_url=http://security.ubuntu.com/ubuntu/pool/universe
@@ -58,22 +70,28 @@ echo $tmpfile
 name=$(echo $deb_in_pkg_name | sed -e 's@\(.*\)_\(.*\)_.*@\1@')
 ## version includes the buildrelease number. E.g. 5.5.1-3build1
 version=$(echo $deb_in_pkg_name | sed -e 's@\(.*\)_\(.*\)_.*@\2@')
+## architecture amd64 or i386
+arch=$(echo $deb_in_pkg_name | sed -e 's@.*_\(.*\)_\([a-z0-9]*\).*@\2@')
 
 echo name: $name
 echo version: $version
+echo arch: $arch
 
+rm -f data-*.tar.gz
 ar x $tmpfile
 tar xf control.tar.gz
 rm -f control.tar.gz
 rm -f debian-binary
-xzcat < data.tar.xz | gzip > data.tar.gz
+xzcat < data.tar.xz | gzip > data-$arch.tar.gz
 rm -f data.tar.xz
+tar zcvf data.tar.gz data-*.tar.gz
 osc add data.tar.gz
 
 if [ ! -f debian.$name.install ]; then
-  tar tf data.tar.gz  | sed -e 's@^\./@@' -e 's@^/@@' > debian.$name.install
+  tar tf data-$arch.tar.gz  | sed -e 's@^\./@@' -e 's@^/@@' > debian.$name.install
   osc add debian.$name.install
 fi
+rm -f data-$arch.tar.gz
 
 if [ ! -f debian.changelog ]; then
   debchange -c debian.changelog --create --distribution stable  -v ${version} --package $name "created with $0 $url"
@@ -136,7 +154,8 @@ override_dh_shlibdeps:
 override_dh_auto_install:
 	mkdir -p \$(CURDIR)/debian/tmp
 	dh_auto_install -- INSTALL_ROOT=\$(CURDIR)/debian/tmp
-	tar xf /usr/src/packages/SOURCES/data.tar.gz -C \$(CURDIR)/debian/tmp
+	tar xf /usr/src/packages/SOURCES/data.tar.gz
+	tar xf data-\$(DEB_BUILD_ARCH).tar.gz -C \$(CURDIR)/debian/tmp
 
 
 EOF
