@@ -19,6 +19,7 @@
 # wget http://security.ubuntu.com/ubuntu/pool/universe/q/qttools-opensource-src/qttools5-dev_5.5.1-3build1_amd64.deb
 #
 # 2017-01-21, jw@owncloud.com -- double tar added to support multiarch later.
+#                             -- support for some optional maintainer scripts.
 #
 
 # https://launchpad.net/ubuntu/xenial/+package/libqt5designer5
@@ -161,6 +162,16 @@ override_dh_auto_install:
 EOF
   osc add debian.rules
 fi
+
+# optional maintainer scripts:
+for script in postinst postrm preinst preun shlibs; do
+  if [ ! -f debian.$name.$script ]; then
+    test -f $script && mv $script debian.$name.$script
+  fi
+  if [ -f debian.$name.$script ]; then
+    osc add debian.$name.$script
+  fi
+done
 
 echo "Next steps:"
 echo " osc build"
