@@ -62,12 +62,6 @@ ver_map = {
   800: '9.2',
 }
 
-print cfg.get('database', 'db_name')
-print cfg.get('database', 'db_host')
-print cfg.get('database', 'db_user')
-print cfg.get('database', 'db_pass')
-
-
 db = MySQLdb.connect(
 	cfg.get('database', 'db_host'), 
 	cfg.get('database', 'db_user'), 
