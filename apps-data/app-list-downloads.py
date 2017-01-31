@@ -1,10 +1,11 @@
 #!/usr/bin/python
 #
-# appdata.py retrieves the details for one app from the database
+# app-list-downloads.py retrieves the details for one app from the database
 # and prints it out as a json file.
 # 
 # Prerequisites:
 #  yum install MySQL-python
+#  apt in python-mysqldb
 
 import MySQLdb
 import sys
@@ -18,6 +19,34 @@ try:
   appname = sys.argv[1]
 except:
   appname = 'Tasks'
+
+# Example output for 'Tasks' as seen 2017-01-31:
+# [
+#   {
+#     "url": "http://apps.owncloud.com/CONTENT/content-files/164356-tasks.zip", 
+#     "compat": [ "9.1", "9.2" ], "version": "0.9.4"
+#   },
+#   {
+#     "url": "https://github.com/owncloud/tasks/releases/download/v0.6/tasks.zip", 
+#     "compat": [ "8.0", "8.0" ], "version": "0.6"
+#   },
+#   {
+#     "url": "https://github.com/owncloud/tasks/releases/download/v0.5/tasks.zip", 
+#     "compat": [ "7.0", "7.0" ], "version": "0.5"
+#   },
+#   {
+#     "url": "https://github.com/owncloud/tasks/releases/download/v0.8/tasks.zip", 
+#     "compat": [ "8.1", "8.1" ], "version": "0.8"
+#   },
+#   {
+#     "url": "https://github.com/owncloud/tasks/releases/download/v0.8.1/tasks.zip", 
+#     "compat": [ "8.2", "8.2" ], "version": "0.8.1"
+#   },
+#   {
+#     "url": "https://github.com/owncloud/tasks/releases/download/v0.9.2/tasks.zip", 
+#     "compat": [ "9.0", "9.0" ], "version": "0.9.2"
+#   }
+# ]
 
 default_dl = 'apps.owncloud.com/CONTENT/content-files/'
 
