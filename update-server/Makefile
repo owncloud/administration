@@ -3,8 +3,9 @@ COMPOSER=composer
 SERVER_HOST=localhost:8888
 
 composer_deps=vendor
-composer_dev_deps=vendor/bin/
-behat=$(composer_deps)/bin/behat
+composer_dev_deps=vendor/bin
+behat=$(composer_dev_deps)/behat
+phpunit=$(composer_dev_deps)/phpunit
 server_pid_file=make-test-server.pid
 
 .PHONY: all
@@ -19,11 +20,14 @@ clean-composer-deps:
 
 $(composer_deps):
 	$(COMPOSER) install --no-dev
+	touch $@
 
 $(composer_dev_deps):
 	$(COMPOSER) install --dev
+	touch $@
 
 $(behat): $(composer_dev_deps)
+$(phpunit): $(composer_dev_deps)
 
 $(server_pid_file):
 	{ php -S $(SERVER_HOST) index.php & echo $$! > $@; }
@@ -36,8 +40,15 @@ stop-server:
 	kill $(shell cat $(server_pid_file))
 	rm $(server_pid_file)
 
-.PHONY: test
-test: $(behat) start-server
+.PHONY: test-integration
+test-integration: $(behat) start-server
 	cd tests/integration && $(abspath $(behat)) .
 	$(MAKE) stop-server
+
+.PHONY: test-unit
+test-unit: $(phpunit)
+	cd tests/unit && $(abspath $(phpunit)) .
+
+.PHONY: test
+test: test-unit test-integration
 
