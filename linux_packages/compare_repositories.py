@@ -28,10 +28,26 @@ import filecmp
 import json
 
 # FIXME: replace this hardcoded test paths for optparse variables:
-repoA = "./testpilotcloud-client-2.2.4-20160927"
-repoB = "./owncloud-client-2.2.4-20170104"
 
-distros = ["Ubuntu_14.04","Ubuntu_16.04","Fedora_24"]
+# Local repositories will be positional arguments at the end
+#repoA = "./testpilotcloud-client-2.2.4-20160927"
+#repoB = "./owncloud-client-2.2.4-20170104"
+
+# Distros will be preceded by -d Ubuntu_14.04,Ubuntu_16.04
+#distros = ["Ubuntu_14.04","Ubuntu_16.04","Fedora_24"]
+
+from optparse import OptionParser
+
+parser = OptionParser()
+
+parser.add_option("-d", "--distributions",
+                    help="Specify the Linux distributions for which the comparison should be made, sepparated by commas.")
+
+(options, args) = parser.parse_args()
+
+distros = options.distributions.split(",") 
+
+repoA, repoB = args
 
 shortnameA, shortnameB = path.basename(repoA), path.basename(repoB)
 
