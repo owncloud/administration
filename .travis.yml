@@ -14,4 +14,4 @@ before_script:
 
 script:
   - sh -c "cd update-server/tests/integration/ && ../../vendor/bin/behat ."
-- sh -c "cd update-server/tests/unit/ && phpunit ."
+  - sh -c "cd update-server/tests/unit/ && phpunit ."
