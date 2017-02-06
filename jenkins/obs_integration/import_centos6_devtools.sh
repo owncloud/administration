@@ -5,8 +5,11 @@
 # rpm -qa | grep devtoolset-4 | grep -v eclipse | wc -l
 #  81
 # cat /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo
+#
+# Used with e.g.
+# isv:ownCloud:devel:Qt562/devtoolset-4-centos-6-x86-64
 
-version=0.1
+version=0.2
 
 pkgname=devtoolset-4-centos6-x86-64
 upstream_repo=http://mirror.centos.org/centos/6/sclo/x86_64/rh/devtoolset-4/
@@ -37,17 +40,35 @@ for pkg in $tmpdir/*/*.rpm; do
   out=scripts/$base.none
   rpm -qp --nosignature --scripts $uniquename | while read -r line; do
     case "$line" in
+
       "postinstall scriptlet (using /bin/sh):")
         out=scripts/$base.postinstall
         ;;
+
+      "postuninstall scriptlet (using /bin/sh):")
+        out=scripts/$base.postuninstall
+        ;;
+
+      "preinstall scriptlet (using /bin/sh):")
+        out=scripts/$base.preinstall
+        ;;
+
       "preuninstall scriptlet (using /bin/sh):")
         out=scripts/$base.preuninstall
         ;;
+
+      "postinstall program: "*)
+        out=scripts/$base.postinstall
+        echo $line | sed -e 's@^postinstall program: @@' >> $out
+        out=scripts/$base.none
+        ;;
+
       "postuninstall program: "*)
         out=scripts/$base.postuninstall
         echo $line | sed -e 's@^postuninstall program: @@' >> $out
         out=scripts/$base.none
         ;;
+
       *)
         echo $line >> $out
         ;;
@@ -74,6 +95,7 @@ Tar ball created with
 $0 VERSION $version using
 upstream_repo=$upstream_repo
 
+%BuildRequires: rpm2cpio cpio
 EOF_SPEC1
 sort -u dependencies >> $pkgname.spec
 cat <<EOF_SPEC2 >> $pkgname.spec
@@ -82,23 +104,43 @@ cat <<EOF_SPEC2 >> $pkgname.spec
 %setup -T -c
 
 %build
+tar xvf %{S:0}
 
 %install
-mkdir -p $RPM_BUILD_ROOT/opt
-tar xvf %{S:0} -C $RPM_BUILD_ROOT/opt
-tar xvf %{S:1} -C $RPM_BUILD_ROOT/opt
-ls -la $RPM_BUILD_ROOT/opt
+for pkg in */*.rpm; do
+  rpm2cpio \$pkg | (cd %{RPM_BUILD_ROOT} && cpio -idmu)
+done
+mkdir -p %{RPM_BUILD_ROOT}/usr/share/%{name}
+tar xvf %{S:1} -C %{RPM_BUILD_ROOT}/usr/share/%{name}
+ls -la %{RPM_BUILD_ROOT}/usr/share/%{name}
 
 %clean
-rm -rf "$RPM_BUILD_ROOT"
+rm -rf "%{RPM_BUILD_ROOT}"
 
 %files
 %defattr(-,root,root)
+/usr/share/%{name}
 /opt/*
 
+%pre
+for s in /usr/share/%{name}/scripts/*.preinstall; do
+  sh \$s \$1
+done
+
+%preun
+for s in /usr/share/%{name}/scripts/*.preuninstall; do
+  sh \$s \$1
+done
+
 %post
-echo now we do fancy shit
-ps -efww
+for s in /usr/share/%{name}/scripts/*.postinstall; do
+  sh \$s \$1
+done
+
+%postun
+for s in /usr/share/%{name}/scripts/*.postuninstall; do
+  sh \$s \$1
+done
 
 %changelog
 EOF_SPEC2
