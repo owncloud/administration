@@ -8,10 +8,10 @@
 
 version=0.1
 
+pkgname=devtoolset-4-centos6-x86-64
 upstream_repo=http://mirror.centos.org/centos/6/sclo/x86_64/rh/devtoolset-4/
 cutdirs=5	# leave only devtoolset-4 as a directory.
 
-pkgname=devtoolset-4
 pkgvers=0.1_oc$(date +"%Y%m%d")
 
 # tmpdir=/tmp/dt-$$/
@@ -22,12 +22,37 @@ mkdir -p $tmpdir
 find $tmpdir -name index.html\*   | xargs rm -f
 find $tmpdir -name \*-eclipse-\*  | xargs rm -f
 
+rm -rf scripts; mkdir -p scripts
 :> dependencies
+## Must loop aphabetically sorted, so that newest version number comes last.
+## We weed out older versions by using uniquename.
 for pkg in $tmpdir/*/*.rpm; do
   rpm -qp --nosignature --requires $pkg  | sed -e 's@^@Requires: @'  >> dependencies
   rpm -qp --nosignature --provides $pkg  | sed -e 's@^@Provides: @'  >> dependencies
   rpm -qp --nosignature --obsoletes $pkg | sed -e 's@^@Obsoletes: @' >> dependencies
   rpm -qp --nosignature --conflicts $pkg | sed -e 's@^@Conflicts: @' >> dependencies
+  uniquename=$(echo $pkg | sed -e 's@-[0-9][^-]*-[0-9][^-]*.\(x86_64\|i586\|noarch\).rpm$@.\1.rpm@')
+  test "$pkg" != "$uniquename" && mv $pkg $uniquename
+  base=$(basename $uniquename .rpm)
+  out=scripts/$base.none
+  rpm -qp --nosignature --scripts $uniquename | while read -r line; do
+    case "$line" in
+      "postinstall scriptlet (using /bin/sh):")
+        out=scripts/$base.postinstall
+        ;;
+      "preuninstall scriptlet (using /bin/sh):")
+        out=scripts/$base.preuninstall
+        ;;
+      "postuninstall program: "*)
+        out=scripts/$base.postuninstall
+        echo $line | sed -e 's@^postuninstall program: @@' >> $out
+        out=scripts/$base.none
+        ;;
+      *)
+        echo $line >> $out
+        ;;
+    esac
+  done
 done
 
 cat <<EOF_SPEC1 > $pkgname.spec
@@ -41,6 +66,7 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 Group:          Development
 Summary:        CentOS-6 devtoolset as a package.
 Source:         $pkgname.tar.bz2
+Source1:        $pkgname-scripts.tar.bz2
 
 
 %description
@@ -60,6 +86,7 @@ cat <<EOF_SPEC2 >> $pkgname.spec
 %install
 mkdir -p $RPM_BUILD_ROOT/opt
 tar xvf %{S:0} -C $RPM_BUILD_ROOT/opt
+tar xvf %{S:1} -C $RPM_BUILD_ROOT/opt
 ls -la $RPM_BUILD_ROOT/opt
 
 %clean
@@ -77,9 +104,11 @@ ps -efww
 EOF_SPEC2
 
 
-
+tar jcvf $pkgname-scripts.tar.bz2 scripts
 # tar jcvf $pkgname.tar.bz2 -C $tmpdir .
 # rm -rf $tmpdir
 
-osc add $pkgname.tar.bz2 $pkgname.spec
+osc add $pkgname.tar.bz2 
+osc add $pkgname-scripts.tar.bz2
+osc add $pkgname.spec 
 
