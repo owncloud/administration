@@ -88,14 +88,19 @@ Group:          Development
 Summary:        CentOS-6 devtoolset as a package.
 Source:         $pkgname.tar.bz2
 Source1:        $pkgname-scripts.tar.bz2
+# rpm provides /usr/bin/rpm2cpio
+BuildRequires:  rpm cpio	
+AutoReqProv:    no
 
+# Disable /usr/lib/rpm/find-debuginfo.sh
+# It crashes with Failed to write file: invalid section entry size
+%define debug_package %{nil}
 
 %description
 Tar ball created with 
 $0 VERSION $version using
 upstream_repo=$upstream_repo
 
-%BuildRequires: rpm2cpio cpio
 EOF_SPEC1
 sort -u dependencies >> $pkgname.spec
 cat <<EOF_SPEC2 >> $pkgname.spec
@@ -108,19 +113,21 @@ tar xvf %{S:0}
 
 %install
 for pkg in */*.rpm; do
-  rpm2cpio \$pkg | (cd %{RPM_BUILD_ROOT} && cpio -idmu)
+  rpm -qp --nosignature \$pkg
+  rpm2cpio \$pkg | (cd \$RPM_BUILD_ROOT && cpio -idmu)
 done
-mkdir -p %{RPM_BUILD_ROOT}/usr/share/%{name}
-tar xvf %{S:1} -C %{RPM_BUILD_ROOT}/usr/share/%{name}
-ls -la %{RPM_BUILD_ROOT}/usr/share/%{name}
+mkdir -p \$RPM_BUILD_ROOT/usr/share/%{name}
+tar xvf %{S:1} -C \$RPM_BUILD_ROOT/usr/share/%{name}
+ls -la \$RPM_BUILD_ROOT/usr/share/%{name}/*
 
 %clean
-rm -rf "%{RPM_BUILD_ROOT}"
+rm -rf "\$RPM_BUILD_ROOT"
 
 %files
 %defattr(-,root,root)
-/usr/share/%{name}
 /opt/*
+/usr/*
+/etc/*
 
 %pre
 for s in /usr/share/%{name}/scripts/*.preinstall; do
