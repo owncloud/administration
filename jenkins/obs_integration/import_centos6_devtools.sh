@@ -22,8 +22,8 @@ tmpdir=/tmp/dt-12567
 
 mkdir -p $tmpdir
 # ( cd $tmpdir; wget -r -nH --cut-dirs=$cutdirs -np $upstream_repo )
-find $tmpdir -name index.html\*   | xargs rm -f
-find $tmpdir -name \*-eclipse-\*  | xargs rm -f
+find $tmpdir -name index.html\*    | xargs rm -f
+find $tmpdir -name \*-eclipse-\*   | xargs rm -f
 
 rm -rf scripts; mkdir -p scripts
 :> dependencies
@@ -112,16 +112,25 @@ cat <<EOF_SPEC2 >> $pkgname.spec
 tar xvf %{S:0}
 
 %install
+set +x
 for pkg in */*.rpm; do
   rpm -qp --nosignature \$pkg
-  rpm2cpio \$pkg | (cd \$RPM_BUILD_ROOT && cpio -idmu)
+  rpm2cpio \$pkg | (cd %{buildroot} && cpio -idmu)
 done
-mkdir -p \$RPM_BUILD_ROOT/usr/share/%{name}
-tar xvf %{S:1} -C \$RPM_BUILD_ROOT/usr/share/%{name}
-ls -la \$RPM_BUILD_ROOT/usr/share/%{name}/*
+set -x
+# extra hacks: I need my files readable and my dirs writable
+# to avoid
+# create archive failed on file .../opt/rh/devtoolset-4/root/usr/bin/staprun: cpio: Bad magic
+# rm: cannot remove `.../opt/rh/devtoolset-4/root/usr/lib64/perl5/vendor_perl/Authen': Permission denied
+chmod -R u+r %{buildroot}/*
+find %{buildroot} -type d -print0 | xargs -0 chmod u+w
+
+mkdir -p %{buildroot}/usr/share/%{name}
+tar xvf %{S:1} -C %{buildroot}/usr/share/%{name}
+ls -la %{buildroot}/usr/share/%{name}/*
 
 %clean
-rm -rf "\$RPM_BUILD_ROOT"
+rm -rf "%{buildroot}"
 
 %files
 %defattr(-,root,root)
