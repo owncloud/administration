@@ -8,7 +8,11 @@
 #
 # Used with e.g.
 # isv:ownCloud:devel:Qt562/devtoolset-4-centos-6-x86-64
+#
+# test with 
+install_test='docker run -ti -v /var/tmp/build-root/CentOS_6-x86_64/home/abuild/rpmbuild/:/rpmbuild centos:centos6 sh -c "rpm -Uhv /rpmbuild/RPMS/x86_64/*x86_64.rpm; . /opt/rh/devtoolset-4/enable; cc -v; exec /bin/bash'
 
+generator=$(basename $0)
 version=0.2
 
 pkgname=devtoolset-4-centos6-x86-64
@@ -24,6 +28,8 @@ mkdir -p $tmpdir
 # ( cd $tmpdir; wget -r -nH --cut-dirs=$cutdirs -np $upstream_repo )
 find $tmpdir -name index.html\*    | xargs rm -f
 find $tmpdir -name \*-eclipse-\*   | xargs rm -f
+
+test "$0" != "$generator" && cp $0 $generator
 
 rm -rf scripts; mkdir -p scripts
 :> dependencies
@@ -88,6 +94,7 @@ Group:          Development
 Summary:        CentOS-6 devtoolset as a package.
 Source:         $pkgname.tar.bz2
 Source1:        $pkgname-scripts.tar.bz2
+Source2:        $generator
 # rpm provides /usr/bin/rpm2cpio
 BuildRequires:  rpm cpio	
 AutoReqProv:    no
@@ -139,8 +146,9 @@ rm -rf "%{buildroot}"
 /etc/*
 
 %pre
+## FIXME: we don't have our scripts before installation
 for s in /usr/share/%{name}/scripts/*.preinstall; do
-  sh \$s \$1
+  sh \$s \$1 || true
 done
 
 %preun
@@ -149,13 +157,15 @@ for s in /usr/share/%{name}/scripts/*.preuninstall; do
 done
 
 %post
+## FIXME: /sbin/restorecon: No such file or directory
 for s in /usr/share/%{name}/scripts/*.postinstall; do
-  sh \$s \$1
+  sh \$s \$1 || true
 done
 
 %postun
+## FIXME: we no longer have our scripts after uninstall
 for s in /usr/share/%{name}/scripts/*.postuninstall; do
-  sh \$s \$1
+  sh \$s \$1 || true
 done
 
 %changelog
@@ -163,10 +173,22 @@ EOF_SPEC2
 
 
 tar jcvf $pkgname-scripts.tar.bz2 scripts
+rm -rf scripts
 # tar jcvf $pkgname.tar.bz2 -C $tmpdir .
 # rm -rf $tmpdir
 
 osc add $pkgname.tar.bz2 
 osc add $pkgname-scripts.tar.bz2
 osc add $pkgname.spec 
+osc add $generator
 
+cat << EOF
+Build with
+
+ osc build *.spec CentOS_6
+
+Test install with
+
+ $install_test
+
+EOF
