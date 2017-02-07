@@ -121,7 +121,7 @@ set -x
 # extra hacks: I need my files readable and my dirs writable
 # to avoid
 # create archive failed on file .../opt/rh/devtoolset-4/root/usr/bin/staprun: cpio: Bad magic
-# rm: cannot remove `.../opt/rh/devtoolset-4/root/usr/lib64/perl5/vendor_perl/Authen': Permission denied
+# rm: cannot remove .../opt/rh/devtoolset-4/root/usr/lib64/perl5/vendor_perl/Authen: Permission denied
 chmod -R u+r %{buildroot}/*
 find %{buildroot} -type d -print0 | xargs -0 chmod u+w
 
