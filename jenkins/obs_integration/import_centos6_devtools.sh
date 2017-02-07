@@ -10,24 +10,25 @@
 # isv:ownCloud:devel:Qt562/devtoolset-4-centos-6-x86-64
 #
 # test with 
-install_test='docker run -ti -v /var/tmp/build-root/CentOS_6-x86_64/home/abuild/rpmbuild/:/rpmbuild centos:centos6 sh -c "rpm -Uhv /rpmbuild/RPMS/x86_64/*x86_64.rpm; . /opt/rh/devtoolset-4/enable; cc -v; exec /bin/bash'
+install_test='docker run -ti -v /var/tmp/build-root/CentOS_6-x86_64/home/abuild/rpmbuild/:/rpmbuild centos:centos6 sh -x -c "yum update -y; rpm -Uhv /rpmbuild/RPMS/x86_64/*x86_64.rpm; . /opt/rh/devtoolset-4/enable; c++ -v; exec /bin/bash'
 
 generator=$(basename $0)
 version=0.2
 
+extra_provides=devtoolset-4-centos6
 pkgname=devtoolset-4-centos6-x86-64
 upstream_repo=http://mirror.centos.org/centos/6/sclo/x86_64/rh/devtoolset-4/
 cutdirs=5	# leave only devtoolset-4 as a directory.
 
 pkgvers=0.1_oc$(date +"%Y%m%d")
 
-# tmpdir=/tmp/dt-$$/
-tmpdir=/tmp/dt-12567
+tmpdir=/tmp/dt-$$/
 
 mkdir -p $tmpdir
-# ( cd $tmpdir; wget -r -nH --cut-dirs=$cutdirs -np $upstream_repo )
-find $tmpdir -name index.html\*    | xargs rm -f
-find $tmpdir -name \*-eclipse-\*   | xargs rm -f
+( cd $tmpdir; wget -r -nH --cut-dirs=$cutdirs -np $upstream_repo )
+find $tmpdir -type f -a ! -name \*.rpm | xargs rm -f
+find $tmpdir -name \*.src.rpm          | xargs rm -f
+find $tmpdir -name \*-eclipse-\*       | xargs rm -f
 
 test "$0" != "$generator" && cp $0 $generator
 
@@ -103,14 +104,17 @@ AutoReqProv:    no
 # It crashes with Failed to write file: invalid section entry size
 %define debug_package %{nil}
 
+# we need these from the system:
+Requires: glibc-devel glibc-headers mpfr
+EOF_SPEC1
+sort -u dependencies | egrep -v '^Requires: (devtoolset\-4\-(eclipse|mvn)|rh\-java\-common\-|maven30\-|libasan2 |liblsan |libmpx |libtsan |libubsan )' >> $pkgname.spec
+cat <<EOF_SPEC2 >> $pkgname.spec
+Provides: $extra_provides
+
 %description
 Tar ball created with 
 $0 VERSION $version using
 upstream_repo=$upstream_repo
-
-EOF_SPEC1
-sort -u dependencies >> $pkgname.spec
-cat <<EOF_SPEC2 >> $pkgname.spec
 
 %prep
 %setup -T -c
@@ -174,8 +178,8 @@ EOF_SPEC2
 
 tar jcvf $pkgname-scripts.tar.bz2 scripts
 rm -rf scripts
-# tar jcvf $pkgname.tar.bz2 -C $tmpdir .
-# rm -rf $tmpdir
+tar jcvf $pkgname.tar.bz2 -C $tmpdir .
+rm -rf $tmpdir
 
 osc add $pkgname.tar.bz2 
 osc add $pkgname-scripts.tar.bz2
