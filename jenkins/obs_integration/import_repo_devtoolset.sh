@@ -2,23 +2,32 @@
 # This script wraps the devtoolset-4 repository for CentOS-6 as an RPM-package.
 # The eclipes packages are excluded for now.
 #
-# rpm -qa | grep devtoolset-4 | grep -v eclipse | wc -l
-#  81
-# cat /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo
-#
 # Used with e.g.
 # isv:ownCloud:devel:Qt562/devtoolset-4-centos-6-x86-64
 #
 # test with 
-install_test='docker run -ti -v /var/tmp/build-root/CentOS_6-x86_64/home/abuild/rpmbuild/:/rpmbuild centos:centos6 sh -x -c "yum update -y; rpm -Uhv /rpmbuild/RPMS/x86_64/*x86_64.rpm; . /opt/rh/devtoolset-4/enable; c++ -v; exec /bin/bash'
+install_test='docker run -ti -v /var/tmp/build-root/CentOS_6-x86_64:/CentOS_6-x86_64 centos:centos6 sh -x -c "yum update -y; yum install -y /CentOS_6-x86_64/home/abuild/rpmbuild/RPMS/x86_64/*x86_64.rpm; test -f /opt/rh/devtoolset-4/enable && . /opt/rh/devtoolset-4/enable; c++ -v; exec /bin/bash"'
 
 generator=$(basename $0)
-version=0.2
+version=0.3
 
-extra_provides=devtoolset-4-centos6
 pkgname=devtoolset-4-centos6-x86-64
 upstream_repo=http://mirror.centos.org/centos/6/sclo/x86_64/rh/devtoolset-4/
 cutdirs=5	# leave only devtoolset-4 as a directory.
+extra_dependencies="
+Provides: devtoolset-4-centos6
+# file /usr/lib64/libatomic.so.1.1.0 conflicts with package libatomic-4.9.0-6.1.1.el6.x86_64
+# file /usr/lib64/libitm.so.1.0.0 conflicts with package libitm-4.9.0-6.1.1.el6.x86_64
+# file /usr/share/info/libitm.info.gz conflicts with file from package libitm-4.9.0-6.1.1.el6.x86_64
+Obsoletes: libatomic < 4.9.1, libitm < 4.9.1
+Conflicts: libatomic < 4.9.1, libitm < 4.9.1
+"
+# pkgname=devtoolset-4-centos7-x86-64
+# upstream_repo=http://mirror.centos.org/centos/7/sclo/x86_64/rh/devtoolset-4/
+# cutdirs=5	# leave only devtoolset-4 as a directory.
+extra_dependencies="
+Provides: devtoolset-4-centos7
+"
 
 pkgvers=0.1_oc$(date +"%Y%m%d")
 
@@ -104,12 +113,10 @@ AutoReqProv:    no
 # It crashes with Failed to write file: invalid section entry size
 %define debug_package %{nil}
 
-# we need these from the system:
-Requires: glibc-devel glibc-headers mpfr
 EOF_SPEC1
-sort -u dependencies | egrep -v '^Requires: (devtoolset\-4\-(eclipse|mvn)|rh\-java\-common\-|maven30\-|libasan2 |liblsan |libmpx |libtsan |libubsan )' >> $pkgname.spec
+sort -u dependencies | egrep -v '^Requires: (libcilkrts |scl\-utils|devtoolset\-4\-(eclipse|mvn)|rh\-java\-common\-|maven30\-|libasan2 |liblsan |libmpx |libtsan |libubsan )' >> $pkgname.spec
 cat <<EOF_SPEC2 >> $pkgname.spec
-Provides: $extra_provides
+$extra_dependencies
 
 %description
 Tar ball created with 
