@@ -2,6 +2,8 @@
 # This script wraps the devtoolset-4 repository for CentOS-6 as an RPM-package.
 # The eclipes packages are excluded for now.
 #
+# 0.4		fill in readonly directories correctly as non-root
+#
 # Used with e.g.
 # isv:ownCloud:devel:Qt562/devtoolset-4-centos-6-x86-64
 #
@@ -9,7 +11,7 @@
 install_test='docker run -ti -v /var/tmp/build-root/CentOS_6-x86_64:/CentOS_6-x86_64 centos:centos6 sh -x -c "yum update -y; yum install -y /CentOS_6-x86_64/home/abuild/rpmbuild/RPMS/x86_64/*x86_64.rpm; test -f /opt/rh/devtoolset-4/enable && . /opt/rh/devtoolset-4/enable; c++ -v; exec /bin/bash"'
 
 generator=$(basename $0)
-version=0.3
+version=0.4
 
 pkgname=devtoolset-4-centos6-x86-64
 upstream_repo=http://mirror.centos.org/centos/6/sclo/x86_64/rh/devtoolset-4/
@@ -35,9 +37,9 @@ tmpdir=/tmp/dt-$$/
 
 mkdir -p $tmpdir
 ( cd $tmpdir; wget -r -nH --cut-dirs=$cutdirs -np $upstream_repo )
-find $tmpdir -type f -a ! -name \*.rpm | xargs rm -f
-find $tmpdir -name \*.src.rpm          | xargs rm -f
-find $tmpdir -name \*-eclipse-\*       | xargs rm -f
+find $tmpdir -type f -a ! -name \*.rpm -print0 | xargs -0 -r rm -f
+find $tmpdir -name \*.src.rpm          -print0 | xargs -0 -r rm -f
+find $tmpdir -name \*-eclipse-\*       -print0 | xargs -0 -r rm -f
 
 test "$0" != "$generator" && cp $0 $generator
 
@@ -133,15 +135,24 @@ tar xvf %{S:0}
 set +x
 for pkg in */*.rpm; do
   rpm -qp --nosignature \$pkg
-  rpm2cpio \$pkg | (cd %{buildroot} && cpio -idmu)
+  # cpio creates, fills then chmods missing directories. This is good.
+  # But cpio chmods existing dirs before filling in. This is a bug.
+  # Workaround: extract to an empty dir, then merge.
+  mkdir cpiotmp						# empty dir
+  rpm2cpio \$pkg | (cd cpiotmp && cpio -idmu --quiet)		# extract while creating all dirs.
+  find cpiotmp        -type d -print0 | xargs -0 -r chmod u+rx	# assert accessible directories.
+  find cpiotmp        -type f -print0 | xargs -0 -r chmod u+r	# assert readable files.
+  find %{buildroot}   -type d -print0 | xargs -0 -r chmod u+rwx 	# assert writable dirs at the final destination
+  (cd cpiotmp; find . -type f -print0 | cpio -pdm0 --quiet %{buildroot})	# copy over only files, creating dirs as needed.
+  chmod u+rwx -R cpiotmp; rm -rf cpiotmp		# erase even when readonly.
 done
 set -x
-# extra hacks: I need my files readable and my dirs writable
-# to avoid
-# create archive failed on file .../opt/rh/devtoolset-4/root/usr/bin/staprun: cpio: Bad magic
-# rm: cannot remove .../opt/rh/devtoolset-4/root/usr/lib64/perl5/vendor_perl/Authen: Permission denied
-chmod -R u+r %{buildroot}/*
-find %{buildroot} -type d -print0 | xargs -0 chmod u+w
+# # extra hacks: I need my files readable and my dirs writable
+# # to avoid
+# # create archive failed on file .../opt/rh/devtoolset-4/root/usr/bin/staprun: cpio: Bad magic
+# # rm: cannot remove .../opt/rh/devtoolset-4/root/usr/lib64/perl5/vendor_perl/Authen: Permission denied
+# chmod -R u+r %{buildroot}/*
+# find %{buildroot} -type d -print0 | xargs -0 -r chmod u+w
 
 mkdir -p %{buildroot}/usr/share/%{name}
 tar xvf %{S:1} -C %{buildroot}/usr/share/%{name}
