@@ -28,7 +28,7 @@ Conflicts: libatomic < 4.9.1, libitm < 4.9.1
 # upstream_repo=http://mirror.centos.org/centos/7/sclo/x86_64/rh/devtoolset-4/
 # cutdirs=5	# leave only devtoolset-4 as a directory.
 extra_dependencies="
-Provides: devtoolset-4-centos7
+Provides: devtoolset-4-centos7 devtoolset-4-centos
 "
 
 pkgvers=0.1_oc$(date +"%Y%m%d")
