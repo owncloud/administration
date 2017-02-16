@@ -8,7 +8,7 @@ Standards-Version: 3.9.3
 Package: [% PACKNAME %]
 Architecture: all
 Depends: [% PACKNAME %]-files (>= [% VERSION_DEB %]),
-	[% PACKNAME %]-deps-php5 (>= [% VERSION_DEB %]) | [% PACKNAME %]-deps
+	[% PACKNAME %]-deps-php5 (>= [% VERSION_DEB %]) | [% PACKNAME %]-deps-php7.0 (>= [% VERSION_DEB %])
 #
 Description: ownCloud - Server 
  The [% PACKNAME %] package installs the codebase and makes it functional
