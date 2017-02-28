@@ -46,19 +46,19 @@ php_releases:
     minor: "5.4"
   }
   - {
-    version: "5.5.38",
+    version: "5.5.37",
     minor: "5.5"
   }
   - {
-    version: "5.6.25",
+    version: "5.6.29",
     minor: "5.6"
   }
   - {
-    version: "7.0.10",
+    version: "7.0.15",
     minor: "7.0"
   }
   - {
-    version: "7.1.0RC1",
+    version: "7.1.0",
     minor: "7.1"
   }
 
