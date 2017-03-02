@@ -16,7 +16,7 @@ Feature: Testing the update scenario of releases on the stable channel
     And The received version is "9.0.5"
     When The request is sent
     Then The response is non-empty
-    And URL to download is "https://download.owncloud.org/community/owncloud-9.0.6.zip"
+    And URL to download is "https://download.owncloud.org/community/owncloud-9.0.8.zip"
     And URL to documentation is "https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html"
 
   Scenario: Updating an outdated ownCloud 9.0.4 on the stable channel
@@ -24,7 +24,7 @@ Feature: Testing the update scenario of releases on the stable channel
     And The received version is "9.0.4"
     When The request is sent
     Then The response is non-empty
-    And URL to download is "https://download.owncloud.org/community/owncloud-9.0.6.zip"
+    And URL to download is "https://download.owncloud.org/community/owncloud-9.0.8.zip"
     And URL to documentation is "https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html"
 
   Scenario: Updating an outdated ownCloud 9.0.3 on the stable channel
@@ -32,7 +32,7 @@ Feature: Testing the update scenario of releases on the stable channel
     And The received version is "9.0.3"
     When The request is sent
     Then The response is non-empty
-    And URL to download is "https://download.owncloud.org/community/owncloud-9.0.6.zip"
+    And URL to download is "https://download.owncloud.org/community/owncloud-9.0.8.zip"
     And URL to documentation is "https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html"
 
   Scenario: Updating an outdated ownCloud 9.0.2 on the stable channel
