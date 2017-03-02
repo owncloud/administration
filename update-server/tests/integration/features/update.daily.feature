@@ -104,7 +104,7 @@ Feature: Testing the update scenario of releases on the daily channel
     When The request is sent
     Then The response is non-empty
     And Update to version "100.0.0.0" is available
-    And URL to download is "https://download.owncloud.org/community/owncloud-8.2.9.zip"
+    And URL to download is "https://download.owncloud.org/community/owncloud-8.2.10.zip"
     And URL to documentation is "https://doc.owncloud.org/server/8.2/admin_manual/maintenance/upgrade.html"
 
   Scenario: Updating an outdated-dated ownCloud 8.1 daily
@@ -114,7 +114,7 @@ Feature: Testing the update scenario of releases on the daily channel
     When The request is sent
     Then The response is non-empty
     And Update to version "100.0.0.0" is available
-    And URL to download is "https://download.owncloud.org/community/owncloud-8.2.9.zip"
+    And URL to download is "https://download.owncloud.org/community/owncloud-8.2.10.zip"
     And URL to documentation is "https://doc.owncloud.org/server/8.2/admin_manual/maintenance/upgrade.html"
 
   Scenario: Updating an up-to-date ownCloud 8.1 daily
