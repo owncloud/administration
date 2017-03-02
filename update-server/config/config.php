@@ -80,7 +80,7 @@
 return [
 	'production' => [
 		'9.1' => [
-			'latest' => '9.1.2',
+			'latest' => '9.1.4',
 			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
 		],
 		// START: Due do a bug in the updater we need to enforce the update order
@@ -137,7 +137,7 @@ return [
 	],
 	'stable' => [
 		'9.1' => [
-			'latest' => '9.1.2',
+			'latest' => '9.1.4',
 			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
 		],
 		// START: Due do a bug in the updater we need to enforce the update order
@@ -194,7 +194,7 @@ return [
 	],
 	'beta' => [
 		'9.1' => [
-			'latest' => '9.1.2',
+			'latest' => '9.1.4',
 			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
 		],
 		// START: Due do a bug in the updater we need to enforce the update order
@@ -267,7 +267,7 @@ return [
 			'web' => 'https://doc.owncloud.org/server/9.2/admin_manual/maintenance/upgrade.html',
 		],
 		'9.0' => [
-			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-9.1.2.zip',
+			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-9.1.4.zip',
 			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
 		],
 		'8.2' => [
