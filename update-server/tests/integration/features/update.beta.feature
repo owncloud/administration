@@ -75,9 +75,9 @@ Feature: Testing the update scenario of releases on the beta channel
     And URL to documentation is "https://doc.owncloud.org/server/8.2/admin_manual/maintenance/upgrade.html"
 
   ##### Tests for 8.1.x should go below #####
-  Scenario: Updating an outdated ownCloud 8.1.11 on the beta channel
+  Scenario: Updating an outdated ownCloud 8.1.12 on the beta channel
     Given There is a release with channel "beta"
-    And The received version is "8.1.11"
+    And The received version is "8.1.12"
     When The request is sent
     Then The response is non-empty
     And Update to version "8.2.9" is available
@@ -89,8 +89,8 @@ Feature: Testing the update scenario of releases on the beta channel
     And The received version is "8.1.0"
     When The request is sent
     Then The response is non-empty
-    And Update to version "8.1.11" is available
-    And URL to download is "https://download.owncloud.org/community/owncloud-8.1.11.zip"
+    And Update to version "8.1.12" is available
+    And URL to download is "https://download.owncloud.org/community/owncloud-8.1.12.zip"
     And URL to documentation is "https://doc.owncloud.org/server/8.1/admin_manual/maintenance/upgrade.html"
 
   ##### Tests for 8.0.x should go below #####
@@ -99,8 +99,8 @@ Feature: Testing the update scenario of releases on the beta channel
     And The received version is "8.0.16"
     When The request is sent
     Then The response is non-empty
-    And Update to version "8.1.11" is available
-    And URL to download is "https://download.owncloud.org/community/owncloud-8.1.11.zip"
+    And Update to version "8.1.12" is available
+    And URL to download is "https://download.owncloud.org/community/owncloud-8.1.12.zip"
     And URL to documentation is "https://doc.owncloud.org/server/8.1/admin_manual/maintenance/upgrade.html"
 
   Scenario: Updating an outdated ownCloud 8.0.0 on the beta channel
