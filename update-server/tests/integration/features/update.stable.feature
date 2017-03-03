@@ -66,9 +66,9 @@ Feature: Testing the update scenario of releases on the stable channel
     When The request is sent
     Then The response is empty
 
-  Scenario: Updating an outdated ownCloud 8.2.8 on the stable channel
+  Scenario: Updating an outdated ownCloud 8.2.10 on the stable channel
     Given There is a release with channel "stable"
-    And The received version is "8.2.9"
+    And The received version is "8.2.10"
     When The request is sent
     Then The response is empty
 
@@ -77,8 +77,8 @@ Feature: Testing the update scenario of releases on the stable channel
     And The received version is "8.2.0"
     When The request is sent
     Then The response is non-empty
-    And Update to version "8.2.9" is available
-    And URL to download is "https://download.owncloud.org/community/owncloud-8.2.9.zip"
+    And Update to version "8.2.10" is available
+    And URL to download is "https://download.owncloud.org/community/owncloud-8.2.10.zip"
     And URL to documentation is "https://doc.owncloud.org/server/8.2/admin_manual/maintenance/upgrade.html"
 
   ##### Tests for 8.1.x should go below #####

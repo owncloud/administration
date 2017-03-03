@@ -103,7 +103,7 @@ return [
 		],
 		// END:  Due do a bug in the updater we need to enforce the update order
 		'8.2' => [
-			'latest' => '8.2.9',
+			'latest' => '8.2.10',
 			'web' => 'https://doc.owncloud.org/server/8.2/admin_manual/maintenance/upgrade.html',
 		],
 		'8.1' => [
@@ -160,7 +160,7 @@ return [
 		],
 		// END:  Due do a bug in the updater we need to enforce the update order
 		'8.2' => [
-			'latest' => '8.2.9',
+			'latest' => '8.2.10',
 			'web' => 'https://doc.owncloud.org/server/8.2/admin_manual/maintenance/upgrade.html',
 		],
 		'8.1' => [
@@ -221,7 +221,7 @@ return [
 		],
 		// END:  Due do a bug in the updater we need to enforce the update order
 		'8.2' => [
-			'latest' => '8.2.9',
+			'latest' => '8.2.10',
 			'web' => 'https://doc.owncloud.org/server/8.2/admin_manual/maintenance/upgrade.html',
 		],
 		'8.2.9' => [
@@ -275,7 +275,7 @@ return [
 			'web' => 'https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html',
 		],
 		'8.1' => [
-			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-8.2.9.zip',
+			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-8.2.10.zip',
 			'web' => 'https://doc.owncloud.org/server/8.2/admin_manual/maintenance/upgrade.html',
 		],
 		'8.0' => [
