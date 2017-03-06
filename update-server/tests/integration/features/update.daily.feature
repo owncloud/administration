@@ -1,8 +1,27 @@
 Feature: Testing the update scenario of releases on the daily channel
 ##### Please always order by version number descending #####
 
-  ##### Tests for 9.1.x should go below #####
-  Scenario: Updating an outdated-dated ownCloud 9.2 daily
+  ##### Tests 10.0 should go below #####
+  Scenario: Updating an outdated-dated ownCloud 10.0 daily
+    Given There is a release with channel "daily"
+    And The received version is "10.0.100"
+    And the received build is "2015-10-19T18:44:30+00:00"
+    When The request is sent
+    Then The response is non-empty
+    And Update to version "100.0.0.0" is available
+    And URL to download is "https://download.owncloud.org/community/owncloud-daily-master.zip"
+    And URL to documentation is "https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html"
+    
+    Given There is a release with channel "daily"
+    And The received version is "10.0.100"
+    And the received build is "2015-10-19T18:44:30+00:00"
+    When The request is sent
+    Then The response is non-empty
+    And Update to version "100.0.0.0" is available
+    And URL to download is "https://download.owncloud.org/community/owncloud-daily-master.zip"
+    And URL to documentation is "https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html"
+
+  ##### Tests for 9.2.x (changed to 10.0) should go below #####
     Given There is a release with channel "daily"
     And The received version is "9.2.100"
     And the received build is "2015-10-19T18:44:30+00:00"
@@ -10,7 +29,7 @@ Feature: Testing the update scenario of releases on the daily channel
     Then The response is non-empty
     And Update to version "100.0.0.0" is available
     And URL to download is "https://download.owncloud.org/community/owncloud-daily-master.zip"
-    And URL to documentation is "https://doc.owncloud.org/server/9.2/admin_manual/maintenance/upgrade.html"
+    And URL to documentation is "https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html"
 
   ##### Tests for 9.1.x should go below #####
   Scenario: Updating an outdated-dated ownCloud 9.1 daily
@@ -21,7 +40,7 @@ Feature: Testing the update scenario of releases on the daily channel
     Then The response is non-empty
     And Update to version "100.0.0.0" is available
     And URL to download is "https://download.owncloud.org/community/owncloud-daily-master.zip"
-    And URL to documentation is "https://doc.owncloud.org/server/9.2/admin_manual/maintenance/upgrade.html"
+    And URL to documentation is "https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html"
 
   Scenario: Updating an outdated-dated ownCloud 9.1 daily
     Given There is a release with channel "daily"
@@ -31,7 +50,7 @@ Feature: Testing the update scenario of releases on the daily channel
     Then The response is non-empty
     And Update to version "100.0.0.0" is available
     And URL to download is "https://download.owncloud.org/community/owncloud-daily-master.zip"
-    And URL to documentation is "https://doc.owncloud.org/server/9.2/admin_manual/maintenance/upgrade.html"
+    And URL to documentation is "https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html"
 
   Scenario: Updating an up-to-date ownCloud 9.1 daily
     Given There is a release with channel "daily"
