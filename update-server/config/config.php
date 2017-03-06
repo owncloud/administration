@@ -163,6 +163,10 @@ return [
 			'latest' => '8.2.10',
 			'web' => 'https://doc.owncloud.org/server/8.2/admin_manual/maintenance/upgrade.html',
 		],
+		'8.2.10' => [
+			'latest' => '9.0.8',
+			'web' => 'https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html',
+		],
 		'8.1' => [
 			'latest' => '8.1.12',
 			'web' => 'https://doc.owncloud.org/server/8.1/admin_manual/maintenance/upgrade.html',
