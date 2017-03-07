@@ -111,7 +111,7 @@ return [
 			'web' => 'https://doc.owncloud.org/server/8.1/admin_manual/maintenance/upgrade.html',
 		],
 		'8.1.12' => [
-			'latest' => '8.2.9',
+			'latest' => '8.2.10',
 			'web' => 'https://doc.owncloud.org/server/8.2/admin_manual/maintenance/upgrade.html',
 		],
 		'8.0' => [
@@ -168,7 +168,7 @@ return [
 			'web' => 'https://doc.owncloud.org/server/8.1/admin_manual/maintenance/upgrade.html',
 		],
 		'8.1.12' => [
-			'latest' => '8.2.9',
+			'latest' => '8.2.10',
 			'web' => 'https://doc.owncloud.org/server/8.2/admin_manual/maintenance/upgrade.html',
 		],
 		'8.0' => [
@@ -233,7 +233,7 @@ return [
 			'web' => 'https://doc.owncloud.org/server/8.1/admin_manual/maintenance/upgrade.html',
 		],
 		'8.1.12' => [
-			'latest' => '8.2.9',
+			'latest' => '8.2.10',
 			'web' => 'https://doc.owncloud.org/server/8.2/admin_manual/maintenance/upgrade.html',
 		],
 		'8.0' => [
