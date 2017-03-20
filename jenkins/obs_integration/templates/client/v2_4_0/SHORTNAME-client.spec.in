@@ -278,6 +278,9 @@ Requires:       %{qtprefix}qt5-qtwebkit
 Suggests:	%{name}-nautilus
 Suggests:       %{name}-nemo
 Suggests:       %{name}-caja
+%if 0%{build_dolphin_overlays}
+Suggests:       %{name}-dolphin
+%endif
 %endif
 
 %if 0%{?rhel_version} == 600 || 0%{?centos_version} == 600
