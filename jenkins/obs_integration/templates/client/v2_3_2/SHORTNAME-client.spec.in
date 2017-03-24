@@ -236,6 +236,9 @@ BuildRequires:  libopenssl-devel
 %if 0%{?suse_version} || 0%{?fedora_version} || 0%{?rhel_version} > 600 || 0%{?centos_version} > 600
 %define have_doc 1
 %endif
+# https://github.com/owncloud/client/issues/2153
+%define have_man 0
+
 
 # no documents on SLE12
 %if 0%{?suse_version} == 1315 && ! 0%{?is_opensuse}
@@ -499,6 +502,7 @@ then
 fi
 popd
 
+%if %{have_man}
 if [ -d ${RPM_BUILD_ROOT}%{_mandir}/man1 ]; then
 %if ! %{is_owncloud_client}
   mkdir -p ${RPM_BUILD_ROOT}%{_mandir}man1
@@ -507,6 +511,9 @@ if [ -d ${RPM_BUILD_ROOT}%{_mandir}/man1 ]; then
 %endif
   gzip ${RPM_BUILD_ROOT}%{_mandir}/man1/*.1
 fi
+%else
+rm -f ${RPM_BUILD_ROOT}%{_mandir}/man1/*.1
+%endif
 
 %define extdir ${RPM_BUILD_ROOT}%{_datadir}/nautilus-python/extensions
 test -f %{extdir}/ownCloud.py  && mv %{extdir}/ownCloud.py  %{extdir}/[% APPLICATION_EXECUTABLE %].py  || true
@@ -575,7 +582,7 @@ fi
 
 %{_datadir}/applications/[% APPLICATION_EXECUTABLE %].desktop
 %{_datadir}/icons/hicolor
-%if 0%{have_doc}
+%if 0%{have_man}
 %{_mandir}/man1/[% APPLICATION_EXECUTABLE %]*
 %endif
 
