@@ -42,4 +42,8 @@ override_dh_auto_install:
 	install -m 0755 -D $(SRCDIR)/100-sync-inotify.conf $(DROOT)/etc/sysctl.d/100-sync-inotify.conf
 	if [ -f $(SRCDIR)/l10n.zip ]; then cd $(CURDIR)/usr/share/[% APPLICATION_EXECUTABLE %] ; unzip -o $(SRCDIR)/l10n.zip; fi || true
 
+	# https://github.com/owncloud/client/issues/2153
+	find $(CURDIR) -name \*/man/man1/\*.1 | tee | xargs rm -f
+
+
 
