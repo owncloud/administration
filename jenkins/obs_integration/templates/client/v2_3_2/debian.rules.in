@@ -1,0 +1,45 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+# This file was originally written by Joey Hess and Craig Small.
+# As a special exception, when this file is copied by dh-make into a
+# dh-make output file, you may use that output file without restriction.
+# This special exception was added by Craig Small in version 0.37 of dh-make.
+
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+
+export DROOT=$(CURDIR)/debian/owncloud-client
+export SRCDIR=/usr/src/packages/SOURCES
+export DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+
+SHELL=/bin/bash
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	# not sure, when which variables are set.
+	echo source:Version=${source:Version}
+	echo source:Upstream-Version=${source:Upstream-Version}
+	echo binary:Version=${binary:Version}
+
+	# protect against poisonous tar-balls.
+	if [ -d binary ]; then ls -la; echo; echo "A top level directory named 'binary' exists. This kills dpkg-genchangelog."; echo; echo "Please remove that directory."; echo; echo; exit 1; fi
+
+	git_defs=(); \
+	if [ -n "[% prerelease %]" -a "[% prerelease %]" != "%nil" ]; then \
+	  git_defs=('-DMIRALL_VERSION_SUFFIX=[% prerelease %]' '-DMIRALL_VERSION_BUILD=[% buildjobid %]'); \
+	fi; \
+	dh_auto_configure -- "$${git_defs[@]}" -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_DOCDIR=/usr/share/doc/[% shortname %]-client -DSYSCONF_INSTALL_DIR=/etc -DWITH_DOC=FALSE -DCMAKE_SKIP_RPATH=FALSE -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE -DOEM_THEME_DIR=$(CURDIR)/[% themename_deb %]/[% oem_sub_dir %]
+
+override_dh_auto_install:
+	# survive at Ubuntu_16.04
+	mkdir -p $(CURDIR)/usr/share/[% APPLICATION_EXECUTABLE %]/i18n
+	echo 3cb86418caef9c95cd211cbf60a1bddd88000000020101 | xxd -r -p > $(CURDIR)/usr/share/[% APPLICATION_EXECUTABLE %]/i18n/client_en.qm
+	dh_auto_install -Xdebian
+	# https://github.com/owncloud/client/issues/4107
+	install -m 0755 -D $(SRCDIR)/100-sync-inotify.conf $(DROOT)/etc/sysctl.d/100-sync-inotify.conf
+	if [ -f $(SRCDIR)/l10n.zip ]; then cd $(CURDIR)/usr/share/[% APPLICATION_EXECUTABLE %] ; unzip -o $(SRCDIR)/l10n.zip; fi || true
+
+
