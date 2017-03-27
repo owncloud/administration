@@ -78,7 +78,7 @@ Source5:        l10n.zip
 
 Patch1:         autostart_use_wrapper.diff
 
-%if 0%{?rhel_version} >= 600 || 0%{?centos_version} >= 600 || 0%{?suse_version} == 1110 || %if 0%{?fedora_version} == 23
+%if 0%{?rhel_version} >= 600 || 0%{?centos_version} >= 600 || 0%{?suse_version} == 1110 || 0%{?fedora_version} == 23
 %if 0%{?suse_version} == 1110
 # SLES 11 calls make_install makeinstall
 %define make_install %{makeinstall}
