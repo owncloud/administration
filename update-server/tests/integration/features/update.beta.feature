@@ -1,34 +1,50 @@
 Feature: Testing the update scenario of releases on the beta channel
 ##### Please always order by version number descending #####
 
-  ##### Tests for 9.0.x should go below #####
-  Scenario: Updating an outdated ownCloud 9.0.6 on the beta channel
+  ##### Tests for 9.1.x should go below #####
+  Scenario: Updating an outdated ownCloud 9.1.5 on the beta channel
     Given There is a release with channel "beta"
-    And The received version is "9.0.6"
+    And The received version is "9.1.5"
+    When The request is sent
+    Then The response is empty
+
+  Scenario: Updating an outdated ownCloud 9.1.0 on the beta channel
+    Given There is a release with channel "beta"
+    And The received version is "9.1.0"
     When The request is sent
     Then The response is non-empty
-    And URL to download is "https://download.owncloud.org/community/owncloud-9.1.2.zip"
+    And Update to version "9.1.5rc1" is available
+    And URL to download is "https://download.owncloud.org/community/testing/owncloud-9.1.5RC1.zip"
+    And URL to documentation is "https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html"
+
+  ##### Tests for 9.0.x should go below #####
+  Scenario: Updating an outdated ownCloud 9.0.9 on the beta channel
+    Given There is a release with channel "beta"
+    And The received version is "9.0.9"
+    When The request is sent
+    Then The response is non-empty
+    And URL to download is "https://download.owncloud.org/community/testing/owncloud-9.1.5RC1.zip"
 
   Scenario: Updating an outdated ownCloud 9.0.5 on the beta channel
     Given There is a release with channel "beta"
     And The received version is "9.0.5"
     When The request is sent
     Then The response is non-empty
-    And URL to download is "https://download.owncloud.org/community/owncloud-9.0.8.zip"
+    And URL to download is "https://download.owncloud.org/community/testing/owncloud-9.0.9RC1.zip"
 
   Scenario: Updating an outdated ownCloud 9.0.4 on the beta channel
     Given There is a release with channel "beta"
     And The received version is "9.0.4"
     When The request is sent
     Then The response is non-empty
-    And URL to download is "https://download.owncloud.org/community/owncloud-9.0.8.zip"
+    And URL to download is "https://download.owncloud.org/community/testing/owncloud-9.0.9RC1.zip"
 
   Scenario: Updating an outdated ownCloud 9.0.3 on the beta channel
     Given There is a release with channel "beta"
     And The received version is "9.0.3"
     When The request is sent
     Then The response is non-empty
-    And URL to download is "https://download.owncloud.org/community/owncloud-9.0.8.zip"
+    And URL to download is "https://download.owncloud.org/community/testing/owncloud-9.0.9RC1.zip"
     And URL to documentation is "https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html"
 
   Scenario: Updating an outdated ownCloud 9.0.2 on the beta channel
@@ -56,13 +72,13 @@ Feature: Testing the update scenario of releases on the beta channel
     And URL to documentation is "https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html"
 
   ##### Tests for 8.2.x should go below #####
-  Scenario: Updating an outdated ownCloud 8.2.10 on the beta channel
+  Scenario: Updating an outdated ownCloud 8.2.11 on the beta channel
     Given There is a release with channel "beta"
-    And The received version is "8.2.10"
+    And The received version is "8.2.11"
     When The request is sent
     Then The response is non-empty
-    And Update to version "9.0.8" is available
-    And URL to download is "https://download.owncloud.org/community/owncloud-9.0.8.zip"
+    And Update to version "9.0.9rc1" is available
+    And URL to download is "https://download.owncloud.org/community/testing/owncloud-9.0.9RC1.zip"
     And URL to documentation is "https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html"
 
   Scenario: Updating an outdated ownCloud 8.2.0 on the beta channel
@@ -70,8 +86,8 @@ Feature: Testing the update scenario of releases on the beta channel
     And The received version is "8.2.0"
     When The request is sent
     Then The response is non-empty
-    And Update to version "8.2.10" is available
-    And URL to download is "https://download.owncloud.org/community/owncloud-8.2.10.zip"
+    And Update to version "8.2.11rc1" is available
+    And URL to download is "https://download.owncloud.org/community/testing/owncloud-8.2.11RC1.zip"
     And URL to documentation is "https://doc.owncloud.org/server/8.2/admin_manual/maintenance/upgrade.html"
 
   ##### Tests for 8.1.x should go below #####
@@ -80,8 +96,8 @@ Feature: Testing the update scenario of releases on the beta channel
     And The received version is "8.1.12"
     When The request is sent
     Then The response is non-empty
-    And Update to version "8.2.10" is available
-    And URL to download is "https://download.owncloud.org/community/owncloud-8.2.10.zip"
+    And Update to version "8.2.11rc1" is available
+    And URL to download is "https://download.owncloud.org/community/testing/owncloud-8.2.11RC1.zip"
     And URL to documentation is "https://doc.owncloud.org/server/8.2/admin_manual/maintenance/upgrade.html"
 
   Scenario: Updating an outdated ownCloud 8.1.0 on the beta channel
