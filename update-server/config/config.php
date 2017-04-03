@@ -86,7 +86,7 @@ return [
 		// START: Due do a bug in the updater we need to enforce the update order
 		// see https://github.com/owncloud/administration-internal/issues/19
 		'9.0' => [
-			'latest' => '9.0.8',
+			'latest' => '9.0.9',
 			'web' => 'https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html',
 		],
 		'9.0.2' => [
@@ -143,7 +143,7 @@ return [
 		// START: Due do a bug in the updater we need to enforce the update order
 		// see https://github.com/owncloud/administration-internal/issues/19
 		'9.0' => [
-			'latest' => '9.0.8',
+			'latest' => '9.0.9',
 			'web' => 'https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html',
 		],
 		'9.0.2' => [
@@ -204,7 +204,7 @@ return [
 		// START: Due do a bug in the updater we need to enforce the update order
 		// see https://github.com/owncloud/administration-internal/issues/19
 		'9.0' => [
-			'latest' => '9.0.8',
+			'latest' => '9.0.9',
 			'web' => 'https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html',
 		],
 		'9.0.6' => [
@@ -279,7 +279,7 @@ return [
 			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
 		],
 		'8.2' => [
-			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-9.0.8.zip',
+			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-9.0.9.zip',
 			'web' => 'https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html',
 		],
 		'8.1' => [
