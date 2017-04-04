@@ -91,7 +91,44 @@ for vers in $*; do
     osc ci -m "$msg" --noservice
     echo >> $logfile "$vers          	https://obs.int.owncloud.com/package/show/ce:nightly/owncloud"
     ;;
+    
+ 10.0*) majmin=10.0
 
+    $echo cd $co_dir_s2/ee:$majmin:testing/owncloud-enterprise-files
+    $echo osc up
+    $echo $tar2pack -O . -E ee:$majmin:testing/owncloud-enterprise-files \'http://$user:$pass@download.owncloud.com/internal/$vers/owncloud-enterprise-complete-$vers.tar.bz2\' -d SOURCE_TAR_TOP_DIR=owncloud
+    $echo osc addremove
+    $echo osc ci -m "$msg" --noservice
+    test -z "$testing" && echo y | $echo EDITOR="sed -i -e 's/$/ /'" osc submitpac --yes --no-cleanup ee:$majmin owncloud-enterprise-files
+    echo >> $logfile "$vers enterprise	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise-files"
+    echo >> $dl_list "$vers enterprise	http://obs.int.owncloud.com:83/ee:$majmin:testing"
+
+    $echo cd $co_dir_s2/ee:$majmin:testing/owncloud-enterprise
+    $echo osc up
+    $echo $tar2pack -O . -E ee:$majmin:testing/owncloud-enterprise -d VERSION=$vers owncloud-empty.tar.bz2
+    $echo osc addremove
+    $echo osc ci -m "$msg" --noservice
+    test -z "$testing" && echo y | $echo EDITOR="sed -i -e 's/$/ /'" osc submitpac --yes --no-cleanup ee:$majmin owncloud-enterprise
+    echo >> $logfile "               	https://obs.int.owncloud.com/package/show/ee:$majmin:testing/owncloud-enterprise"
+
+    $echo cd $co_dir_s2/ce:$majmin:testing/owncloud-files
+    $echo osc up
+    $echo $tar2pack -O . -E ce:$majmin:testing/owncloud-files http://download.owncloud.org/community/$testing/owncloud-$vers.tar.bz2
+    $echo osc addremove
+    $echo osc ci -m "$msg" --noservice
+    test -z "$testing" && echo y | $echo EDITOR="sed -i -e 's/$/ /'" osc submitpac --yes --no-cleanup ce:$majmin owncloud-files
+    echo >> $dl_list "$vers community 	http://obs.int.owncloud.com:83/ce:$majmin:testing"
+    echo >> $logfile "$vers community	https://obs.int.owncloud.com/package/show/ce:$majmin:testing/owncloud-files"
+
+    $echo cd $co_dir_s2/ce:$majmin:testing/owncloud
+    $echo osc up
+    $echo $tar2pack -O . -E ce:$majmin:testing/owncloud -d VERSION=$vers owncloud-empty.tar.bz2
+    $echo osc addremove
+    $echo osc ci -m "$msg" --noservice
+    test -z "$testing" && echo y | $echo EDITOR="sed -i -e 's/$/ /'" osc submitpac --yes --no-cleanup ce:$majmin owncloud
+    echo >> $logfile "               	https://obs.int.owncloud.com/package/show/ce:$majmin:testing/owncloud"
+    ;;
+  
   9.1*) majmin=9.1
 
     $echo cd $co_dir_s2/ee:$majmin:testing/owncloud-enterprise-files
