@@ -26,7 +26,10 @@ rm -rf $tmpdir; mkdir -p $tmpdir
 if [ "$newname" != "$client" ];
 	mv $tmpdir/$client $tmpdir/$newname
 fi
-ls -la $tmpdir
+tarwild="/bin/tar --wildcards --force-local -xif $themetar -C $tmpdir/$newname"
+$tarwild '*/mirall/*'
+$tarwild '*/syncclient/*'
+ls -la $tmpdir/$newname/*
 rm -rf $tmpdir
 
 # compile with cmake -DOEM_THEME_DIR=$PWD/../testpilotcloud/syncclient ...
