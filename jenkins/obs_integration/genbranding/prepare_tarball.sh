@@ -45,13 +45,24 @@ if [ -z "$themed" ]; then
 	exit 1
 fi
 $outputtar $outputdir/$newname.$outputsuffix -C $tmpdir $newname
+
+if [ "$theme" = 'ownCloud' ]; then
+	cmakefile=OWNCLOUD.cmake
+	compile_hint=""
+else
+	cmakefile=$theme/$themed/OEM.cmake
+	compile_hint="cd src; cmake -DOEM_THEME_DIR=\$PWD/../$theme/$themed"
+fi
+
 if [ -n "$outfile" ]; then
-  echo "tarname=$newname.$outputsuffix" > $outfile
-  echo "theme=$theme" >> $outfile
-  sed -e 's@^\s*@@' -e 's@\s*=>\s@=@' -e 's@",\s*$@"@' -e 's@",\s*#.*$@"@' < $tmpdir/$newname/$theme/$themed/package.cfg >> $outfile
-  sed -e 's@set(\s*@@' -e 's@\s\s*"@="@' -e 's@\s*)\s*$@@' -e 's@\s*)\s*#.*$@@' -e 's@\s*CACHE string .*$@@' < $tmpdir/$newname/$theme/$themed/OEM.cmake >> $outfile
+  echo "tarname=\"$newname.$outputsuffix\"" > $outfile
+  echo "theme=\"$theme\"" >> $outfile
+  # json to bash syntax
+  sed -e 's@^\s*@@' -e 's@^\s*,\s*@@' -e 's@\s*=>\s@=@' -e 's@",\s*$@"@' -e 's@",\s*#.*$@"@' < $tmpdir/$newname/$theme/$themed/package.cfg >> $outfile
+  # cmake to bash syntax
+  sed -ne 's@\s\s*"@="@' -e 's@\s\s*\${@=${@' -e 's@\s*)\s*$@@' -e 's@\s*)\s*#.*$@@' -e 's@\s*CACHE string .*$@@i' -e 's@^set(\s*@@p' < $tmpdir/$newname/$cmakefile >> $outfile
   echo "$outfile written."
-  echo "compile_hint=\"cd src; cmake -DOEM_THEME_DIR=\$PWD/../$theme/$themed\"" >> $outfile
+  test -n "$compile_hint" && echo "compile_hint=\"$compile_hint\"" >> $outfile
 fi
 rm -rf $tmpdir
 
@@ -59,7 +70,7 @@ if [ -z "$outfile" ]; then
   echo "Output archive:"
   du -sh $newname.$outputsuffix
   echo ""
-  echo "Hint: compile with cd src; cmake -DOEM_THEME_DIR=\$PWD/../$theme/$themed ..."
+  test -n "$compile_hint" && echo "Hint: compile with $compile_hint ..."
   exit 0
 fi
 
