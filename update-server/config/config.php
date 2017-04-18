@@ -197,22 +197,24 @@ return [
 		],
 	],
 	'beta' => [
-		'9.1' => [
-			'latest' => '9.1.5rc1',
+		'9.1.5' => [
+			'latest' => '10.0.0',
 			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
-			'downloadUrl' => 'https://download.owncloud.org/community/testing/owncloud-9.1.5RC1.zip',
+			'downloadUrl' => 'https://download.owncloud.org/community/testing/owncloud-10.0.0RC1.zip',
+		],
+		'9.1' => [
+			'latest' => '9.1.5',
+			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
 		],
 		// START: Due do a bug in the updater we need to enforce the update order
 		// see https://github.com/owncloud/administration-internal/issues/19
 		'9.0' => [
-			'latest' => '9.0.9rc1',
+			'latest' => '9.0.9',
 			'web' => 'https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html',
-			'downloadUrl' => 'https://download.owncloud.org/community/testing/owncloud-9.0.9RC1.zip',
 		],
 		'9.0.9' => [
-			'latest' => '9.1.5rc1',
+			'latest' => '9.1.5',
 			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
-			'downloadUrl' => 'https://download.owncloud.org/community/testing/owncloud-9.1.5RC1.zip',
 		],
 		'9.0.2' => [
 			'latest' => '9.0.4',
@@ -228,23 +230,20 @@ return [
 		],
 		// END:  Due do a bug in the updater we need to enforce the update order
 		'8.2' => [
-			'latest' => '8.2.11rc1',
+			'latest' => '8.2.11',
 			'web' => 'https://doc.owncloud.org/server/8.2/admin_manual/maintenance/upgrade.html',
-			'downloadUrl' => 'https://download.owncloud.org/community/testing/owncloud-8.2.11RC1.zip',
 		],
 		'8.2.11' => [
-			'latest' => '9.0.9rc1',
+			'latest' => '9.0.9',
 			'web' => 'https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html',
-			'downloadUrl' => 'https://download.owncloud.org/community/testing/owncloud-9.0.9RC1.zip',
 		],
 		'8.1' => [
 			'latest' => '8.1.12',
 			'web' => 'https://doc.owncloud.org/server/8.1/admin_manual/maintenance/upgrade.html',
 		],
 		'8.1.12' => [
-			'latest' => '8.2.11rc1',
+			'latest' => '8.2.11',
 			'web' => 'https://doc.owncloud.org/server/8.2/admin_manual/maintenance/upgrade.html',
-			'downloadUrl' => 'https://download.owncloud.org/community/testing/owncloud-8.2.11RC1.zip',
 		],
 		'8.0' => [
 			'latest' => '8.0.16',
