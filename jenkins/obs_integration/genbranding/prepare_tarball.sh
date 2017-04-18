@@ -16,6 +16,14 @@ outputsuffix=tar.bz2
 outputtar="tar jcf"
 outputdir=$(dirname $outfile)
 
+if [ -z "$themetar" ]; then
+	echo "Usage:"
+	echo "$0 prepare_tarball.sh owncloudclient-2.3.2git.tar.bz2 testpilotcloud.tar.xz [brandvars-output.sh]"
+	echo "(source brandvars-output.sh; echo \$tarname)"
+	exit 1
+fi
+
+
 client=$(basename $clienttar | sed -e 's|.tar.*$||')
 theme=$(basename $themetar | sed -e 's|.tar.*$||')
 if [ "$theme" = 'ownCloud' ]; then
