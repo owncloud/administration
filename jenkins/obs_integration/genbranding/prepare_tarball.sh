@@ -67,8 +67,8 @@ fi
 
 if [ -n "$outfile" ]; then
   echo "tarname=\"$newname.$outputsuffix\"" > $outfile
-  echo "version=\"$version\" >> $outfile
-  echo "baseversion=\"$baseversion\" >> $outfile
+  echo "version=\"$version\"" >> $outfile
+  echo "baseversion=\"$baseversion\"" >> $outfile
   echo "theme=\"$theme\"" >> $outfile
   # json to bash syntax
   sed -e 's@^\s*@@' -e 's@^\s*,\s*@@' -e 's@\s*=>\s@=@' -e 's@",\s*$@"@' -e 's@",\s*#.*$@"@' < $tmpdir/$newname/$theme/$themed/package.cfg >> $outfile
