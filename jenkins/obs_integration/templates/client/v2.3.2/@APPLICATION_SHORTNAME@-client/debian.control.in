@@ -1,0 +1,125 @@
+Source: owncloud-client
+Section: devel
+Priority: optional
+Maintainer: Jürgen Weigert <jw@owncloud.com>
+Standards-Version: 3.9.6
+Build-Depends: debhelper (>= 9), cmake, sed, doxygen, unzip | bash,
+	libsqlite3-dev, python-sphinx | python3-sphinx, libssl-dev,
+	${_oc_pkg_prefix}-qt5keychain-dev (>= 0.7.0),
+	${_oc_pkg_prefix}-qt5-qmake,
+	${_oc_pkg_prefix}-qtbase5-dev,
+	${_oc_pkg_prefix}-libqt5webkit5-dev (>= 2.2.0),
+
+Package: owncloud-client
+Architecture: any
+Multi-Arch: same
+Depends: ${misc:Depends}, ${shlibs:Depends}, libowncloudsync0 (= ${binary:Version}), owncloud-client-l10n,
+	${_oc_pkg_prefix}-libqt5sql5-sqlite
+Description:  The ownCloud sync client - github.com/owncloud/client
+ .
+ ownCloud client enables you to connect to your private
+ ownCloud Server. With it you can create folders in your home
+ directory, and keep the contents of those folders synced with your
+ ownCloud server. Simply copy a file into the directory and the
+ ownCloud Client does the rest.
+ .
+ ownCloud gives your employees anytime, anywhere access to the files
+ they need to get the job done, whether through this desktop application,
+ our mobile apps, the web interface, or other WebDAV clients. With it,
+ your employees can easily view and share documents and information
+ critical to the business, in a secure, flexible and controlled
+ architecture. You can easily extend ownCloud with plug-ins from the
+ community, or that you build yourself to meet the requirements of
+ your infrastructure and business.
+ .
+ ownCloud - Your Cloud, Your Data, Your Way!  www.owncloud.com
+ .
+ Authors
+ =======
+ Duncan Mac-Vicar P. <duncan@kde.org>
+ Klaas Freitag <freitag@owncloud.com>
+ Daniel Molkentin <danimo@owncloud.com>
+ .
+
+Package: owncloud-client-dbg
+Architecture: any
+Section: debug
+Priority: extra
+Depends:
+    owncloud-client (= ${binary:Version}),
+    ${misc:Depends}
+Description: debugging symbols for owncloud-client
+ This package contains the debugging symbols for owncloud-client.
+
+Package: owncloud-client-doc
+Architecture: all
+Section: devel
+Depends: owncloud-client (= ${binary:Version}), ${misc:Depends}, libowncloudsync0
+Suggests: owncloud-client-nautilus
+Description: development files for the ownCloud sync lib
+ Main package for ownCloud.
+ .
+ This package contains the library development files.
+
+Package: owncloud-client-l10n
+Architecture: all
+Section: devel
+Depends: owncloud-client (>= ${binary:Version}), ${misc:Depends}, libowncloudsync0
+Breaks: owncloud-client (<= 1.5.0)
+Description: Internationalization files for ownCloud
+ Internationalization for ownCloud desktop sync client.
+ .
+ This package contains the translation packages.
+
+Package: libowncloudsync0
+Architecture: any
+Multi-Arch: same
+Section: devel
+Depends: ${misc:Depends}, ${shlibs:Depends},
+	${_oc_pkg_prefix}-libqt5keychain1
+Pre-Depends: ${misc:Pre-Depends}
+Breaks: libocsync0
+Replaces: libocsync0
+Description: the ownCloud sync library
+ ownCloud uses this as a sync engine implementation.
+ .
+ This package contains the library.
+
+Package: libowncloudsync-dev
+Architecture: any
+Section: devel
+Depends: libowncloudsync0 (= ${binary:Version}), ${misc:Depends}
+Description: development files for the ownCloud sync library
+ ownCloud uses this as a sync engine implementation.
+ .
+ This package contains the development files.
+
+Package: owncloud-client-nautilus
+Architecture: all
+Section: devel
+Depends: owncloud-client (= ${binary:Version}), ${misc:Depends}, libowncloudsync0, python-nautilus, nautilus
+Description: nautilus plugin for ownCloud
+ This package contains a nautilus plugin to display overlay icons.
+ .
+ This helps users to understand the sync state of files in the 
+ synchronized directory.
+
+Package: owncloud-client-nemo
+Architecture: all
+Section: devel
+Depends: owncloud-client (= ${binary:Version}), ${misc:Depends}, libowncloudsync0, python-nemo, nemo
+Description: Nemo plugin for ownCloud
+ This package contains a nemo plugin to display overlay icons.
+ .
+ This helps users to understand the sync state of files in the 
+ synchronized directory.
+
+Package: owncloud-client-caja
+Architecture: all
+Section: devel
+Depends: owncloud-client (= ${binary:Version}), ${misc:Depends}, libowncloudsync0, python-caja, caja
+Description: Caja plugin for ownCloud
+ This package contains a caja plugin to display overlay icons.
+ .
+ This helps users to understand the sync state of files in the 
+ synchronized directory.

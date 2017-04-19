@@ -1,0 +1,284 @@
+-------------------------------------------------------------------
+Thu Mar 30 17:10:59 UTC 2017 - jnweiger@gmail.com
+
+- update to 2.3.1
+
+-------------------------------------------------------------------
+Fri Mar 24 16:25:16 UTC 2017 - jw@owncloud.com
+
+- prevent packaging of man pages https://github.com/owncloud/client/issues/2153
+
+-------------------------------------------------------------------
+Wed Feb 8 14:33:06 UTC 2017 - jenkins@owncloud.org
+
+  Automatically generated branding added. Version=2.3.0
+  created by: ./genbranding.pl (V1.13) -o -p isv:ownCloud:community:testing owncloudclient-2.3.0beta1.tar.xz ownCloud.tar.xz
+
+
+-------------------------------------------------------------------
+Fri Jan 20 11:10:55 UTC 2017 - jnweiger@gmail.com
+
+- wraper scripts for /usr/bin call now into /opt/ownCloud/Qt-5.6.2/bin with LD_LIBRARY_PATH set...
+
+-------------------------------------------------------------------
+Tue Jan  3 18:55:11 UTC 2017 - jnweiger@gmail.com
+
+- fix https://github.com/owncloud/client/issues/5376
+
+-------------------------------------------------------------------
+Tue Sep 27 09:15:49 UTC 2016 - jenkins@owncloud.org
+
+  Automatically generated branding added. Version=2.2.4
+  created by: ./genbranding.pl (V1.13) -o -p isv:ownCloud:desktop owncloudclient-2.2.4.tar.xz ownCloud.tar.xz
+
+
+-------------------------------------------------------------------
+Mon Aug 8 13:49:54 UTC 2016 - jenkins@owncloud.org
+
+  Automatically generated branding added. Version=2.2.3
+  created by: ./genbranding.pl (V1.13) -o -p isv:ownCloud:desktop owncloudclient-2.2.3.tar.xz ownCloud.tar.xz
+
+
+-------------------------------------------------------------------
+Wed Jul 20 04:38:42 UTC 2016 - jengelh@inai.de
+
+- Trim description to remove marketing speak
+- Avoid bashisms in scriptlets
+
+-------------------------------------------------------------------
+Thu Jun 30 13:21:21 UTC 2016 - jnweiger@gmail.com
+
+- Do not own /etc/ 
+  https://github.com/owncloud/administration/pull/86
+
+-------------------------------------------------------------------
+Mon Jun 27 13:03:57 UTC 2016 - jw@owncloud.com
+
+- Added support for Fedora_24, needs an additional BuildRequires: extra-cmake-moduless
+
+-------------------------------------------------------------------
+Fri Jun 24 11:01:32 UTC 2016 - freitag@owncloud.com
+
+- Register l10n.zip as source file in spec to avoid stray cat file 
+
+-------------------------------------------------------------------
+Mon Jun 20 16:25:35 UTC 2016 - jenkins@owncloud.org
+
+  Automatically generated branding added. Version=2.2.2
+  created by: ./genbranding.pl (V1.13) -o -p isv:ownCloud:desktop owncloudclient-2.2.2.tar.xz ownCloud.tar.xz
+
+
+-------------------------------------------------------------------
+Mon Jun 20 11:30:03 UTC 2016 - jw@owncloud.com
+
+- try fix build for Fedora_23
+
+-------------------------------------------------------------------
+Thu Jun 9 11:41:50 UTC 2016 - jenkins@owncloud.org
+
+  Automatically generated branding added. Version=2.2.1
+  created by: ./genbranding.pl (V1.13) -o -p isv:ownCloud:desktop owncloudclient-2.2.1.tar.xz ownCloud.tar.xz
+
+
+-------------------------------------------------------------------
+Tue Jun  7 11:29:12 UTC 2016 - jw@owncloud.com
+
+- added highdpi-6ccd9e8.patch
+  https://github.com/owncloud/client/issues/3414
+
+-------------------------------------------------------------------
+Tue Jun  7 10:46:29 UTC 2016 - jw@owncloud.com
+
+- added http://ckamm.de/~kamm/tray-patch.patch for ubuntu.
+  https://github.com/owncloud/client/pull/4947/files
+
+-------------------------------------------------------------------
+Mon Jun 6 09:01:25 UTC 2016 - jenkins@owncloud.org
+
+  Automatically generated branding added. Version=2.2.1
+  created by: ./genbranding.pl (V1.13) -o -p isv:ownCloud:community:testing owncloudclient-2.2.1.tar.xz ownCloud.tar.xz
+
+-------------------------------------------------------------------
+Thu Jun  2 14:16:28 UTC 2016 - jw@owncloud.com
+
+- https://github.com/owncloud/administration/pull/82
+  fix qt5 for leap and dolphin overlays for leap update.
+
+-------------------------------------------------------------------
+Mon May 30 10:23:13 UTC 2016 - jenkins@owncloud.org
+
+  Automatically generated branding added. Version=2.2.1
+  created by: ./genbranding.pl (V1.13) -o -p isv:ownCloud:community:testing owncloudclient-2.2.1rc1.tar.xz ownCloud.tar.xz
+
+
+-------------------------------------------------------------------
+Tue May 17 14:29:30 UTC 2016 - jw@owncloud.com
+
+- Require keychain >= 0.6.2 for https://github.com/owncloud/client/issues/4829
+
+-------------------------------------------------------------------
+Tue May 10 15:29:33 UTC 2016 - jenkins@owncloud.org
+
+  Automatically generated branding added. Version=2.2.0
+  created by: ./genbranding.pl (V1.13) -o -p isv:ownCloud:community:testing owncloudclient-2.2.0rc1.tar.xz ownCloud.tar.xz
+
+
+-------------------------------------------------------------------
+Mon May 2 14:59:29 UTC 2016 - jenkins@owncloud.org
+
+  Automatically generated branding added. Version=2.2.0
+  created by: ./genbranding.pl (V1.13) -o -p isv:ownCloud:community:testing owncloudclient-2.2.0beta2.tar.xz ownCloud.tar.xz
+
+
+-------------------------------------------------------------------
+Tue Apr 26 09:01:29 UTC 2016 - freitag@owncloud.com
+
+- add a patch to fix qt4 based builds 
+
+  That can be removed once beta2 has it in the code.
+
+-------------------------------------------------------------------
+Mon Apr 25 13:49:24 UTC 2016 - jenkins@owncloud.org
+
+  Automatically generated branding added. Version=2.2.0
+  created by: ./genbranding.pl (V1.13) -o -p isv:ownCloud:community:testing owncloudclient-2.2.0beta1.tar.xz ownCloud.tar.xz
+
+
+-------------------------------------------------------------------
+Mon Apr 18 20:41:48 UTC 2016 - jw@owncloud.com
+
+- Fix https://github.com/owncloud/client/issues/4107
+
+-------------------------------------------------------------------
+Tue Feb  9 12:12:30 UTC 2016 - jw@owncloud.com
+
+- Let openSUSE choose dependencies.
+  Fix https://github.com/owncloud/client/issues/4431
+
+-------------------------------------------------------------------
+Mon Feb 8 16:10:57 UTC 2016 - jenkins@owncloud.org
+
+- Automatically generated branding added. Version=2.1.1
+  created by: ./genbranding.pl (V1.12) -o -p isv:ownCloud:community:testing owncloudclient-2.1.1rc2.tar.xz ownCloud.tar.xz
+
+
+-------------------------------------------------------------------
+Fri Jan 29 14:05:06 UTC 2016 - jw@owncloud.com
+
+- https://github.com/owncloud/client/issues/4400#issuecomment-176686729
+  CentOS6:  Requires:       %{qtprefix}libqt4-sql
+
+-------------------------------------------------------------------
+Thu Jan 28 14:58:52 UTC 2016 - jw@owncloud.com
+
+- fixed owncloudcmd.sh to call owncloudcmd and not owncloud.
+
+-------------------------------------------------------------------
+Wed Jan 27 10:23:22 UTC 2016 - jnweiger@gmail.com
+
+- install wrapper shell scripts for owncloud owncloudcmd without .sh suffix
+- CentOS7 failed. Why only CentOS7???
+
+-------------------------------------------------------------------
+Mon Jan 25 11:33:42 UTC 2016 - jenkins@owncloud.org
+
+  Automatically generated branding added. Version=2.1.1
+  created by: ./genbranding.pl (V1.12) -o -p isv:ownCloud:community:testing owncloudclient-2.1.1rc1.tar.xz ownCloud.tar.xz
+
+
+-------------------------------------------------------------------
+Mon Jan 18 15:52:27 UTC 2016 - jenkins@owncloud.org
+
+  Automatically generated branding added. Version=2.1.1
+  created by: ./genbranding.pl (V1.12) -o -p isv:ownCloud:community:testing owncloudclient-2.1.1beta1.tar.xz ownCloud.tar.xz
+
+
+-------------------------------------------------------------------
+Thu Nov 26 12:57:27 UTC 2015 - jenkins@owncloud.org
+
+  Automatically generated branding added. Version=2.1.0
+  created by: ./genbranding.pl (V1.12) -o -p isv:ownCloud:community:testing owncloudclient-2.1.0rc1.tar.xz ownCloud.tar.xz
+
+
+-------------------------------------------------------------------
+Tue Nov 17 16:43:51 UTC 2015 - freitag@owncloud.com
+
+- add qt4 fixes patch 
+
+-------------------------------------------------------------------
+Tue Nov 17 14:47:45 UTC 2015 - jenkins@owncloud.org
+
+  Automatically generated branding added. Version=2.1.0
+  created by: ./genbranding.pl (V1.12) -o -p isv:ownCloud:community:testing owncloudclient-2.1.0beta1.tar.xz ownCloud.tar.xz
+
+
+-------------------------------------------------------------------
+Tue Oct 20 11:17:05 UTC 2015 - jenkins@owncloud.org
+
+  Automatically generated branding added. Version=2.0.2
+  created by: ./genbranding.pl (V1.12) -o -p isv:ownCloud:community:testing owncloudclient-2.0.2rc2.tar.xz ownCloud.tar.xz
+
+
+-------------------------------------------------------------------
+Tue Oct 20 09:50:06 UTC 2015 - jenkins@owncloud.org
+
+  Automatically generated branding added. Version=2.0.2
+  created by: ./genbranding.pl (V1.12) -o -p isv:ownCloud:community:testing owncloudclient-2.0.2rc2.tar.xz ownCloud.tar.xz
+
+
+-------------------------------------------------------------------
+Fri Oct 16 09:53:56 UTC 2015 - jenkins@owncloud.org
+
+  Automatically generated branding added. Version=2.0.2
+  created by: ./genbranding.pl (V1.12) -o -p isv:ownCloud:community:testing owncloudclient-2.0.2rc1.tar.xz ownCloud.tar.xz
+
+
+-------------------------------------------------------------------
+Fri Oct 16 09:25:50 UTC 2015 - jenkins@owncloud.org
+
+  Automatically generated branding added. Version=2.0.2
+  created by: ./genbranding.pl (V1.12) -o -p isv:ownCloud:community:testing owncloudclient-2.0.2rc1.tar.xz ownCloud.tar.xz
+
+
+-------------------------------------------------------------------
+Fri Aug 21 14:08:53 UTC 2015 - jenkins@owncloud.org
+
+  Automatically generated branding added. Version=2.0.0
+  created by: ./genbranding.pl (V1.12) -o -p isv:ownCloud:community:testing owncloudclient-2.0.0rc2.tar.xz ownCloud.tar.xz
+
+
+-------------------------------------------------------------------
+Tue Aug 18 11:29:20 UTC 2015 - jenkins@owncloud.org
+
+  Automatically generated branding added. Version=2.0.0
+  created by: ./genbranding.pl (V1.12) -o -p isv:ownCloud:community:testing owncloudclient-2.0.0rc1.tar.xz ownCloud.tar.xz
+
+
+-------------------------------------------------------------------
+Sat Aug 15 01:26:27 UTC 2015 - jenkins@owncloud.org
+
+  Automatically generated branding added. Version=2.0.0
+  created by: ./genbranding.pl (V1.12) -o -p isv:ownCloud:community:testing owncloudclient-2.0.0beta2.tar.xz ownCloud.tar.xz
+
+
+-------------------------------------------------------------------
+Fri Aug 7 10:53:46 UTC 2015 - jenkins@owncloud.org
+
+  Automatically generated branding added. Version=2.0.0
+  created by: ./genbranding.pl (V1.12) -o -p isv:ownCloud:community:testing owncloudclient-2.0.0beta1.tar.xz ownCloud.tar.xz
+
+
+-------------------------------------------------------------------
+Fri Aug 7 08:58:26 UTC 2015 - jenkins@owncloud.org
+
+  Automatically generated branding added. Version=2.0.0
+  created by: ./genbranding.pl (V1.12) -o -p isv:ownCloud:community:testing owncloudclient-2.0.0beta1.tar.xz ownCloud.tar.xz
+
+
+-------------------------------------------------------------------
+Fri Aug 7 07:52:30 UTC 2015 - jenkins@owncloud.org
+
+  Automatically generated branding added. Version=2.0.0
+  created by: ./genbranding.pl (V1.12) -o -p isv:ownCloud:community:testing owncloudclient-2.0.0beta1.tar.xz ownCloud.tar.xz
+
+

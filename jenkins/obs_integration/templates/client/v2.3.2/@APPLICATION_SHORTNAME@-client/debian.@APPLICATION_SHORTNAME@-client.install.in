@@ -1,0 +1,6 @@
+/usr/bin/owncloud
+/usr/bin/owncloudcmd
+
+${_oc_prefix}/bin/owncloud*
+usr/share/applications/owncloud.desktop
+usr/share/icons/hicolor

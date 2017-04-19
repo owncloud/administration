@@ -1,0 +1,13 @@
+diff --git a/src/libsync/utility_unix.cpp b/src/mirall/utility_unix.cpp
+index 9ad786f..9b97786 100644
+--- a/src/libsync/utility_unix.cpp
++++ b/src/libsync/utility_unix.cpp
+@@ -66,7 +66,7 @@ void setLaunchOnStartup_private(const QString &appName, const QString& guiName,
+         ts << QLatin1String("[Desktop Entry]") << endl
+            << QLatin1String("Name=") << guiName << endl
+            << QLatin1String("GenericName=") << QLatin1String("File Synchronizer") << endl
+-           << QLatin1String("Exec=") << QCoreApplication::applicationFilePath() << endl
++           << QLatin1String("Exec=") << "/usr/bin/owncloud" << endl
+            << QLatin1String("Terminal=") << "false" << endl
+            << QLatin1String("Icon=") << appName.toLower() << endl // always use lowercase for icons
+            << QLatin1String("Categories=") << QLatin1String("Network") << endl

@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+#
+# emulate apt-get -o Dpkg::Options::="--force-confmiss" install --reinstall
+# Try to capture the new config file as it whisses by, to be picked up by postinst
+conf=/etc/ownCloud/sync-exclude.lst
+if [ ! -s $conf ]; then
+  mkdir -p /etc/ownCloud
+  ln -s none $conf.dpkg-tmp
+  ln -s none $conf.dpkg-new
+fi
+
+#DEBHELPER#
+exit 0

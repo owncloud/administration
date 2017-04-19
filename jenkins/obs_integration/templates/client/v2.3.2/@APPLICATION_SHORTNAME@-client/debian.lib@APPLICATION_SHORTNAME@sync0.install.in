@@ -1,0 +1,3 @@
+etc/ownCloud*
+${_oc_prefix}/lib/*/libowncloudsync.so.*
+${_oc_prefix}/lib/*/*/libocsync.so.*

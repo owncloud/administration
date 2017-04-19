@@ -1,0 +1,15 @@
+#!/bin/sh
+set -e
+#
+# emulate apt-get -o Dpkg::Options::="--force-confmiss" install --reinstall
+# Try to harvest any captured config files captured in preinst.
+conf=/etc/ownCloud/sync-exclude.lst
+if [ ! -s $conf -a -s $conf.dpkg-new ]; then
+  rm -f $conf
+  echo "$0: Installing new config file $conf"
+  mv $conf.dpkg-new $conf || true
+fi
+
+
+#DEBHELPER#
+exit 0
