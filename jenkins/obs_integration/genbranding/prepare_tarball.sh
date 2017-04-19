@@ -37,6 +37,7 @@ fi
 
 version=$(echo $client | sed -e 's@.*-\([0-9]\)@\1@')	# version is after a - and starts with a digit.
 baseversion=$(echo $version | sed -e 's@[^0-9\.].*@@')	# remove all ~RC, git, etc suffixes.
+prerelease=$(echo $version | sed -e 's@[0-9\.]*@@')	# remove baseversion prefix.
 
 tmpdir=tmp$$
 rm -rf $tmpdir; mkdir -p $tmpdir
@@ -66,16 +67,17 @@ else
 fi
 
 if [ -n "$outfile" ]; then
-  echo "tarname=\"$newname.$outputsuffix\"" > $outfile
-  echo "version=\"$version\"" >> $outfile
-  echo "baseversion=\"$baseversion\"" >> $outfile
-  echo "theme=\"$theme\"" >> $outfile
-  # json to bash syntax
-  sed -e 's@^\s*@@' -e 's@^\s*,\s*@@' -e 's@\s*=>\s@=@' -e 's@",\s*$@"@' -e 's@",\s*#.*$@"@' < $tmpdir/$newname/$theme/$themed/package.cfg >> $outfile
+  echo "TARNAME=\"$newname.$outputsuffix\"" > $outfile
+  echo "VERSION=\"$version\"" >> $outfile
+  echo "BASEVERSION=\"$baseversion\"" >> $outfile
+  echo "PRERELEASE=\"$prerelease\"" >> $outfile
+  echo "THEME=\"$theme\"" >> $outfile
+  # json to bash syntax with uppercase variables.
+  sed -e 's@^\s*@@' -e 's@^\s*,\s*@@' -e 's@\(\S*\)\s*=>\s@\U\1=@' -e 's@",\s*$@"@' -e 's@",\s*#.*$@"@' $tmpdir/$newname/$theme/$themed/package.cfg >> $outfile
   # cmake to bash syntax
   sed -ne 's@\s\s*"@="@' -e 's@\s\s*\${@=${@' -e 's@\s*)\s*$@@' -e 's@\s*)\s*#.*$@@' -e 's@\s*CACHE string .*$@@i' -e 's@^set(\s*@@p' < $tmpdir/$newname/$cmakefile >> $outfile
+  test -n "$compile_hint" && echo "COMPILE_HINT=\"$compile_hint\"" >> $outfile
   echo "$outfile written."
-  test -n "$compile_hint" && echo "compile_hint=\"$compile_hint\"" >> $outfile
 fi
 rm -rf $tmpdir
 
