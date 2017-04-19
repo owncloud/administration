@@ -62,7 +62,7 @@ if [ "$theme" = 'ownCloud' ]; then
 	compile_hint=""
 else
 	cmakefile=$theme/$themed/OEM.cmake
-	compile_hint="cd src; cmake -DOEM_THEME_DIR=\$PWD/../$theme/$themed"
+	compile_hint="cd src; cmake -DOEM_THEME_DIR=\\$PWD/../$theme/$themed"
 fi
 
 if [ -n "$outfile" ]; then
