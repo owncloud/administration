@@ -4,6 +4,6 @@
 qtdir=ownCloud/Qt-5.6.2
 export LD_LIBRARY_PATH=/opt/$qtdir/lib64
 
-exec /opt/$qtdir/bin/owncloud "$@"
+exec /opt/$qtdir/bin/@APPLICATION_SHORTNAME@ "$@"
 
 # end
