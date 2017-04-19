@@ -35,13 +35,26 @@ for var in $templvars; do
 done
 . $(dirname $templvars_file)/$(basename $templvars_file)
 
-templatize () {
-	echo $1 | eval sed $applyvars
+templatize_body () {
+	eval sed $applyvars
 }
 
 mkdir -p $destdir
 for tmplpkg in $templatedir/*; do
+	# Walk through all subdirectories of template/client/vN.N.N
+	# One directory per package. Templatize package names.
+	test -d "$tmplpkg" || continue
 	pkg=$(basename $tmplpkg)
-	echo $pkg
-	templatize $pkg
+	pkg=$(echo "$pkg" | templatize_body)
+	mkdir -p $destdir/$pkg
+	echo "populating package $pkg ..."
+	for tmplfile in $tmplpkg/*; do
+		# Walk though all files per package
+		# Templatize file names and file contents.
+		test -f "$tmplfile" || continue
+		file=$(basename $tmplfile)
+		file=$(echo $file | templatize_body)
+		echo " ... $file"
+		templatize_body < $tmplfile > $destdir/$pkg/$file
+	done
 done
