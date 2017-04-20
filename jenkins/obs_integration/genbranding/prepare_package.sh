@@ -2,8 +2,12 @@
 #
 # refactored from genbranding.pl
 # (c) 2017 jw@owncloud.com
-# 
+#
 # Usage: themed-client.tar.gz template-dir
+#
+# 2017-04-20, jw:
+#  - remove excessive files from $destdir/*
+#  - only templatize mime-types text/*
 #
 themedclienttar=$1
 templatedir=$1
@@ -47,6 +51,7 @@ for tmplpkg in $templatedir/*; do
 	pkg=$(basename $tmplpkg)
 	pkg=$(echo "$pkg" | templatize_body)
 	mkdir -p $destdir/$pkg
+	rm -rf   $destdir/$pkg/*
 	echo "populating package $pkg ..."
 	for tmplfile in $tmplpkg/*; do
 		# Walk though all files per package
@@ -54,7 +59,16 @@ for tmplpkg in $templatedir/*; do
 		test -f "$tmplfile" || continue
 		file=$(basename $tmplfile)
 		file=$(echo $file | templatize_body)
-		echo " ... $file"
-		templatize_body < $tmplfile > $destdir/$pkg/$file
+		case "$(file --brief --mime-type "$tmplfile")" in
+			text/*)
+				echo " ... t $file"
+				templatize_body < $tmplfile > $destdir/$pkg/$file
+				;;
+			*)
+				echo " ... c $file"
+				cp $tmplfile $destdir/$pkg/$file
+				;;
+		esac
 	done
+	cp $(dirname $templvars_file)/$TARNAME $destdir/$pkg/
 done
