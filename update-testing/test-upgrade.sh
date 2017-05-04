@@ -3,7 +3,7 @@
 # ownCloud
 #
 # @author Thomas Müller
-# @copyright 2013 Thomas Müller deepdiver@owncloud.com
+# @copyright 2013-2017 Thomas Müller deepdiver@owncloud.com
 #
 #$EXECUTOR_NUMBER is set by Jenkins and allows us to run autotest in parallel
 DATABASENAME=oc_autotest$EXECUTOR_NUMBER
@@ -34,18 +34,22 @@ fi
 if [[ $TO_VERSION == git* ]]; then
   GIT_BRANCH=`echo $TO_VERSION | cut -c 5-`
   TO=$GIT_BRANCH.tar.bz2
-  rm -f $TO
-  rm -rf g
-  mkdir g
-  cd g
-  git clone -b $GIT_BRANCH --recursive --depth 1 https://github.com/owncloud/core.git owncloud
-  rm -rf owncloud/.git
-  rm -rf owncloud/build
-  rm -rf owncloud/tests
-  tar -cjf $TO owncloud
-  mv $TO ..
-  cd ..
-  rm -rf g
+  if [ ! -f $TO ]; then
+    rm -f $TO
+    rm -rf g
+    mkdir g
+    cd g
+    git clone -b $GIT_BRANCH --recursive --depth 1 https://github.com/owncloud/core.git owncloud
+    if [ -f owncloud/Makefile ]; then
+      cd owncloud
+      make
+      cd ..
+    fi
+    tar -cjf $TO owncloud
+    mv $TO ..
+    cd ..
+    rm -rf g
+  fi
 fi
 
 DATADIR=$BASEDIR/$FROM_VERSION-$TO_VERSION-$DATABASE
@@ -74,66 +78,6 @@ if [ ! -f $TO ]; then
   exit
 fi
 
-# create owncloud configurations
-cat > ./autoconfig-sqlite.php <<DELIM
-<?php
-\$AUTOCONFIG = array (
-  'installed' => false,
-  'dbtype' => 'sqlite',
-  'dbtableprefix' => 'oc_',
-  'adminlogin' => '$ADMINLOGIN',
-  'adminpass' => 'admin',
-  'directory' => '$DATADIR/owncloud/data',
-);
-DELIM
-
-cat > ./autoconfig-mysql.php <<DELIM
-<?php
-\$AUTOCONFIG = array (
-  'installed' => false,
-  'dbtype' => 'mysql',
-  'dbtableprefix' => 'oc_',
-  'adminlogin' => '$ADMINLOGIN',
-  'adminpass' => 'admin',
-  'directory' => '$DATADIR/owncloud/data',
-  'dbuser' => '$DATABASEUSER',
-  'dbname' => '$DATABASENAME',
-  'dbhost' => 'localhost',
-  'dbpass' => 'owncloud',
-);
-DELIM
-
-cat > ./autoconfig-pgsql.php <<DELIM
-<?php
-\$AUTOCONFIG = array (
-  'installed' => false,
-  'dbtype' => 'pgsql',
-  'dbtableprefix' => 'oc_',
-  'adminlogin' => '$ADMINLOGIN',
-  'adminpass' => 'admin',
-  'directory' => '$DATADIR/owncloud/data',
-  'dbuser' => '$DATABASEUSER',
-  'dbname' => '$DATABASENAME',
-  'dbhost' => 'localhost',
-  'dbpass' => 'owncloud',
-);
-DELIM
-
-cat > ./autoconfig-oci.php <<DELIM
-<?php
-\$AUTOCONFIG = array (
-  'installed' => false,
-  'dbtype' => 'oci',
-  'dbtableprefix' => 'oc_',
-  'adminlogin' => '$ADMINLOGIN',
-  'adminpass' => 'admin',
-  'directory' => '$DATADIR/owncloud/data',
-  'dbuser' => '$DATABASENAME',
-  'dbname' => 'XE',
-  'dbhost' => 'localhost',
-  'dbpass' => 'owncloud',
-);
-DELIM
 
 # database cleanup
 if [ "$DATABASE" == "mysql" ] ; then
@@ -141,30 +85,6 @@ if [ "$DATABASE" == "mysql" ] ; then
 fi
 if [ "$DATABASE" == "pgsql" ] ; then
 	dropdb -U $DATABASEUSER $DATABASENAME
-fi
-if [ "$DATABASE" == "oci" ] ; then
-	echo "drop the database: $DATABASENAME"
-	sqlplus -s -l / as sysdba <<EOF
-		drop user $DATABASENAME cascade;
-EOF
-
-	echo "create the database: $DATABASENAME"
-	sqlplus -s -l / as sysdba <<EOF
-		create user $DATABASENAME identified by owncloud;
-		alter user $DATABASENAME default tablespace users
-		temporary tablespace temp
-		quota unlimited on users;
-		grant create session
-		, create table
-		, create procedure
-		, create sequence
-		, create trigger
-		, create view
-		, create synonym
-		, alter session
-		to $DATABASENAME;
-		exit;
-EOF
 fi
 
 rm -rf $DATADIR
@@ -177,22 +97,21 @@ tar -xjf $BASEDIR/$FROM
 cd owncloud
 mkdir data
 
-cp $BASEDIR/autoconfig-$DATABASE.php config/autoconfig.php
+# installation
+./occ maintenance:install -vvv --admin-pass=admin
 
-php -f index.php
-
-if [ -f console.php ]; then
-  # install test data
-  mkdir -p data/admin/files
-  cd data/admin/files
-  git clone git@github.com:owncloud/test-data.git
-
-  # scan the files
-  cd $DATADIR/owncloud
-  php -f console.php files:scan --all
-else
-  echo "[FAILED] ownCloud console not available."
-fi
+#if [ -f console.php ]; then
+#  # install test data
+#  mkdir -p data/admin/files
+#  cd data/admin/files
+#  git clone git@github.com:owncloud/test-data.git
+#
+#  # scan the files
+#  cd $DATADIR/owncloud
+#  php -f console.php files:scan --all
+#else
+#  echo "[FAILED] ownCloud console not available."
+#fi
 
 # fire up the cron scheduler
 echo "Running the cron scheduler ..."
@@ -201,18 +120,21 @@ php -f cron.php
 php -f cron.php
 echo "Done."
 
-cd $DATADIR
+# workaround - remove apps
+./occ app:disable activity
+./occ app:disable configreport
+./occ app:disable files_pdfviewer
+./occ app:disable files_texteditor
+./occ app:disable files_videoplayer
+./occ app:disable firstrunwizard
+./occ app:disable gallery
+./occ app:disable notifications
+./occ app:disable templateeditor
 
 # cleanup old code
-rm -rf owncloud/3rdparty
-rm -rf owncloud/apps
-rm -rf owncloud/core
-rm -rf owncloud/l10n
-rm -rf owncloud/lib
-rm -rf owncloud/ocs
-rm -rf owncloud/search
-rm -rf owncloud/settings
-rm -rf owncloud/upgrade.php
+ls | grep -v data | grep -v config | xargs rm -rf
+
+cd $DATADIR
 
 # install to version
 echo "Installing $TO to $DATADIR"
@@ -221,14 +143,18 @@ tar -xjf $BASEDIR/$TO
 cd owncloud
 
 # generate db migration script
-php -f console.php db:generate-change-script > $BASEDIR/migration-$FROM_VERSION-$TO_VERSION-$DATABASE.sql
+#php -f console.php db:generate-change-script > $BASEDIR/migration-$FROM_VERSION-$TO_VERSION-$DATABASE.sql
 
 # UPGRADE
 echo "Start upgrading from $FROM to $TO"
-if [ -f upgrade.php ]; then
-  php upgrade.php
-else
-  php -f console.php upgrade
+./occ upgrade
+
+if [ -f Makefile ]; then
+  cd tests
+  ../lib/composer/bin/phpunit --configuration phpunit-autotest.xml
+
+#  make clean-test-integration
+#  make test-integration OC_TEST_ALT_HOME=1
 fi
 
 echo "done."
