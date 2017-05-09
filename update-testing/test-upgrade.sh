@@ -15,7 +15,7 @@ if [ "$#" -ne 3 ]; then
     echo "Usage: test-upgrade <from-version> <to-version> <database>"
     echo "Example: test-upgrade 5.0.13 6.0.0 pgsql"
     echo "Valid databases: sqlite mysql pgsql"
-    exit
+    exit 1
 fi
 
 FROM_VERSION=$1
@@ -64,12 +64,12 @@ fi
 
 if [ ! -f $FROM ]; then
   echo "Could not download $FROM"
-  exit
+  exit 1
 fi
 
 if [ ! -f $TO ]; then
   echo "Could not download $TO"
-  exit
+  exit 1
 fi
 
 
