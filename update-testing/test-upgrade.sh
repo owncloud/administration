@@ -25,12 +25,6 @@ DATABASE=$3
 FROM=owncloud-$FROM_VERSION.tar.bz2
 TO=owncloud-$TO_VERSION.tar.bz2
 
-if [ "$TO_VERSION" == "daily" ]; then
-  TO=owncloud-daily-master.tar.bz2
-  rm -f $TO
-  wget http://download.owncloud.org/community/daily/owncloud-daily-master.tar.bz2
-fi
-
 if [[ $TO_VERSION == git* ]]; then
   GIT_BRANCH=`echo $TO_VERSION | cut -c 5-`
   TO=$GIT_BRANCH.tar.bz2
@@ -120,16 +114,19 @@ php -f cron.php
 php -f cron.php
 echo "Done."
 
-# workaround - remove apps
-./occ app:disable activity
-./occ app:disable configreport
-./occ app:disable files_pdfviewer
-./occ app:disable files_texteditor
-./occ app:disable files_videoplayer
-./occ app:disable firstrunwizard
-./occ app:disable gallery
-./occ app:disable notifications
-./occ app:disable templateeditor
+echo $GIT_BRANCH
+# remove apps when using git
+if [ -v GIT_BRANCH ]; then
+	./occ app:disable activity
+	./occ app:disable configreport
+	./occ app:disable files_pdfviewer
+	./occ app:disable files_texteditor
+	./occ app:disable files_videoplayer
+	./occ app:disable firstrunwizard
+	./occ app:disable gallery
+	./occ app:disable notifications
+	./occ app:disable templateeditor
+fi
 
 # cleanup old code
 ls | grep -v data | grep -v config | xargs rm -rf
@@ -142,14 +139,11 @@ echo "Installing $TO to $DATADIR"
 tar -xjf $BASEDIR/$TO
 cd owncloud
 
-# generate db migration script
-#php -f console.php db:generate-change-script > $BASEDIR/migration-$FROM_VERSION-$TO_VERSION-$DATABASE.sql
-
 # UPGRADE
 echo "Start upgrading from $FROM to $TO"
 ./occ upgrade
 
-if [ -f Makefile ]; then
+if [ -d tests ]; then
   cd tests
   ../lib/composer/bin/phpunit --configuration phpunit-autotest.xml
 
