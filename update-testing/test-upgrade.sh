@@ -18,6 +18,8 @@ if [ "$#" -ne 3 ]; then
     exit 1
 fi
 
+set -e
+
 FROM_VERSION=$1
 TO_VERSION=$2
 DATABASE=$3
