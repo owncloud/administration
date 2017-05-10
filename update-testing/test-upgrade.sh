@@ -31,22 +31,20 @@ TO=owncloud-$TO_VERSION.tar.bz2
 if [[ $TO_VERSION == git* ]]; then
   GIT_BRANCH=`echo $TO_VERSION | cut -c 5-`
   TO=$GIT_BRANCH.tar.bz2
-  if [ ! -f $TO ]; then
-    rm -f $TO
-    rm -rf g
-    mkdir g
-    cd g
-    git clone -b $GIT_BRANCH --recursive --depth 1 https://github.com/owncloud/core.git owncloud
-    if [ -f owncloud/Makefile ]; then
-      cd owncloud
-      make
-      cd ..
-    fi
-    tar -cjf $TO owncloud
-    mv $TO ..
-    cd ..
-    rm -rf g
-  fi
+	rm -f $TO
+	rm -rf g
+	mkdir g
+	cd g
+	git clone -b $GIT_BRANCH --recursive --depth 1 https://github.com/owncloud/core.git owncloud
+	if [ -f owncloud/Makefile ]; then
+	  cd owncloud
+	  make
+	  cd ..
+	fi
+	tar -cjf $TO owncloud
+	mv $TO ..
+	cd ..
+	rm -rf g
 fi
 
 DATADIR=$BASEDIR/$FROM_VERSION-$TO_VERSION-$DATABASE
