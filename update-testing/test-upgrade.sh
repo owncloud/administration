@@ -224,7 +224,11 @@ echo "Start upgrading from $FROM to $TO"
 ./occ upgrade
 
 if [ -d tests ]; then
+  # for now disable gallery
+  ./occ app:disable gallery
+  # run the tests
   cd tests
+  chmod +x ../lib/composer/bin/phpunit
   ../lib/composer/bin/phpunit --configuration phpunit-autotest.xml --log-junit "autotest-results-$DATABASE.xml"
 
 #  make clean-test-integration
