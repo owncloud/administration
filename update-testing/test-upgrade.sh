@@ -51,15 +51,15 @@ fi
 DATADIR=$BASEDIR/$FROM_VERSION-$TO_VERSION-$DATABASE
 
 if [ ! -f $FROM ]; then
-  wget http://download.owncloud.org/community/$FROM
-  wget http://download.owncloud.org/community/testing/$FROM
+  wget http://download.owncloud.org/community/$FROM || true
+  wget http://download.owncloud.org/community/testing/$FROM || true
 else
   echo "Reuse existing $FROM"
 fi
 
 if [ ! -f $TO ]; then
-  wget http://download.owncloud.org/community/$TO
-  wget http://download.owncloud.org/community/testing/$TO
+  wget http://download.owncloud.org/community/$TO || true
+  wget http://download.owncloud.org/community/testing/$TO || true
 else
   echo "Reuse existing $TO"
 fi
