@@ -9,6 +9,7 @@
 DATABASENAME=oc_autotest$EXECUTOR_NUMBER
 DATABASEUSER=oc_autotest$EXECUTOR_NUMBER
 ADMINLOGIN=admin$EXECUTOR_NUMBER
+DATABASEHOST=localhost
 BASEDIR=$PWD
 
 if [ "$#" -ne 3 ]; then
@@ -74,14 +75,93 @@ if [ ! -f $TO ]; then
   exit 1
 fi
 
+function cleanup_config {
 
-# database cleanup
+	if [ ! -z "$DOCKER_CONTAINER_ID" ]; then
+		echo "Kill the docker $DOCKER_CONTAINER_ID"
+		docker stop "$DOCKER_CONTAINER_ID"
+		docker rm -f "$DOCKER_CONTAINER_ID"
+	fi
+}
+
+# restore config on exit
+trap cleanup_config EXIT
+
+# prepare databases
+_DB=$DATABASE
+
+# drop database
 if [ "$DATABASE" == "mysql" ] ; then
-	mysql -u $DATABASEUSER -powncloud -e "DROP DATABASE $DATABASENAME"
+	mysql -u "$DATABASEUSER" -powncloud -e "DROP DATABASE IF EXISTS $DATABASENAME" -h $DATABASEHOST || true
+fi
+if [ "$DATABASE" == "mariadb" ] ; then
+	if [ ! -z "$USEDOCKER" ] ; then
+		echo "Fire up the mariadb docker"
+		DOCKER_CONTAINER_ID=$(docker run \
+			-v $BASEDIR/tests/docker/mariadb:/etc/mysql/conf.d \
+			-e MYSQL_ROOT_PASSWORD=owncloud \
+			-e MYSQL_USER="$DATABASEUSER" \
+			-e MYSQL_PASSWORD=owncloud \
+			-e MYSQL_DATABASE="$DATABASENAME" \
+			-d mariadb)
+		DATABASEHOST=$(docker inspect --format="{{.NetworkSettings.IPAddress}}" "$DOCKER_CONTAINER_ID")
+
+		echo "Waiting for MariaDB initialisation ..."
+		if ! apps/files_external/tests/env/wait-for-connection $DATABASEHOST 3306 60; then
+			echo "[ERROR] Waited 60 seconds, no response" >&2
+			exit 1
+		fi
+
+		echo "MariaDB is up."
+
+	else
+		if [ "MariaDB" != "$(mysql --version | grep -o MariaDB)" ] ; then
+			echo "Your mysql binary is not provided by MariaDB"
+			echo "To use the docker container set the USEDOCKER environment variable"
+			exit -1
+		fi
+		mysql -u "$DATABASEUSER" -powncloud -e "DROP DATABASE IF EXISTS $DATABASENAME" -h $DATABASEHOST || true
+	fi
+
+	#Reset _DB to mysql since that is what we use internally
+	_DB="mysql"
 fi
 if [ "$DATABASE" == "pgsql" ] ; then
-	dropdb -U $DATABASEUSER $DATABASENAME
+	if [ ! -z "$USEDOCKER" ] ; then
+		echo "Fire up the postgres docker"
+		DOCKER_CONTAINER_ID=$(docker run -e POSTGRES_USER="$DATABASEUSER" -e POSTGRES_PASSWORD=owncloud -d postgres)
+		DATABASEHOST=$(docker inspect --format="{{.NetworkSettings.IPAddress}}" "$DOCKER_CONTAINER_ID")
+
+		echo "Waiting for Postgres initialisation ..."
+
+		# grep exits on the first match and then the script continues
+		docker logs -f "$DOCKER_CONTAINER_ID" 2>&1 | grep -q "database system is ready to accept connections"
+
+		echo "Postgres is up."
+	else
+		dropdb -U "$DATABASEUSER" "$DATABASENAME" || true
+	fi
 fi
+if [ "$DATABASE" == "oci" ] ; then
+	echo "Fire up the oracle docker"
+	DOCKER_CONTAINER_ID=$(docker run -d deepdiver/docker-oracle-xe-11g)
+	DATABASEHOST=$(docker inspect --format="{{.NetworkSettings.IPAddress}}" "$DOCKER_CONTAINER_ID")
+
+	echo "Waiting for Oracle initialization ... "
+
+	# Try to connect to the OCI host via sqlplus to ensure that the connection is already running
+        for i in {1..48}
+            do
+                    if sqlplus "system/oracle@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(Host=$DATABASEHOST)(Port=1521))(CONNECT_DATA=(SID=XE)))" < /dev/null | grep 'Connected to'; then
+                            break;
+                    fi
+                    sleep 5
+            done
+
+	DATABASEUSER=autotest
+	DATABASENAME='XE'
+fi
+
 
 rm -rf $DATADIR
 mkdir $DATADIR
@@ -94,7 +174,7 @@ cd owncloud
 mkdir data
 
 # installation
-./occ maintenance:install -vvv --admin-pass=admin
+./occ maintenance:install -vvv --database="$_DB" --database-name="$DATABASENAME" --database-host="$DATABASEHOST" --database-user="$DATABASEUSER" --database-pass=owncloud --database-table-prefix=oc_ --admin-user="$ADMINLOGIN" --admin-pass=admin
 
 #if [ -f console.php ]; then
 #  # install test data
@@ -147,7 +227,7 @@ echo "Start upgrading from $FROM to $TO"
 
 if [ -d tests ]; then
   cd tests
-  ../lib/composer/bin/phpunit --configuration phpunit-autotest.xml
+  ../lib/composer/bin/phpunit --configuration phpunit-autotest.xml --log-junit "autotest-results-$DATABASE.xml"
 
 #  make clean-test-integration
 #  make test-integration OC_TEST_ALT_HOME=1
