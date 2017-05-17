@@ -31,6 +31,7 @@ TO=owncloud-$TO_VERSION.tar.bz2
 if [[ $TO_VERSION == git* ]]; then
   GIT_BRANCH=`echo $TO_VERSION | cut -c 5-`
   TO=$GIT_BRANCH.tar.bz2
+  if [ ! -f $TO ]; then
 	rm -f $TO
 	rm -rf g
 	mkdir g
@@ -45,6 +46,7 @@ if [[ $TO_VERSION == git* ]]; then
 	mv $TO ..
 	cd ..
 	rm -rf g
+  fi
 fi
 
 DATADIR=$BASEDIR/$FROM_VERSION-$TO_VERSION-$DATABASE
@@ -127,7 +129,7 @@ fi
 if [ "$DATABASE" == "pgsql" ] ; then
 	if [ ! -z "$USEDOCKER" ] ; then
 		echo "Fire up the postgres docker"
-		DOCKER_CONTAINER_ID=$(docker run -e POSTGRES_USER="$DATABASEUSER" -e POSTGRES_PASSWORD=owncloud -d postgres)
+		DOCKER_CONTAINER_ID=$(docker run -e POSTGRES_USER="$DATABASEUSER" -e POSTGRES_PASSWORD=owncloud -d postgres:9.4)
 		DATABASEHOST=$(docker inspect --format="{{.NetworkSettings.IPAddress}}" "$DOCKER_CONTAINER_ID")
 
 		echo "Waiting for Postgres initialisation ..."
@@ -195,15 +197,16 @@ php -f cron.php
 echo "Done."
 
 echo $GIT_BRANCH
-# remove apps when using git
+# remove apps after upgrade
+./occ app:disable activity
+./occ app:disable files_pdfviewer
+./occ app:disable files_texteditor
+./occ app:disable gallery
+
 if [ -v GIT_BRANCH ]; then
-	./occ app:disable activity
 	./occ app:disable configreport
 	./occ app:disable files_pdfviewer
-	./occ app:disable files_texteditor
-	./occ app:disable files_videoplayer
 	./occ app:disable firstrunwizard
-	./occ app:disable gallery
 	./occ app:disable notifications
 	./occ app:disable templateeditor
 fi
@@ -224,8 +227,8 @@ echo "Start upgrading from $FROM to $TO"
 ./occ upgrade
 
 if [ -d tests ]; then
-  # for now disable gallery
   ./occ app:disable gallery
+
   # run the tests
   cd tests
   chmod +x ../lib/composer/bin/phpunit
