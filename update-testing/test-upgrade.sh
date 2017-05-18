@@ -202,6 +202,7 @@ echo $GIT_BRANCH
 ./occ app:disable files_pdfviewer
 ./occ app:disable files_texteditor
 ./occ app:disable gallery
+./occ app:disable files_videoplayer
 
 if [ -v GIT_BRANCH ]; then
 	./occ app:disable configreport
