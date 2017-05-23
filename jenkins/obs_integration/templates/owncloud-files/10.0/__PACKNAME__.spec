@@ -90,6 +90,9 @@ Recommends: %{name}-deps
 #  IOError: [Errno 2] No such file or directory: '/tmp/rpmlint.owncloud-ee-base-8.2.2-1.1.noarch.rpm.zFc3ft/usr/share/owncloud/apps/files_external/tests/env/stop-smb-silvershell.sh'
 
 BuildRequires:        -rpmlint -rpmlint-mini
+
+# useradd, groupadd is needed in pre section
+PreReq: shadow
 %endif
 
 Obsoletes:	owncloud-server 	<= 9.01.99
