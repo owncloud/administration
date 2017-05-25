@@ -23,6 +23,8 @@ if [ -f Makefile ]; then
 fi
 
 cd apps
+pwd
+ls ../../
 cp -R ../../$APP_NAME/ .
 cd $WORKDIR
 
