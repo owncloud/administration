@@ -6,6 +6,8 @@
 # @copyright 2014 Thomas Müller thomas.mueller@tmit.eu
 #
 
+echo "running $0 $1 \n"
+
 set -e
 
 DATABASENAME=oc_autotest
