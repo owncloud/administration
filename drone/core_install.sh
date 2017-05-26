@@ -16,6 +16,9 @@ BASEDIR=$PWD
 DBCONFIGS="sqlite mysql pgsql oracle"
 PHPUNIT=$(which phpunit)
 
+echo "Running core_install BASEDIR:$BASEDIR"
+
+
 # set oracle home if it is not set
 TRAVIS_ORACLE_HOME="/usr/lib/oracle/xe/app/oracle/product/10.2.0/server"
 [ -z "$ORACLE_HOME" ] && ORACLE_HOME=$TRAVIS_ORACLE_HOME

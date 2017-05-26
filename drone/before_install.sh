@@ -47,7 +47,7 @@ echo 'output_buffering = off' >> /etc/php.ini
 #
 cd ../core
 if [ ! -f core_install.sh ]; then
-    wget https://raw.githubusercontent.com/owncloud/administration/master/travis-ci/core_install.sh
+    wget https://raw.githubusercontent.com/owncloud/administration/adding-drone-scripts/drone/core_install.sh 
 fi
 
 bash ./core_install.sh $DB
