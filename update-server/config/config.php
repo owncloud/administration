@@ -201,10 +201,15 @@ return [
 		],
 	],
 	'beta' => [
+		'10.0' => [
+			'latest' => '10.0.1',
+			'web' => 'https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html',
+			'downloadUrl' => 'https://download.owncloud.org/community/testing/owncloud-10.0.1RC5.zip',
+		],
 		'9.1.5' => [
-			'latest' => '10.0.0',
+			'latest' => '10.0.1',
 			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
-			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-10.0.0.zip',
+			'downloadUrl' => 'https://download.owncloud.org/community/testing/owncloud-10.0.1RC5.zip',
 		],
 		'9.1' => [
 			'latest' => '9.1.5',
