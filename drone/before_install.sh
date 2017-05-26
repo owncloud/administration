@@ -31,10 +31,16 @@ cd $WORKDIR
 #
 # copy custom php.ini settings
 #
-wget https://raw.githubusercontent.com/owncloud/administration/master/travis-ci/custom.ini
-if [ $(phpenv version-name) != 'hhvm' ]; then
-  phpenv config-add custom.ini
-fi
+#wget https://raw.githubusercontent.com/owncloud/administration/master/travis-ci/custom.ini
+#if [ $(phpenv version-name) != 'hhvm' ]; then
+#  phpenv config-add custom.ini
+#fi
+
+echo 'always_populate_raw_post_data = -1' >> /etc/php.ini
+echo 'mbstring.func_overload = 0' >> /etc/php.ini
+echo 'always_populate_raw_post_data = -1' >> /etc/php.ini
+echo 'default_charset = 'UTF-8'' >> /etc/php.ini
+echo 'output_buffering = off' >> /etc/php.ini
 
 #
 # copy install script
