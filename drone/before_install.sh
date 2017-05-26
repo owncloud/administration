@@ -50,4 +50,5 @@ if [ ! -f core_install.sh ]; then
     wget https://raw.githubusercontent.com/owncloud/administration/adding-drone-scripts/drone/core_install.sh 
 fi
 
-bash ./core_install.sh $DB
+chmod +x core_install.sh
+./core_install.sh $DB
