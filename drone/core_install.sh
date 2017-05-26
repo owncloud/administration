@@ -16,7 +16,8 @@ ADMINLOGIN=admin
 BASEDIR=$PWD
 
 DBCONFIGS="sqlite mysql pgsql oracle"
-PHPUNIT=$(which phpunit)
+#PHPUNIT=$(which phpunit)
+PHPUNIT=/usr/bin/phpunit
 
 echo "Running core_install BASEDIR:$BASEDIR"
 
