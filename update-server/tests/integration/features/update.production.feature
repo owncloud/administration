@@ -1,10 +1,24 @@
 Feature: Testing the update scenario of releases on the production channel
 ##### Please always order by version number descending #####
 
+
+  ##### Tests for 10.0.x should go below #####
+  Scenario: Updating an outdated ownCloud 10.0.2 on the beta channel
+    Given There is a release with channel "production"
+    And The received version is "10.0.2"
+    When The request is sent
+    Then The response is empty
+    
+  Scenario: Updating an outdated ownCloud 10.0.0 on the beta channel
+    Given There is a release with channel "production"
+    And The received version is "10.0.0"
+    When The request is sent
+    Then The response is empty
+
   ##### Tests for 9.1.x should go below #####
   Scenario: Updating an outdated ownCloud 9.1.0 on the stable channel
     Given There is a release with channel "stable"
-    And The received version is "9.1.5"
+    And The received version is "9.1.6"
     When The request is sent
     Then The response is empty
   
@@ -13,13 +27,13 @@ Feature: Testing the update scenario of releases on the production channel
     And The received version is "9.1.0"
     When The request is sent
     Then The response is non-empty
-    And URL to download is "https://download.owncloud.org/community/owncloud-9.1.5.zip"
+    And URL to download is "https://download.owncloud.org/community/owncloud-9.1.6.zip"
     And URL to documentation is "https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html"
 
   ##### Tests for 9.0.x should go below #####
-  Scenario: Updating an outdated ownCloud 9.0.9 on the stable channel
+  Scenario: Updating an outdated ownCloud 9.0.10 on the stable channel
     Given There is a release with channel "stable"
-    And The received version is "9.0.9"
+    And The received version is "9.0.10"
     When The request is sent
     Then The response is empty
   
@@ -28,7 +42,7 @@ Feature: Testing the update scenario of releases on the production channel
     And The received version is "9.0.5"
     When The request is sent
     Then The response is non-empty
-    And URL to download is "https://download.owncloud.org/community/owncloud-9.0.9.zip"
+    And URL to download is "https://download.owncloud.org/community/owncloud-9.0.10.zip"
     And URL to documentation is "https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html"
 
   Scenario: Updating an outdated ownCloud 9.0.4 on the production channel
@@ -36,7 +50,7 @@ Feature: Testing the update scenario of releases on the production channel
     And The received version is "9.0.4"
     When The request is sent
     Then The response is non-empty
-    And URL to download is "https://download.owncloud.org/community/owncloud-9.0.9.zip"
+    And URL to download is "https://download.owncloud.org/community/owncloud-9.0.10.zip"
     And URL to documentation is "https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html"
 
   Scenario: Updating an outdated ownCloud 9.0.3 on the production channel
@@ -44,7 +58,7 @@ Feature: Testing the update scenario of releases on the production channel
     And The received version is "9.0.3"
     When The request is sent
     Then The response is non-empty
-    And URL to download is "https://download.owncloud.org/community/owncloud-9.0.9.zip"
+    And URL to download is "https://download.owncloud.org/community/owncloud-9.0.10.zip"
     And URL to documentation is "https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html"
 
   Scenario: Updating an outdated ownCloud 9.0.2 on the production channel
@@ -77,7 +91,7 @@ Feature: Testing the update scenario of releases on the production channel
     And The received version is "8.2.11"
     When The request is sent
     Then The response is non-empty
-    And URL to download is "https://download.owncloud.org/community/owncloud-9.0.9.zip"
+    And URL to download is "https://download.owncloud.org/community/owncloud-9.0.10.zip"
     And URL to documentation is "https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html"
 
   Scenario: Updating an outdated ownCloud 8.2.0 on the production channel
