@@ -70,7 +70,7 @@ cat > ./tests/autoconfig-mysql.php <<DELIM
   'directory' => '$DATADIR',
   'dbuser' => '$DATABASEUSER',
   'dbname' => '$DATABASENAME',
-  'dbhost' => 'localhost',
+  'dbhost' => 'mysql',
   'dbpass' => 'owncloud',
 );
 DELIM
