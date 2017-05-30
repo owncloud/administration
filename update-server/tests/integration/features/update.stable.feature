@@ -12,7 +12,9 @@ Feature: Testing the update scenario of releases on the stable channel
     Given There is a release with channel "stable"
     And The received version is "10.0.0"
     When The request is sent
-    Then The response is empty
+    Then The response is non-empty
+    And URL to download is "https://download.owncloud.org/community/owncloud-10.0.2.zip"
+    And URL to documentation is "https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html"
 
   ##### Tests for 9.1.x should go below #####
   Scenario: Updating an outdated ownCloud 9.1.0 on the stable channel
