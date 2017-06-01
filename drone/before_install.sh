@@ -26,6 +26,8 @@ cd apps
 pwd
 ls ../../
 cp -R ../../$APP_NAME/ .
+git clone https://github.com/owncloud/enterprise_key
+
 cd $WORKDIR
 
 #
