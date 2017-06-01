@@ -11,7 +11,7 @@ echo "running $0 $1 \n"
 set -e
 
 DATABASENAME=oc_autotest
-DATABASEUSER=oc_autotest
+DATABASEUSER=root
 ADMINLOGIN=admin
 BASEDIR=$PWD
 
