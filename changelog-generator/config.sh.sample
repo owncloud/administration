@@ -1,0 +1,14 @@
+# Rename this file to "config.sh" after filling in the fields
+
+# Go to your Github account's settings and generate a personal token, give all "Repo" permissions
+TOKEN=your_github_API_token
+
+# Run ./setup.sh to install the ruby gems and then find the executable on your system
+GENERATOR_BIN="/usr/bin/X11/github_changelog_generator.ruby2.1"
+
+# Keep this as is, prefix for the repos
+USERNAME=owncloud
+
+# TODO add more
+REPOSITORIES="core"
+
