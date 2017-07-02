@@ -44,6 +44,8 @@ Depends: ${misc:Depends}, php5 (>= 5.4.0),
 # php5-ldap is needed by apps/user-ldap
 Suggests: php5-apcu (>= 4.0.6) | php-apc, php5-imagick, php5-ldap, php-smbclient | libsmbclient
 Recommends: mysql-server | mariadb-server | postgresql, curl, exim4 | mail-transport-agent
+# https://github.com/owncloud/core/issues/23015
+Conflicts: libapache2-mod-php5filter
 Description: ownCloud - dependencies for php5
  .
 
