@@ -14,18 +14,18 @@ echo "... checking $OBS_API project $prj"
 pkgs=$(osc -A$OBS_API ls $prj)
 
 for pkg in $pkgs; do
-  echo "\t$pkg ..."
+  echo -n "\t$pkg ...                            \r"
   haslink=
   lin=$(osc -Aobs cat -u $prj $pkg _link 2>/dev/null) && haslink=true
   if [ "$haslink" = "true" ]; then
     if (echo "$lin" | grep -q '\bproject="'); then
       if (echo $lin | grep '\bproject="' | grep -q "project=\"isv"); then
-        echo "$pkg: harmless local project link."
+        echo "\t$pkg: harmless local project link."
       else
         echo "ERROR: $pkg has link with remote project found: $lin"
       fi
     else
-        echo "$pkg: harmless link with no project."
+        echo "\t$pkg: harmless local link."
     fi
   fi
 done
