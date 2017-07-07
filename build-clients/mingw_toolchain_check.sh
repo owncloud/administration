@@ -22,7 +22,7 @@ for pkg in $pkgs; do
       if (echo $lin | grep '\bproject="' | grep -q "project=\"isv"); then
         echo "\t$pkg: harmless local project link."
       else
-        echo "ERROR: $pkg has link with remote project found: $lin"
+        echo "ERROR: $pkg has link with remote project found: $(echo "$lin" | grep project=)"
       fi
     else
         echo "\t$pkg: harmless local link."
