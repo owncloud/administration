@@ -5,8 +5,8 @@ Maintainer: [% maintainer_person %]
 Standards-Version: 3.9.6
 Build-Depends: debhelper (>= 9), cmake, sed, doxygen, unzip | bash,
 	libsqlite3-dev, python-sphinx | python3-sphinx, libssl-dev,
-	libqtwebkit-dev (>= 2.2.0) | libqt5webkit5-dev (>= 2.2.0),
-	qtkeychain-dev (>= 0.7.0) | qt5keychain-dev (>= 0.7.0)
+	XXlibqtwebkit-dev (>= 2.2.0) | libqt5webkit5-dev (>= 2.2.0),
+	XXqtkeychain-dev (>= 0.7.0) | qt5keychain-dev (>= 0.7.0)
 
 Package: [% shortname %]-client
 Architecture: any
