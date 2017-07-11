@@ -21,6 +21,8 @@ if [ "$refver" = '' ]; then
 	echo "\t $0 source-project dest-project reference-package-name reference-version-number"
 	echo "\n\nExample:"
 	echo "\t $0 isv:ownCloud:desktop isv:ownCloud:desktop:client-2.3.1 owncloud-client 2.3.1"
+        echo "\nFirst the timestamp of the release is determined and printed."
+        echo "Then, the user is asked to press ENTER to start the copying process."
 	exit 1
 fi
 
@@ -29,7 +31,10 @@ refrevision=$(echo $refline | cut -f 1 -d '|' | sed -e 's@\s@@')
 refdate=$(echo $refline | cut -f 3 -d '|' | sed -e 's@^\s@@' -e 's@\s$@@')
 reftstamp=$(date -d "$refdate" +%s)
 
-echo "reference date: $refdate"
+echo "Version $refver of package $refpkg was last updated:"
+echo $refline
+echo "\nPress ENTER to start copying into $dstprj ..."
+read a
 
 pkgs=$($osc ls $srcprj)
 $osc meta prj     $srcprj | sed -e "s@<project name=.*@<project name=\"$dstprj\">@" > /tmp/prj.$$

@@ -283,6 +283,11 @@ Suggests:       %{name}-nemo
 Suggests:       %{name}-caja
 %endif
 
+%if 0%{?fedora_version} > 23
+# https://github.com/owncloud/client/issues/5703
+Suggests:	libgnome-keyring
+%endif
+
 %if 0%{?rhel_version} == 600 || 0%{?centos_version} == 600
 # https://github.com/owncloud/client/issues/4400#issuecomment-176686729
 Requires:	%{qtprefix}libqt4-sql
