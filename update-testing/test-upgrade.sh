@@ -229,6 +229,7 @@ if [ ! -d apps/market ]; then
   git clone git@github.com:owncloud/market.git
   cd market
   make
+  cd ../..
 fi
 
 ./occ upgrade || true
