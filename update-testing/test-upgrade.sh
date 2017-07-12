@@ -206,7 +206,6 @@ echo $GIT_BRANCH
 
 if [ -v GIT_BRANCH ]; then
 	./occ app:disable configreport
-	./occ app:disable files_pdfviewer
 	./occ app:disable firstrunwizard
 	./occ app:disable notifications
 	./occ app:disable templateeditor
@@ -225,7 +224,15 @@ cd owncloud
 
 # UPGRADE
 echo "Start upgrading from $FROM to $TO"
-./occ upgrade
+if [ ! -d apps/market ]; then
+  cd apps
+  git clone git@github.com:owncloud/market.git
+  cd market
+  make
+fi
+
+./occ upgrade || true
+#./occ main:mode --off || true
 
 if [ -d tests ]; then
   ./occ app:disable gallery
