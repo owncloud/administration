@@ -55,7 +55,7 @@ build_client() {
       params="$params -DVERSION_SUFFIX=-nightly$today -DMIRALL_VERSION_SUFFIX=-nightly$today"
     fi
 
-    params="$params -DMIRALL_VERSION_BUILD=$build_number -DBUILD_WITH_QT4=OFF"
+    params="$params -DMIRALL_VERSION_BUILD=$build_number -DBUILD_WITH_QT4=OFF $cmake_params"
 
     cmake -DCMAKE_TOOLCHAIN_FILE=../admin/win/Toolchain-mingw32-openSUSE.cmake \
           -DCMAKE_BUILD_TYPE="RelWithDebInfo" \
