@@ -203,6 +203,8 @@ echo $GIT_BRANCH
 ./occ app:disable files_texteditor
 ./occ app:disable gallery
 ./occ app:disable files_videoplayer
+./occ app:disable files_videoviewer
+./occ app:disable updater
 
 if [ -v GIT_BRANCH ]; then
 	./occ app:disable configreport
