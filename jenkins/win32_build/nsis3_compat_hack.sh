@@ -1,9 +1,9 @@
 #! /bin/sh
 # 
 
-sed -i -e 's@Plugins\InstallOptions.dll@Plugins\x86-unicode\InstallOptions.dll@' cmake/modules/NSIS.template.in
+sed -i -e 's@Plugins\\InstallOptions.dll@Plugins\\x86-unicode\\InstallOptions.dll@' cmake/modules/NSIS.template.in
 
-pushd admin/win/nsi/l10n
+cd admin/win/nsi/l10n
 iconv -t UTF8 -f CP1252 -o German.nsh German.nsh
 iconv -t UTF8 -f CP1252 -o Basque.nsh Basque.nsh
 iconv -t UTF8 -f CP1252 -o English.nsh English.nsh
@@ -22,7 +22,6 @@ iconv -t UTF8 -f CP1254 -o Turkish.nsh Turkish.nsh
 iconv -t UTF8 -f CP1252 -o Norwegian.nsh Norwegian.nsh
 iconv -t UTF8 -f CP1250 -o Polish.nsh Polish.nsh
 iconv -t UTF8 -f CP852  -o Czech.nsh Czech.nsh
-popd
 
 cp /usr/share/nsis/Plugins/UAC.dll /usr/share/nsis/Plugins/x86-ansi/
 cp /usr/share/nsis/Plugins/UAC.dll /usr/share/nsis/Plugins/x86-unicode/
