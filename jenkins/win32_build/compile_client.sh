@@ -102,7 +102,7 @@ create_package() {
     if [ -e  ../admin/win/download_runtimes.sh ]; then
       ../admin/win/download_runtimes.sh
     fi
-    make package || cat _CPack_Packages/unused/NSIS/*.log || true
+    make package || cat _CPack_Packages/unused/NSIS/*.log && false
     popd
 }
 
