@@ -97,12 +97,13 @@ extract_symbols() {
 }
 
 create_package() {
-    pushd build
 
+    test "$(makensis -VERSION | cut -d . -f 1)" == "v3" && sh $(dirname $0)/nsis3_compat_hack.sh || true
+
+    pushd build
     if [ -e  ../admin/win/download_runtimes.sh ]; then
       ../admin/win/download_runtimes.sh
     fi
-    test "$(makensis -VERSION | cut -d . -f 1)" == "v3" && $(dirname $0)/nsis3_compat_hack.sh || true
     make package || cat _CPack_Packages/unused/NSIS/*.log && false
     popd
 }
