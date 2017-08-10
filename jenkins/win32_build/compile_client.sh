@@ -102,6 +102,7 @@ create_package() {
     if [ -e  ../admin/win/download_runtimes.sh ]; then
       ../admin/win/download_runtimes.sh
     fi
+    test "$(makensis -VERSION | cut -d . -f 1)" == "v3" && $(dirname $0)/nsis3_compat_hack.sh || true
     make package || cat _CPack_Packages/unused/NSIS/*.log && false
     popd
 }
