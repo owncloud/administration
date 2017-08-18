@@ -35,7 +35,7 @@ override_dh_install:
 	mkdir -p                                     $(DROOT)/$(OC_DIR)/assets
 	# We must chown all apps folders, in each app, to be independant of installation order.
 	# https://github.com/owncloud/core/issues/16132
-	chown -R www-data:www-data    		     $(DROOT)/$(OC_DIR)/themes
+    #chown -R www-data:www-data    		     $(DROOT)/$(OC_DIR)/themes
 	test -f     $(SRCDIR)/apache_conf_default && cp $(SRCDIR)/apache_conf_default debian/ || true
 	install -m 644 debian/apache_conf_default    $(DROOT)/usr/share/doc/$(NAME)/owncloud-config-apache.conf.default
 	test -f     $(SRCDIR)/README && cp $(SRCDIR)/README debian/ || true
