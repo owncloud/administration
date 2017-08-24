@@ -238,7 +238,7 @@ target:
   Debian_6.0:
     fmt: APT
     from: debian:6.0
-    inst: [wget, apt-transport-https]
+    inst: [wget, apt-transport-https, gnupg2]
     run:
       '^(owncloud|owncloud-enterprise)$': |
         service mysql start
@@ -257,6 +257,7 @@ target:
 
   Debian_7.0: { base: [Debian_6.0], from: 'debian:7' }
   Debian_8.0: { base: [Debian_6.0], from: 'debian:8' }
+  Debian_9.0: { base: [Debian_6.0], from: 'debian:9' }
 
   Ubuntu_12.04: { base: [Debian_6.0], from: 'ubuntu:12.04' }
   Ubuntu_12.10: { base: [Debian_6.0], from: 'ubuntu:12.10' }
@@ -456,6 +457,8 @@ Mint (as Debian, plus):
 """)
     sys.exit(0)
   docker_pid = run(["pidof", "docker"], redirect_stderr=False)
+  if docker_pid == "":
+    docker_pid = run(["pidof", "dockerd"], redirect_stderr=False)
   if docker_pid == "":
     docker_pid = run(["pidof", "docker.io"], redirect_stderr=False)
   if not re.search(r"\b\d\d+\b", docker_pid.decode(), re.S):
@@ -830,7 +833,7 @@ if args.list_targets_only:
   sys.exit(0)
 
 if args.project is None:
-  print("need project/package name")
+  print("need project/package platform_name")
   sys.exit(1)
 
 m = re.match(r'(.*)/(.*)', args.project)
