@@ -47,7 +47,9 @@ build_client() {
     fi
 
     if [ $extract_symbols = true ]; then
-      params="-DWITH_CRASHREPORTER=ON $params"
+      params="-DCMAKE_BUILD_TYPE=RelWithDebInfo -DWITH_CRASHREPORTER=ON $params"
+    else
+      params="-DCMAKE_BUILD_TYPE=Release $params"
     fi
 
     if [ $nightly_build = true ]; then
@@ -58,7 +60,6 @@ build_client() {
     params="$params -DMIRALL_VERSION_BUILD=$build_number -DBUILD_WITH_QT4=OFF $cmake_params"
 
     cmake -DCMAKE_TOOLCHAIN_FILE=../admin/win/Toolchain-mingw32-openSUSE.cmake \
-          -DCMAKE_BUILD_TYPE="RelWithDebInfo" \
           $params ..
     make -j4 VERBOSE=1
     popd
