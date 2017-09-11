@@ -106,8 +106,7 @@ create_package() {
     if [ -e  ../admin/win/download_runtimes.sh ]; then
       ../admin/win/download_runtimes.sh
     fi
-    make package || (cat _CPack_Packages/unused/NSIS/*.log) # && false)
-    sleep 3600
+    make package || (cat _CPack_Packages/unused/NSIS/*.log && false)
     popd
 }
 
