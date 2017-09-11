@@ -23,8 +23,8 @@ iconv -t UTF8 -f CP1252 -o Norwegian.nsh Norwegian.nsh
 iconv -t UTF8 -f CP1250 -o Polish.nsh Polish.nsh
 iconv -t UTF8 -f CP852  -o Czech.nsh Czech.nsh
 
-cp /usr/share/nsis/Plugins/UAC.dll /usr/share/nsis/Plugins/x86-ansi/
-cp /usr/share/nsis/Plugins/UAC.dll /usr/share/nsis/Plugins/x86-unicode/
-cp /usr/share/nsis/Plugins/nsProcess.dll /usr/share/nsis/Plugins/x86-ansi/
-cp /usr/share/nsis/Plugins/nsProcess.dll /usr/share/nsis/Plugins/x86-unicode/
+sudo cp /usr/share/nsis/Plugins/UAC.dll /usr/share/nsis/Plugins/x86-ansi/
+sudo cp /usr/share/nsis/Plugins/UAC.dll /usr/share/nsis/Plugins/x86-unicode/
+sudo cp /usr/share/nsis/Plugins/nsProcess.dll /usr/share/nsis/Plugins/x86-ansi/
+sudo cp /usr/share/nsis/Plugins/nsProcess.dll /usr/share/nsis/Plugins/x86-unicode/
 

@@ -99,7 +99,8 @@ extract_symbols() {
 
 create_package() {
 
-    test "$(makensis -VERSION | cut -d . -f 1)" == "v3" && sh $(dirname $0)/nsis3_compat_hack.sh || true
+    ## possibly no permissions for that hack here:
+    test "$(makensis -VERSION | cut -d . -f 1)" == "v3" && sh -x $(dirname $0)/nsis3_compat_hack.sh || true
 
     pushd build
     if [ -e  ../admin/win/download_runtimes.sh ]; then
