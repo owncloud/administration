@@ -3,7 +3,12 @@
 
 useradd jenkins --uid $1
 shift
+
 zypper mr -d http://download.opensuse.org/repositories/windows:/mingw/openSUSE_42.1
+# 2017-09-10, jw: the main 42.1 repos are removed from OBS. Only 'OSS Update' remains.
+zypper mr -d OSS
+zypper mr -d NON-OSS
+
 zypper --non-interactive --gpg-auto-import-keys install sudo
 
 # hack for https://github.com/owncloud/client/issues/5950
