@@ -47,6 +47,20 @@ class Response {
 		$searches[] = $this->request->getMajorVersion().'.0';
 		return $searches;
 	}
+	
+	/**
+	 * Get a link from a config item
+	 *
+	 * @param array $newVersion
+	 * @return string
+	 */
+	private function getDownloadUrl($newVersion){
+		$downloadUrl = 'https://download.owncloud.org/community/owncloud-'.$newVersion['latest'].'.zip';
+		if (isset($newVersion['downloadUrl'])) {
+			$downloadUrl = $newVersion['downloadUrl'];
+		}
+		return $downloadUrl;
+	}
 
 	/**
 	 * Code for the stable editions
@@ -72,10 +86,7 @@ class Response {
 			return '';
 		}
 
-		$downloadUrl = 'https://download.owncloud.org/community/owncloud-'.$newVersion['latest'].'.zip';
-		if(isset($newVersion['downloadUrl'])) {
-			$downloadUrl = $newVersion['downloadUrl'];
-		}
+		$downloadUrl = $this->getDownloadUrl($newVersion);
 
 		$writer = new \XMLWriter();
 		$writer->openMemory();
@@ -102,6 +113,8 @@ class Response {
 			if(isset($versions[$search])) {
 				if((time() - strtotime($this->request->getBuild())) > 172800) {
 					$newVersion = $versions[$search];
+					$downloadUrl = $this->getDownloadUrl($newVersion);
+					
 					$writer = new \XMLWriter();
 					$writer->openMemory();
 					$writer->startDocument('1.0','UTF-8');
@@ -109,7 +122,7 @@ class Response {
 					$writer->startElement('owncloud');
 					$writer->writeElement('version', '100.0.0.0');
 					$writer->writeElement('versionstring', 'ownCloud daily');
-					$writer->writeElement('url', $newVersion['downloadUrl']);
+					$writer->writeElement('url', $downloadUrl);
 					$writer->writeElement('web', $newVersion['web']);
 					$writer->endElement();
 					$writer->endDocument();
@@ -126,8 +139,17 @@ class Response {
 	 */
 	public function buildResponse() {
 		$completeCurrentVersion = $this->request->getMajorVersion().'.'.$this->request->getMinorVersion().'.'.$this->request->getMaintenanceVersion();
+		
+		$requestedChannel = $this->request->getChannel();
+		
+		$eolLatest = $this->config->get('eol_latest');
 
-		switch ($this->request->getChannel()) {
+		$channel = (version_compare($completeCurrentVersion, $eolLatest, '<='))
+					? 'eol'
+					: $requestedChannel
+		;
+
+		switch ($channel) {
 			case 'production':
 				return $this->getStableResponse($this->config->get('production'), $completeCurrentVersion);
 			case 'stable':
@@ -136,6 +158,12 @@ class Response {
 				return $this->getStableResponse($this->config->get('beta'), $completeCurrentVersion);
 			case 'daily':
 				return $this->getDailyResponse($this->config->get('daily'));
+			case 'eol':
+				if ($requestedChannel === 'daily'){
+					return $this->getDailyResponse($this->config->get('eol'));
+				} else {
+					return $this->getStableResponse($this->config->get('eol'), $completeCurrentVersion);
+				}
 			default:
 				return '';
 		}
