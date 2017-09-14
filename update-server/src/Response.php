@@ -55,7 +55,10 @@ class Response {
 	 * @return string
 	 */
 	private function getDownloadUrl($newVersion){
-		$downloadUrl = 'https://download.owncloud.org/community/owncloud-'.$newVersion['latest'].'.zip';
+		$downloadUrl = '';
+		if (isset($newVersion['latest'])) {
+			$downloadUrl = 'https://download.owncloud.org/community/owncloud-' . $newVersion['latest'] . '.zip';
+		}
 		if (isset($newVersion['downloadUrl'])) {
 			$downloadUrl = $newVersion['downloadUrl'];
 		}
