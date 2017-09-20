@@ -159,6 +159,11 @@ return [
 
 		// START: Due do a bug in the updater we need to enforce the update order
 		// see https://github.com/owncloud/administration-internal/issues/19
+		'9.0.10' => [
+			'latest' => '9.1.6',
+			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
+		],
+
 		'9.0' => [
 			'latest' => '9.0.10',
 			'web' => 'https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html',
