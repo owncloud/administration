@@ -7,6 +7,7 @@
 # Usage:
 #     obs-aggregate-prj.sh isv:ownCloud:daily:owncloud-client:2.3 isv:ownCloud:community:nightly
 #
+# CAUTION: keep in sync with end of scripts/client-linux/build_obs_opensuse.sh
 
 srcprj=$1
 dstprj=$2
@@ -22,11 +23,13 @@ if [ "$dstprj" = '' ]; then
 	exit 1
 fi
 
+# FIXME: delete existing packages in $dstprj
 pkgs=$($osc ls $srcprj)
-$osc meta prj     $srcprj | sed -e "s@<project name=.*@<project name=\"$dstprj\">@" > /tmp/prj.$$
-(set -x; $osc meta prj     -F /tmp/prj.$$     $dstprj)
+$osc meta prj $srcprj | sed -e "s@<project name=.*@<project name=\"$dstprj\">@" > /tmp/prj.$$
+(set -x; $osc meta prj -F /tmp/prj.$$     $dstprj)
 rm -f /tmp/prj.$$ 
 
 for pkg in $pkgs; do
+  $osc rdelete $dstprj $pkg -m 'replaced by aggregate' >/dev/null 2>&1
   (set -x ; $osc aggregatepac $srcprj $pkg $dstprj $pkg)
 done
