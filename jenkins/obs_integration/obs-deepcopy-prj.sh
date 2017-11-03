@@ -30,7 +30,6 @@ srcprjm=$(echo $srcprj | sed -e 's/^openSUSE.org://')
 oscm=$osc
 test "$srcprj" != "$srcprjm" && oscm="$osc -Ahttps://api.opensuse.org"
 
-pkgs=$($osc ls $srcprj)
 # meta prj also returns "modified" data across obs boundaries. e.g. "<path project=..." elements get modified to contain the needed prefix for remote access.
 # This is in our case a nice feature. But just as surprising and unexpected 
 # as the missing build section with meta pkg.
@@ -40,7 +39,17 @@ $osc meta prjconf $srcprj > /tmp/prjconf.$$
 (set -x; $osc meta prjconf -F /tmp/prjconf.$$ $dstprj)
 rm -f /tmp/prj.$$ /tmp/prjconf.$$
 
+saved_srcprj=$srcprj
+saved_srcprjm=$srcprjm
+
+pkgs=$($osc ls $srcprj)
+# pkgs=ocqt562-filesystem
 for pkg in $pkgs; do
+  srcprj=$saved_srcprj
+  srcprjm=$saved_srcprjm
+  echo ""
+  echo "================== $srcprj $pkg ==============="
+  echo ""
   # --expand helps to make a copy from a linkpac (instead of a link)
   # but it does not help to expand aggregatepac
   is_aggregate=$($osc cat $srcprj $pkg _aggregate 2>/dev/null)
