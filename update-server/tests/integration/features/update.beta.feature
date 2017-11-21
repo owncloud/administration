@@ -42,7 +42,7 @@ Feature: Testing the update scenario of releases on the beta channel
     And The received version is "9.0.10"
     When The request is sent
     Then The response is non-empty
-    And URL to download is "https://download.owncloud.org/community/owncloud-9.0.11RC2.zip"
+    And URL to download is "https://download.owncloud.org/community/owncloud-9.1.7RC2.zip"
 
   Scenario: Updating an outdated ownCloud 9.0.5 on the beta channel
     Given There is a release with channel "beta"
@@ -96,8 +96,8 @@ Feature: Testing the update scenario of releases on the beta channel
     And The received version is "8.2.11"
     When The request is sent
     Then The response is non-empty
-    And Update to version "9.0.10" is available
-    And URL to download is "https://download.owncloud.org/community/owncloud-9.0.10.zip"
+    And Update to version "9.0.11" is available
+    And URL to download is "https://download.owncloud.org/community/owncloud-9.0.11RC2.zip"
     And URL to documentation is "https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html"
 
   Scenario: Updating an outdated ownCloud 8.2.0 on the beta channel
