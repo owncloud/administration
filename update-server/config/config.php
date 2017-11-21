@@ -227,19 +227,19 @@ return [
 		'9.1.7' => [
 			'latest' => '10.0.4',
 			'downloadUrl' => 'https://download.owncloud.org/community/testing/owncloud-10.0.4RC1.zip',
-			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
+			'web' => 'https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html',
 		],
 		'9.1' => [
-			'latest' => '9.1.7',
-			'downloadUrl' => 'https://download.owncloud.org/community/testing/owncloud-9.1.7RC2.zip',
-			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
+			'latest' => '10.0.4',
+			'downloadUrl' => 'https://download.owncloud.org/community/testing/owncloud-10.0.4RC1.zip',
+			'web' => 'https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html',
 		],
 		// START: Due do a bug in the updater we need to enforce the update order
 		// see https://github.com/owncloud/administration-internal/issues/19
 		'9.0' => [
-			'latest' => '9.0.11',
-			'downloadUrl' => 'https://download.owncloud.org/community/testing/owncloud-9.0.11RC2.zip',
-			'web' => 'https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html',
+			'latest' => '9.1.7',
+			'downloadUrl' => 'https://download.owncloud.org/community/testing/owncloud-9.1.7RC2.zip',
+			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
 		],
 		'9.0.10' => [
 			'latest' => '9.1.7',
