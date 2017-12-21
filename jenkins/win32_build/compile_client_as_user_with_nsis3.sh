@@ -16,7 +16,7 @@ zypper mr -d 'OSS Update'
 zypper --non-interactive --gpg-auto-import-keys ar http://download.opensuse.org/repositories/isv:/ownCloud:/toolchains:/mingw:/win32:/2.3.4/openSUSE_Leap_42.1/isv:ownCloud:toolchains:mingw:win32:2.3.4.repo
 zypper refresh -f
 # hack for https://kanboard.owncloud.com/project/1/task/1772
-zypper --non-interactive install mingw32-libopenssl-devel=1.0.2n mingw32-libopenssl-devel=1.0.2n
+zypper --non-interactive install mingw32-libopenssl-devel=1.0.2n mingw32-libopenssl=1.0.2n
 
 # hack for https://github.com/owncloud/client/issues/5950
 zypper --non-interactive install mingw32-cross-nsis=3.01
