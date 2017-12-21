@@ -1,5 +1,6 @@
 #!/bin/bash
 # 
+# CAUTION: keep in sync with jenkins/private/scripts/client-win32/build.sh
 
 useradd jenkins --uid $1
 shift
