@@ -4,7 +4,7 @@ CMD=$(basename $0)
 
 build_number=0
 extract_symbols=false
-nightly_build=false
+daily_build=false
 cmake_params=
 pkcs_file=
 pkcs_password=
@@ -22,7 +22,7 @@ show_help() {
     echo "  -b ................ Build number (default: 0)"
     echo "  -c ................ Pass additional parameters to cmake"
     echo "  -e ................ Extract symbols for use with breakpad to \$PWD/symbols"
-    echo "  -n ................ Build nightly build"
+    echo "  -n ................ Build daily (aka nightly) build"
     echo "  -k ................ PKCS file with certificate and key for signing"
     echo "  -p ................ Password to decrypt PKCS file"
     echo "  -o ................ OEM theme"
@@ -52,9 +52,9 @@ build_client() {
       params="-DCMAKE_BUILD_TYPE=Release $params"
     fi
 
-    if [ $nightly_build = true ]; then
+    if [ $daily_build = true ]; then
       today=$(date +%Y%m%d)
-      params="$params -DVERSION_SUFFIX=-nightly$today -DMIRALL_VERSION_SUFFIX=-nightly$today"
+      params="$params -DVERSION_SUFFIX=-daily$today -DMIRALL_VERSION_SUFFIX=-daily$today"
     fi
 
     params="$params -DMIRALL_VERSION_BUILD=$build_number -DBUILD_WITH_QT4=OFF $cmake_params"
@@ -90,7 +90,8 @@ extract_symbols() {
         fi
     done
 
-    if [ $nightly_build = true ]; then
+    if [ $daily_build = true ]; then
+        # FIXME: folder seems to be an unused variable. ??
         folder="nightly"
     else
         folder="stable"
@@ -141,7 +142,7 @@ while getopts "b:h?ec:nk:p:o:" opt; do
         ;;
     e)  extract_symbols=true
         ;;
-    n)  nightly_build=true
+    n)  daily_build=true
         ;;
     k)  pkcs_file=$OPTARG
         ;;

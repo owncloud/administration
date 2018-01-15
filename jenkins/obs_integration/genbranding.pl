@@ -557,7 +557,7 @@ unless( defined $substs->{version} )
 	    $mon += 1;
         $month = sprintf "%02d", $mon;
         $day = sprintf "%02d", $mday;
-        $prerel = "nightly" . "$year" . "$month" . "$day";
+        $prerel = "daily" . "$year" . "$month" . "$day";
         $substs->{version_deb} = $vers . '~' . $prerel;
 	  }
 	else

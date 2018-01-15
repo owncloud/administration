@@ -60,6 +60,7 @@ for vers in $*; do
   test -n "$echo" && echo "# - - - - - - - - - - -  $vers  - - - - - - - - - - -"
 
   case $vers in
+  daily)
   nightly)
     test -n "$echo" && { echo "echo mode ignored for nighly, executing in 5 sec..."; sleep 5; }
     # Imported code from https://rotor.int.owncloud.com/job/owncloud-server-nightly/configure
