@@ -240,10 +240,10 @@ fi
 if [ -d tests ]; then
   ./occ app:disable gallery
 
-  # run the tests
+  # run the phpunit tests
   cd tests
-  chmod +x ../lib/composer/bin/phpunit
-  ../lib/composer/bin/phpunit --configuration phpunit-autotest.xml --log-junit "autotest-results-$DATABASE.xml"
+  chmod +x ../lib/composer/phpunit/phpunit/phpunit
+  ../lib/composer/phpunit/phpunit/phpunit --configuration phpunit-autotest.xml --log-junit "autotest-results-$DATABASE.xml"
 
 #  make clean-test-integration
 #  make test-integration OC_TEST_ALT_HOME=1
