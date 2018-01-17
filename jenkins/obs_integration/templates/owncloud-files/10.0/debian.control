@@ -7,7 +7,6 @@ Standards-Version: 3.9.3
 
 Package: [% PACKNAME %]
 Architecture: all
-Suggests: owncloud-deps
 Depends: ${misc:Depends}
 Replaces: owncloud 		(<= 9.01.99),
 	owncloud-config-apache	(<= 9.01.99),
@@ -18,10 +17,7 @@ Conflicts: owncloud 		(<= 9.01.99),
 #
 #
 Description: ownCloud - Server
- The [% PACKNAME %] package installs the codebase. To make it 
- functional, it should be installed with one of the platform specific 
- owncloud-deps-* packages to include a standard set of dependencies. 
- This gives users choice of environment.
+ The [% PACKNAME %] package installs the codebase.
  Admins are advised to check for missing dependencies
  and configuration settings using owncloud online documentation and the occ tool.
  .

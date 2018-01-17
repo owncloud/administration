@@ -80,9 +80,6 @@ Summary:        The ownCloud Server - Private file sync and share server
 License:        AGPL-3.0 and MIT
 Group:          Productivity/Networking/Web/Utilities
 
-%if 0%{?suse_version}
-Recommends: %{name}-deps
-%endif
 
 %if "%{?_repository}" == "openSUSE_Tumbleweed"
 # disable rpmlint for Tumbleweed while it is broken.
