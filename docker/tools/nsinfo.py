@@ -2,9 +2,9 @@
 #
 # nsinfo.py - a tool to add namespace information (docker containers) to tabular listings containing a column with PIDs
 #
-# Feature to use with ps output: if there is the word pid in the first line of the output, this column is the 
+# Feature to use with ps output: if there is the word pid in the first line of the output, this column is the
 # the one for the process ids, unless -c N is specified.
-# The default output is adding a columns NSPID NSSID, plus a third column DOCKER, if docker ps returns a list 
+# The default output is adding a columns NSPID NSSID, plus a third column DOCKER, if docker ps returns a list
 # of running containers.
 #
 # See also: namespaces(7), nsenter(1), setns(2)
@@ -27,38 +27,78 @@
 #                               testy    23763  0.0  0.2 357708 20692 pts/3    Sl+  21:11   0:00 docker run -ti opensuse:42.3 bash
 #  wizardly_lewin      1  23821 root     23821  0.0  0.0  20012  3136 pts/4    Ss+  21:11   0:00 bash
 #                               testy    24688  0.0  0.0   4368   564 ?        S    Jan04   0:00 /usr/sbin/rfkill event
-# 
-# using 
+#
+# using
 #  cat /proc/3111/status | grep NS
 #  NStgid: 3111    12
 #  NSpid:  3111    12
 #  NSpgid: 3111    12
 #  NSsid:  23821   1
 #
+#
 ############
+#
+# v0.1 2018-01-17, jw@owncloud.com
+#		initial draught
+# v0.2 2018-01-18, jw@owncloud.com
+#		python3 compatibility, getppid() added for recursive container name lookup.
+#
+############
+from __future__ import print_function	# python2/3 compatibility
 import sys, os, re
 import argparse
 
-fd=sys.stdin
+fd = sys.stdin
 pidcol = 2
+trunccol = 0
 
 parser = argparse.ArgumentParser(
                 usage="\n\tps -ef | %(prog)s [-c 2] | egrep '^\S'",
-                description='Prepend Namespace / docker info to tabular output containing PIDs.')
+                description='Prepend namespace/docker info to tabular output containing PIDs.')
 parser.add_argument('--column', '-c', metavar='PIDCOL', type=int,
                     help='column where process IDs are found. Default=2.', default=pidcol)
+parser.add_argument('--nowrap', '-t', action='store_true',
+                    help='Do not wrap long lines, truncate at $COLUMNS .')
+parser.add_argument('--container-id', '-i', action='store_true',
+                    help='Print docker container IDs. Default: names.')
 
 if fd.isatty():
   parser.print_help()
   sys.exit(1)
 args = parser.parse_args()
 pidcol = args.column
+if args.nowrap:
+  if not 'COLUMNS' in os.environ:
+    try:
+      tput_cols = os.popen("tput cols").read().rstrip()
+      os.environ['COLUMNS'] = str(int(tput_cols))
+    except:
+      pass
+  if not 'COLUMNS' in os.environ:
+    print("Option --nowrap needs tput installed or environment variable $COLUMNS. Try\nexport COLUMNS", file=sys.stderr)
+    sys.exit(1)
+if args.nowrap:
+  try:
+    trunccol = int(os.environ['COLUMNS'])
+  except:
+    pass
 
-pat=re.compile('((?:\s*\S+\s+){%d}\s*)(\S+)(.*)' % (pidcol-1))
+pat = re.compile('((?:\s*\S+\s+){%d}\s*)(\S+)(.*)' % (pidcol-1))
+
+def getppid(pid):
+  try:
+    fd = open("/proc/%s/status" % pid)
+    for line in fd:
+      m = re.match(r'^PPid:\s+(\d+)', line)
+      if m:
+        return int(m.group(1))
+  except:
+    pass
+  return 0
 
 def getnsinfo(pid):
-  nspid=0
-  nssid=0
+  nspid = 0
+  nssid = 0
   try:
     fd = open("/proc/%s/status" % pid)
     for line in fd:
@@ -94,11 +134,18 @@ def getdockerinfo():
     return None
 
 dinfo = getdockerinfo()
-lnr=0
+dinfo_fmt = "%-13.13s"
+if not args.container_id:
+  l = 0
+  for v in dinfo.values():
+    if len(v[1]) > l: l = len(v[1])
+  dinfo_fmt = "%%-%d.%ds" % (l+1,l+1)
+
+lnr = 0
 for line in fd:
   line = line.rstrip()
   if pidcol == 0:
-    print "autopidcol not implemented"
+    print("autopidcol not implemented")
     sys.exit(1)
   m = re.match(pat, line)
   try:
@@ -113,13 +160,20 @@ for line in fd:
     else:
       pre = "             "
   if dinfo:
-    if nssid in dinfo:
-      pre0 = "%-15.15s" % dinfo[nssid][1]
+    dnssid = nssid
+    while dnssid > 1 and dnssid not in dinfo:
+      dnssid = getppid(dnssid)
+    if dnssid in dinfo:
+      container = dinfo[dnssid][0 if args.container_id else 1]
+      if dnssid != nssid: container = container+"*"
+      pre0 = dinfo_fmt % container
     else:
       if lnr == 0:
-        pre0 = "CONTAINER      "
+        pre0 = dinfo_fmt % "CONTAINER"
       else:
-        pre0 = "               "
+        pre0 = dinfo_fmt % " "
     pre = pre0 + pre
-  print pre + " " + line
+  line = pre + " " + line
+  if trunccol > 0: line = line[:trunccol]
+  print(line)
   lnr += 1
