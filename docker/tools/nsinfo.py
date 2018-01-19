@@ -1,18 +1,20 @@
 #! /usr/bin/python
 #
-# nspid - a tool to add namespace information (docker containers) to tabular listings containing a column with PIDs
+# nsinfo.py - a tool to add namespace information (docker containers) to tabular listings containing a column with PIDs
 #
 # Feature to use with ps output: if there is the word pid in the first line of the output, this column is the 
 # the one for the process ids, unless -c N is specified.
 # The default output is adding a columns NSPID NSSID, plus a third column DOCKER, if docker ps returns a list 
 # of running containers.
 #
+# See also: namespaces(7), nsenter(1), setns(2)
+#
 # (C) 2018 jw@owncloud.com
 # Distribute under GPLv2 or ask
 #
 # Example usage:
 #
-# ps aux | nspid -c 2
+# ps aux | nsinfo -c 2
 #  CONTAINER       NSPID  NSSID USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
 #                               root         1  0.0  0.0 185724  5112 ?        Ss   Jan01   0:52 /sbin/init splash
 #  wizardly_lewin     12  23821 root      3111  0.0  0.0   4204   832 pts/4    S    23:34   0:00 sleep 21000
