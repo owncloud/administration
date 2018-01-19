@@ -46,6 +46,9 @@ parser = argparse.ArgumentParser(
 parser.add_argument('--column', '-c', metavar='PIDCOL', type=int,
                     help='column where process IDs are found. Default=2.', default=pidcol)
 
+if fd.isatty():
+  parser.print_help()
+  sys.exit(1)
 args = parser.parse_args()
 pidcol = args.column
 
