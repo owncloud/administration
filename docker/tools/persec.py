@@ -1,7 +1,7 @@
 #! /usr/bin/python
 #
 # persec.py - a tool to add rate info (difference per second) to a tabular listings containing numeric column
-# it looks for a tmp file from a previous run. If found, it generates an additional column 
+# it looks for a tmp file from a previous run. If found, it generates an additional column
 # using the precise time stamp of the tmp file to measure the elaped time since the last call.
 # Then it compute the diffs on that column.
 #
@@ -27,15 +27,22 @@ import argparse, hashlib, json, time
 
 fd = sys.stdin
 ratecol = 10
-ratefmt="%8.1f/s"
+ratefmt="%8.1f%s/s"
+rateunit=""
+ratediv=1
+ratename="RATE"
 
 parser = argparse.ArgumentParser(
                 usage="\n\tsmartctl -A /dev/sda | %(prog)s [-c 10]\n\twatch -n 9 'diskerrors | %(prog)s -c 5'",
                 description='Prepend namespace/docker info to tabular output containing PIDs.')
 parser.add_argument('--column', '-c', metavar='RATECOL', type=int,
                     help='column where numeric data is to be diffed. Default=10.', default=ratecol)
-parser.add_argument('--fmt', '-f', metavar='RATEFMT', 
-                    help='Format string for the rate column. Default="%%8.1f/s"', default=ratefmt)
+parser.add_argument('--unit', '-u', metavar='RATEUNIT',
+                    help='unit for the rate format. Possible units start with K, M or G. The numeric value is divided by powers of 1024 according to the first letter. Default as is.', default=rateunit)
+parser.add_argument('--name', '-n', metavar='HEADER',
+                    help='title for the added column if the first line is a (non-numeric) header line. Default="RATE"', default=ratename)
+parser.add_argument('--fmt', '-f', metavar='RATEFMT',
+                    help='Format string for the rate column. Default="%%8.1f%%s/s"', default=ratefmt)
 
 if fd.isatty():
   parser.print_help()
@@ -43,6 +50,17 @@ if fd.isatty():
 args = parser.parse_args()
 ratecol = args.column
 ratefmt = args.fmt
+rateunit = args.unit
+ratename = args.name
+
+if   rateunit == '':  ratediv=1
+elif rateunit[0].upper() == 'K': ratediv=1024
+elif rateunit[0].upper() == 'M': ratediv=1024*1024
+elif rateunit[0].upper() == 'G': ratediv=1024*1024*1024
+else:
+  parser.print_help()
+  print("\nUnknown unit "+rateunit+" -- try something with K, M or G", file=sys.stderr)
+  sys.exit(1)
 
 pat = re.compile('((?:\s*\S+\s+){%d}\s*)(\S+)(.*)' % (ratecol-1))
 
@@ -60,7 +78,7 @@ for line in fd:
   if len(line) > file['maxlen']:
     file['maxlen'] = len(line)
   if value == None and lnr == 0:
-    file['values'].append('RATE')
+    file['values'].append(ratename)
   else:
     file['values'].append(value)
   file['lines'].append(line)
@@ -88,18 +106,18 @@ if oldfile is None:
 else:
   for n in range(len(file['lines'])):
     lfmt = "%-"+str(file['maxlen'])+"s"
-    rate = oldfile['values'][n]
     try:
+      rate = oldfile['values'][n]
       rate = int(rate)
       dt = tstamp - oldfile['tstamp']
       if dt == 0.0: rate = None
-      rate = (file['values'][n]-rate)/dt
+      rate = (file['values'][n]-rate)/dt/ratediv
       fmt = lfmt+" "+ratefmt
     except:
       if rate is None: rate = '-'
       rate=str(rate)
-      fmt = lfmt+" %s"
-    print(fmt % (file['lines'][n], rate))
+      fmt = lfmt+" %s%0.0s"	# %0.0s is a trick to hide the unit in the header...
+    print(fmt % (file['lines'][n], rate, rateunit))
 
 msg = "\n# using "+tmpname
 if oldfile is not None:
