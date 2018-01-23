@@ -14,6 +14,7 @@ fi
 
 echo "BRIDGE              TX_BYTES     RX_BYTES IFNAME       CONTAINER_NAME"
 
+unknown_if=
 text=
 for c in $(docker ps -q); do
   nspid=$(docker inspect --format='{{.State.Pid}}' $c)
@@ -27,10 +28,16 @@ for c in $(docker ps -q); do
       # iflink=$(nsenter -t $nspid -m cat /sys/class/net/$dev/iflink)
       iflink=$(echo $dev_at | sed -e 's/.*@if//')
       ifname=$(grep -l $iflink /sys/class/net/*/ifindex | sed -e 's@^/sys/class/net/@@' -e 's@/ifindex@@')
-      bridge=$(readlink /sys/class/net/$ifname/master | sed -e 's@.*/@@')
-      rx_bytes=$(cat /sys/class/net/$ifname/statistics/rx_bytes)
-      tx_bytes=$(cat /sys/class/net/$ifname/statistics/tx_bytes)
-      text=$(echo "$text"; printf "%-15s %12s %12s %-12s %s\n" $bridge $tx_bytes $rx_bytes $ifname $cname)
+      if [ -n "$ifname" ]; then
+        bridge=$(readlink /sys/class/net/$ifname/master | sed -e 's@.*/@@')
+        rx_bytes=$(cat /sys/class/net/$ifname/statistics/rx_bytes)
+        tx_bytes=$(cat /sys/class/net/$ifname/statistics/tx_bytes)
+        text=$(echo "$text"; printf "%-15s %12s %12s %-12s %s\n" $bridge $tx_bytes $rx_bytes $ifname $cname)
+      else
+        # dind?
+        unknown_if="$unknown_if $nspid:$dev_at"
+      fi
   done
 done
 echo "$text" | sort	# group by bridge
+test -n "$unknown_if" && echo "unknown interfaces: $unknown_if"

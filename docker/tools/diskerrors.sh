@@ -1,4 +1,8 @@
 #! /bin/sh
+#
+# Requires: apt-get install smartmontools
+#
+# 2018-01-23, jw@owncloud.com
 
 disks=$(/usr/sbin/smartctl --scan | sed -e 's@^/dev/@@' -e 's/ .*//')
 for disk in $disks; do
