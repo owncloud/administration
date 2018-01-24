@@ -2,6 +2,9 @@
 #
 # dockernetio.sh - a monitoring tool to map networks and their traffic to docker containers.
 #
+# (C) 2018 jw@owncloud.com
+# Distribute under GPLv2 or ask.
+#
 # Usage:
 #  watch -n 9 'dockernetio.sh | persec -c 2 | persec -c 3'
 #

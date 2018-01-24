@@ -1,5 +1,8 @@
 #! /bin/sh
 #
+# (C) 2018 jw@owncloud.com
+# distribute under GPLv2 or ask.
+#
 # Requires: apt-get install smartmontools
 #
 # 2018-01-23, jw@owncloud.com
