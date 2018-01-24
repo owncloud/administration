@@ -84,12 +84,13 @@ for line in fd:
   file['lines'].append(line)
   lnr += 1
 
+tmpdir = os.environ.get('TMPDIR', '/tmp')
 envtext = ''
 for e in sorted(os.environ.keys()):
   envtext += e+ "=" + os.environ[e] + "\n"
 for a in sys.argv:
   envtext += a + "\n"
-tmpname="/tmp/persec."+hashlib.md5(envtext).hexdigest()[:10]+".tmp"
+tmpname = tmpdir + "/persec."+hashlib.md5(envtext).hexdigest()[:10]+".tmp"
 
 try:
   with open(tmpname) as ifd:
@@ -106,6 +107,7 @@ if oldfile is None:
 else:
   for n in range(len(file['lines'])):
     lfmt = "%-"+str(file['maxlen'])+"s"
+    rate = None
     try:
       rate = oldfile['values'][n]
       rate = int(rate)
