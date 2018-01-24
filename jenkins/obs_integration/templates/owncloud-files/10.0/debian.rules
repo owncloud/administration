@@ -48,7 +48,7 @@ override_dh_install:
 	test -f     $(SRCDIR)/disable-updatechecker.config.php && cp $(SRCDIR)/disable-updatechecker.config.php debian/ || true
 	install -m 644 debian/disable-updatechecker.config.php $(DROOT)/$(OC_DIR)/config/
 	##
-	ls -la 
+	ls -laR
 
 
 override_dh_fixperms:
