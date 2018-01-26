@@ -14,7 +14,7 @@ import zlib, hashlib
 try:
   # apt-get install python-mysqldb
   # zypper in python-MySQL-python
-  import MySQLdb as mysql                     
+  import MySQLdb as mysql
 except:
   try:
     # apt-get python-pymysql
@@ -25,7 +25,7 @@ except:
       # apt-get python-mysql.connector
       # yum install mysql-connector-python
       # zypper in python-mysql-connector-python
-      import mysql.connector as mysql         
+      import mysql.connector as mysql
     except:
       raise ImportError("need one of (MySQLdb, pymysql, mysql.connector) e.g. from DEB packages (python-mysqldb, python-pymysql, python-mysql.connector)")
 
@@ -53,21 +53,31 @@ oc_ = config['dbtableprefix'] or 'oc_'
 
 def fetch_table_d(cur, tname, keyname, what='*'):
   cur.execute("SELECT "+what+" from "+tname);
-  fields = map(lambda x:x[0], cur.description)
+  fields = [x[0] for x in cur.description]
   if not keyname in fields:
     raise ValueError("column "+keyname+" not in table "+tname)
   table = {}
   for row in cur.fetchall():
-    r = {}
-    for i in range(len(row)):
-      r[fields[i]] = row[i]
-    table[r[keyname]] = r
+    rdict = dict(zip(fields, row))
+    table[rdict[keyname]] = rdict
   return table
-  
+
+def find_mountpoint(table, path):
+  if path[:1] != '/': path = '/' + path         # assert loop termination
+  if path[-1:] != '/': path = path + '/'
+  while path != '/':
+    if path in table: return table[path]
+    path = path.rsplit('/', 2)[0]+'/'
+  return None
+
 
 cur = db.cursor()
 oc_mounts = fetch_table_d(cur, oc_+'mounts', 'mount_point')
-print(oc_mounts)
+print(find_mountpoint(oc_mounts, "/anne/files/Mitgliedsdat/foo.txt"))
+print(find_mountpoint(oc_mounts, "/anne/files/Mitgliedsdaten/foo.txt"))
+print(find_mountpoint(oc_mounts, "/anne/files"))
+print(find_mountpoint(oc_mounts, "anne"))
+print(find_mountpoint(oc_mounts, ""))
 
 sys.exit(1)
 
