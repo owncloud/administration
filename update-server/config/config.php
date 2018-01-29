@@ -224,11 +224,11 @@ return [
 	],
 	'beta' => [
 		'10.0' => [
-			'latest' => '10.0.4',
+			'latest' => '10.0.6',
 			'web' => 'https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html',
 		],
 		'9.1.7' => [
-			'latest' => '10.0.4',
+			'latest' => '10.0.6',
 			'web' => 'https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html',
 		],
 		'9.1' => [
