@@ -9,8 +9,9 @@
 #
 
 from __future__ import print_function
-import sys, os, re
+import sys, os, re, time
 import zlib, hashlib
+
 try:
   # apt-get install python-mysqldb
   # zypper in python-MySQL-python
@@ -78,6 +79,8 @@ print(find_mountpoint(oc_mounts, "/anne/files/Mitgliedsdaten/foo.txt"))
 print(find_mountpoint(oc_mounts, "/anne/files"))
 print(find_mountpoint(oc_mounts, "anne"))
 print(find_mountpoint(oc_mounts, ""))
+print(find_mountpoint(oc_mounts, "/samuel/files/Shared/Demo - Multi-Link.mp4"))
+print(find_mountpoint(oc_mounts, "/msrex/files/owncloud/Server Feature Demos/Demo - Multi-Link.mp4"))
 
 sys.exit(1)
 
@@ -88,6 +91,7 @@ db.close()
 
 sys.exit(1)
 
+datadir_len = len(config['datadirectory'])
 data_tree = config['datadirectory']+tree_prefix
 print("data_tree:", data_tree)
 
@@ -110,6 +114,26 @@ for dirname, subdirs, files in os.walk(data_tree, topdown=True):
     if  "files" in subdirs:
       subdirs[:] = ["files"]      # inplace mod to force entring files folder only.
   for file in files:
-    print("  file: ", file, "csum: ", oc_checksum(dirname+'/'+file))
-
+    path = dirname+'/'+file
+    print("  file: ", file, "csum: ", oc_checksum(path))
+    if path[:datadir_len] != config['datadirectory']:
+      print("E: file ignored, not inside config['datadirectory']: "+path)
+      time.sleep(1)
+    else:
+      path = path[datadir_len:]                 # inside datadirectory.
+      mount = find_mountpoint(oc_mounts, path)
+      if mount is None:
+        print("E: file ignored, no mount point found in oc_mounts: "+ path)
+        time.sleep(1)
+      else:
+        path = path[len(mount['mount_point']):]   # inside mountpoint
+        storage_id = mount['storage_id']          # do not recurse into files, we already had seen this storage_id earlier.
+        user_id = mount['user_id']
+        root_id = mount['root_id']                # things may be mounted deeper.
+        mount_path = db_query_one(cur, "SELECT path from oc_filecache where fileid = '"+mount['root_id']+"'") # empty string, if mounted at root.
+        if path[:len(mount_path)] != mount_path:
+          print("E: file ignored, mount root_id="+root_id+" root_id_path='"+mount_path+"' not a prefix of: "+path)
+          time.sleep(1)
+        else:
+          print("GOOD: file='"+path+"' mount root_id="+root_id+" root_id_path='"+mount_path+"' storage='"+mount['mount_point']+"' mount_id="+mount['storage_id']+" user_id="+user_id)
 
