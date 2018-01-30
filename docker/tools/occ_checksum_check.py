@@ -6,7 +6,7 @@
 # Distribute under GPLv2 or ask.
 #
 # 2018-01-25, collecting code snippets
-#
+# 2018-01-29, jw: canonical() added.
 
 from __future__ import print_function
 import sys, os, re, time
@@ -32,13 +32,11 @@ except:
 
 
 if len(sys.argv) < 3:
-  print("Usage: %s path/to/config.php tree_prefix" % sys.argv[0])
+  print("Usage: %s /srv/www/htdocs/owncloud/config/config.php tree_prefix" % sys.argv[0])
   print("\n\t tree_prefix can be / for checking all users. Or use /USERNAME/files/... to restrict the check to a subtree")
   sys.exit(1)
 
 tree_prefix = sys.argv[2]
-if tree_prefix[:1] != '/':
-  tree_prefix = '/'+tree_prefix
 
 ## hackey parser for config.php
 config = {}
@@ -63,37 +61,63 @@ def fetch_table_d(cur, tname, keyname, what='*'):
     table[rdict[keyname]] = rdict
   return table
 
+def canonical(path):
+  # os.path.abspath() almost gets it right.
+  # in most cases it collapses leading slashes,
+  # except that two are left around.
+  p = os.path.abspath(path)
+  if p[:2] == '//':
+    return p[1:]
+  return p
+
 def find_mountpoint(table, path):
+  # assmuming canonical keys in table, e.g. no trailing slashes.
   if path[:1] != '/': path = '/' + path         # assert loop termination
-  if path[-1:] != '/': path = path + '/'
-  while path != '/':
+  if path[-1:] == '/': path = path[:-1]		# remove trailing shash, if any.
+  while path != '':
     if path in table: return table[path]
-    path = path.rsplit('/', 2)[0]+'/'
+    path = path.rsplit('/', 1)[0]
   return None
 
+datadirectory = canonical(config['datadirectory'])
+datadir_len = len(datadirectory)
+if canonical(tree_prefix)[:datadir_len] != datadirectory:
+  data_tree = canonical(datadirectory+'/'+tree_prefix)
+else:
+  data_tree = canonical(tree_prefix)
+print("data_tree:", data_tree)
 
 cur = db.cursor()
 oc_mounts = fetch_table_d(cur, oc_+'mounts', 'mount_point')
-print(find_mountpoint(oc_mounts, "/anne/files/Mitgliedsdat/foo.txt"))
-print(find_mountpoint(oc_mounts, "/anne/files/Mitgliedsdaten/foo.txt"))
-print(find_mountpoint(oc_mounts, "/anne/files"))
-print(find_mountpoint(oc_mounts, "anne"))
-print(find_mountpoint(oc_mounts, ""))
-print(find_mountpoint(oc_mounts, "/samuel/files/Shared/Demo - Multi-Link.mp4"))
-print(find_mountpoint(oc_mounts, "/msrex/files/owncloud/Server Feature Demos/Demo - Multi-Link.mp4"))
+for m in oc_mounts.keys():	# make keys in oc_mounts canonical(paths). E.g. trailing '/' is removed.
+  if m[:1] == '/':		# mountpoint written with leading slash.
+    mc = canonical(m)
+    if mc != m:
+      oc_mounts[mc] = oc_mounts[m]
+      del(oc_mounts[m])
+  else:				# mount point written relative. Does that happen?
+    mc = canonical('/'+m)
+    if mc != '/'+m:
+      oc_mounts[mc[1:]] = oc_mounts[m]
+      del(oc_mounts[m])
 
-sys.exit(1)
 
-cur.execute("SELECT storage,path,checksum from "+oc_+"filecache where name = 'Paris.jpg'")
-for row in cur.fetchall():
-  print(row)
-db.close()
+# print(find_mountpoint(oc_mounts, "/anne/files/Mitgliedsdat/foo.txt"))
+# print(find_mountpoint(oc_mounts, "/anne/files/Mitgliedsdaten/foo.txt"))
+# print(find_mountpoint(oc_mounts, "/anne/files"))
+# print(find_mountpoint(oc_mounts, "anne"))
+# print(find_mountpoint(oc_mounts, ""))
+# print(find_mountpoint(oc_mounts, "/samuel/files/Shared/Demo - Multi-Link.mp4"))
+# # {'mount_point': '/samuel/files/Shared/Demo - Multi-Link.mp4/', 'root_id': 4057305L, 'user_id': 'samuel', 'id': 1850L, 'storage_id': 2L}
+# print(find_mountpoint(oc_mounts, "/msrex/files/owncloud/Server Feature Demos/Demo - Multi-Link.mp4"))
+# # {'mount_point': '/msrex/', 'root_id': 4L, 'user_id': 'msrex', 'id': 78L, 'storage_id': 2L}
 
-sys.exit(1)
 
-datadir_len = len(config['datadirectory'])
-data_tree = config['datadirectory']+tree_prefix
-print("data_tree:", data_tree)
+# cur.execute("SELECT storage,path,checksum from "+oc_+"filecache where name = 'Paris.jpg'")
+# for row in cur.fetchall():
+#  print(row)
+# db.close()
+
 
 def oc_checksum(path):
   body = open(path).read()
@@ -103,37 +127,53 @@ def oc_checksum(path):
   return 'SHA1:'+sha1+' MD5:'+md5+' ADLER32:'+a32
 
 
+def check_oc_filecache(path):
+  path = canonical(path)
+  print("  file: ", path, "csum: ", oc_checksum(path))
+  if path[:datadir_len] != datadirectory:
+    print("E: file ignored, not inside config['datadirectory']: "+path)
+    time.sleep(1)
+  else:
+    path = path[datadir_len:]                 # inside datadirectory.
+    mount = find_mountpoint(oc_mounts, path)
+    if mount is None:
+      print("E: file ignored, no mount point found in oc_mounts: "+ path)
+      time.sleep(1)
+    else:
+      if path+'/' == mount['mount_point']:
+        print("file mount")
+        path = ''
+      elif path[len(mount['mount_point']):] == mount['mount_point']:
+        print("dir mount")
+        path = path[len(mount['mount_point']):]   # inside mountpoint
+      else:
+        print("E: internal mount error", mount, path)
+        sys.exit(1)
+
+      storage_id = mount['storage_id']          # do not recurse into files, we already had seen this storage_id earlier.
+      user_id = mount['user_id']
+      root_id = mount['root_id']                # things may be mounted deeper.
+      mount_path = db_query_one(cur, "SELECT path from oc_filecache where fileid = '"+mount['root_id']+"'") # empty string, if mounted at root.
+      if path[:len(mount_path)] != mount_path:
+        print("E: file ignored, mount root_id="+root_id+" root_id_path='"+mount_path+"' not a prefix of: "+path)
+        time.sleep(1)
+      else:
+        print("GOOD: file='"+path+"' mount root_id="+root_id+" root_id_path='"+mount_path+"' storage='"+mount['mount_point']+"' mount_id="+mount['storage_id']+" user_id="+user_id)
+
+
 ## Caution: this FTW fails, if
 ##  - a folder 'files' orrurs in config['datadirectory']
 ##  - a userid is named 'files' :-)
 #
-for dirname, subdirs, files in os.walk(data_tree, topdown=True):
-  print("dir: ", dirname)
-  if "/files/" not in dirname:
-    files = []                    # ignore files above the files folder
-    if  "files" in subdirs:
-      subdirs[:] = ["files"]      # inplace mod to force entring files folder only.
-  for file in files:
-    path = dirname+'/'+file
-    print("  file: ", file, "csum: ", oc_checksum(path))
-    if path[:datadir_len] != config['datadirectory']:
-      print("E: file ignored, not inside config['datadirectory']: "+path)
-      time.sleep(1)
-    else:
-      path = path[datadir_len:]                 # inside datadirectory.
-      mount = find_mountpoint(oc_mounts, path)
-      if mount is None:
-        print("E: file ignored, no mount point found in oc_mounts: "+ path)
-        time.sleep(1)
-      else:
-        path = path[len(mount['mount_point']):]   # inside mountpoint
-        storage_id = mount['storage_id']          # do not recurse into files, we already had seen this storage_id earlier.
-        user_id = mount['user_id']
-        root_id = mount['root_id']                # things may be mounted deeper.
-        mount_path = db_query_one(cur, "SELECT path from oc_filecache where fileid = '"+mount['root_id']+"'") # empty string, if mounted at root.
-        if path[:len(mount_path)] != mount_path:
-          print("E: file ignored, mount root_id="+root_id+" root_id_path='"+mount_path+"' not a prefix of: "+path)
-          time.sleep(1)
-        else:
-          print("GOOD: file='"+path+"' mount root_id="+root_id+" root_id_path='"+mount_path+"' storage='"+mount['mount_point']+"' mount_id="+mount['storage_id']+" user_id="+user_id)
-
+if os.path.isdir(data_tree):
+  for dirname, subdirs, files in os.walk(data_tree, topdown=True):
+    print("dir: ", dirname)
+    if "/files/" not in dirname:
+      files = []                    # ignore files above the files folder
+      if  "files" in subdirs:
+        subdirs[:] = ["files"]      # inplace mod to force entring files folder only.
+    for file in files:
+      path = dirname+'/'+file
+      check_oc_filecache(path)
+else:
+  check_oc_filecache(data_tree)		# single file
