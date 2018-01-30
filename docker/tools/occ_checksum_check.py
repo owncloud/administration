@@ -12,6 +12,12 @@ from __future__ import print_function
 import sys, os, re, time
 import zlib, hashlib
 
+verbose = False		# set to true, to include full mount and cache entry dump on error.
+try:
+  tty = open("/dev/tty", "w")	# print directory names to user, even if stdot and stderr are redirected.
+except:
+  tty = sys.stderr
+
 try:
   # apt-get install python-mysqldb
   # zypper in python-MySQL-python
@@ -32,8 +38,9 @@ except:
 
 
 if len(sys.argv) < 3:
-  print("Usage: %s /srv/www/htdocs/owncloud/config/config.php tree_prefix" % sys.argv[0])
-  print("\n\t tree_prefix can be / for checking all users. Or use /USERNAME/files/... to restrict the check to a subtree")
+  print("Usage: %s /srv/www/htdocs/owncloud/config/config.php pyh_tree_prefix" % sys.argv[0])
+  print("\n\t phy_tree_prefix can be / for checking all users. Or use /USERNAME/files/... to restrict the check to a subtree")
+  print("\n\t Note: pyh_tree_prefix is the physical path, not the view from within owncloud.")
   sys.exit(1)
 
 tree_prefix = sys.argv[2]
@@ -47,11 +54,20 @@ for line in open(sys.argv[1]):
     config[m.group(2)] = m.group(5) or m.group(6)
 
 # any of MySQLdb, python oe mysql.connector work with this API:
-db = mysql.connect(host=config['dbhost'], user=config['dbuser'], passwd=config['dbpassword'], db=config['dbname'])
+try:
+  sock='/var/run/mysql/mysql.sock'
+  if os.path.exists(sock) and config['dbhost'] == 'localhost':
+    # pymysql does not try the unix domain socket, if tcp port 3306 is closed.
+    db = mysql.connect(host=config['dbhost'], user=config['dbuser'], passwd=config['dbpassword'], db=config['dbname'], unix_socket=sock)
+  else:
+    db = mysql.connect(host=config['dbhost'], user=config['dbuser'], passwd=config['dbpassword'], db=config['dbname'])
+except:
+  db = mysql.connect(host=config['dbhost'], user=config['dbuser'], passwd=config['dbpassword'], db=config['dbname'])
+
 oc_ = config['dbtableprefix'] or 'oc_'
 
-def fetch_table_d(cur, tname, keyname, what='*'):
-  cur.execute("SELECT "+what+" from "+tname);
+def fetch_dict(cur, select, keyname, bind=[]):
+  cur.execute(select)
   fields = [x[0] for x in cur.description]
   if not keyname in fields:
     raise ValueError("column "+keyname+" not in table "+tname)
@@ -60,6 +76,9 @@ def fetch_table_d(cur, tname, keyname, what='*'):
     rdict = dict(zip(fields, row))
     table[rdict[keyname]] = rdict
   return table
+
+def fetch_table_d(cur, tname, keyname, what='*'):
+  return fetch_dict(cur, "SELECT "+what+" from "+tname, keyname)
 
 def canonical(path):
   # os.path.abspath() almost gets it right.
@@ -73,7 +92,7 @@ def canonical(path):
 def find_mountpoint(table, path):
   # assmuming canonical keys in table, e.g. no trailing slashes.
   if path[:1] != '/': path = '/' + path         # assert loop termination
-  if path[-1:] == '/': path = path[:-1]		# remove trailing shash, if any.
+  if path[-1:] == '/': path = path[:-1]         # remove trailing shash, if any.
   while path != '':
     if path in table: return table[path]
     path = path.rsplit('/', 1)[0]
@@ -88,14 +107,16 @@ else:
 print("data_tree:", data_tree)
 
 cur = db.cursor()
-oc_mounts = fetch_table_d(cur, oc_+'mounts', 'mount_point')
-for m in oc_mounts.keys():	# make keys in oc_mounts canonical(paths). E.g. trailing '/' is removed.
-  if m[:1] == '/':		# mountpoint written with leading slash.
+# oc_mounts = fetch_table_d(cur, oc_+'mounts', 'mount_point')
+# same as above, but with added path column for root_id:
+oc_mounts = fetch_dict(cur, 'SELECT m.*, c.path as root_path FROM '+oc_+'mounts m LEFT JOIN '+oc_+'filecache c ON (m.root_id = c.fileid)', 'mount_point')
+for m in oc_mounts.keys():       # make keys in oc_mounts canonical(paths). E.g. trailing '/' is removed.
+  if m[:1] == '/':               # mountpoint written with leading slash.
     mc = canonical(m)
     if mc != m:
       oc_mounts[mc] = oc_mounts[m]
       del(oc_mounts[m])
-  else:				# mount point written relative. Does that happen?
+  else:                          # mount point written relative. Does that happen?
     mc = canonical('/'+m)
     if mc != '/'+m:
       oc_mounts[mc[1:]] = oc_mounts[m]
@@ -113,52 +134,85 @@ for m in oc_mounts.keys():	# make keys in oc_mounts canonical(paths). E.g. trail
 # # {'mount_point': '/msrex/', 'root_id': 4L, 'user_id': 'msrex', 'id': 78L, 'storage_id': 2L}
 
 
-# cur.execute("SELECT storage,path,checksum from "+oc_+"filecache where name = 'Paris.jpg'")
-# for row in cur.fetchall():
-#  print(row)
-# db.close()
-
-
 def oc_checksum(path):
-  body = open(path).read()
+  body = open(path, "rb").read()
   sha1 = hashlib.sha1(body).hexdigest()
   md5  = hashlib.md5(body).hexdigest()
-  a32  = "%08x" % zlib.adler32(body)
+  a32  = "%08x" % (0xffffffff & zlib.adler32(body))
   return 'SHA1:'+sha1+' MD5:'+md5+' ADLER32:'+a32
 
+def report(info, errfd=sys.stderr, logfd=sys.stdout):
+  """ evaluate data returned from check_oc_filecache()
+  """
+  if info['err']:
+    if verbose:
+      print(str(info), file=errfd)
+    else:
+      pre = "E: "
+      if 'cache' in info and 'fileid' in info['cache']:
+        pre = pre+"fileid="+str(info['cache']['fileid'])+" "
+      print(pre+(" | ".join(info['err'])), file=errfd)
+    errfd.flush()
+  else:
+    print(str(info['cache']['fileid']), file=logfd)
+    logfd.flush()
 
 def check_oc_filecache(path):
   path = canonical(path)
-  print("  file: ", path, "csum: ", oc_checksum(path))
+  full_path = path
+  info = { 'err':[], 'msg':[], 'path':path }
   if path[:datadir_len] != datadirectory:
-    print("E: file ignored, not inside config['datadirectory']: "+path)
-    time.sleep(1)
+    info['err'].append("file ignored, not inside config['datadirectory']: "+path)
   else:
     path = path[datadir_len:]                 # inside datadirectory.
     mount = find_mountpoint(oc_mounts, path)
     if mount is None:
-      print("E: file ignored, no mount point found in oc_mounts: "+ path)
-      time.sleep(1)
+      info['err'].append("file ignored, mount point not found in oc_mounts: "+ path)
     else:
-      if path+'/' == mount['mount_point']:
-        print("file mount")
+      mount_point = canonical(mount['mount_point'])
+      if path == mount_point:
+        info['msg'].append("file mount")
         path = ''
-      elif path[len(mount['mount_point']):] == mount['mount_point']:
-        print("dir mount")
-        path = path[len(mount['mount_point']):]   # inside mountpoint
+      elif path[:len(mount_point)] == mount_point:
+        info['msg'].append("dir mount")
+        path = path[len(mount_point):]   # inside mountpoint
       else:
-        print("E: internal mount error", mount, path)
-        sys.exit(1)
+        info['err'].append("internal mount error: "+path+" "+str(mount))
+        return info
 
-      storage_id = mount['storage_id']          # do not recurse into files, we already had seen this storage_id earlier.
-      user_id = mount['user_id']
-      root_id = mount['root_id']                # things may be mounted deeper.
-      mount_path = db_query_one(cur, "SELECT path from oc_filecache where fileid = '"+mount['root_id']+"'") # empty string, if mounted at root.
-      if path[:len(mount_path)] != mount_path:
-        print("E: file ignored, mount root_id="+root_id+" root_id_path='"+mount_path+"' not a prefix of: "+path)
-        time.sleep(1)
+      storage_id = mount['storage_id']            # do not recurse into files, we already had seen this storage_id earlier.
+      # user_id = mount['user_id']
+      # root_id = mount['root_id']                # things may be mounted deeper.
+      info['mount'] = mount
+      if path[:1] == '/':
+        path = path[1:]                           # remove leading slashes, they are not stored in oc_filecache
+      try:
+        cur.execute("SELECT fileid,size,mtime,permissions,checksum FROM "+oc_+"filecache WHERE storage = %s AND path = %s", (storage_id, path))
+        row = cur.fetchone()
+      except Exception as e:
+        info['err'].append("sql error: "+str(e)+" | info:"+str(info))
+        return info
+
+      if row is None:
+        info['err'].append("oc_filecache entry is missing: "+path+" "+str(mount))
       else:
-        print("GOOD: file='"+path+"' mount root_id="+root_id+" root_id_path='"+mount_path+"' storage='"+mount['mount_point']+"' mount_id="+mount['storage_id']+" user_id="+user_id)
+        cache = dict(zip(['fileid','size','mtime','permissions','checksum'], row))
+        stat = os.stat(full_path)
+        info['cache'] = cache
+        mtime = str(int(stat.st_mtime))
+        if cache['checksum'] is None:
+          info['err'].append("checksum is NULL")
+        elif cache['checksum'] == '':
+          info['err'].append("checksum is empty")
+        else:
+          csum = oc_checksum(full_path)		# expensive. do this only if filecache has a checksum for us to compare with.
+          if csum != cache['checksum']:
+            info['err'].append("checksum mismatch: cache:"+cache['checksum']+"   \t\t\t\t      phys:"+csum)
+        if str(cache['mtime']) != mtime:
+          info['err'].append("mtime mismatch: cache:"+str(cache['mtime'])+" phys:"+mtime)
+        if cache['size'] != stat.st_size:
+          info['err'].append("size mismatch: cache:"+str(cache['size'])+" phys:"+str(stat.st_size))
+  return info
 
 
 ## Caution: this FTW fails, if
@@ -167,13 +221,13 @@ def check_oc_filecache(path):
 #
 if os.path.isdir(data_tree):
   for dirname, subdirs, files in os.walk(data_tree, topdown=True):
-    print("dir: ", dirname)
+    print("dir: ", dirname, file=tty)
     if "/files/" not in dirname:
       files = []                    # ignore files above the files folder
       if  "files" in subdirs:
         subdirs[:] = ["files"]      # inplace mod to force entring files folder only.
     for file in files:
       path = dirname+'/'+file
-      check_oc_filecache(path)
+      report(check_oc_filecache(path))
 else:
-  check_oc_filecache(data_tree)		# single file
+  report(check_oc_filecache(data_tree))     # single file
