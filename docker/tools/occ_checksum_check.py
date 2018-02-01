@@ -201,7 +201,7 @@ def check_oc_filecache(path):
       if path[:1] == '/':
         path = path[1:]                           # remove leading slashes, they are not stored in oc_filecache
       try:
-        cur.execute("SELECT fileid,size,mtime,permissions,checksum FROM "+oc_+"filecache WHERE storage = %s AND path = %s", (storage_id, path))
+        cur.execute("SELECT fileid,size,mtime,permissions,checksum FROM "+oc_+"filecache WHERE storage = %s AND path_hash = MD5(%s)", (storage_id, path))
         row = cur.fetchone()
       except Exception as e:
         info['err'].append("sql error: "+str(e)+" | info:"+str(info))
