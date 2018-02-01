@@ -9,7 +9,7 @@
 # 2018-01-29, jw: canonical() added.
 
 from __future__ import print_function
-import sys, os, re, time
+import sys, os, io, re, time
 import zlib, hashlib
 
 verbose = False		# set to true, to include full mount and cache entry dump on error.
@@ -135,10 +135,24 @@ for m in oc_mounts.keys():       # make keys in oc_mounts canonical(paths). E.g.
 
 
 def oc_checksum(path):
-  body = open(path, "rb").read()
-  sha1 = hashlib.sha1(body).hexdigest()
-  md5  = hashlib.md5(body).hexdigest()
-  a32  = "%08x" % (0xffffffff & zlib.adler32(body))
+  file = io.open(path, "rb")
+  buf = bytearray(1024*1024*4)
+  a32_sum  = 1
+  md5_sum  = hashlib.new('md5')
+  sha1_sum = hashlib.new('sha1')
+  
+  while True:
+    n = file.readinto(buf)
+    if n == 0: break
+    # must checksum in chunks, or pythn 2.7 explodes on a 20GB file with "OverflowError: size does not fit in an int"
+    a32_sum = zlib.adler32(bytes(buf)[0:n], a32_sum)
+    md5_sum.update(bytes(buf)[0:n])
+    sha1_sum.update(bytes(buf)[0:n])
+  file.close()
+
+  sha1 = sha1_sum.hexdigest()
+  md5  = md5_sum.hexdigest()
+  a32  = "%08x" % (0xffffffff & a32_sum)
   return 'SHA1:'+sha1+' MD5:'+md5+' ADLER32:'+a32
 
 def report(info, errfd=sys.stderr, logfd=sys.stdout):
