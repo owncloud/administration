@@ -13,7 +13,7 @@ from __future__ import print_function
 import sys, os, re, time
 import zlib, hashlib
 
-verbose = False                 # set to true, to include full mount and cache entry dump on error.
+verbose = False             # set to true, to include full mount and cache entry dump on error.
 
 try:
   # apt-get install python-mysqldb
@@ -94,7 +94,7 @@ with open(fileid_file) as ff:
       fileid_seen.append(int(line))
     except ValueError:
       pass
-fileid_seen = set(fileid_seen)      # make membership lookup fast
+fileid_seen = set(fileid_seen)         # make membership lookup fast
 print("%8d filecache entries checked" % len(fileid_seen))
 
 
@@ -115,7 +115,7 @@ ofd.close()
 print("%8d stale filecache entries for /files/" % (total-len(fileid_seen)))
 
 storage_stat={}
-stale_outfile = re.sub('[^/]*$', 'files_fileids_stale.out', fileid_file)      # different name in same folder.
+stale_outfile = re.sub('[^/]*$', 'files_fileids_stale.out', fileid_file)     # different name in same folder.
 with open(all_outfile) as ifd:
   with open(stale_outfile, "w") as ofd:
     for line in ifd:

@@ -50,9 +50,9 @@ except:
 
 
 if len(sys.argv) < 3:
-  print("Usage: %s /srv/www/htdocs/owncloud/config/config.php pyh_tree_prefix" % sys.argv[0])
-  print("\n\t phy_tree_prefix can be / for checking all users. Or use /USERNAME/files/... to restrict the check to a subtree")
-  print("\n\t Note: pyh_tree_prefix is the physical path, not the view from within owncloud.")
+  print("Usage: %s /srv/www/htdocs/owncloud/config/config.php pyh_tree_prefix" % sys.argv[0], file=tty)
+  print("\n\t phy_tree_prefix can be / for checking all users. Or use /USERNAME/files/... to restrict the check to a subtree", file=tty)
+  print("\n\t Note: pyh_tree_prefix is the physical path, not the view from within owncloud.", file=tty)
   sys.exit(1)
 
 tree_prefix = sys.argv[2]

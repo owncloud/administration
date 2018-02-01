@@ -27,8 +27,8 @@ if [ -z "$config" -o ! -f "$config" ]; then
 fi
 
 
-user=$2
-test -z "$user" && user=/
+userprefix=$2
+test -z "$userprefix" && userprefix=/
 
 dir=$(date +%Y-%m-%d)
 mkdir -p $dir
@@ -41,10 +41,10 @@ else
 fi
 
 set -x
-$python $tdir/occ_checksum_check.py $config $userprefix >$dir/good.log 2>$dir/bad.log
+$python $bindir/occ_checksum_check.py $config $userprefix >$dir/good.log 2>$dir/bad.log
 
-sh $tdir/occ_fsck_report.sh $dir
+sh $bindir/occ_fsck_report.sh $dir
 
-if [ "$user" = "/" ]; then
-  $python $tdir/stale_filecache.py $config $dir/fileids_seen.out
+if [ "$userprefix" = "/" ]; then
+  $python $bindir/stale_filecache.py $config $dir/fileids_seen.out
 fi
