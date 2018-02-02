@@ -36,6 +36,8 @@ echo "output folder: $dir"
 
 if [ -n "$(python3 --version 2>/dev/null)" ]; then
   python=python3	# prefer 3.x over 2.7
+  import_e=$($python $bindir/occ_checksum_check.py /dev/null / 2>&1 | grep ImportError:)
+  test -n "$import_e" && python=python
 else
   python=python
 fi
