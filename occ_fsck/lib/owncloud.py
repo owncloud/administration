@@ -10,9 +10,13 @@ import sys, os, io, re
 import zlib, hashlib
 
 ###
-# import boto           # TODO: access object store as primary storage
+## TODO: allow object store as primary storage
+## Study: http://docs.ceph.com/docs/master/radosgw/s3/python/
+# import boto           
 # conn = boto.connect_s3( AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY )
 # image_bucket = conn.get_bucket( IMAGE_BUCKET )
+# -> handle file access through an abstract OCFile class, doing both, 
+#    plain filesystem and object store.
 ###
 
 
