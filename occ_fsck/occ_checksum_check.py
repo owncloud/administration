@@ -9,6 +9,7 @@
 # 2018-01-29, jw: canonical() added.
 # 2018-02-01, jw: utf-8 encoding fixes, use storage+path_hash instead of path, time output added.
 # 2018-02-02, jw. Refactored into lib/owncloud.py
+#
 
 from __future__ import print_function
 import sys, os, re, time

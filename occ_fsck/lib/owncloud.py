@@ -9,6 +9,13 @@ from __future__ import print_function
 import sys, os, io, re
 import zlib, hashlib
 
+###
+# import boto           # TODO: access object store as primary storage
+# conn = boto.connect_s3( AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY )
+# image_bucket = conn.get_bucket( IMAGE_BUCKET )
+###
+
+
 if sys.version_info.major < 3:
   # fix python2 have a compatible bytes() with two parameters.
   def _bytes_utf8(tupl):
