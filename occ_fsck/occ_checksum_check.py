@@ -30,10 +30,6 @@ if len(sys.argv) < 3:
   sys.exit(1)
 
 config = oc.load_config(sys.argv[1])
-if 'objectstore' in config.get('system', ''):
-  print("not supported: primary storage is objectstore\n")
-  print(config['system']['objectstore'])
-  sys.exit(0)
 
 tree_prefix = sys.argv[2]
 time_csum = 0           # time spent computing checksums
@@ -47,15 +43,6 @@ except ImportError as e:
 
 def fetch_table_d(tname, keyname, what='*'):
   return oc.db_fetch_dict("SELECT "+what+" from "+tname, keyname)
-
-datadirectory = oc.canonical_path(config['datadirectory'])
-datadir_len = len(datadirectory)
-if oc.canonical_path(tree_prefix)[:datadir_len] != datadirectory:
-  data_tree = oc.canonical_path(datadirectory+'/'+tree_prefix)
-else:
-  data_tree = oc.canonical_path(tree_prefix)
-print("data_tree:", data_tree, file=tty)
-
 
 def report(info, errfd=sys.stderr, logfd=sys.stdout):
   """ evaluate data returned from check_oc_filecache()
@@ -108,7 +95,7 @@ def check_oc_filecache(cur, path):
       try:
         cache = oc.filecache(storage=storage_id, path=path)
       except Exception as e:
-        info['err'].append("sql error: "+str(e)+" | info:"+str(info))
+        info['err'].append("sql error: "+repr(e)+" | info:"+str(info))
         return info
       time_db += time.time() - time_t0
       if cache is None:
@@ -134,21 +121,37 @@ def check_oc_filecache(cur, path):
           info['err'].append("size mismatch: cache:"+str(cache['size'])+" phys:"+str(stat.st_size))
   return info
 
+if oc.has_primary_object_store():
+  obst = oc.object_store_bucket()
+  for k in obst.list():
+    print("%20s %10s %s" % (k.last_modified, k.size, k.name))
 
-## Caution: this FTW fails, if
-##  - a folder 'files' orrurs in config['datadirectory']
-##  - a userid is named 'files' :-)
-#
-if os.path.isdir(data_tree):
-  for dirname, subdirs, files in os.walk(data_tree, topdown=True):
-    print("t: %.1f+%.1fs, dir: %s" % (time_db, time_csum, dirname), file=tty)
-    if "/files/" not in dirname+"/":
-      files = []                    # ignore files above the files folder
-      if  "files" in subdirs:
-        subdirs[:] = ["files"]      # inplace mod to force entring files folder only.
-    for file in files:
-      path = dirname+'/'+file
-      report(check_oc_filecache(dbc, path))
+  print("unfinished code path: primary storage is objectstore\n", obst)
+
 else:
-  report(check_oc_filecache(dbc, data_tree))     # single file
+  # assume it is a mounted linux filesystem.
+  datadirectory = oc.canonical_path(config['system']['datadirectory'])
+  datadir_len = len(datadirectory)
+  if oc.canonical_path(tree_prefix)[:datadir_len] != datadirectory:
+    data_tree = oc.canonical_path(datadirectory+'/'+tree_prefix)
+  else:
+    data_tree = oc.canonical_path(tree_prefix)
+  print("data_tree:", data_tree, file=tty)
 
+  ## Caution: this FTW fails, if
+  ##  - a folder 'files' orrurs in config['datadirectory']
+  ##  - a userid is named 'files' :-)
+  #
+  if os.path.isdir(data_tree):
+    for dirname, subdirs, files in os.walk(data_tree, topdown=True):
+      print("t: %.1f+%.1fs, dir: %s" % (time_db, time_csum, dirname), file=tty)
+      if "/files/" not in dirname+"/":
+        files = []                    # ignore files above the files folder
+        if  "files" in subdirs:
+          subdirs[:] = ["files"]      # inplace mod to force entring files folder only.
+      for file in files:
+        path = dirname+'/'+file
+        report(check_oc_filecache(dbc, path))
+  else:
+    report(check_oc_filecache(dbc, data_tree))     # single file
+  

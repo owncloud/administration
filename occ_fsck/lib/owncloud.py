@@ -38,6 +38,7 @@ class OCC():
   """
   def __init__(self, verbose=False, config=None):
     self._config = {}
+    self._confs = None	# shorthand for _config['system']
     self._config_file = None
     self._verbose = verbose
     self._oc_mounts = None
@@ -50,7 +51,7 @@ class OCC():
     Returns the dbtableprefix to be used when constructing SQL statements.
     This is also available as member variable oc_ for convenience.
     """
-    return self._config.get('dbtableprefix', 'oc_')
+    return self._confs.get('dbtableprefix', 'oc_')
 
   def parse_config_json(self, home):
     """
@@ -94,7 +95,7 @@ class OCC():
       except Exception as e:
         if e0 is None: e0 = 0
         ee = e
-    raise ValueError(str(e0)+"\n"+str(ee)+"\n"+outtext+"\n"+errtext)
+    raise ValueError(repr(e0)+"\n"+repr(ee)+"\n"+outtext+"\n"+errtext)
 
   def parse_config_file(self, file):
     """
@@ -130,16 +131,67 @@ class OCC():
     except ValueError as e:
       configfile = oc_home+"/config/config.php"
       try:
-        self._config = self.parse_config_file(configfile)
+        self._config = { 'system': self.parse_config_file(configfile) }
       except ValueError as e2:
         print("parse_config_json: ", e, "\nparse_config_file: ", e2)
         sys.exit(1)
+    self._confs = self._config['system']
     self._config_file = configfile
     self.oc_ = self.dbtableprefix()
     return self._config
 
+  def has_primary_object_store(self):
+    """
+    predicate to check if the Primary storage is an object store
+    Returns True if yes.
+    Returns False otherwise. A plain filesystem is assumend then.
+    """
+    return 'objectstore' in self._confs
+
+  def object_store_bucket(self):
+    cfg = self._confs['objectstore']['arguments']
+    opt = cfg['options']
+    host = opt['endpoint']
+    https = False
+    port = 80
+    if host.startswith('https://'):
+      host = host[8:]
+      https = True
+      port = 443
+    elif host.startswith('http://'):
+      host = host[7:]
+      https = False
+      port = 80
+
+    path = '/'
+    m = re.match('^([^/]+)(/.*)', host)
+    if m:
+      host = m.group(1)
+      path = m.group(2)
+    m = re.match('^([^:]+):(\d+)', host)
+    if m:
+      host = m.group(1)
+      port = int(m.group(2))
+
+    # print(cfg)
+    try:
+      import boto
+      conn = boto.connect_s3(
+          opt['credentials']['key'],
+          opt['credentials']['secret'],
+          host=host, port=port, is_secure=https
+        )
+      conn.calling_format = boto.s3.connection.OrdinaryCallingFormat()
+      # print(conn.get_all_buckets())
+      return conn.get_bucket(cfg['bucket'])
+    except Exception as e:
+      e.args += ('boto.connect_s3()', host, port, path, https, "try 'apt-get install python-boto'")
+      print(repr(e))
+    return None
+
+
   def db_connect(self):
-    if self._config['dbtype'] == 'mysql':
+    if self._confs['dbtype'] == 'mysql':
 
       if sys.version_info.major < 3:
         deb_deps="python-mysqldb or python-pymysql or python-mysql.connector"
@@ -164,34 +216,34 @@ class OCC():
           except:
             raise ImportError("need one of the python mysql bindings. E.g. from DEB packages ("+deb_deps+")")
 
-      m = re.match("(.*):(\d+)$", self._config['dbhost'])
+      m = re.match("(.*):(\d+)$", self._confs['dbhost'])
       dbport = None
       if m:
         dbhost = m.group(1)
         dbport = int(m.group(2))
       else:
-        dbhost = self._config['dbhost']
+        dbhost = self._confs['dbhost']
 
       # any of MySQLdb, python oe mysql.connector work with this API:
       try:
         sock='/var/run/mysql/mysql.sock'
         if os.path.exists(sock) and dbhost == 'localhost' and dbport is None:
           # pymysql does not try the unix domain socket, if tcp port 3306 is closed.
-          self._db = mysql.connect(host=dbhost, user=self._config['dbuser'], passwd=self._config['dbpassword'], db=self._config['dbname'], unix_socket=sock)
+          self._db = mysql.connect(host=dbhost, user=self._confs['dbuser'], passwd=self._confs['dbpassword'], db=self._confs['dbname'], unix_socket=sock)
         else:
           if dbport is None:
-            self._db = mysql.connect(host=dbhost, user=self._config['dbuser'], passwd=self._config['dbpassword'], db=self._config['dbname'])
+            self._db = mysql.connect(host=dbhost, user=self._confs['dbuser'], passwd=self._confs['dbpassword'], db=self._confs['dbname'])
           else:
-            self._db = mysql.connect(host=dbhost, user=self._config['dbuser'], passwd=self._config['dbpassword'], db=self._config['dbname'], port=dbport)
+            self._db = mysql.connect(host=dbhost, user=self._confs['dbuser'], passwd=self._confs['dbpassword'], db=self._confs['dbname'], port=dbport)
       except:
         if dbport is None:
-          self._db = mysql.connect(host=self._config['dbhost'], user=self._config['dbuser'], passwd=self._config['dbpassword'], db=self._config['dbname'])
+          self._db = mysql.connect(host=self._confs['dbhost'], user=self._confs['dbuser'], passwd=self._confs['dbpassword'], db=self._confs['dbname'])
         else:
-          self._db = mysql.connect(host=self._config['dbhost'], user=self._config['dbuser'], passwd=self._config['dbpassword'], db=self._config['dbname'], port=dbport)
+          self._db = mysql.connect(host=self._confs['dbhost'], user=self._confs['dbuser'], passwd=self._confs['dbpassword'], db=self._confs['dbname'], port=dbport)
 
       # self._db.set_character_set('utf8')        # maybe for mysqldb only?
       return self._db
-    raise ValueError("dbtype '"+self._config['dbtype']+"' not impl. Try 'mysql'")
+    raise ValueError("dbtype '"+self._confs['dbtype']+"' not impl. Try 'mysql'")
 
   def db_cursor(self):
     if self._db_cursor is not None:
