@@ -24,17 +24,26 @@ except:
   tty = sys.stderr
 
 if len(sys.argv) < 3:
-  print("Usage: %s /srv/www/htdocs/owncloud/config/config.php pyh_tree_prefix" % sys.argv[0], file=tty)
+  print("Usage: %s /srv/www/htdocs/owncloud pyh_tree_prefix" % sys.argv[0], file=tty)
   print("\n\t phy_tree_prefix can be / for checking all users. Or use /USERNAME/files/... to restrict the check to a subtree", file=tty)
   print("\n\t Note: pyh_tree_prefix is the physical path, not the view from within owncloud.", file=tty)
   sys.exit(1)
 
 config = oc.load_config(sys.argv[1])
+if 'objectstore' in config.get('system', ''):
+  print("not supported: primary storage is objectstore\n")
+  print(config['system']['objectstore'])
+  sys.exit(0)
+
 tree_prefix = sys.argv[2]
 time_csum = 0           # time spent computing checksums
 time_db = 0             # time spent communitcaing with the database
 
-dbc = oc.db_cursor()
+try:
+  dbc = oc.db_cursor()
+except ImportError as e:
+  print("ImportError:", e)
+  sys.exit(1)
 
 def fetch_table_d(tname, keyname, what='*'):
   return oc.db_fetch_dict("SELECT "+what+" from "+tname, keyname)

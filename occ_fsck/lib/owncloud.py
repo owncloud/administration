@@ -4,19 +4,21 @@
 # Distribute under GPLv2 or ask.
 #
 # 2018-02-02, jw V0.1: Refactored common code from occ_checksum_check.py and stale_filecache.py
+# 2018-02-20, jw V0.2: Try 'occ config:list --private' before reading 'config/config.php'
 #
 from __future__ import print_function
 import sys, os, io, re
-import zlib, hashlib
+import zlib, hashlib, json, subprocess
 
 ###
 ## TODO: allow object store as primary storage
 ## Study: http://docs.ceph.com/docs/master/radosgw/s3/python/
-# import boto           
+# import boto
 # conn = boto.connect_s3( AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY )
 # image_bucket = conn.get_bucket( IMAGE_BUCKET )
-# -> handle file access through an abstract OCFile class, doing both, 
+# -> handle file access through an abstract OCFile class, doing both,
 #    plain filesystem and object store.
+# -> oc_filecache:fileid -> maps to "urn:oid:<fileid>" in the bucket.
 ###
 
 
@@ -50,7 +52,51 @@ class OCC():
     """
     return self._config.get('dbtableprefix', 'oc_')
 
-  def parse_config_file(self, file=None):
+  def parse_config_json(self, home):
+    """
+    find owner of the occ command,
+    try to sudo or su into that user,
+    call occ config:list --private
+    or as a fallback occ config:list
+
+    This requires a somewhat healthy owncloud server that is able to run php.
+    The result is returned as a dict.
+    """
+
+    occ_cmd = home+"/occ"
+    st = os.stat(occ_cmd)
+
+    from pwd import getpwuid
+    user = getpwuid(st.st_uid).pw_name 	# "www-data"
+
+    cmds = [	# one of these should work:
+      [ "sudo", "-u", user, "php", occ_cmd, "config:list", "--private" ],
+      [ "su",   user, "-c", "php "+occ_cmd+" config:list --private" ],
+      [ "sudo", "-u", user, "php", occ_cmd, "config:list" ],
+      [ "su",   user, "-c", "php "+occ_cmd+" config:list" ],
+      [ "sudo", "-u", user, occ_cmd, "config:list", "--private" ],
+      [ "su",   user, "-c", occ_cmd+" config:list --private" ],
+      [ "sudo", "-u", user, occ_cmd, "config:list" ],
+      [ "su",   user, "-c", occ_cmd+" config:list" ]
+    ]
+    e0 = None
+    ee = None
+    outtext = ""
+    errtext = ""
+    for cmd in cmds:
+      try:
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+        (outtext, errtext) = p.communicate()
+        if len(errtext):
+          raise ValueError("STDERR("+" ".join(cmd)+"): "+errtext)
+        else:
+          return json.loads(outtext)
+      except Exception as e:
+        if e0 is None: e0 = 0
+        ee = e
+    raise ValueError(str(e0)+"\n"+str(ee)+"\n"+outtext+"\n"+errtext)
+
+  def parse_config_file(self, file):
     """
     Parse an owncloud config.php file. The parser here is a simple minded regexp parser and expects
     one key value pair per line like this:
@@ -58,24 +104,37 @@ class OCC():
       'datadirectory' => '/var/oc-data',
 
     Items using other fancy syntax are silently skipped.
+    This parser should be avoided in favour of parse_config_json().
     The result is returned as a dict.
     """
     config = {}
     with open(file) as cfg:
       for line in cfg:
+        if "'objectstore'" in line:
+          raise ValueError("Found complex 'objectstore' in "+file+" - The trivial regexp parser cannot do that. Need parse_config_json().")
         for m in re.finditer('(["\'])(.*?)\\1\s*=>\s*((["\'])(.*?)\\1|([\w]+))\s*,', line):
           # m = ("'", 'memcache.local', "'\\OC\\Memcache\\Redis'", "'", '\\OC\\Memcache\\Redis', None)
           # m = ("'", 'port', '6379', None, None, '6379')
           config[m.group(2)] = m.group(5) or m.group(6)
     return config
 
-  def load_config(self, file):
+  def load_config(self, oc_home):
     """
     Loads the owncloud server configuration using parse_config_file().
     Also returns the result as a dict.
     """
-    self._config = self.parse_config_file(file)
-    self._config_file = file
+    oc_home = re.sub("/config/config\.php$", "", oc_home)	# backwards compat
+    configfile = "occ config:list"
+    try:
+      self._config = self.parse_config_json(oc_home)
+    except ValueError as e:
+      configfile = oc_home+"/config/config.php"
+      try:
+        self._config = self.parse_config_file(configfile)
+      except ValueError as e2:
+        print("parse_config_json: ", e, "\nparse_config_file: ", e2)
+        sys.exit(1)
+    self._config_file = configfile
     self.oc_ = self.dbtableprefix()
     return self._config
 
@@ -105,17 +164,30 @@ class OCC():
           except:
             raise ImportError("need one of the python mysql bindings. E.g. from DEB packages ("+deb_deps+")")
 
+      m = re.match("(.*):(\d+)$", self._config['dbhost'])
+      dbport = None
+      if m:
+        dbhost = m.group(1)
+        dbport = int(m.group(2))
+      else:
+        dbhost = self._config['dbhost']
 
       # any of MySQLdb, python oe mysql.connector work with this API:
       try:
         sock='/var/run/mysql/mysql.sock'
-        if os.path.exists(sock) and self._config['dbhost'] == 'localhost':
+        if os.path.exists(sock) and dbhost == 'localhost' and dbport is None:
           # pymysql does not try the unix domain socket, if tcp port 3306 is closed.
-          self._db = mysql.connect(host=self._config['dbhost'], user=self._config['dbuser'], passwd=self._config['dbpassword'], db=self._config['dbname'], unix_socket=sock)
+          self._db = mysql.connect(host=dbhost, user=self._config['dbuser'], passwd=self._config['dbpassword'], db=self._config['dbname'], unix_socket=sock)
         else:
-          self._db = mysql.connect(host=self._config['dbhost'], user=self._config['dbuser'], passwd=self._config['dbpassword'], db=self._config['dbname'])
+          if dbport is None:
+            self._db = mysql.connect(host=dbhost, user=self._config['dbuser'], passwd=self._config['dbpassword'], db=self._config['dbname'])
+          else:
+            self._db = mysql.connect(host=dbhost, user=self._config['dbuser'], passwd=self._config['dbpassword'], db=self._config['dbname'], port=dbport)
       except:
-        self._db = mysql.connect(host=self._config['dbhost'], user=self._config['dbuser'], passwd=self._config['dbpassword'], db=self._config['dbname'])
+        if dbport is None:
+          self._db = mysql.connect(host=self._config['dbhost'], user=self._config['dbuser'], passwd=self._config['dbpassword'], db=self._config['dbname'])
+        else:
+          self._db = mysql.connect(host=self._config['dbhost'], user=self._config['dbuser'], passwd=self._config['dbpassword'], db=self._config['dbname'], port=dbport)
 
       # self._db.set_character_set('utf8')        # maybe for mysqldb only?
       return self._db
