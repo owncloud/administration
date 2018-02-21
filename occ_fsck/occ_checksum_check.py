@@ -121,10 +121,11 @@ def check_oc_filecache(cur, path):
           info['err'].append("size mismatch: cache:"+str(cache['size'])+" phys:"+str(stat.st_size))
   return info
 
-if oc.has_primary_object_store():
-  obst = oc.object_store_bucket()
+if oc.has_primary_objectstore():
+  obst = oc.bucket_objectstore()
   for k in obst.list():
     print("%20s %10s %s" % (k.last_modified, k.size, k.name))
+  print("fileid=46", oc.oc_checksum_objectstore(obst, 'urn:oid:46'))
 
   print("unfinished code path: primary storage is objectstore\n", obst)
 

@@ -140,7 +140,7 @@ class OCC():
     self.oc_ = self.dbtableprefix()
     return self._config
 
-  def has_primary_object_store(self):
+  def has_primary_objectstore(self):
     """
     predicate to check if the Primary storage is an object store
     Returns True if yes.
@@ -148,7 +148,7 @@ class OCC():
     """
     return 'objectstore' in self._confs
 
-  def object_store_bucket(self):
+  def bucket_objectstore(self):
     cfg = self._confs['objectstore']['arguments']
     opt = cfg['options']
     host = opt['endpoint']
@@ -379,6 +379,28 @@ class OCC():
     md5  = md5_sum.hexdigest()
     a32  = "%08x" % (0xffffffff & a32_sum)
     return 'SHA1:'+sha1+' MD5:'+md5+' ADLER32:'+a32
+
+  def oc_checksum_objectstore(self, bucket, name):
+    """
+    Returns a checksum string as introduced in oc_filecache with version 10.0.4
+    The code reads chunks from the objectstore and does all needed computations
+    on the fly. Linear cpu usage with filesize, but constant memory.
+    """
+    a32_sum  = 1
+    md5_sum  = hashlib.new('md5')
+    sha1_sum = hashlib.new('sha1')
+
+    for buf in bucket.lookup(name):
+      # must checksum in chunks, or python 2.7 explodes on a 20GB file with "OverflowError: size does not fit in an int"
+      a32_sum = zlib.adler32(buf, a32_sum)
+      md5_sum.update(buf)
+      sha1_sum.update(buf)
+
+    sha1 = sha1_sum.hexdigest()
+    md5  = md5_sum.hexdigest()
+    a32  = "%08x" % (0xffffffff & a32_sum)
+    return 'SHA1:'+sha1+' MD5:'+md5+' ADLER32:'+a32
+
 
 
 if __name__ == '__main__':
