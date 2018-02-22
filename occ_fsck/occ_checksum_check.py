@@ -9,7 +9,9 @@
 # 2018-01-29, jw: canonical() added.
 # 2018-02-01, jw: utf-8 encoding fixes, use storage+path_hash instead of path, time output added.
 # 2018-02-02, jw. Refactored into lib/owncloud.py
-#
+# 2018-02-23, jw. initial objectstore check done: potential issues seen:
+#                mtimes are often off by a few seconds!
+#                files_version/ often have no checksum!
 
 from __future__ import print_function
 import sys, os, re, time
@@ -45,7 +47,7 @@ def fetch_table_d(tname, keyname, what='*'):
   return oc.db_fetch_dict("SELECT "+what+" from "+tname, keyname)
 
 def report(info, errfd=sys.stderr, logfd=sys.stdout):
-  """ evaluate data returned from check_oc_filecache()
+  """ evaluate data returned from check_oc_filecache_*()
   """
   if info['err']:
     if verbose:
@@ -60,7 +62,7 @@ def report(info, errfd=sys.stderr, logfd=sys.stdout):
     print(str(info['cache']['fileid']), file=logfd)
     logfd.flush()
 
-def check_oc_filecache(cur, path):
+def check_oc_filecache_path(cur, path):
   global time_db, time_csum
   path = oc.canonical_path(path)
   full_path = path
@@ -115,21 +117,105 @@ def check_oc_filecache(cur, path):
 
           if csum != cache['checksum']:
             info['err'].append("checksum mismatch: cache:"+cache['checksum']+"   \t\t\t\t      phys:"+csum)
-        if str(cache['mtime']) != mtime:
-          info['err'].append("mtime mismatch: cache:"+str(cache['mtime'])+" phys:"+mtime)
+        try:
+          cache_mtime = int(cache['mtime'])
+        except:
+          cache_mtime = -1
+        if cache_mtime != mtime:
+          days_off = (cache_mtime-mtime)/3600./24
+          info['err'].append("mtime mismatch: cache:%s phys:%d off=%.1fd" % (str(cache['mtime']), mtime, days_off))
         if cache['size'] != stat.st_size:
           info['err'].append("size mismatch: cache:"+str(cache['size'])+" phys:"+str(stat.st_size))
   return info
 
+def check_oc_filecache_id(cur, bucket, fileid, o_size, o_mtime):
+  global time_db, time_csum
+  info = { 'err':[], 'msg':[], 'path':None }
+  time_t0 = time.time()
+  try:
+    cache = oc.filecache(fileid=fileid)
+  except Exception as e:
+    info['err'].append("sql error: "+repr(e)+" | info:"+str(info))
+    return info
+  time_db += time.time() - time_t0
+  if cache is None:
+        info['err'].append("oc_filecache entry is missing: "+path+" "+str(mount))
+  else:
+        info['cache'] = cache
+        mtime = str(o_mtime)
+        if cache['checksum'] is None:
+          if cache['path'][:6] == 'files/':
+            # thumbnails/, files_version/, upload/ have NULL checksum.
+            # BUMMER: files_version/ should have checksums!
+            info['err'].append("checksum is NULL")
+        elif cache['checksum'] == '':
+          info['err'].append("checksum is empty")
+        else:
+          time_t0 = time.time()
+          csum = oc.oc_checksum_objectstore(bucket, 'urn:oid:'+str(fileid))
+          time_csum += time.time() - time_t0
+          if csum != cache['checksum']:
+            info['err'].append("checksum mismatch: cache:"+cache['checksum']+"   \t\t\t\t      phys:"+csum)
+        o_mtime_epoch = oc.mtime_objectstore(o_mtime)
+        try:
+          cache_mtime = int(cache['mtime'])
+        except:
+          cache_mtime = -1
+        if cache_mtime != o_mtime_epoch:
+          if o_mtime_epoch < cache_mtime or (o_mtime_epoch - 4) > cache_mtime:
+            # BUMMER: objectstore mtimes are usually a few seconds behind. why that???
+            days_off = (cache_mtime-o_mtime_epoch)/3600./24
+            info['err'].append("mtime mismatch: cache:%s phys:%s[%d] off=%.1fd" % (cache['mtime'], o_mtime, o_mtime_epoch, days_off))
+        if cache['size'] != o_size:
+          info['err'].append("size mismatch: cache:"+str(cache['size'])+" phys:"+str(o_size))
+  return info
+
+
 if oc.has_primary_objectstore():
+  unk_name_count = 0
+  done_list = set()
+  # No file tree walk needed here, the objectstore is flat.
+  # FIXME: username is ignored, if specified.
+  #
+  # Algorithm:
+  # We enumerate all objects in the objectstore, for each
+  #   and lookup the the fileid in the oc_filecache table.
+  #   if found,
+  #           add the fileid to the done_list.
+  #           Calculate the oc_checksum.
+  #           Compare the checksums and report good or bad.
+  # We enumerate all oc_filecache entries that have an
+  # oc_storage id starting with object::store: or object::user:
+  #    all fileids not in the done-list are reported as orphaned.
+  #
   obst = oc.bucket_objectstore()
   for k in obst.list():
-    print("%20s %10s %s" % (k.last_modified, k.size, k.name))
-  print("fileid=46", oc.oc_checksum_objectstore(obst, 'urn:oid:46'))
+    m = re.match('^urn:oid:(\d+)$', k.name)
+    if not m:
+      if unk_name_count == 0:
+        print("ERROR: unknown name schema in objectstore: '%s' expected: 'urn:oid:NNNN'" % k.name)
+      unk_name_count += 1
+      continue
 
-  print("unfinished code path: primary storage is objectstore\n", obst)
+    fileid = int(m.group(1))
+    # print("%20s %10s %d" % (k.last_modified, k.size, fileid))
+    result = check_oc_filecache_id(dbc, obst, fileid, k.size, k.last_modified)
+    if 'cache' in result: done_list.add(fileid)
+    report(result)
+
+  # print("len(done_list) = ", len(done_list))
+  cur = oc.db_cursor()
+  dirtypes = (1,2)	# oc_mimetype: httpd, httpd/unix-directory
+  dirtypes = ','.join(map(lambda x: str(x), dirtypes))
+  cur.execute("SELECT fileid FROM "+oc.oc_+"filecache WHERE mimetype NOT IN ("+dirtypes+")")
+  for row in cur.fetchall():
+    if row[0] not in done_list:
+      print("E: fileid=%d not in objectstore" % row[0], file=sys.stderr)
 
 else:
+
+  # Prepare for a file-tree-walk
+  ##############################
   # assume it is a mounted linux filesystem.
   datadirectory = oc.canonical_path(config['system']['datadirectory'])
   datadir_len = len(datadirectory)
@@ -139,6 +225,8 @@ else:
     data_tree = oc.canonical_path(tree_prefix)
   print("data_tree:", data_tree, file=tty)
 
+  # do the file-tree-walk
+  #######################
   ## Caution: this FTW fails, if
   ##  - a folder 'files' orrurs in config['datadirectory']
   ##  - a userid is named 'files' :-)
@@ -152,7 +240,7 @@ else:
           subdirs[:] = ["files"]      # inplace mod to force entring files folder only.
       for file in files:
         path = dirname+'/'+file
-        report(check_oc_filecache(dbc, path))
+        report(check_oc_filecache_path(dbc, path))
   else:
-    report(check_oc_filecache(dbc, data_tree))     # single file
-  
+    report(check_oc_filecache_path(dbc, data_tree))     # single file
+

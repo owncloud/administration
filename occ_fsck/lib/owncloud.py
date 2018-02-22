@@ -9,6 +9,7 @@
 from __future__ import print_function
 import sys, os, io, re
 import zlib, hashlib, json, subprocess
+import time, datetime
 
 ###
 ## TODO: allow object store as primary storage
@@ -139,6 +140,24 @@ class OCC():
     self._config_file = configfile
     self.oc_ = self.dbtableprefix()
     return self._config
+
+  def mtime_objectstore(self, o_mtime):
+    """
+    This silly objectstore here returns a last_modified time as string
+    '2018-02-20T15:44:55.462Z' instead of 1519137895.462 (epoch)
+    Here is the conversion function for this string.
+    Returns seconds since the epoch.
+    It is unclear if the result should be rounded or truncated for comparison with a oc_filecache mtime.
+    """
+    dt = datetime.datetime.strptime(o_mtime, '%Y-%m-%dT%H:%M:%S.%fZ')
+    ## truncated:
+    return int(time.mktime(dt.timetuple()))
+    # epoch = time.mktime(dt.timetuple())+0.000001*dt.microsecond
+    # ## rounded:
+    # return int(epoch+.5)
+    # ## float:
+    # return epoch
+
 
   def has_primary_objectstore(self):
     """
@@ -301,7 +320,7 @@ class OCC():
       path_md5 = hashlib.new('md5', _bytes_utf8(path))
 
     if fileid is not None:
-      cur.execute("SELECT fileid,size,mtime,permissions,checksum,path,path_hash FROM "+self.oc_+"filecache WHERE fileid = %s", (fileid))
+      cur.execute("SELECT fileid,size,mtime,permissions,checksum,path,path_hash FROM "+self.oc_+"filecache WHERE fileid = %s", (fileid,))
       fields = ['fileid','size','mtime','permissions','checksum','path','path_hash']
     elif storage is not None and path_md5 is not None:
       cur.execute("SELECT fileid,size,mtime,permissions,checksum FROM "+self.oc_+"filecache WHERE storage = %s AND path_hash = %s", (storage, path_md5.hexdigest()))
