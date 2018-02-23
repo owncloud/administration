@@ -205,7 +205,10 @@ if oc.has_primary_objectstore():
 
   # print("len(done_list) = ", len(done_list))
   cur = oc.db_cursor()
-  dirtypes = (1,2)	# oc_mimetype: httpd, httpd/unix-directory
+  cur.execute("SELECT id FROM oc_mimetypes WHERE mimetype LIKE 'httpd%'")
+  dirtypes = []		# oc_mimetype: httpd, httpd/unix-directory
+  for row in cur.fetchall():
+    dirtypes.append(row[0])
   dirtypes = ','.join(map(lambda x: str(x), dirtypes))
   cur.execute("SELECT fileid FROM "+oc.oc_+"filecache WHERE mimetype NOT IN ("+dirtypes+")")
   for row in cur.fetchall():
