@@ -161,11 +161,13 @@ def check_oc_filecache_id(cur, bucket, fileid, o_size, o_mtime):
           cache_mtime = int(cache['mtime'])
         except:
           cache_mtime = -1
-        if cache_mtime != o_mtime_epoch:
-          if o_mtime_epoch < cache_mtime or (o_mtime_epoch - 4) > cache_mtime:
-            # BUMMER: objectstore mtimes are usually a few seconds behind. why that???
-            days_off = (cache_mtime-o_mtime_epoch)/3600./24
-            info['err'].append("mtime mismatch: cache:%s phys:%s[%d] off=%.1fd" % (cache['mtime'], o_mtime, o_mtime_epoch, days_off))
+        ## BUMMER: objectstore last_modified timestamp does not preserve the file's mtime. It is defined as
+        ## when the file was last modified in the objectstore. That is not under user control.
+        ## https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html#object-metadata
+        # if cache_mtime != o_mtime_epoch:
+        #   if o_mtime_epoch < cache_mtime or (o_mtime_epoch - 4) > cache_mtime:
+        #     days_off = (cache_mtime-o_mtime_epoch)/3600./24
+        #     info['err'].append("mtime mismatch: cache:%s phys:%s[%d] off=%.1fd" % (cache['mtime'], o_mtime, o_mtime_epoch, days_off))
         if cache['size'] != o_size:
           info['err'].append("size mismatch: cache:"+str(cache['size'])+" phys:"+str(o_size))
   return info
@@ -206,7 +208,7 @@ if oc.has_primary_objectstore():
   # print("len(done_list) = ", len(done_list))
   cur = oc.db_cursor()
   cur.execute("SELECT id FROM oc_mimetypes WHERE mimetype LIKE 'httpd%'")
-  dirtypes = []		# oc_mimetype: httpd, httpd/unix-directory
+  dirtypes = []         # oc_mimetype: httpd, httpd/unix-directory
   for row in cur.fetchall():
     dirtypes.append(row[0])
   dirtypes = ','.join(map(lambda x: str(x), dirtypes))
