@@ -14,20 +14,22 @@
 
 remote="$1"
 
+test -z "$CHECK_HOST_INTERVAL" && export CHECK_HOST_INTERVAL=4
+test -n "$2" && CHECK_HOST_INTERVAL="$2"
+
 if [ -n "$remote" ]; then
   if [ "$remote" = "-h" -o "$remote" = "--help" ]; then
-    echo "Usage: $0 root@server.example.com"
+    echo "Usage: $0 root@server.example.com [delay]"
     exit 1
   fi
   dir=$(dirname $0)
   echo "transfering to $remote ..."
-  tar cf - --exclude obs $dir | ssh -o ConnectTimeout=5 $remote 'td=$(mktemp -t -d check_host_XXXXXX) && tar xf - -C $td && cd $td && sh $td/check_host.sh && rm -rf "/tmp/$(basename $td)"'
+  tar cf - --exclude obs $dir | ssh -o ConnectTimeout=5 $remote 'td=$(mktemp -t -d check_host_XXXXXX) && tar xf - -C $td && cd $td && env CHECK_HOST_INTERVAL='$CHECK_HOST_INTERVAL' sh $td/check_host.sh && rm -rf "/tmp/$(basename $td)"'
   exit 0
 fi
 echo ... $(basename $0) running on $(hostname)
 
 (
-delay=4
 export TMPDIR=./tmp/
 mkdir -p $TMPDIR
 uptime
@@ -36,7 +38,7 @@ uname -a
 if [ -n "$(smartctl --version 2>/dev/null)" ]; then
   # Requires: apt-get install smartmontools
   sh ./diskerrors.sh | python ./persec.py -c 5 > /dev/null
-  sleep $delay
+  sleep $CHECK_HOST_INTERVAL
   sh ./diskerrors.sh | python ./persec.py -c 5
 fi
 
