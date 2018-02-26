@@ -7,6 +7,7 @@
 #
 # 2018-01-23, jw@owncloud.com
 # 2018-01-24, jw@owncloud.com accept different names, and show disk age.
+# 2018-02-26, jw@owncloud.com sort by error_name first, then by disk.
 #
 #   5 Reallocated_Sector_Ct   0x0033   100   100   010    Pre-fail  Always       -       0
 #   9 Power_On_Hours          0x0032   097   097   000    Old_age   Always       -       10234
@@ -30,6 +31,9 @@
 
 disks=$(/usr/sbin/smartctl --scan | sed -e 's@^/dev/@@' -e 's/ .*//')
 for disk in $disks; do
-  smartctl -A /dev/$disk | egrep 'Power_On_Hours|Raw_Read_Error|Seek_Error|ECC_Error|CRC_Error|ECC_Recovered' | awk "{ printf \"%-5s %-24s %-8s %4.4s %10s\n\", \"$disk:\", \$2, \$7, \$9, \$10 }"
+  ## egrep to select rows,
+  ## awk to select columns
+  ## sort to order by error_name first, then by disk_name.
+  smartctl -A /dev/$disk | egrep 'Power_On_Hours|Raw_Read_Error|Seek_Error|ECC_Error|CRC_Error|ECC_Recovered' | awk "{ printf \"%-5s %-24s %-8s %4.4s %10s\n\", \"$disk:\", \$2, \$7, \$9, \$10 }" | sort -k3,3 -k2
 done
 
