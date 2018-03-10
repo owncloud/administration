@@ -44,9 +44,9 @@ fi
 
 if [ -n "$(docker ps -q 2>/dev/null)" ]; then
   # docker is installed
-  sh ./dockernetio.sh | python ./persec.py -c 2 -u K -n TX_KBytes | python.py ./persec -c 3 -u K -n RX_KBytes > /dev/null
+  sh ./dockernetio.sh | python ./persec.py -c 2 -u K -n TX_KBytes | python ./persec.py -c 3 -u K -n RX_KBytes > /dev/null
   sleep $delay
-  sh ./dockernetio.sh | python ./persec.py -c 2 -u K -n TX_KBytes | python.py ./persec -c 3 -u K -n RX_KBytes
+  sh ./dockernetio.sh | python ./persec.py -c 2 -u K -n TX_KBytes | python ./persec.py -c 3 -u K -n RX_KBytes
 fi
 
 rm -rf $TMPDIR
