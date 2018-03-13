@@ -83,14 +83,18 @@ return [
 			'latest' => '10.0.7',
 			'web' => 'https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html',
 		],
+		'9.1.8' => [
+			'latest' => '10.0.7',
+			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
+		],
 		'9.1' => [
-			'latest' => '9.1.7',
+			'latest' => '9.1.8',
 			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
 		],
 		// START: Due do a bug in the updater we need to enforce the update order
 		// see https://github.com/owncloud/administration-internal/issues/19
 		'9.0.11' => [
-			'latest' => '9.1.7',
+			'latest' => '9.1.8',
 			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
 		],
 		'9.0' => [
@@ -153,10 +157,10 @@ return [
 			'web' => 'https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html',
 		],
 		'9.1' => [
-			'latest' => '9.1.7',
+			'latest' => '9.1.8',
 			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
 		],
-		'9.1.7' => [
+		'9.1.8' => [
 			'latest' => '10.0.7',
 			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
 		],
@@ -164,7 +168,7 @@ return [
 		// START: Due do a bug in the updater we need to enforce the update order
 		// see https://github.com/owncloud/administration-internal/issues/19
 		'9.0.11' => [
-			'latest' => '9.1.7',
+			'latest' => '9.1.8',
 			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
 		],
 
@@ -227,12 +231,12 @@ return [
 			'latest' => '10.0.7',
 			'web' => 'https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html',
 		],
-		'9.1.7' => [
+		'9.1.8' => [
 			'latest' => '10.0.7',
 			'web' => 'https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html',
 		],
 		'9.1' => [
-			'latest' => '9.1.7',
+			'latest' => '9.1.8',
 			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
 		],
 		// START: Due do a bug in the updater we need to enforce the update order
@@ -242,7 +246,7 @@ return [
 			'web' => 'https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html',
 		],
 		'9.0.11' => [
-			'latest' => '9.1.7',
+			'latest' => '9.1.8',
 			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
 		],
 		'9.0.2' => [
@@ -311,7 +315,7 @@ return [
 			'web' => 'https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html',
 		],
 		'9.0' => [
-			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-9.1.7.zip',
+			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-9.1.8.zip',
 			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
 		],
 		'8.2' => [
