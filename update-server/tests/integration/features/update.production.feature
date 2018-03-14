@@ -26,18 +26,20 @@ Feature: Testing the update scenario of releases on the production channel
     And URL to documentation is "https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html"
 
   ##### Tests for 9.1.x should go below #####
-  Scenario: Updating an outdated ownCloud 9.1.0 on the production channel
+  Scenario: Updating an outdated ownCloud 9.1.8 on the production channel
     Given There is a release with channel "production"
-    And The received version is "9.1.7"
+    And The received version is "9.1.8"
     When The request is sent
-    Then The response is empty
+    Then The response is non-empty
+    And URL to download is "https://download.owncloud.org/community/owncloud-10.0.7.zip"
+    And URL to documentation is "https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html"
   
   Scenario: Updating an outdated ownCloud 9.1.0 on the production channel
     Given There is a release with channel "production"
     And The received version is "9.1.0"
     When The request is sent
     Then The response is non-empty
-    And URL to download is "https://download.owncloud.org/community/owncloud-9.1.7.zip"
+    And URL to download is "https://download.owncloud.org/community/owncloud-9.1.8.zip"
     And URL to documentation is "https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html"
 
   ##### Tests for 9.0.x should go below #####
@@ -46,7 +48,7 @@ Feature: Testing the update scenario of releases on the production channel
     And The received version is "9.0.11"
     When The request is sent
     Then The response is non-empty
-    And URL to download is "https://download.owncloud.org/community/owncloud-9.1.7.zip"
+    And URL to download is "https://download.owncloud.org/community/owncloud-9.1.8.zip"
     And URL to documentation is "https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html"
   
   Scenario: Updating an outdated ownCloud 9.0.5 on the production channel
