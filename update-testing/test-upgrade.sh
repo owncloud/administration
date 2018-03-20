@@ -12,6 +12,9 @@ ADMINLOGIN=admin$EXECUTOR_NUMBER
 DATABASEHOST=localhost
 BASEDIR=$PWD
 
+PHP_OLD=php5.6
+PHP_NEW=php7.2
+
 if [ "$#" -ne 3 ]; then
     echo "Usage: test-upgrade <from-version> <to-version> <database>"
     echo "Example: test-upgrade 5.0.13 6.0.0 pgsql"
@@ -174,7 +177,7 @@ cd owncloud
 mkdir data
 
 # installation
-./occ maintenance:install -vvv --database="$_DB" --database-name="$DATABASENAME" --database-host="$DATABASEHOST" --database-user="$DATABASEUSER" --database-pass=owncloud --database-table-prefix=oc_ --admin-user="$ADMINLOGIN" --admin-pass=admin
+$PHP_OLD ./occ maintenance:install -vvv --database="$_DB" --database-name="$DATABASENAME" --database-host="$DATABASEHOST" --database-user="$DATABASEUSER" --database-pass=owncloud --database-table-prefix=oc_ --admin-user="$ADMINLOGIN" --admin-pass=admin
 
 #if [ -f console.php ]; then
 #  # install test data
@@ -192,25 +195,25 @@ mkdir data
 # fire up the cron scheduler
 echo "Running the cron scheduler ..."
 cd $DATADIR/owncloud
-php -f cron.php
-php -f cron.php
+$PHP_OLD -f cron.php
+$PHP_OLD -f cron.php
 echo "Done."
 
 echo $GIT_BRANCH
 # remove apps after upgrade
-./occ app:disable activity
-./occ app:disable files_pdfviewer
-./occ app:disable files_texteditor
-./occ app:disable gallery
-./occ app:disable files_videoplayer
-./occ app:disable files_videoviewer
-./occ app:disable updater
+$PHP_OLD ./occ app:disable activity
+$PHP_OLD ./occ app:disable files_pdfviewer
+$PHP_OLD ./occ app:disable files_texteditor
+$PHP_OLD ./occ app:disable gallery
+$PHP_OLD ./occ app:disable files_videoplayer
+$PHP_OLD ./occ app:disable files_videoviewer
+$PHP_OLD ./occ app:disable updater
 
 if [ -v GIT_BRANCH ]; then
-	./occ app:disable configreport
-	./occ app:disable firstrunwizard
-	./occ app:disable notifications
-	./occ app:disable templateeditor
+	$PHP_OLD ./occ app:disable configreport
+	$PHP_OLD ./occ app:disable firstrunwizard
+	$PHP_OLD ./occ app:disable notifications
+	$PHP_OLD ./occ app:disable templateeditor
 fi
 
 # cleanup old code
@@ -234,16 +237,16 @@ if [ ! -d apps/market ]; then
   cd ../..
 fi
 
-./occ upgrade || true
+$PHP_NEW ./occ upgrade || true
 #./occ main:mode --off || true
 
 if [ -d tests ]; then
-  ./occ app:disable gallery
+  $PHP_NEW ./occ app:disable gallery
 
   # run the phpunit tests
   cd tests
   chmod +x ../lib/composer/phpunit/phpunit/phpunit
-  ../lib/composer/phpunit/phpunit/phpunit --configuration phpunit-autotest.xml --log-junit "autotest-results-$DATABASE.xml"
+  $PHP_NEW ../lib/composer/phpunit/phpunit/phpunit --configuration phpunit-autotest.xml --log-junit "autotest-results-$DATABASE.xml"
 
 #  make clean-test-integration
 #  make test-integration OC_TEST_ALT_HOME=1
