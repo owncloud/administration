@@ -73,18 +73,27 @@ class OCC():
       st = os.stat(occ_cmd)                     # lousy fallback, if we cannot read the config.php
 
     user = getpwuid(st.st_uid).pw_name 	# "www-data"
-    print("... trying to run 'occ config:list' as user %s" % (user))
 
-    cmds = [	# one of these should work:
-      [ "sudo", "-u", user, "php", occ_cmd, "config:list", "--private" ],
-      [ "su",   user, "-c", "php "+occ_cmd+" config:list --private" ],
-      [ "sudo", "-u", user, "php", occ_cmd, "config:list" ],
-      [ "su",   user, "-c", "php "+occ_cmd+" config:list" ],
-      [ "sudo", "-u", user, occ_cmd, "config:list", "--private" ],
-      [ "su",   user, "-c", occ_cmd+" config:list --private" ],
-      [ "sudo", "-u", user, occ_cmd, "config:list" ],
-      [ "su",   user, "-c", occ_cmd+" config:list" ]
-    ]
+    if os.geteuid() == st.st_uid:
+      print("... trying to run 'occ config:list'")
+      cmds = [
+        [ "php", occ_cmd, "config:list", "--private" ],
+        [ "php", occ_cmd, "config:list" ],
+        [ occ_cmd, "config:list", "--private" ],
+        [ occ_cmd, "config:list" ]
+      ]
+    else:
+      print("... trying to run 'occ config:list' as user %s" % (user))
+      cmds = [	# one of these should work:
+        [ "sudo", "-u", user, "php", occ_cmd, "config:list", "--private" ],
+        [ "su",   user, "-c", "php "+occ_cmd+" config:list --private" ],
+        [ "sudo", "-u", user, "php", occ_cmd, "config:list" ],
+        [ "su",   user, "-c", "php "+occ_cmd+" config:list" ],
+        [ "sudo", "-u", user, occ_cmd, "config:list", "--private" ],
+        [ "su",   user, "-c", occ_cmd+" config:list --private" ],
+        [ "sudo", "-u", user, occ_cmd, "config:list" ],
+        [ "su",   user, "-c", occ_cmd+" config:list" ]
+      ]
     e0 = None
     ee = None
     outtext = ""
@@ -284,7 +293,36 @@ class OCC():
 
       # self._db.set_character_set('utf8')        # maybe for mysqldb only?
       return self._db
+
+    elif self._confs['dbtype'] == 'sqlite3':
+
+      if sys.version_info.major < 3:
+        deb_deps="libpython2.7-stdlib"
+      else:
+        deb_deps="libpython3.5-stdlib"
+      sqlite3_file = self._confs['datadirectory']+"/owncloud.db"
+      if not os.path.exists(sqlite3_file):
+        print("SQLITE3 ERROR opening ", sqlite3_file, "\nTry starting with sudo -u www-data ... ?")
+        sys.exit(1)
+
+      try:
+        import sqlite3
+      except:
+        raise ImportError("need one of the python sqlite3 bindings. E.g. from DEB packages ("+deb_deps+")")
+
+      self._db = sqlite3.connect(sqlite3_file)
+      return self._db
+
     raise ValueError("dbtype '"+self._confs['dbtype']+"' not impl. Try 'mysql'")
+
+  def db_execute(self, cmd, bind=()):
+    dbc = self.db_cursor()
+    if self._confs['dbtype'] == 'sqlite3':
+      if cmd[:4].lower() == 'set ': return None
+      cmd = re.sub("\s%s(\s|$)", " ? ", cmd)    # sqlite3 driver does not understand = %s syntax. Fall back to '?'.
+    if self._verbose: print("db_execute: ", cmd, bind)
+    return dbc.execute(cmd, bind)
+
 
   def db_cursor(self):
     if self._db_cursor is not None:
@@ -293,9 +331,9 @@ class OCC():
     if self._db is None:
       self.db_connect()
     dbc = self._db_cursor = self._db.cursor()
-    dbc.execute('SET NAMES utf8;')
-    dbc.execute('SET CHARACTER SET utf8;')
-    dbc.execute('SET character_set_connection=utf8;')
+    self.db_execute('SET NAMES utf8;')
+    self.db_execute('SET CHARACTER SET utf8;')
+    self.db_execute('SET character_set_connection=utf8;')
     return dbc
 
   def canonical_path(self, path):
@@ -313,8 +351,8 @@ class OCC():
     return p
 
   def db_fetch_dict(self, select, keyname, bind=[]):
+    self.db_execute(select)
     cur = self.db_cursor()
-    cur.execute(select)
     fields = [x[0] for x in cur.description]
     if not keyname in fields:
       raise ValueError("column "+keyname+" not in table "+tname)
@@ -342,10 +380,10 @@ class OCC():
       path_md5 = hashlib.new('md5', _bytes_utf8(path))
 
     if fileid is not None:
-      cur.execute("SELECT fileid,size,mtime,permissions,checksum,path,path_hash FROM "+self.oc_+"filecache WHERE fileid = %s", (fileid,))
+      self.db_execute("SELECT fileid,size,mtime,permissions,checksum,path,path_hash FROM "+self.oc_+"filecache WHERE fileid = %s", (fileid,))
       fields = ['fileid','size','mtime','permissions','checksum','path','path_hash']
     elif storage is not None and path_md5 is not None:
-      cur.execute("SELECT fileid,size,mtime,permissions,checksum FROM "+self.oc_+"filecache WHERE storage = %s AND path_hash = %s", (storage, path_md5.hexdigest()))
+      self.db_execute("SELECT fileid,size,mtime,permissions,checksum FROM "+self.oc_+"filecache WHERE storage = %s AND path_hash = %s", (storage, path_md5.hexdigest()))
       fields = ['fileid','size','mtime','permissions','checksum']
     else:
       raise ValueError("filecache lookup needs fileid or storage+path or storage+path_md5")

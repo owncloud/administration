@@ -107,7 +107,7 @@ def check_oc_filecache_path(cur, path):
       else:
         stat = os.stat(full_path)
         info['cache'] = cache
-        mtime = str(int(stat.st_mtime))
+        mtime = int(stat.st_mtime)
         if cache['checksum'] is None:
           info['err'].append("checksum is NULL")
         elif cache['checksum'] == '':
@@ -208,12 +208,12 @@ if oc.has_primary_objectstore():
 
   # print("len(done_list) = ", len(done_list))
   cur = oc.db_cursor()
-  cur.execute("SELECT id FROM oc_mimetypes WHERE mimetype LIKE 'httpd%'")
+  oc.db_execute("SELECT id FROM oc_mimetypes WHERE mimetype LIKE 'httpd%'")
   dirtypes = []         # oc_mimetype: httpd, httpd/unix-directory
   for row in cur.fetchall():
     dirtypes.append(row[0])
   dirtypes = ','.join(map(lambda x: str(x), dirtypes))
-  cur.execute("SELECT fileid FROM "+oc.oc_+"filecache WHERE mimetype NOT IN ("+dirtypes+")")
+  oc.db_execute("SELECT fileid FROM "+oc.oc_+"filecache WHERE mimetype NOT IN ("+dirtypes+")")
   for row in cur.fetchall():
     if row[0] not in done_list:
       print("E: fileid=%d not in objectstore" % row[0], file=sys.stderr)
