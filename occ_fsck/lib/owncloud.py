@@ -66,10 +66,14 @@ class OCC():
     """
 
     occ_cmd = home+"/occ"
-    st = os.stat(occ_cmd)
-
     from pwd import getpwuid
+    try:
+      st = os.stat(home+"/config/config.php")   # much better stat this, if we can
+    except:
+      st = os.stat(occ_cmd)                     # lousy fallback, if we cannot read the config.php
+
     user = getpwuid(st.st_uid).pw_name 	# "www-data"
+    print("... trying to run 'occ config:list' as user %s" % (user))
 
     cmds = [	# one of these should work:
       [ "sudo", "-u", user, "php", occ_cmd, "config:list", "--private" ],
@@ -86,17 +90,35 @@ class OCC():
     outtext = ""
     errtext = ""
     for cmd in cmds:
+      print(" + ", cmd)         # say something, in case the process hangs.
       try:
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE, close_fds=True)
         (outtext, errtext) = p.communicate()
         if len(errtext):
           raise ValueError("STDERR("+" ".join(cmd)+"): "+errtext)
         else:
-          return json.loads(outtext)
+          if len(outtext.strip()):
+            break
       except Exception as e:
-        if e0 is None: e0 = 0
+        print("Retryable exception: ", e)
+        if len(outtext.strip()):
+          print("cmd: ", cmd)
+          print(outtext)
+          sys.exit(1)
+        if e0 is None: e0 = e
         ee = e
-    raise ValueError(repr(e0)+"\n"+repr(ee)+"\n"+outtext+"\n"+errtext)
+    if len(outtext.strip()):
+      try:
+        return json.loads(outtext)
+      except Exception as e:
+        e.args += ( "Unparsable json output: ", outtext )
+        if e0 is None: e0 = e
+        ee = e
+    if ee == e0:
+      raise ValueError(repr(ee)+"\n"+outtext+"\n"+errtext)
+    else:
+      raise ValueError(repr(e0)+"\n"+repr(ee)+"\n"+outtext+"\n"+errtext)
+
 
   def parse_config_file(self, file):
     """
@@ -133,7 +155,7 @@ class OCC():
       configfile = oc_home+"/config/config.php"
       try:
         self._config = { 'system': self.parse_config_file(configfile) }
-      except ValueError as e2:
+      except Exception as e2:
         print("parse_config_json: ", e, "\nparse_config_file: ", e2)
         sys.exit(1)
     self._confs = self._config['system']

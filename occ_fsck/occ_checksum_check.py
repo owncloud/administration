@@ -31,7 +31,9 @@ if len(sys.argv) < 3:
   print("\n\t Note: pyh_tree_prefix is the physical path, not the view from within owncloud.", file=tty)
   sys.exit(1)
 
+print("oc.load_config ...")
 config = oc.load_config(sys.argv[1])
+print("... done.")
 
 tree_prefix = sys.argv[2]
 time_csum = 0           # time spent computing checksums
@@ -171,7 +173,6 @@ def check_oc_filecache_id(cur, bucket, fileid, o_size, o_mtime):
         if cache['size'] != o_size:
           info['err'].append("size mismatch: cache:"+str(cache['size'])+" phys:"+str(o_size))
   return info
-
 
 if oc.has_primary_objectstore():
   unk_name_count = 0
