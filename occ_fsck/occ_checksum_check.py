@@ -31,9 +31,9 @@ if len(sys.argv) < 3:
   print("\n\t Note: pyh_tree_prefix is the physical path, not the view from within owncloud.", file=tty)
   sys.exit(1)
 
-print("oc.load_config ...")
+if verbose: print("oc.load_config ...")
 config = oc.load_config(sys.argv[1])
-print("... done.")
+if verbose: print("... done.")
 
 tree_prefix = sys.argv[2]
 time_csum = 0           # time spent computing checksums

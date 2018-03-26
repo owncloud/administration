@@ -75,7 +75,7 @@ class OCC():
     user = getpwuid(st.st_uid).pw_name 	# "www-data"
 
     if os.geteuid() == st.st_uid:
-      print("... trying to run 'occ config:list'")
+      if self._verbose: print("... trying to run 'occ config:list'")
       cmds = [
         [ "php", occ_cmd, "config:list", "--private" ],
         [ "php", occ_cmd, "config:list" ],
@@ -83,7 +83,7 @@ class OCC():
         [ occ_cmd, "config:list" ]
       ]
     else:
-      print("... trying to run 'occ config:list' as user %s" % (user))
+      if self._verbose: print("... trying to run 'occ config:list' as user %s" % (user))
       cmds = [	# one of these should work:
         [ "sudo", "-u", user, "php", occ_cmd, "config:list", "--private" ],
         [ "su",   user, "-c", "php "+occ_cmd+" config:list --private" ],
@@ -99,7 +99,7 @@ class OCC():
     outtext = ""
     errtext = ""
     for cmd in cmds:
-      print(" + ", cmd)         # say something, in case the process hangs.
+      if self._verbose: print(" + ", cmd)         # say something, in case the process hangs.
       try:
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE, close_fds=True)
         (outtext, errtext) = p.communicate()
@@ -124,9 +124,9 @@ class OCC():
         if e0 is None: e0 = e
         ee = e
     if ee == e0:
-      raise ValueError(repr(ee)+"\n"+outtext+"\n"+errtext)
+      raise ValueError(repr(ee)+"\n"+repr(outtext)+"\n"+repr(errtext))
     else:
-      raise ValueError(repr(e0)+"\n"+repr(ee)+"\n"+outtext+"\n"+errtext)
+      raise ValueError(repr(e0)+"\n"+repr(ee)+"\n"+repr(outtext)+"\n"+repr(errtext))
 
 
   def parse_config_file(self, file):
