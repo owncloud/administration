@@ -1,10 +1,10 @@
 #! /bin/sh
 #
 # occ_fsck.sh -- check the filesystem of an owncloud for consistency.
-# 
-# Current limitations: 
-#  mysql only, 
-#  local storage only, 
+#
+# Current limitations:
+#  mysql or sqlite only,
+#  primary storage only, local filesystem or object store.
 #  requires python or python3
 
 bindir=$(dirname $0)
@@ -30,7 +30,7 @@ fi
 userprefix=$2
 test -z "$userprefix" && userprefix=/
 
-dir=$(date +%Y-%m-%d)
+dir=$(date +%Y-%m-%d_%H%M)
 mkdir -p $dir
 echo "output folder: $dir"
 
@@ -41,6 +41,8 @@ if [ -n "$(python3 --version 2>/dev/null)" ]; then
 else
   python=python
 fi
+## force python2:
+# python=python
 
 set -x
 $python $bindir/occ_checksum_check.py $config $userprefix >$dir/good.log 2>$dir/bad.log

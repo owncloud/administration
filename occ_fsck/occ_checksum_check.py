@@ -89,7 +89,7 @@ def check_oc_filecache_path(cur, path):
         return info
 
       storage_id = mount['storage_id']            # do not recurse into files, we already had seen this storage_id earlier.
-      # user_id = mount['user_id']
+      user_id = mount['user_id']
       # root_id = mount['root_id']                # things may be mounted deeper.
       info['mount'] = mount
       if path[:1] == '/':
@@ -119,6 +119,8 @@ def check_oc_filecache_path(cur, path):
 
           if csum != cache['checksum']:
             info['err'].append("checksum mismatch: cache:"+cache['checksum']+"   \t\t\t\t      phys:"+csum)
+            ## additional info for Carlos
+            info['err'].append("path="+path+" size="+str(cache['size'])+" storage_id="+str(storage_id)+" user_id="+str(user_id))
         try:
           cache_mtime = int(cache['mtime'])
         except:
