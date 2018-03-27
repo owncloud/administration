@@ -55,15 +55,15 @@ fi
 DATADIR=$BASEDIR/$FROM_VERSION-$TO_VERSION-$DATABASE
 
 if [ ! -f $FROM ]; then
-  wget http://download.owncloud.org/community/$FROM || true
-  wget http://download.owncloud.org/community/testing/$FROM || true
+  wget -nv http://download.owncloud.org/community/$FROM || true
+  wget -nv http://download.owncloud.org/community/testing/$FROM || true
 else
   echo "Reuse existing $FROM"
 fi
 
 if [ ! -f $TO ]; then
-  wget http://download.owncloud.org/community/$TO || true
-  wget http://download.owncloud.org/community/testing/$TO || true
+  wget -nv http://download.owncloud.org/community/$TO || true
+  wget -nv http://download.owncloud.org/community/testing/$TO || true
 else
   echo "Reuse existing $TO"
 fi
@@ -237,8 +237,9 @@ if [ ! -d apps/market ]; then
   cd ../..
 fi
 
-$PHP_NEW ./occ upgrade || true
+$PHP_NEW ./occ upgrade
 #./occ main:mode --off || true
+$PHP_NEW ./occ a:l || true
 
 if [ -d tests ]; then
   $PHP_NEW ./occ app:disable gallery
