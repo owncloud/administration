@@ -46,6 +46,13 @@ fi
 
 set -x
 $python $bindir/occ_checksum_check.py $config $userprefix >$dir/good.log 2>$dir/bad.log
+errexit=$?
+if [ $errexit -ne 0 ]; then
+  set +x
+  cat $dir/good.log
+  cat $dir/bad.log
+  exit $errexit
+fi
 
 sh $bindir/occ_fsck_report.sh $dir
 

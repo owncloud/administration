@@ -112,15 +112,15 @@ class OCC():
         print("Retryable exception: ", e)
         if len(outtext.strip()):
           print("cmd: ", cmd)
-          print(outtext)
+          print(outtext[:500])
           sys.exit(1)
         if e0 is None: e0 = e
         ee = e
     if len(outtext.strip()):
       try:
-        return json.loads(outtext)
+        return json.loads(outtext.decode('utf-8', errors='ignore'))
       except Exception as e:
-        e.args += ( "Unparsable json output: ", outtext )
+        e.args += ( "E: Unparsable JSON output: ", outtext[:500] )
         if e0 is None: e0 = e
         ee = e
     if ee == e0:
