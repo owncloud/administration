@@ -12,8 +12,8 @@ ADMINLOGIN=admin$EXECUTOR_NUMBER
 DATABASEHOST=localhost
 BASEDIR=$PWD
 
-PHP_OLD=php5.6
-PHP_NEW=php7.2
+PHP_OLD=php7.0
+PHP_NEW=php7.1
 
 if [ "$#" -ne 3 ]; then
     echo "Usage: test-upgrade <from-version> <to-version> <database>"
@@ -23,6 +23,7 @@ if [ "$#" -ne 3 ]; then
 fi
 
 set -e
+export ZEND_DONT_UNLOAD_MODULES=1
 
 FROM_VERSION=$1
 TO_VERSION=$2
