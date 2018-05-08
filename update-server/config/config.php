@@ -80,11 +80,11 @@
 return [
 	'production' => [
 		'10.0' => [
-			'latest' => '10.0.7',
+			'latest' => '10.0.8',
 			'web' => 'https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html',
 		],
 		'9.1.8' => [
-			'latest' => '10.0.7',
+			'latest' => '10.0.8',
 			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
 		],
 		'9.1' => [
@@ -153,7 +153,7 @@ return [
 	],
 	'stable' => [
 		'10.0' => [
-			'latest' => '10.0.7',
+			'latest' => '10.0.8',
 			'web' => 'https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html',
 		],
 		'9.1' => [
@@ -161,7 +161,7 @@ return [
 			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
 		],
 		'9.1.8' => [
-			'latest' => '10.0.7',
+			'latest' => '10.0.8',
 			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
 		],
 
@@ -228,11 +228,11 @@ return [
 	],
 	'beta' => [
 		'10.0' => [
-			'latest' => '10.0.7',
+			'latest' => '10.0.8',
 			'web' => 'https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html',
 		],
 		'9.1.8' => [
-			'latest' => '10.0.7',
+			'latest' => '10.0.8',
 			'web' => 'https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html',
 		],
 		'9.1' => [
@@ -269,7 +269,6 @@ return [
 		'8.2.11' => [
 			'latest' => '9.0.11',
 			'web' => 'https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html',
-			'downloadUrl' => 'https://download.owncloud.org/community/testing/owncloud-9.0.11RC2.zip',
 		],
 		'8.1' => [
 			'latest' => '8.1.12',
@@ -307,11 +306,11 @@ return [
 		],
 		/* early 10.0 dailies had version 9.2.0.x */
 		'9.2' => [
-			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-10.0.7.zip',
+			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-10.0.8.zip',
 			'web' => 'https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html',
 		],
 		'9.1' => [
-			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-10.0.7.zip',
+			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-10.0.8.zip',
 			'web' => 'https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html',
 		],
 		'9.0' => [
