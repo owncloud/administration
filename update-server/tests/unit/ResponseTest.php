@@ -121,42 +121,42 @@ class ResponseTest extends \PHPUnit_Framework_TestCase {
 			->expects($this->any())
 			->method('getBuild')
 			->willReturn('2015-10-19T18:44:30+00:00');
+		$map = [
+			['eol_latest', '4.0'],
+			['daily', [
+				'9.1' => [
+					'downloadUrl' => 'https://download.owncloud.org/community/owncloud-daily-master.zip',
+					'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
+				],
+				'9.0' => [
+					'downloadUrl' => 'https://download.owncloud.org/community/owncloud-daily-master.zip',
+					'web' => 'https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html',
+				],
+				'8.2' => [
+					'downloadUrl' => 'https://download.owncloud.org/community/owncloud-daily-stable9.zip',
+					'web' => 'https://doc.owncloud.org/server/8.2/admin_manual/maintenance/upgrade.html',
+				],
+				'8.1' => [
+					'downloadUrl' => 'https://download.owncloud.org/community/owncloud-8.2.3.zip',
+					'web' => 'https://doc.owncloud.org/server/8.1/admin_manual/maintenance/upgrade.html',
+				],
+				'8.0' => [
+					'downloadUrl' => 'https://download.owncloud.org/community/owncloud-8.1.6.zip',
+					'web' => 'https://doc.owncloud.org/server/8.0/admin_manual/maintenance/upgrade.html',
+				],
+				'7' => [
+					'downloadUrl' => 'https://download.owncloud.org/community/owncloud-8.0.11.zip',
+					'web' => 'https://doc.owncloud.org/server/7.0/admin_manual/maintenance/upgrade.html',
+				],
+				'6' => [
+					'downloadUrl' => 'https://download.owncloud.org/community/owncloud-7.0.13.zip',
+					'web' => 'https://doc.owncloud.org/server/7.0/admin_manual/maintenance/upgrade.html',
+				],
+			]]
+		];
 		$this->config
-			->expects($this->once())
 			->method('get')
-			->with('daily')
-			->willReturn(
-				[
-					'9.1' => [
-						'downloadUrl' => 'https://download.owncloud.org/community/owncloud-daily-master.zip',
-						'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
-					],
-					'9.0' => [
-						'downloadUrl' => 'https://download.owncloud.org/community/owncloud-daily-master.zip',
-						'web' => 'https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html',
-					],
-					'8.2' => [
-						'downloadUrl' => 'https://download.owncloud.org/community/owncloud-daily-stable9.zip',
-						'web' => 'https://doc.owncloud.org/server/8.2/admin_manual/maintenance/upgrade.html',
-					],
-					'8.1' => [
-						'downloadUrl' => 'https://download.owncloud.org/community/owncloud-8.2.3.zip',
-						'web' => 'https://doc.owncloud.org/server/8.1/admin_manual/maintenance/upgrade.html',
-					],
-					'8.0' => [
-						'downloadUrl' => 'https://download.owncloud.org/community/owncloud-8.1.6.zip',
-						'web' => 'https://doc.owncloud.org/server/8.0/admin_manual/maintenance/upgrade.html',
-					],
-					'7' => [
-						'downloadUrl' => 'https://download.owncloud.org/community/owncloud-8.0.11.zip',
-						'web' => 'https://doc.owncloud.org/server/7.0/admin_manual/maintenance/upgrade.html',
-					],
-					'6' => [
-						'downloadUrl' => 'https://download.owncloud.org/community/owncloud-7.0.13.zip',
-						'web' => 'https://doc.owncloud.org/server/7.0/admin_manual/maintenance/upgrade.html',
-					],
-				]
-			);
+			->will($this->returnValueMap($map));
 		$this->request
 			->expects($this->any())
 			->method('getMajorVersion')
@@ -193,43 +193,43 @@ class ResponseTest extends \PHPUnit_Framework_TestCase {
 				->method('getMinorVersion')
 				->willReturn($version[4]);
 		}
+		$map = [
+			['eol_latest', '4.0'],
+			['daily', [
+				'9.1' => [
+					'downloadUrl' => 'https://download.owncloud.org/community/owncloud-daily-master.zip',
+					'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
+				],
+				'9.0' => [
+					'downloadUrl' => 'https://download.owncloud.org/community/owncloud-daily-master.zip',
+					'web' => 'https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html',
+				],
+				'8.2' => [
+					'downloadUrl' => 'https://download.owncloud.org/community/owncloud-daily-stable9.zip',
+					'web' => 'https://doc.owncloud.org/server/8.2/admin_manual/maintenance/upgrade.html',
+				],
+				'8.1' => [
+					'downloadUrl' => 'https://download.owncloud.org/community/owncloud-8.2.3.zip',
+					'web' => 'https://doc.owncloud.org/server/8.1/admin_manual/maintenance/upgrade.html',
+				],
+				'8.0' => [
+					'downloadUrl' => 'https://download.owncloud.org/community/owncloud-8.1.6.zip',
+					'web' => 'https://doc.owncloud.org/server/8.0/admin_manual/maintenance/upgrade.html',
+				],
+				'7' => [
+					'downloadUrl' => 'https://download.owncloud.org/community/owncloud-8.0.11.zip',
+					'web' => 'https://doc.owncloud.org/server/7.0/admin_manual/maintenance/upgrade.html',
+				],
+				'6' => [
+					'downloadUrl' => 'https://download.owncloud.org/community/owncloud-7.0.13.zip',
+					'web' => 'https://doc.owncloud.org/server/7.0/admin_manual/maintenance/upgrade.html',
+				],
+			]
+			]
+		];
 		$this->config
-			->expects($this->once())
 			->method('get')
-			->with('daily')
-			->willReturn(
-				[
-					'9.1' => [
-						'downloadUrl' => 'https://download.owncloud.org/community/owncloud-daily-master.zip',
-						'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
-					],
-					'9.0' => [
-						'downloadUrl' => 'https://download.owncloud.org/community/owncloud-daily-master.zip',
-						'web' => 'https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html',
-					],
-					'8.2' => [
-						'downloadUrl' => 'https://download.owncloud.org/community/owncloud-daily-stable9.zip',
-						'web' => 'https://doc.owncloud.org/server/8.2/admin_manual/maintenance/upgrade.html',
-					],
-					'8.1' => [
-						'downloadUrl' => 'https://download.owncloud.org/community/owncloud-8.2.3.zip',
-						'web' => 'https://doc.owncloud.org/server/8.1/admin_manual/maintenance/upgrade.html',
-					],
-					'8.0' => [
-						'downloadUrl' => 'https://download.owncloud.org/community/owncloud-8.1.6.zip',
-						'web' => 'https://doc.owncloud.org/server/8.0/admin_manual/maintenance/upgrade.html',
-					],
-					'7' => [
-						'downloadUrl' => 'https://download.owncloud.org/community/owncloud-8.0.11.zip',
-						'web' => 'https://doc.owncloud.org/server/7.0/admin_manual/maintenance/upgrade.html',
-					],
-					'6' => [
-						'downloadUrl' => 'https://download.owncloud.org/community/owncloud-7.0.13.zip',
-						'web' => 'https://doc.owncloud.org/server/7.0/admin_manual/maintenance/upgrade.html',
-					],
-				]
-			);
-
+			->will($this->returnValueMap($map));
 		$expected = '';
 
 		$this->assertSame($expected, $this->response->buildResponse());
@@ -702,15 +702,19 @@ class ResponseTest extends \PHPUnit_Framework_TestCase {
 				'downloadUrl' => 'https://downloads.owncloud.com/foo.zip',
 			],
 		];
+		$map = [
+			['eol_latest', '1'],
+			[$channel, $config],
+			['eol',  $config ],
+		];
+
 		$this->request
 			->expects($this->any())
 			->method('getChannel')
 			->willReturn($channel);
 		$this->config
-			->expects($this->any())
 			->method('get')
-			->with($channel)
-			->willReturn($config);
+			->will($this->returnValueMap($map));
 		$this->request
 			->expects($this->any())
 			->method('getMajorVersion')
