@@ -87,7 +87,8 @@ for pkg in $pkgs; do
      is_aggregate=$($osc cat $srcprj $pkg _aggregate 2>/dev/null)
      test -n "$is_aggregate" && echo "\t $pkg needs another aggregate round ... "
   done
-  (set -x ; $osc copypac --expand $srcprj $pkg $dstprj $pkg)
+  msg="osc copypac --expand $srcprj $pkg $dstprj $pkg   # via $(env | grep '^OSC_') $0 $*"
+  (set -x ; $osc copypac --expand -m $msg $srcprj $pkg $dstprj $pkg)
   (set -x ; $oscm meta pkg $srcprjm $pkg | sed -e 's/project=".*"//' | $osc meta pkg $dstprj $pkg -F -)
 done
 
