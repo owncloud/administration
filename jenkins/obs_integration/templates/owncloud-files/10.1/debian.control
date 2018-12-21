@@ -1,0 +1,32 @@
+Source: [% PACKNAME %]
+Section: devel
+Priority: optional
+Maintainer: Juergen Weigert <jw@owncloud.com> 
+Build-Depends: debhelper (>= 4)
+Standards-Version: 3.9.3
+
+Package: [% PACKNAME %]
+Architecture: all
+Depends: ${misc:Depends}
+Replaces: owncloud 		(<= 9.01.99),
+	owncloud-config-apache	(<= 9.01.99),
+	owncloud-server		(<= 9.01.99)
+Conflicts: owncloud 		(<= 9.01.99),
+	owncloud-config-apache	(<= 9.01.99),
+	owncloud-server		(<= 9.01.99)
+#
+#
+Description: ownCloud - Server
+ The [% PACKNAME %] package installs the codebase.
+ Admins are advised to check for missing dependencies
+ and configuration settings using owncloud online documentation and the occ tool.
+ .
+ .
+ At the same time, ownCloud provides employees and end users anywhere,
+ anytime access to the files they need to get the job done - via mobile apps,
+ desktop sync clients, WebDAV clients and the web. With ownCloud, employees
+ can easily view and share documents and information critical to the
+ business, in a secure, flexible and controlled architecture - one that is
+ consistent with IT policies, procedures and regulatory requirements. 
+ .
+ For more information, visit www.owncloud.com
