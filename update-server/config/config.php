@@ -108,13 +108,17 @@ return [
 		],
 	],
 	'beta' => [
+		'10.1' => [
+			'latest' => '10.2.0',
+			'web' => 'https://doc.owncloud.org/server/10.1/admin_manual/maintenance/upgrade.html',
+		],
 		'10.0' => [
-			'latest' => '10.0.10',
+			'latest' => '10.2.0',
 			'web' => 'https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html',
 		],
 		'9.1.8' => [
-			'latest' => '10.0.10',
-			'web' => 'https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html',
+			'latest' => '10.2.0',
+			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
 		],
 		'9.1' => [
 			'latest' => '9.1.8',
@@ -122,18 +126,26 @@ return [
 		],
 	],
 	'daily' => [
+		'10.2' => [
+			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-daily-stable10.zip',
+			'web' => 'https://doc.owncloud.org/server/10.2/admin_manual/maintenance/upgrade.html',
+		],
+		'10.1' => [
+			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-10.2.0.zip',
+			'web' => 'https://doc.owncloud.org/server/10.1/admin_manual/maintenance/upgrade.html',
+		],
 		'10.0' => [
-			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-daily-master.zip',
+			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-10.2.0.zip',
 			'web' => 'https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html',
 		],
 		/* early 10.0 dailies had version 9.2.0.x */
 		'9.2' => [
-			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-10.0.10.zip',
+			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-10.2.0.zip',
 			'web' => 'https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html',
 		],
 		'9.1' => [
-			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-10.0.10.zip',
-			'web' => 'https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html',
+			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-10.2.0.zip',
+			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
 		],
 	],
 	'eol' => [
