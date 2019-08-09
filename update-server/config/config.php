@@ -124,7 +124,7 @@ return [
 	],
 	'daily' => [
 		'10.2' => [
-			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-daily-stable10.zip',
+			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-daily-master.zip',
 			'web' => 'https://doc.owncloud.org/server/10.2/admin_manual/maintenance/upgrade.html',
 		],
 		'10.1' => [
