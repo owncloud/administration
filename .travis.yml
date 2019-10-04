@@ -1,9 +1,9 @@
 sudo: false
 language: php
 php:
-  - 5.6
-  - 7.0
-
+  - 7.1
+  - 7.2
+  
 install:
   - sh -c "cd update-server/ && composer install"
 
@@ -13,4 +13,4 @@ before_script:
 
 script:
   - sh -c "cd update-server/tests/integration/ && ../../vendor/bin/behat ."
-  - sh -c "cd update-server/tests/unit/ && phpunit ."
+  - sh -c "cd update-server/tests/unit/ && ../../vendor/bin/phpunit ."

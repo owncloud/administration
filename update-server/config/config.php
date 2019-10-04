@@ -87,11 +87,6 @@ return [
 			'latest' => '10.2.1',
 			'web' => 'https://doc.owncloud.org/server/10.1/admin_manual/maintenance/upgrade.html',
 		],
-
-		'10.0' => [
-			'latest' => '10.2.1',
-			'web' => 'https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html',
-		],
 	],
 	'stable' => [
 		'10.2' => [
@@ -102,24 +97,16 @@ return [
 			'latest' => '10.2.1',
 			'web' => 'https://doc.owncloud.org/server/10.1/admin_manual/maintenance/upgrade.html',
 		],
-
-		'10.0' => [
-			'latest' => '10.2.1',
-			'web' => 'https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html',
-		],
 	],
 	'beta' => [
 		'10.2' => [
-			'latest' => '10.2.1',
+			'latest' => '10.3.0RC1',
+			'downloadUrl' => 'https://download.owncloud.org/community/testing/owncloud-10.3.0RC1.zip',
 			'web' => 'https://doc.owncloud.org/server/10.2/admin_manual/maintenance/upgrade.html',
 		],
 		'10.1' => [
 			'latest' => '10.2.1',
 			'web' => 'https://doc.owncloud.org/server/10.1/admin_manual/maintenance/upgrade.html',
-		],
-		'10.0' => [
-			'latest' => '10.2.1',
-			'web' => 'https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html',
 		],
 	],
 	'daily' => [
@@ -131,14 +118,14 @@ return [
 			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-10.2.1.zip',
 			'web' => 'https://doc.owncloud.org/server/10.1/admin_manual/maintenance/upgrade.html',
 		],
-		'10.0' => [
-			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-10.2.1.zip',
-			'web' => 'https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html',
-		],
 	],
 	'eol' => [
 		// 10.1.1 is the most recent release with PHP 5.6 support
 		// so we always offer it first for older versions to allow environment update at least to PHP 7.0
+		'10.0' => [
+			'latest' => '10.1.1',
+			'web' => 'https://doc.owncloud.org/server/10.0/admin_manual/maintenance/upgrade.html',
+		],
 		'9.2.100' => [
 			'latest' => '10.1.1',
 			'web' => 'https://doc.owncloud.org/server/9.1/admin_manual/maintenance/upgrade.html',
@@ -235,5 +222,5 @@ return [
 			'web' => 'https://doc.owncloud.org/server/7.0/admin_manual/maintenance/upgrade.html',
 		],
 	],
-	'eol_latest' => '9.2.100',
+	'eol_latest' => '10.0.100',
 ];
