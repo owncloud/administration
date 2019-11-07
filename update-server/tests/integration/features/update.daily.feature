@@ -27,7 +27,7 @@ Feature: Testing the update scenario of releases on the daily channel
     When The request is sent
     Then The response is non-empty
     And Update to version "100.0.0.0" is available
-    And URL to download is "https://download.owncloud.org/community/owncloud-10.3.0.zip"
+    And URL to download is "https://download.owncloud.org/community/owncloud-10.3.1.zip"
     And URL to documentation is "https://doc.owncloud.org/server/10.2/admin_manual/maintenance/upgrade.html"
     
   Scenario: Updating an up-to-date ownCloud 10.2 daily
@@ -45,7 +45,7 @@ Feature: Testing the update scenario of releases on the daily channel
     When The request is sent
     Then The response is non-empty
     And Update to version "100.0.0.0" is available
-    And URL to download is "https://download.owncloud.org/community/owncloud-10.3.0.zip"
+    And URL to download is "https://download.owncloud.org/community/owncloud-10.3.1.zip"
     And URL to documentation is "https://doc.owncloud.org/server/10.1/admin_manual/maintenance/upgrade.html"
     
   Scenario: Updating an up-to-date ownCloud 10.1 daily
