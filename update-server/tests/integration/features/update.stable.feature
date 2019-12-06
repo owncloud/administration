@@ -2,9 +2,9 @@ Feature: Testing the update scenario of releases on the stable channel
 ##### Please always order by version number descending #####
 
   ##### Tests for 10.3.x should go below #####
-  Scenario: Updating an ownCloud 10.3.1 on the stable channel
+  Scenario: Updating an ownCloud 10.3.2 on the stable channel
     Given There is a release with channel "stable"
-    And The received version is "10.3.1"
+    And The received version is "10.3.2"
     When The request is sent
     Then The response is empty
   
@@ -13,7 +13,7 @@ Feature: Testing the update scenario of releases on the stable channel
     And The received version is "10.3.0"
     When The request is sent
     Then The response is non-empty
-    And URL to download is "https://download.owncloud.org/community/owncloud-10.3.1.zip"
+    And URL to download is "https://download.owncloud.org/community/owncloud-10.3.2.zip"
     And URL to documentation is "https://doc.owncloud.org/server/10.3/admin_manual/maintenance/upgrade.html"
 
   ##### Tests for 10.2.x should go below #####
@@ -22,7 +22,7 @@ Feature: Testing the update scenario of releases on the stable channel
     And The received version is "10.2.1"
     When The request is sent
     Then The response is non-empty
-    And URL to download is "https://download.owncloud.org/community/owncloud-10.3.1.zip"
+    And URL to download is "https://download.owncloud.org/community/owncloud-10.3.2.zip"
     And URL to documentation is "https://doc.owncloud.org/server/10.2/admin_manual/maintenance/upgrade.html"
   
   Scenario: Updating an outdated ownCloud 10.2.0 on the stable channel
@@ -30,7 +30,7 @@ Feature: Testing the update scenario of releases on the stable channel
     And The received version is "10.2.0"
     When The request is sent
     Then The response is non-empty
-    And URL to download is "https://download.owncloud.org/community/owncloud-10.3.1.zip"
+    And URL to download is "https://download.owncloud.org/community/owncloud-10.3.2.zip"
     And URL to documentation is "https://doc.owncloud.org/server/10.2/admin_manual/maintenance/upgrade.html"
 
   ##### Tests for 10.1.x should go below #####
@@ -39,7 +39,7 @@ Feature: Testing the update scenario of releases on the stable channel
     And The received version is "10.1.1"
     When The request is sent
     Then The response is non-empty
-    And URL to download is "https://download.owncloud.org/community/owncloud-10.3.1.zip"
+    And URL to download is "https://download.owncloud.org/community/owncloud-10.3.2.zip"
     And URL to documentation is "https://doc.owncloud.org/server/10.1/admin_manual/maintenance/upgrade.html"
   
   Scenario: Updating an outdated ownCloud 10.1.0 on the stable channel
@@ -47,7 +47,7 @@ Feature: Testing the update scenario of releases on the stable channel
     And The received version is "10.1.0"
     When The request is sent
     Then The response is non-empty
-    And URL to download is "https://download.owncloud.org/community/owncloud-10.3.1.zip"
+    And URL to download is "https://download.owncloud.org/community/owncloud-10.3.2.zip"
     And URL to documentation is "https://doc.owncloud.org/server/10.1/admin_manual/maintenance/upgrade.html"
 
   ##### Tests for 10.0.x should go below #####

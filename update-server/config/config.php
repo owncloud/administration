@@ -80,58 +80,58 @@
 return [
 	'production' => [
 		'10.3' => [
-			'latest' => '10.3.1',
+			'latest' => '10.3.2',
 			'web' => 'https://doc.owncloud.org/server/10.3/admin_manual/maintenance/upgrade.html',
 		],
 		'10.2' => [
-			'latest' => '10.3.1',
+			'latest' => '10.3.2',
 			'web' => 'https://doc.owncloud.org/server/10.2/admin_manual/maintenance/upgrade.html',
 		],
 		'10.1' => [
-			'latest' => '10.3.1',
+			'latest' => '10.3.2',
 			'web' => 'https://doc.owncloud.org/server/10.1/admin_manual/maintenance/upgrade.html',
 		],
 	],
 	'stable' => [
 		'10.3' => [
-			'latest' => '10.3.1',
+			'latest' => '10.3.2',
 			'web' => 'https://doc.owncloud.org/server/10.3/admin_manual/maintenance/upgrade.html',
 		],
 		'10.2' => [
-			'latest' => '10.3.1',
+			'latest' => '10.3.2',
 			'web' => 'https://doc.owncloud.org/server/10.2/admin_manual/maintenance/upgrade.html',
 		],
 		'10.1' => [
-			'latest' => '10.3.1',
+			'latest' => '10.3.2',
 			'web' => 'https://doc.owncloud.org/server/10.1/admin_manual/maintenance/upgrade.html',
 		],
 	],
 	'beta' => [
 		'10.3' => [
-			'latest' => '10.3.1',
+			'latest' => '10.3.2',
 			'web' => 'https://doc.owncloud.org/server/10.3/admin_manual/maintenance/upgrade.html',
 		],
 		'10.2' => [
-			'latest' => '10.3.1',
+			'latest' => '10.3.2',
 			'web' => 'https://doc.owncloud.org/server/10.2/admin_manual/maintenance/upgrade.html',
 		],
 		'10.1' => [
-			'latest' => '10.3.1',
+			'latest' => '10.3.2',
 			'web' => 'https://doc.owncloud.org/server/10.1/admin_manual/maintenance/upgrade.html',
 		],
 	],
 	'daily' => [
-		// FYI 10.3.1 is the most recent with PHP 7.0 support. So 10.1.1 - 10.3.0 should always update through it 
+		// FYI 10.3.2 is the most recent with PHP 7.0 support. So 10.1.1 - 10.3.0 should always update through it 
 		'10.3' => [
 			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-daily-master.zip',
 			'web' => 'https://doc.owncloud.org/server/10.3/admin_manual/maintenance/upgrade.html',
 		],
 		'10.2' => [
-			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-10.3.1.zip',
+			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-10.3.2.zip',
 			'web' => 'https://doc.owncloud.org/server/10.2/admin_manual/maintenance/upgrade.html',
 		],
 		'10.1' => [
-			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-10.3.1.zip',
+			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-10.3.2.zip',
 			'web' => 'https://doc.owncloud.org/server/10.1/admin_manual/maintenance/upgrade.html',
 		],
 	],
