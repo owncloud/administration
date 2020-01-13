@@ -6,7 +6,8 @@ Feature: Testing the update scenario of releases on the beta channel
     Given There is a release with channel "beta"
     And The received version is "10.3.2"
     When The request is sent
-    Then The response is empty
+    Then The response is non-empty
+    And URL to download is "https://download.owncloud.org/community/testing/owncloud-10.4.0RC1.zip"
     
   Scenario: Updating an ownCloud 10.3.0 on the beta channel
     Given There is a release with channel "beta"
