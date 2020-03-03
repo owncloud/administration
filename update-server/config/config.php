@@ -79,68 +79,49 @@
 
 return [
 	'production' => [
-		'10.3' => [
-			'latest' => '10.3.2',
-			'web' => 'https://doc.owncloud.org/server/10.3/admin_manual/maintenance/upgrade.html',
-		],
-		'10.2' => [
-			'latest' => '10.3.2',
-			'web' => 'https://doc.owncloud.org/server/10.2/admin_manual/maintenance/upgrade.html',
-		],
-		'10.1' => [
-			'latest' => '10.3.2',
-			'web' => 'https://doc.owncloud.org/server/10.1/admin_manual/maintenance/upgrade.html',
-		],
 	],
 	'stable' => [
-		'10.3' => [
-			'latest' => '10.3.2',
+		'10.3.2' => [
+			'latest' => '10.4.0',
 			'web' => 'https://doc.owncloud.org/server/10.3/admin_manual/maintenance/upgrade.html',
-		],
-		'10.2' => [
-			'latest' => '10.3.2',
-			'web' => 'https://doc.owncloud.org/server/10.2/admin_manual/maintenance/upgrade.html',
-		],
-		'10.1' => [
-			'latest' => '10.3.2',
-			'web' => 'https://doc.owncloud.org/server/10.1/admin_manual/maintenance/upgrade.html',
 		],
 	],
 	'beta' => [
 		'10.3.2' => [
-			'latest' => '10.4.0RC3',
-			'downloadUrl' => 'https://download.owncloud.org/community/testing/owncloud-10.4.0RC3.zip',
+			'latest' => '10.4.0',
 			'web' => 'https://doc.owncloud.org/server/10.3/admin_manual/maintenance/upgrade.html',
-		],
-		'10.3' => [
-			'latest' => '10.3.2',
-			'web' => 'https://doc.owncloud.org/server/10.3/admin_manual/maintenance/upgrade.html',
-		],
-		'10.2' => [
-			'latest' => '10.3.2',
-			'web' => 'https://doc.owncloud.org/server/10.2/admin_manual/maintenance/upgrade.html',
-		],
-		'10.1' => [
-			'latest' => '10.3.2',
-			'web' => 'https://doc.owncloud.org/server/10.1/admin_manual/maintenance/upgrade.html',
 		],
 	],
 	'daily' => [
-		// FYI 10.3.2 is the most recent with PHP 7.0 support. So 10.1.1 - 10.3.0 should always update through it 
-		'10.3' => [
+		'10.4' => [
 			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-daily-master.zip',
+			'web' => 'https://doc.owncloud.org/server/10.4/admin_manual/maintenance/upgrade.html',
+		],
+		'10.3.100' => [
+			'latest' => '10.4.0',
+			'web' => 'https://doc.owncloud.org/server/10.3/admin_manual/maintenance/upgrade.html',
+		],
+		'10.3.2' => [
+			'latest' => '10.4.0',
+			'web' => 'https://doc.owncloud.org/server/10.3/admin_manual/maintenance/upgrade.html',
+		],
+	],
+	// to prevent individual channels from bloating all upgrade path common for all channels go below
+	// if you move anything here make sure you updated 'eol_latest' key 
+	'eol' => [
+		// 10.3.2 is the most recent with PHP 7.0 support. So 10.1.1 - 10.3.1 should always update through it
+		'10.3' => [
+			'latest' => '10.3.2',
 			'web' => 'https://doc.owncloud.org/server/10.3/admin_manual/maintenance/upgrade.html',
 		],
 		'10.2' => [
-			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-10.3.2.zip',
+			'latest' => '10.3.2',
 			'web' => 'https://doc.owncloud.org/server/10.2/admin_manual/maintenance/upgrade.html',
 		],
 		'10.1' => [
-			'downloadUrl' => 'https://download.owncloud.org/community/owncloud-10.3.2.zip',
+			'latest' => '10.3.2',
 			'web' => 'https://doc.owncloud.org/server/10.1/admin_manual/maintenance/upgrade.html',
 		],
-	],
-	'eol' => [
 		// 10.1.1 is the most recent release with PHP 5.6 support
 		// so we always offer it first for older versions to allow environment update at least to PHP 7.0
 		'10.0' => [
@@ -243,5 +224,5 @@ return [
 			'web' => 'https://doc.owncloud.org/server/7.0/admin_manual/maintenance/upgrade.html',
 		],
 	],
-	'eol_latest' => '10.0.100',
+	'eol_latest' => '10.3.1',
 ];
