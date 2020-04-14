@@ -13,7 +13,7 @@ Feature: Testing the update scenario of releases on the beta channel
     And The received version is "10.4.0"
     When The request is sent
     Then The response is non-empty
-    And URL to download is "https://download.owncloud.org/community/testing/owncloud-10.4.1RC1.zip"
+    And URL to download is "https://download.owncloud.org/community/testing/owncloud-10.4.1RC2.zip"
 
   ##### Tests for 10.3.x should go below #####
   Scenario: Updating an ownCloud 10.3.2 on the beta channel
