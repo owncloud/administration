@@ -2,18 +2,26 @@ Feature: Testing the update scenario of releases on the production channel
 ##### Please always order by version number descending #####
 
   ##### Tests for 10.4.x should go below #####
+  Scenario: Updating an outdated ownCloud 10.4.1 on the production channel
+    Given There is a release with channel "production"
+    And The received version is "10.4.1"
+    When The request is sent
+    Then The response is empty
+    
   Scenario: Updating an outdated ownCloud 10.4.0 on the production channel
     Given There is a release with channel "production"
     And The received version is "10.4.0"
     When The request is sent
-    Then The response is empty
+    Then The response is non-empty
+    And URL to download is "https://download.owncloud.org/community/owncloud-10.4.1.zip"
 
   ##### Tests for 10.3.x should go below #####
   Scenario: Updating an outdated ownCloud 10.3.2 on the production channel
     Given There is a release with channel "production"
     And The received version is "10.3.2"
     When The request is sent
-    Then The response is empty
+    Then The response is non-empty
+    And URL to download is "https://download.owncloud.org/community/owncloud-10.4.1.zip"
 
   Scenario: Updating an outdated ownCloud 10.3.0 on the production channel
     Given There is a release with channel "production"
