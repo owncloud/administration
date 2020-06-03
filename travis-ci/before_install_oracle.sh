@@ -127,7 +127,7 @@ sudo mkdir -p /usr/lib/oracle/11.2/client64/rdbms/
 sudo ln -s /usr/include/oracle/11.2/client64/ /usr/lib/oracle/11.2/client64/rdbms/public
 
 sudo apt-get install -qq --force-yes libaio1
-if [ "$TRAVIS_PHP_VERSION" == "7" ] ; then
+if [[ " 7 7.1 7.2 7.3 7.4 " =~ .*\ $TRAVIS_PHP_VERSION\ .* ]] ; then
   printf "/usr/lib/oracle/11.2/client64\n" | pecl install oci8
 else
   printf "/usr/lib/oracle/11.2/client64\n" | pecl install oci8-2.0.10
