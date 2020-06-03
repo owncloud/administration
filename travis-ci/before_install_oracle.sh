@@ -49,33 +49,23 @@ sudo chmod 755 /usr/bin/free
 # ok, bc, is the dependency that is required by DB2 as well => let's remove it from oracle xe dependencies and provide 64bit one only
 #
 sudo apt-get update
-#sudo apt-get -qq --force-yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" upgrade
 
 # Install the Oracle 10g dependant packages
-sudo apt-get install -qq --force-yes libc6:i386
+sudo apt-get install -qq --allow-unauthenticated libc6:i386
 # travis needs the "apt-transport-https" to enable https transport
 sudo apt-get install -qq bc apt-transport-https
 
-# add Oracle repo + key (please note https is a must here, otherwise "apt-get update" fails for this repo with the "Undetermined error")
-sudo bash -c 'echo "deb https://oss.oracle.com/debian/ unstable main non-free" >/etc/apt/sources.list.d/oracle.list'
-wget -q https://oss.oracle.com/el4/RPM-GPG-KEY-oracle -O- | sudo apt-key add -
-sudo apt-get --allow-unauthenticated update -qq
+wget https://oss.oracle.com/debian/dists/unstable/main/binary-i386/libaio_0.3.104-1_i386.deb
+sudo dpkg -i --force-architecture libaio_0.3.104-1_i386.deb
 
-# only download the package, to manually install afterwards
-sudo apt-get install -qq --force-yes -d oracle-xe-universal:i386
-sudo apt-get install -qq --force-yes libaio:i386
-
-# remove key + repo (to prevent failures on next updates)
-sudo apt-key del B38A8516
-sudo bash -c 'rm -rf /etc/apt/sources.list.d/oracle.list'
-sudo apt-get update -qq
-sudo apt-get autoremove -qq
+wget  -q https://oss.oracle.com/debian/dists/unstable/non-free/binary-i386/oracle-xe-universal_10.2.0.1-1.1_i386.deb
+mv oracle-xe-universal_10.2.0.1-1.1_i386.deb /tmp/
 
 # remove bc from the dependencies of the oracle-xe-universal package (to keep 64bit one installed)
 mkdir /tmp/oracle_unpack
-dpkg-deb -x /var/cache/apt/archives/oracle-xe-universal_10.2.0.1-1.1_i386.deb /tmp/oracle_unpack
+dpkg-deb -x /tmp/oracle-xe-universal_10.2.0.1-1.1_i386.deb /tmp/oracle_unpack
 cd /tmp/oracle_unpack
-dpkg-deb --control /var/cache/apt/archives/oracle-xe-universal_10.2.0.1-1.1_i386.deb
+dpkg-deb --control /tmp/oracle-xe-universal_10.2.0.1-1.1_i386.deb
 sed -i "s/,\ bc//g" /tmp/oracle_unpack/DEBIAN/control
 mkdir /tmp/oracle_repack
 dpkg -b /tmp/oracle_unpack /tmp/oracle_repack/oracle-xe-universal_fixed_10.2.0.1-1.1_i386.deb
@@ -126,8 +116,8 @@ sudo bash -c 'printf "\n" | python system_setup.py'
 sudo mkdir -p /usr/lib/oracle/11.2/client64/rdbms/
 sudo ln -s /usr/include/oracle/11.2/client64/ /usr/lib/oracle/11.2/client64/rdbms/public
 
-sudo apt-get install -qq --force-yes libaio1
-if [ "$TRAVIS_PHP_VERSION" == "7" ] ; then
+sudo apt-get install -qq --allow-unauthenticated libaio1
+if [[ " 7 7.1 7.2 7.3 7.4 " =~ .*\ $TRAVIS_PHP_VERSION\ .* ]] ; then
   printf "/usr/lib/oracle/11.2/client64\n" | pecl install oci8
 else
   printf "/usr/lib/oracle/11.2/client64\n" | pecl install oci8-2.0.10
