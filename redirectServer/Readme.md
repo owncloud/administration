@@ -66,51 +66,51 @@ curl -v -L -u'test@instance3.com:secret' https://owncloud.achernar.uberspace.de/
 
 ## Flow Sequence Diagram (Desktop 2.7)
 
-![Sequence Diagram](http://www.plantuml.com/plantuml/png/pPJ1Rjim38RlUGeYf-tWECq2R32seLsx3i6IDaWNvE8BAxEBK9aI9Df1zlIptHLhwnHeu6NepQP4wUEldpmEWbwAtFHGYVLmOhIYdgjYMcc7BD0_et0hri6fqSJIVxmujVQsS715lYIVybh4XIIEJHCUX2Oy6CHFiko6JuqjCfXm46H5VpFrdyZ3t5v31T7d5am2n48UxZR3SZ5zdg7NUvfTd_ZY2XBuzlL7QxrQ2O9IX85Rk_O57wDednj6mo5SVkyCEbzSpiyd5sUxQ3tbLgYcZJTqdM4PTwOU3uzWoLZ8sdhzYxAKLwjLT5Bz4ujMA9J05mnQWISq-QUqFzl2elvCN_AsobDM7uGc_6TbKeuAw1U1F6DEYTlqEslrhj9gPalAO4u-HoOMiqrvQXMAjfp0yttGvjifnnxTrHAbjQsRBFk2Z8RlOLOOqT5LqrCTwclrRMnLYCkZfWvLPySA7LvheqLJw510ktyFYrth_dfnQtzWYO8-nFSEYOz67mQEV_uZwl5m31TMuDmMdEs6RsPA0ii9XBNTX9Gp7Pp1RLJZlBddUhlRy8TzFbIYIotRL-wuKOECpeMOhUWRVJUVGXNILK6FWmUivV13hNRiZJRqmA-76cV7n5cHczy0)
+![Sequence Diagram](http://www.plantuml.com/plantuml/png/hPBHRzem4CRV-IjEF6sQWe4XROgsgLsxJcZG8Zh4IrwkpdLOTMpBTeBONp_7a1MsCBMiB-1ykllTPzztvZnQNnQoWznh2-TISEgOe0ak32eF5r9G-4C7tKjo3rwRdVIcUr0tqVgXDB5kTxmbMv7DrCfxurB6P9HxBigz7li3C5REe-8K4NgjBgGkyz_g8qRib0DG9ng7v5FZDuNmInQsHR2OJuuRwNHsJQ5zvps5hr--_zKHQiDiNxgUMPccwKEIF7OD-tsu-TOAdCrlPbVZwyisggL2UwgfR4rtELQibJxg3s2XiFGhRSLFoZErN2wJy_0TIWL7JobyHYSuM49PVCowqmtCwsFsZoVYblAw7wLx0UEPIahebewime9Ii-wsNkLjkCfKLvJ3Z6o1AXJ8JQOccgCNMgLmTDqjC_TjDu5fDTx0Jh6-1nxsty6qb5uajp4EH-R7237D7Qi6SGwl8yqu6hmJKdX1xkY06ADdOMlVf-Fg-sE57grZpGkmmV1zpwWVHwYZ_WYkjOShNQfy7xuDMWgBCRYLNhjCvS8PYPkafhvgyA_Rz_AyMoFteX9-yvyFEOn8DCOnfRsu5ziOkY29CF1GF6NMKxCO5t4l9EsjuQafF2ELbuNy1G00)
 
 ```plantuml
 @startuml
 actor Alice
-participant "Desktop Client"
-participant "Lookup Server\nhttps://lookup.server../"
-participant "ownCloud Instance\nhttps://instance.server../"
+participant Client as "Desktop Client+"
+participant Lookup as "Lookup Server\nhttps://lookup.server../+"
+participant Instance as "ownCloud Instance\nhttps://instance.server../+"
 
-Alice -> "Desktop Client": enter server URL\nhttps://lookup.server../
+Alice -> Client : enter server URL\nhttps://lookup.server../
 
-"Desktop Client" -> "Lookup Server\nhttps://lookup.server../": GET\nhttps://lookup.../status.php
-"Desktop Client" <-- "Lookup Server\nhttps://lookup.server../": 200 OK
+Client -> Lookup : GET\nhttps://lookup.../status.php
+Client <-- Lookup : 200 OK
 
-"Desktop Client" -> "Lookup Server\nhttps://lookup.server../": PROPFIND\nhttps://lookup.../remote.php/webdav/
-"Desktop Client" <-- "Lookup Server\nhttps://lookup.server../": 401 Unauthorized\nWWW-Authenticate: Basic realm=\"My Realm\"
+Client -> Lookup : PROPFIND\nhttps://lookup.../remote.php/webdav/
+Client <-- Lookup : 401 Unauthorized\nWWW-Authenticate: Basic realm=\"My Realm\"
 
-Alice -> "Desktop Client": enter credentials
+Alice -> Client : enter credentials
 
-"Desktop Client" -> "Lookup Server\nhttps://lookup.server../": PROPFIND\nhttps://lookup.../remote.php/webdav/\n-u "username:pw"
-"Desktop Client" <-- "Lookup Server\nhttps://lookup.server../": 301 Moved Permanently\nLocation: https://instance.server../remote.php/webdav/
+Client -> Lookup : PROPFIND\nhttps://lookup.../remote.php/webdav/\n-u "username:pw"
+Client <-- Lookup : 301 Moved Permanently\nLocation: https://instance.server../remote.php/webdav/
 
-"Desktop Client" -> "ownCloud Instance\nhttps://instance.server../": PROPFIND\nhttps://instance.../remote.php/webdav/\n-u "username:pw"
-"Desktop Client" <-- "ownCloud Instance\nhttps://instance.server../": 207 Multi-Status
+Client -> Instance : PROPFIND\nhttps://instance.../remote.php/webdav/\n-u "username:pw"
+Client <-- Instance : 207 Multi-Status
 
-"Desktop Client" -> "ownCloud Instance\nhttps://instance.server../": GET\n/ocs/v1.php/cloud/capabilities
-"Desktop Client" <-- "ownCloud Instance\nhttps://instance.server../": 200 OK
+Client -> Instance : GET\n/ocs/v1.php/cloud/capabilities
+Client <-- Instance : 200 OK
 
-"Desktop Client" -> "ownCloud Instance\nhttps://instance.server../": GET\n/ocs/v1.php/cloud/user
-"Desktop Client" <-- "ownCloud Instance\nhttps://instance.server../": 200 OK
+Client -> Instance : GET\n/ocs/v1.php/cloud/user
+Client <-- Instance : 200 OK
 
-"Desktop Client" -> "ownCloud Instance\nhttps://instance.server../": GET\n/dav/avatars/username/128.png
-"Desktop Client" <-- "ownCloud Instance\nhttps://instance.server../": 404 Not Found
+Client -> Instance : GET\n/dav/avatars/username/128.png
+Client <-- Instance : 404 Not Found
 
-"Desktop Client" -> Alice: UI shows\ndisplay-name(username)\nhttps://instance.../
+Client -> Alice : UI shows\ndisplay-name(username)\nhttps://instance.../
 
-"Desktop Client" -> "ownCloud Instance\nhttps://instance.server../": GET\n/ocs/v1.php/cloud/activity
-"Desktop Client" <-- "ownCloud Instance\nhttps://instance.server../": 200 OK
+Client -> Instance : GET\n/ocs/v1.php/cloud/activity
+Client <-- Instance : 200 OK
 
-"Desktop Client" -> "ownCloud Instance\nhttps://instance.server../": GET\n/ocs/v2.php/apps/notifications/api/v1/notifications
-"Desktop Client" <-- "ownCloud Instance\nhttps://instance.server../": 200 OK
+Client -> Instance : GET\n/ocs/v2.php/apps/notifications/api/v1/notifications
+Client <-- Instance : 200 OK
 
-"Desktop Client" -> "ownCloud Instance\nhttps://instance.server../": PROPFIND\nhttps://instance.../remote.php/dav/files/username/
-"Desktop Client" <-- "ownCloud Instance\nhttps://instance.server../": 207 Multi-Status
+Client -> Instance : PROPFIND\nhttps://instance.../remote.php/dav/files/username/
+Client <-- Instance : 207 Multi-Status
 @enduml
 ```
 
-to edit go to [PlantUML](http://www.plantuml.com/plantuml/uml/pPJ1Rjim38RlUGeYf-tWECq2R32seLsx3i6IDaWNvE8BAxEBK9aI9Df1zlIptHLhwnHeu6NepQP4wUEldpmEWbwAtFHGYVLmOhIYdgjYMcc7BD0_et0hri6fqSJIVxmujVQsS715lYIVybh4XIIEJHCUX2Oy6CHFiko6JuqjCfXm46H5VpFrdyZ3t5v31T7d5am2n48UxZR3SZ5zdg7NUvfTd_ZY2XBuzlL7QxrQ2O9IX85Rk_O57wDednj6mo5SVkyCEbzSpiyd5sUxQ3tbLgYcZJTqdM4PTwOU3uzWoLZ8sdhzYxAKLwjLT5Bz4ujMA9J05mnQWISq-QUqFzl2elvCN_AsobDM7uGc_6TbKeuAw1U1F6DEYTlqEslrhj9gPalAO4u-HoOMiqrvQXMAjfp0yttGvjifnnxTrHAbjQsRBFk2Z8RlOLOOqT5LqrCTwclrRMnLYCkZfWvLPySA7LvheqLJw510ktyFYrth_dfnQtzWYO8-nFSEYOz67mQEV_uZwl5m31TMuDmMdEs6RsPA0ii9XBNTX9Gp7Pp1RLJZlBddUhlRy8TzFbIYIotRL-wuKOECpeMOhUWRVJUVGXNILK6FWmUivV13hNRiZJRqmA-76cV7n5cHczy0)
+to edit go to [PlantUML](http://www.plantuml.com/plantuml/uml/hPBHRzem4CRV-IjEF6sQWe4XROgsgLsxJcZG8Zh4IrwkpdLOTMpBTeBONp_7a1MsCBMiB-1ykllTPzztvZnQNnQoWznh2-TISEgOe0ak32eF5r9G-4C7tKjo3rwRdVIcUr0tqVgXDB5kTxmbMv7DrCfxurB6P9HxBigz7li3C5REe-8K4NgjBgGkyz_g8qRib0DG9ng7v5FZDuNmInQsHR2OJuuRwNHsJQ5zvps5hr--_zKHQiDiNxgUMPccwKEIF7OD-tsu-TOAdCrlPbVZwyisggL2UwgfR4rtELQibJxg3s2XiFGhRSLFoZErN2wJy_0TIWL7JobyHYSuM49PVCowqmtCwsFsZoVYblAw7wLx0UEPIahebewime9Ii-wsNkLjkCfKLvJ3Z6o1AXJ8JQOccgCNMgLmTDqjC_TjDu5fDTx0Jh6-1nxsty6qb5uajp4EH-R7237D7Qi6SGwl8yqu6hmJKdX1xkY06ADdOMlVf-Fg-sE57grZpGkmmV1zpwWVHwYZ_WYkjOShNQfy7xuDMWgBCRYLNhjCvS8PYPkafhvgyA_Rz_AyMoFteX9-yvyFEOn8DCOnfRsu5ziOkY29CF1GF6NMKxCO5t4l9EsjuQafF2ELbuNy1G00)
