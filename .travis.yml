@@ -1,8 +1,9 @@
-sudo: false
+os: linux
+dist: xenial
 language: php
 php:
-  - 7.1
   - 7.2
+  - 7.3
   
 install:
   - sh -c "cd update-server/ && composer install"
