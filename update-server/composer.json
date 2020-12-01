@@ -11,9 +11,7 @@
     }
   },
   "require-dev": {
-    "behat/behat": "~3.4.3",
-    "phpunit/phpunit": "^8",
-    "phpunit/php-code-coverage": "^7.0",
-    "sebastian/global-state": "^3.0"
+    "behat/behat": "~3.7.0",
+    "phpunit/phpunit": "^8"
   }
 }
