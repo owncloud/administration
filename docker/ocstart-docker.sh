@@ -12,7 +12,7 @@ SSH="/sbin/my_init --enable-insecure-key"
 # change permission of key otherwise it wouldn't be used
 chmod 600 configs/insecure_key
 
-while getopts "o:s:d:p:i:h" opt; do
+while getopts "o:s:d:p:m:i:h" opt; do
   case $opt in
     o)
       ([ $OPTARG == ubuntu ] || [ $OPTARG == centos ]) && OS=$OPTARG
@@ -26,10 +26,16 @@ while getopts "o:s:d:p:i:h" opt; do
     p) 
       PORT=$OPTARG
       ;;
-    d)
-      if [ -d $OPTARG ]; then 
-        VOLUME_DIR=$OPTARG
+    m)
+      if [[ $OPTARG != /* ]]; then
+        echo "Mount path must be absolute"
+        exit 1
       fi
+      if [ ! -d $OPTARG ]; then
+        echo "Mount directory does not exist"
+        exit 1
+      fi
+      VOLUME_DIR=$OPTARG
       ;;
     i)
       [ "$OPTARG" -ge 1 -a "$OPTARG" -le 32 ] && SERVER_INSTANCES=$OPTARG
@@ -44,7 +50,7 @@ while getopts "o:s:d:p:i:h" opt; do
       echo "  -s          apache, nginx                   default: apache"
       echo "  -d          sqlite, mysql                   default: sqlite"
       echo "  -p          <Port>                          default: 8888"
-      echo "  -d          <Dir> to mount in docker        default: /data-vol"
+      echo "  -m          <Dir> to mount in docker        default: /data-vol"
       echo "  -i          <Number> of server instances    default: 3"
       echo "  -h          This help screen"
       echo
