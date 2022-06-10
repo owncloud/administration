@@ -11,16 +11,17 @@ LDAP_ROOTPASS=admin
 LDAP_BASE_DN=dc=owncloud,dc=com
 LDAP_LOGIN_DN=cn=admin,dc=owncloud,dc=com
 
-docker pull dinkel/openldap > /dev/null
+docker pull osixia/openldap > /dev/null
 
 # start containers
-docker run -p 127.0.0.1:$LDAP_LOCAL_PORT:389 \
-	-e SLAPD_DOMAIN=$LDAP_DOMAIN \
-	-e SLAPD_ORGANIZATION="$LDAP_ORGANISATION" \
-	-e SLAPD_PASSWORD=$LDAP_ROOTPASS \
-	-e SLAPD_ADDITIONAL_MODULES=memberof \
-	--name docker-slapd \
-	-d dinkel/openldap || exit 1
+docker run --rm \
+    -e LDAP_TLS_VERIFY_CLIENT=never \
+    -e LDAP_DOMAIN=$LDAP_DOMAIN \
+    -e LDAP_ORGANISATION=$LDAP_ORGANISATION \
+    -e LDAP_ADMIN_PASSWORD=$LDAP_ROOTPASS \
+    --name docker-slapd \
+    -p 127.0.0.1:$LDAP_LOCAL_PORT:389 \
+    -p 636:636 -d osixia/openldap || exit 1
 
 docker pull osixia/phpldapadmin > /dev/null
 
