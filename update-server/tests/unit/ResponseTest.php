@@ -26,7 +26,7 @@ class ResponseTest extends \PHPUnit_Framework_TestCase {
 	/** @var Response */
 	private $response;
 
-	public function setUp() {
+	public function setUp(): void{
 		$this->request = $this->getMockBuilder('\UpdateServer\Request')
 			->disableOriginalConstructor()->getMock();
 		$this->config = $this->getMockBuilder('\UpdateServer\Config')

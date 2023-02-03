@@ -31,10 +31,8 @@ class RequestTest extends \PHPUnit_Framework_TestCase {
 		$this->assertSame('', $request->getRemoteAddress());
 	}
 
-	/**
-	 * @expectedException \UpdateServer\Exceptions\UnsupportedReleaseException
-	 */
 	public function testRequestInvalidEntry() {
+		$this->expectException(\UpdateServer\Exceptions\UnsupportedReleaseException::class);
 		new Request('x8x2x0x12x1448709225.0768x1448709281xtestingxx2015-10-19T18:44:30+00:00%208ee2009de36e01a9866404f07722892f84c16e3e', []);
 	}
 }
